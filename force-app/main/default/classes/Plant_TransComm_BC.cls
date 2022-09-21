@@ -17,7 +17,22 @@ public class Plant_TransComm_BC {
         return pte;
     }
     
-    public static void publishTransactionEvent(List<pubTransEvent> pubEvents) {
+    public static void publishTransactionEvent(pubTransEvent pubEvents) {
+        List<Plant_Transaction__e> events = new List<Plant_Transaction__e>();
+        events.add(new Plant_Transaction__e(
+            Plant_Type__c = pubEvents.type,
+            Plant_AccountId__c = pubEvents.accountId,
+            Plant_OrderId__c = pubEvents.orderId,
+            Plant_SubscriptionId__c = pubEvents.subscriptionId
+        ));     
+        system.debug('new Plant_Transaction__e:' + events);
+        
+        // Call method to publish events
+        List<Database.SaveResult> results = EventBus.publish(events);
+        system.debug('Publish Plant_Transaction__e:' + results);
+    }
+    
+    public static void publishTransactionEvents(List<pubTransEvent> pubEvents) {
         List<Plant_Transaction__e> events = new List<Plant_Transaction__e>();
         for(pubTransEvent pte :pubEvents) {
             events.add(new Plant_Transaction__e(
@@ -149,7 +164,8 @@ public class Plant_TransComm_BC {
             update updateTransComm;
         }        
     }
-    
+
+
     public static Plant_Transaction_Comm__c sendSalesforceEmail(Plant_Transaction_Comm__c transComm) {        
         String orgWideId = Label.PlantTransCommOrgWideId;
         
@@ -177,18 +193,21 @@ public class Plant_TransComm_BC {
                 String msg;
                 if(!resList.IsEmpty()) {
                     msg = resList[0].getMergedBody();
-                    msg = msg.replace('PlantTransCommTracker', 'XXX');
+                    msg = msg.replace('Plant_TransCommEmailTracker', 'XXX');
                     system.debug('msg:' + msg);
                 }
                 transComm.Plant_Comm_Sent__c = msg;
                 
-                String errMsg = sendEmail(lstEmailTemplates[0].Id, lstCont[0].Id, 'noreply@plantable.com', transComm.Id, orgWideId);
-                if(errMsg == NULL) {
-                    transComm.Plant_Status__c = 'Sent';
-                } else {
-                    transComm.Plant_Status__c = 'Error';
-                    transComm.Plant_Error_Message__c = errMsg;
-                }
+                // Send Email - just sent this to True, Flow will send the email
+                transComm.Plant_Send__c = True;
+                    
+                //String errMsg = sendEmail(lstEmailTemplates[0].Id, lstCont[0].Id, 'noreply@plantable.com', transComm.Id, orgWideId);
+                //if(errMsg == NULL) {
+                //    transComm.Plant_Status__c = 'Sent';
+                //} else {
+                //    transComm.Plant_Status__c = 'Error';
+                //    transComm.Plant_Error_Message__c = errMsg;
+                //}
                             
             }
 
@@ -196,6 +215,7 @@ public class Plant_TransComm_BC {
         return transComm;
     }
     
+ 	/** use email alert and flow instead    
     public static String sendEmail(String templateId, String targetId, String replyTo, String whatObj, String ogrWideID) {
 
         system.debug('sendEmail');
@@ -231,4 +251,5 @@ public class Plant_TransComm_BC {
         
         return ret;
     }
+	**/
 }

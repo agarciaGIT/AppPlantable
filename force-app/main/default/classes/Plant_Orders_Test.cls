@@ -5,6 +5,59 @@ public class Plant_Orders_Test {
     public  Plant_Orders_Test() {
         
     }
+    
+    
+  // AG - test my stuyff
+  public testMethod static void Orders_TestPostTrans1(){
+        
+        Meal__c meal=Plant_TestDataFactory.createMeal(1)[0];
+        insert meal;
+        
+        Plant_Meal_Selection__c Mealselection=Plant_TestDataFactory.createMealSelection(1)[0];
+        insert MealSelection;
+        
+        Account accounts = Plant_TestDataFactory.createAccounts(1)[0];
+        insert accounts;
+        
+        Order order = new order(Accountid=accounts.id, EffectiveDate=System.today(), Status ='Draft');
+        insert order;
+        
+        Plant_Shipping_Date__c ShippingDate= Plant_TestDataFactory.createShippingDate(1)[0];
+        insert ShippingDate;
+        
+        Plant_Shipping_Address__c shippingAddress = Plant_TestDataFactory.createShippingAddress(1)[0];
+        shippingAddress.Plant_Account__c= accounts.id;
+        insert shippingAddress;
+        
+        Plant_Delivery_Schedule__c DeliverySchedule= Plant_TestDataFactory.createDeliverySchedule(1, 2)[0];
+        insert DeliverySchedule;
+        
+        Plant_Order_Properties__c orderProperty = Plant_TestDataFactory.createOrderProperties(1)[0];
+        orderProperty.Plant_Account__c= accounts.id;
+        orderProperty.Shipping_Address__c=shippingAddress.id;
+        insert orderProperty;
+    
+      List<Plant_TransComm_BC.pubTransEvent> pubEvents = new List<Plant_TransComm_BC.pubTransEvent>();
+      pubEvents.add(Plant_TransComm_BC.setTransactionEvent('Order Paid',order.AccountId,order.id,null));
+          
+      Plant_TransComm_BC.publishTransactionEvents(pubEvents);
+      Plant_TransComm_BC.publishTransactionEvent(Plant_TransComm_BC.setTransactionEvent('Order Paid',order.AccountId,order.id,null));
+      
+      List<Plant_Transaction__e> lstOrderEvents = new List<Plant_Transaction__e>();
+      Plant_Transaction__e newTransEvent = new Plant_Transaction__e(
+          Plant_Type__c = 'Order Paid',
+          Plant_AccountId__c = order.AccountId,
+          Plant_OrderId__c = order.id,
+          Plant_SubscriptionId__c = NULL
+      );
+      lstOrderEvents.add(newTransEvent);
+      Plant_Orders_BC.postTransactionOrderHandler(lstOrderEvents);
+          
+          
+  }
+    
+    
+  
   // Test Methods for pre-processOrder 
     public testMethod static void processOrderTest1(){
        	cardWrapper cWrapper =new cardWrapper();

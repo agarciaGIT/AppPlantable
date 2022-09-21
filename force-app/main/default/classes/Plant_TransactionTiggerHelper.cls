@@ -85,7 +85,7 @@ public  class Plant_TransactionTiggerHelper {
                         oddr.Plant_Transaction_Id__c=cOrder_Vs_transactionId_Map.get(oddr.Plant_Subscription__r.Plant_Chargent_Order__c);
                         updateCurrent_Orders.add(oddr);
 
-						// Add post Order Event
+						// AG - Add post Order Event
                         pubEvents.add(Plant_TransComm_BC.setTransactionEvent('Order Paid',oddr.AccountId,oddr.id,null));
                         
                         // FIREST ORDER
@@ -117,6 +117,10 @@ public  class Plant_TransactionTiggerHelper {
                             }
                             updateSubscription_List.add(subscpt);
 
+                            // AG - Add post Order Event
+                            pubEvents.add(Plant_TransComm_BC.setTransactionEvent('Subscription Created',oddr.AccountId,null,subscpt.Id));
+
+                            
                         }// AUTOMATIC ORDER
                         else {
                             // @ create shipment for current order
@@ -240,8 +244,8 @@ public  class Plant_TransactionTiggerHelper {
             if(!updateSubscription_List.isEmpty())
                 update updateSubscription_List;
 
-            // Publish Post Order Events
-            Plant_TransComm_BC.publishTransactionEvent(pubEvents);
+            // AG - Publish Post Order Events
+            Plant_TransComm_BC.publishTransactionEvents(pubEvents);
         }
         catch(Exception ex){
             System.debug('@@@@@@@@@ EXCEPTION ENCOUNTERD SUBSCRIPTION : line: '+ex.getLineNumber()+' msg: '+ex.getCause()+' '+ex.getMessage());

@@ -2252,7 +2252,7 @@ public class Plant_Orders_BC {
                     // VALIDATION 2: Check Order Number If not emptu
                     if(!String.isBlank(odrMeal_WrapObj.OrderNumber) && Plant_Utility.CheckValidInteger(odrMeal_WrapObj.OrderNumber)){
                         // VALIDATION 3: Check Order and Modification Deadline validaiton
-                        List<Order> OrderList =  [SELECT id, OrderNumber,Modification_Deadline_Exceeded__c, Plant_Order_Properties__c,Plant_Order_Properties__r.Plant_Meal_Selection__c FROM Order WHERE OrderNumber=:odrMeal_WrapObj.OrderNumber AND AccountId=:existingCustomerId ]; 
+                        List<Order> OrderList =  [SELECT id, AccountId, OrderNumber,Modification_Deadline_Exceeded__c, Plant_Order_Properties__c,Plant_Order_Properties__r.Plant_Meal_Selection__c FROM Order WHERE OrderNumber=:odrMeal_WrapObj.OrderNumber AND AccountId=:existingCustomerId ]; 
                         if(!OrderList.isEmpty()){
                             if(!OrderList[0].Modification_Deadline_Exceeded__c){
                                 // VALIDATION : check if meal selection record avialable
@@ -2267,6 +2267,10 @@ public class Plant_Orders_BC {
                                     odrpropty.id=OrderList[0].Plant_Order_Properties__c;
                                     odrpropty.Plant_Meal_Selection__c=mselection.id;
                                     update odrpropty;
+                                    
+                                    // AG - Add post Order Event
+                                    Plant_TransComm_BC.publishTransactionEvent(Plant_TransComm_BC.setTransactionEvent('Order Meal Change',OrderList[0].AccountId,OrderList[0].id,null));
+
                                     
                                     mealSelectionWrap.mealSelectionId = mselection.id;
                                     //mealSelectionWrap.mealSelectionId = OrderList[0].Plant_Order_Properties__r.Plant_Meal_Selection__c;
@@ -3374,7 +3378,201 @@ public class Plant_Orders_BC {
         	update updateMeals;
         }
 	} 
-    
+
+	
+	// AG 9/21/2022
+    // Post Transaction Handler - After an Order Payment or Change is made this method will handle any remaining non-criitical work
+    // This is to remove load from the actual transaction
+    // Things we do here:
+    // 1. Set Order Type = New Business v Existsing Business
+    // 2. Create OnBoarding record for any new customer
+    // 3. Update Account Order KPIs; Total Orders, ...
+    public static void postTransactionOrderHandler(List<Plant_Transaction__e> lstOrderEvents) {
+        Set<String> orderIds = new Set<String>();
+        Set<String> accountIds = new Set<String>();
+        Set<String> setOrderPropIds = new Set<String>();
+        MAP<String,Plant_Transaction__e> mapEvents = new MAP<String,Plant_Transaction__e>();
+        
+        // Setup ID Lists
+        for(Plant_Transaction__e pte :lstOrderEvents) {
+            orderIds.add(pte.Plant_OrderId__c);
+            accountIds.add(pte.Plant_AccountId__c);
+            mapEvents.put(pte.Plant_OrderId__c, pte);
+        }
+        System.debug('orderIds:' + orderIds);
+        System.debug('accountIds:' + accountIds);
+
+		// Get ALL orders related to accounts in play        
+        List<Order> lstOrders = [select Id, AccountId, ActivatedDate, TotalAmount, Plant_Main_Product__c,
+                                 Plant_Order_Properties__c, Plant_Subscription__c,
+                                 Plant_Subscription__r.Order_Count__c,
+                                 Discount_Codes_Used__c, Plant_Subscription_Order_Number__c 
+                                 from Order 
+                                 where AccountId in :accountIds AND status = 'Activated'
+                                ORDER BY ActivatedDate];
+        System.debug('lstOrders:' + lstOrders);
+        for(Order o :lstOrders) {
+            // Is order in play
+            if(orderIds.contains(o.Id)) {
+                setOrderPropIds.add(o.Plant_Order_Properties__c);
+            }
+        }
+		System.debug('setOrderPropIds:' + setOrderPropIds);        
+        
+        // Get Accounts in play
+        List<Account> lstAccount = [select Id, Type, Plant_Total_Orders__c,Plant_Total_Revenue__c, 
+                                    Plant_Reboot_Orders__c, Plant_Reboot_Revenue__c, Plant_Reboot_First_Order__c, Plant_Reboot_Last_Order__c,
+                                    Plant_A_La_Carte_Orders__c, Plant_A_La_Carte_Revenue__c, Plant_A_La_Carte_First_Order__c, Plant_A_La_Carte_Last_Order__c,
+                                    Plant_Quickstart_Orders__c, Plant_Quickstart_Revenue__c, Plant_Quickstart_First_Order__c, Plant_Quickstart_Last_Order__c
+                                    from Account where id in :accountIds];
+        System.debug('lstAccount:' + lstAccount);
+        
+        // Get Discount Codes
+        List<Plant_Discount_Selection__c> lstDiscSels = [select Id, Plant_Order_Properties__c, Plant_Discount_Code__r.Plant_Code__c 
+                                                         FROM Plant_Discount_Selection__c where Plant_Order_Properties__c in:setOrderPropIds ];
+        Map<String,String> mapOrderPropDisc = new Map<String,String>();
+        for(Plant_Discount_Selection__c ds :lstDiscSels) {
+            mapOrderPropDisc.put(ds.Plant_Order_Properties__c,ds.Plant_Discount_Code__r.Plant_Code__c);
+        }
+        System.debug('mapOrderPropDisc:' + mapOrderPropDisc);  
+        
+        // Init map
+        MAP<String, Account> mapAccts = new MAP<String, Account>();
+        for(Account acct :lstAccount) {
+            // Reset Counters
+            acct.Total_Orders__c = 0;
+            acct.Plant_Total_Orders__c = 0;
+            acct.Plant_Total_Revenue__c = 0;
+            acct.Plant_Reboot_Orders__c = 0;
+            acct.Plant_Reboot_Revenue__c = 0;
+            acct.Plant_Reboot_First_Order__c = NULL;
+            acct.Plant_Reboot_Last_Order__c = NULL;
+            acct.Plant_A_La_Carte_Orders__c = 0;
+            acct.Plant_A_La_Carte_Revenue__c = 0;
+            acct.Plant_A_La_Carte_First_Order__c = NULL;
+            acct.Plant_A_La_Carte_Last_Order__c = NULL;
+            acct.Plant_Quickstart_Orders__c = 0;
+            acct.Plant_Quickstart_Revenue__c = 0;
+            acct.Plant_Quickstart_First_Order__c = NULL;
+            acct.Plant_Quickstart_Last_Order__c = NULL;
+            
+            mapAccts.put(acct.Id, acct);
+        }
+        System.debug('mapAccts:' + mapAccts);
+        
+        
+        MAP<String, Account> mapOrdersAcct = new MAP<String, Account>();
+        // Count Orders By Account
+        for(Order o :lstOrders) {
+            
+            System.debug('Order Loop:' + o);
+            
+			Account fndAccount = mapAccts.get(o.AccountId);
+            System.debug('fndAccount:' + fndAccount);
+            
+            if(fndAccount!=NULL) {
+                fndAccount.Plant_Total_Orders__c++;
+                fndAccount.Plant_Total_Revenue__c+=o.TotalAmount;
+                if(o.Plant_Main_Product__c == 'Reboot') {
+                    fndAccount.Plant_Reboot_Orders__c++;
+                    fndAccount.Plant_Reboot_Revenue__c+=o.TotalAmount;
+                    if(fndAccount.Plant_Reboot_First_Order__c == NULL) {
+                        fndAccount.Plant_Reboot_First_Order__c = Date.ValueOf(o.ActivatedDate);
+                    }
+                    fndAccount.Plant_Reboot_Last_Order__c = Date.ValueOf(o.ActivatedDate);          
+                } else if(o.Plant_Main_Product__c == 'A-la-carte') {
+                    fndAccount.Plant_A_La_Carte_Orders__c++;
+                    fndAccount.Plant_A_La_Carte_Revenue__c+=o.TotalAmount;
+                    if(fndAccount.Plant_A_La_Carte_First_Order__c == NULL) {
+                        fndAccount.Plant_A_La_Carte_First_Order__c = Date.ValueOf(o.ActivatedDate);
+                    }
+                    fndAccount.Plant_A_La_Carte_Last_Order__c = Date.ValueOf(o.ActivatedDate);   
+                } else if(o.Plant_Main_Product__c == 'Quickstart') {
+                    fndAccount.Plant_Quickstart_Orders__c++;
+                    fndAccount.Plant_Quickstart_Revenue__c+=o.TotalAmount;
+                    if(fndAccount.Plant_Quickstart_First_Order__c == NULL) {
+                        fndAccount.Plant_Quickstart_First_Order__c = Date.ValueOf(o.ActivatedDate);
+                    }
+                    fndAccount.Plant_Quickstart_Last_Order__c = Date.ValueOf(o.ActivatedDate);   
+                }                    
+                System.debug('update order count:' + fndAccount.Total_Orders__c);
+                mapAccts.put(fndAccount.Id, fndAccount);
+            }                
+        }
+        
+        List<Order> updateOrders = new List<Order>();
+        List<OnBoarding__c> insertOnBoardings = new List<OnBoarding__c>();
+        // Update main orders with Type
+        for(Order o :lstOrders) {
+            
+            System.debug('Order Loop2:' + o);
+            
+            Plant_Transaction__e fndEvt = mapEvents.get(o.Id);
+            
+            // Is order in play
+            if(orderIds.contains(o.Id) && fndEvt != NULL) {
+                
+                if(fndEvt.Plant_Type__c == 'Order Paid') {
+                
+                    System.debug('Order In Play:' + o);
+                    
+                    Account fndAccount = mapAccts.get(o.AccountId);
+                    System.debug('fndAccount:' + fndAccount);
+                    
+                    if(fndAccount!=NULL) {
+                        if(fndAccount.Total_Orders__c == 1) {
+                            o.Type = 'New Business';
+                            
+                            // Create OnBoarding Record
+                            OnBoarding__c newOnBoard = new OnBoarding__c(
+                                Account__c = o.AccountId
+                            );
+                            insertOnBoardings.add(newOnBoard);
+                            
+                        } else if(fndAccount.Total_Orders__c > 1) {
+                            o.Type = 'Existing Business';
+                        }
+                        System.debug('update order type:' + o);
+                    }
+                    
+                    String fndDisc = mapOrderPropDisc.get(o.Plant_Order_Properties__c);
+                    System.debug('fndAccount:' + fndAccount);
+                    
+                    if(fndDisc != NULL) {
+                        o.Discount_Codes_Used__c = fndDisc;
+                        System.debug('update order discount:' + o);
+                    }
+                    
+                    if(o.Plant_Subscription__c != NULL) {
+                        o.Plant_Subscription_Order_Number__c = o.Plant_Subscription__r.Order_Count__c;
+                    }
+                    
+                    if(fndAccount!=NULL || fndDisc!=NULL || o.Plant_Subscription__c != NULL) {
+                        updateOrders.add(o);
+                    }
+                }
+            }
+        }
+        
+        if(!updateOrders.isEmpty()) {
+            System.debug('update updateOrders:' + updateOrders);
+        	update updateOrders;    
+        }
+        
+        List<Account> updateAccounts = new List<Account>();
+        for(Account a :mapAccts.values()) {
+            updateAccounts.add(a);
+        }
+        if(!updateAccounts.isEmpty()) {
+            System.debug('update updateAccounts:' + updateAccounts);
+        	update updateAccounts;    
+        }
+        if(!insertOnBoardings.isEmpty()) {
+            System.debug('insert insertOnBoardings:' + insertOnBoardings);
+        	insert insertOnBoardings;    
+        }
+        
+    }
     
     // @ wrapper class 1: order property "Request" json
    // modify 1: request json for cart update

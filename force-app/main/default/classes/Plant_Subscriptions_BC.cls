@@ -1540,6 +1540,69 @@ public class Plant_Subscriptions_BC {
         return responseWrap;
     }
 
+    
+    // AG - Internal Methods
+    
+    // Post Transaction Handler - After an Order Payment or Change is made this method will handle any remaining non-criitical work
+    // This is to remove load from the actual transaction
+    // Thigs we do here:
+    // 1. Update Account Lookups
+    public static void postTransactionOrderHandler(List<Plant_Transaction__e> lstSubscriptionEvents) {
+        
+        // Setup ID Lists
+        MAP<String,String> mapAcctSubs = new MAP<String,String>();
+        for(Plant_Transaction__e pte :lstSubscriptionEvents) {
+            mapAcctSubs.put(pte.Plant_AccountId__c, pte.Plant_SubscriptionId__c);
+        }
+        System.debug('mapAcctSubs:' + mapAcctSubs);
+
+        List<Account> lstAccount = [select Id, Plant_Reboot_Subscription__c, Plant_Meal_Subscription__c from Account where id in :mapAcctSubs.keySet()];
+        System.debug('lstAccount:' + lstAccount);
+        MAP<String,Account> mapAccts = new MAP<String,Account>();
+        for(Account a :lstAccount) {
+			mapAccts.put(a.id, a);
+        }
+        System.debug('mapAccts:' + mapAccts);
+        
+        List<Plant_Subscription__c> lstSub = [select Id, RecordType.Name from Plant_Subscription__c where id in :mapAcctSubs.values()];
+        System.debug('lstSub:' + lstSub);
+        MAP<String,Plant_Subscription__c> mapSubs = new MAP<String,Plant_Subscription__c>();
+        for(Plant_Subscription__c ps :lstSub) {
+			mapSubs.put(ps.id, ps);
+        }
+        System.debug('mapSubs:' + mapSubs);
+        
+        List<Account> updateAtts = new List<Account>();
+        for(Plant_Transaction__e pte :lstSubscriptionEvents) {
+            
+            System.debug('pte:' + pte);
+                
+            Plant_Subscription__c fndSub = mapSubs.get(pte.Plant_SubscriptionId__c);
+            System.debug('fndSub:' + fndSub);
+                
+            Account fndAcct = mapAccts.get(pte.Plant_AccountId__c);
+            System.debug('fndAcct:' + fndAcct);
+                                
+            if(pte.Plant_Type__c == 'Subscription Created') {
+            
+                if(fndSub != NULL && fndAcct != NULL) {
+                    if(fndSub.RecordType.Name == 'Reboot') {
+                        fndAcct.Plant_Reboot_Subscription__c = fndSub.Id;
+                    } else {
+                        fndAcct.Plant_Meal_Subscription__c = fndSub.Id;
+                    }
+                    System.debug('Add updateAtts:' + fndAcct);
+                    updateAtts.add(fndAcct);
+                }
+                
+            }
+        }
+        System.debug('updateAtts:' + updateAtts);
+        if(!updateAtts.isEmpty()) {
+            update updateAtts;
+        }
+    }
+    
     //########################################  WRAPPER CLASSES   ##################################################################
     
     // wrap 1
