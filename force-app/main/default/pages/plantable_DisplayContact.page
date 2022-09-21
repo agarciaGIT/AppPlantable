@@ -1,0 +1,9 @@
+<!-- 
+    @ Description     :    Plantable display contact detail to community
+    @ Created Date    :    25 Mar 2022
+    @ Version         :    v1
+-->
+<apex:page showHeader="false" sidebar="false" lightningStylesheets="true">
+<apex:slds />
+    <apex:detail subject="{!$User.ContactId}" rendered="{!NOT(ISNULL($User.ContactId))}" relatedList="false" />
+</apex:page>

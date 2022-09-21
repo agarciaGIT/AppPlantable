@@ -1,0 +1,67 @@
+<apex:page renderAs="pdf" controller="onFleetLabelsAsPDF" showHeader="false" sidebar="false" standardStylesheets="false"  applyhtmltag="false" applyBodyTag="false" >
+    <head>
+        <style>
+            @page{
+            margin:0.25in;
+            }
+        </style>
+    </head> 
+
+
+    <div class="main-pdf" >
+    <apex:repeat value="{!lstAllShipments}" var="allsw" > 
+        <apex:outputPanel layout="block" style="page-break-inside: avoid;" >  
+            <table width="100%" border="0">                
+                <tr>
+                    <td width="50%" style="text-align:center">
+                        <apex:repeat value="{!allsw.shipPage}" var="sw" > 
+                            <apex:outputPanel layout="block" rendered="{!sw.col == 'odd'}">
+                                <div style="height:{!boxheight}px;font-size:20px;margin-right:10px;margin-top:{!marginTopBottom}px;border:1px solid black;">
+                                    <div style="margin:2px"> 
+                                        {!sw.fname} {!sw.lname}
+                                    </div>
+                                    <apex:outputPanel layout="block" rendered="{!inProvider != 'UPS'}">
+                                        <div style="margin:2px"> 
+                                            {!sw.street1} {!sw.street2}
+                                        </div>
+                                        <div style="margin:2px"> 
+                                            {!sw.city} {!sw.state} {!sw.zip}
+                                        </div>
+                                    </apex:outputPanel>
+                                    <apex:outputPanel layout="block" rendered="{!inProvider == 'UPS' && sw.trackingNumber != NULL}">
+                                        <div style="margin-top:10px"><apex:image style="width: 350px;" value="https://barcode.tec-it.com/barcode.ashx?data={!sw.trackingNumber}&code=Code128&dpi=96&dataseparator=' alt='Barcode Generator TEC-IT'"/></div>
+                                    </apex:outputPanel>
+                                </div>
+                            </apex:outputPanel>   
+                        </apex:repeat>                         
+                    </td>
+                    <td width="50%" style="text-align:center">
+                        <apex:repeat value="{!allsw.shipPage}" var="sw" > 
+                            <apex:outputPanel layout="block" rendered="{!sw.col == 'even'}">
+                                <div style="height:{!boxheight}px;font-size:20px;margin-left:10px;margin-top:{!marginTopBottom}px;border:1px solid black;">
+                                    <div style="margin:2px"> 
+                                        {!sw.fname} {!sw.lname}
+                                    </div>
+                                    <apex:outputPanel layout="block" rendered="{!inProvider != 'UPS'}">
+                                        <div style="margin:2px"> 
+                                            {!sw.street1} {!sw.street2}
+                                        </div>
+                                        <div style="margin:2px"> 
+                                            {!sw.city} {!sw.state} {!sw.zip}
+                                        </div>
+                                    </apex:outputPanel>
+                                    <apex:outputPanel layout="block" rendered="{!inProvider == 'UPS' && sw.trackingNumber != NULL}">
+                                        <div style="margin-top:10px"><apex:image style="width: 350px;" value="https://barcode.tec-it.com/barcode.ashx?data={!sw.trackingNumber}&code=Code128&dpi=96&dataseparator=' alt='Barcode Generator TEC-IT'"/></div>
+                                    </apex:outputPanel>
+                                </div>
+                            </apex:outputPanel>   
+                        </apex:repeat>                         
+                    </td>
+                </tr>
+            </table>
+            <div style="page-break-after:always;"></div>
+        </apex:outputPanel>
+    </apex:repeat>
+    </div>  
+    
+</apex:page>

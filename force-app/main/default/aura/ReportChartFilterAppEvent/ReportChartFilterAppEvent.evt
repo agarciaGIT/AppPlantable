@@ -1,0 +1,5 @@
+<aura:event type="APPLICATION">
+    <!-- pass context of where the event was fired to the handler. -->
+    <aura:attribute name="filterValue" type="String"/>
+    <aura:attribute name="filterType" type="String"/>
+</aura:event>

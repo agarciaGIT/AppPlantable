@@ -1,0 +1,47 @@
+<aura:component implements="flexipage:availableForAllPageTypes,force:appHostable" access="global" controller="ShipmentSummaryController">
+
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:attribute name="shippingDate" type="Date" default="TODAY()" />
+    <aura:attribute name="objClassController" type="ShipmentSummaryController"/>    
+    <aura:attribute name="boxType" type="String"/> 
+	<aura:attribute name="courier" type="String"/>     
+    <aura:attribute name="url" type="String"/> 
+    
+    <lightning:card iconName="standard:contact" title="Label Generator">
+        
+        <div class="slds-p-around_small">
+            <ui:inputDate aura:id="dateField" label="Shipping Day" value="{!v.shippingDate}" displayDatePicker="true"/>
+            <br/>
+            <!--div class="c-container">
+                <lightning:layout horizontalAlign="space">
+					<lightning:layoutItem flexibility="auto" padding="around-small">
+                        <lightning:select label="Box Type" aura:id="boxtype" value="{!v.boxType}">
+                            <option value="New">New</option>
+                            <option value="E28">E28</option>
+                            <option value="Mom">Mom</option>
+                            <option value="Lunch">Just Lunch</option>
+                            <option value="A-la-carte">A-la-carte</option>
+                        </lightning:select>                        
+            		</lightning:layoutItem>
+					<lightning:layoutItem flexibility="auto" padding="around-small">
+                        <lightning:select label="Courier" aura:id="courier" value="{!v.courier}">
+                            <option value="brooklyn sort">Brooklyn Sort</option>
+                            <option value="manhattan Sort">Manhattan Sort</option>
+                        </lightning:select>                        
+            		</lightning:layoutItem>
+                </lightning:layout>
+            </div -->
+            <br/>
+            <!-- lightning:button variant="brand" label="Generate Lables" onclick="{! c.generateLables }" / -->
+            <lightning:button variant="brand" label="Generate UPS Barcode" onclick="{! c.generateUPS }" />
+            <lightning:button variant="brand" label="Upload UPS Tracking" onclick="{! c.uploadUPS }" />
+            
+            
+            <br/>
+            <!-- aura:if isTrue="{!v.url.length > 0}">
+            	<div><a href="{!v.url}" target="_other">Click Here!</a></div>
+            </aura:if -->
+        </div>        
+
+    </lightning:card>    
+</aura:component>

@@ -1,0 +1,214 @@
+<aura:component implements="flexipage:availableForAllPageTypes,force:appHostable" access="global" controller="mealPickerController">
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:attribute name="objClassController" type="mealPickerController"/>    
+    <aura:attribute name="orderId" type="String"/>
+    <aura:attribute name="spinner" type="Boolean" default="true"/>
+    <aura:attribute name="msg" type="String"/>
+    <aura:attribute name="isOpen" type="boolean" default="false"/>
+    <aura:attribute name="openState" type="String" default="closed" />
+    <aura:attribute name="openDelay" type="Integer" default="500" />
+    <aura:attribute name="screenStep" type="String" default="login"/>
+    <aura:attribute name="useOrderNumber" type="Boolean" default="false"/>
+    <aura:attribute name="accessCode" type="String"/>
+    
+    <aura:attribute name="selMealIdx" type="Integer"/>
+
+    <aura:attribute name="mealName" type="String"/>
+    <aura:attribute name="mealDesc" type="String"/>
+    <aura:attribute name="mealAllergen" type="String"/>
+    <aura:attribute name="mealGlutenFree" type="Boolean"/>
+    <aura:attribute name="mealNutFree" type="Boolean"/>
+    <aura:attribute name="mealDairyFree" type="Boolean"/>
+    
+    <div class="slds-grid slds-wrap slds-gutters">        
+
+        <aura:if isTrue="{!v.spinner}">
+            <lightning:spinner class="spins" size="large" variant="brand" alternativeText="Loading" />
+        </aura:if>
+        <aura:if isTrue="{!v.screenStep == 'login'}">
+            <div class="slds-col slds-size_1-of-1 slds-large-size_12-of-12" style="max-width: 500px;">            
+                <lightning:card title="Customize Meals">
+                    <div class="slds-p-around_small">
+                        <div class="slds-grid slds-wrap slds-gutters">                
+                            <div class="slds-form slds-form_compound formItem">
+                                <fieldset class="slds-form-element">
+                                    <div class="slds-form-element__group">
+                                        <div class="slds-form-element__row">
+                                            <div class="slds-form-element slds-size_12-of-12">
+                                                <aura:if isTrue="{!v.useOrderNumber}">
+                                                	<label class="slds-form-element__label" for="input-01">Order Number</label>
+                                                    <lightning:input name="Order Number" niceName="Order Number" aura:id="accessCode" value="{!v.accessCode}"/>
+                                                </aura:if>
+                                                <aura:if isTrue="{!v.useOrderNumber != true}">
+                                                	<label class="slds-form-element__label" for="input-01">Please enter your access code to customize your upcoming shipment</label>
+	                                                <lightning:input name="Access Code" niceName="Access Code" aura:id="accessCode" value="{!v.accessCode}"/>                                                
+                                                </aura:if>
+                                            </div>
+                                        </div>
+                                         <div class="slds-form-element__row">
+                                            <div class="slds-form-element__control" style="margin-top:20px" > 
+                                                <lightning:button variant="brand" label="Submit" onclick="{! c.submitCode }" />
+                                            </div>
+                                            <div class="slds-form-element slds-has-error">
+                                                <div data-aura-rendered-by="400:0" class="slds-has-error slds-form-element__help">{!v.msg}</div>
+                                            </div>                    
+                                            
+                                        </div>
+                                    </div>
+                                </fieldset>
+                            </div>
+                        </div>
+                    </div>
+                </lightning:card>
+            </div>
+        </aura:if>
+        <aura:if isTrue="{!v.screenStep == 'done'}">
+            <div class="slds-col slds-size_1-of-1 slds-large-size_12-of-12" style="max-width: 500px;">            
+                <lightning:card title="Meal Section Complete">
+                    <div style="margin-left:10px;margin-top:10px">Thank you for your custom selections, they have been applied to your upcoming shipment.</div>
+                </lightning:card>
+            </div>
+        </aura:if>        
+        <aura:if isTrue="{!v.screenStep == 'pick'}">
+            <div class="slds-col slds-size_1-of-1 slds-large-size_8-of-12" style="max-width: 800px;">            
+                <lightning:card title="Select 12 Meals">
+                    <div style="margin-left:15px">We recommend selecting 6 lunches and 6 dinners. Your cart is already pre-filled with 12 Chef's Selections. Please make your desired swaps, or select "clear all selections" to start selecting from scratch.</div>
+                    <div class="slds-p-around_small">
+                         <div class="slds-grid slds-wrap slds-gutters">
+                            <aura:iteration items="{!v.objClassController.lstMealsData}" var="sd" indexVar="index">
+                                <div class="slds-col slds-size_2-of-2 slds-large-size_4-of-12">
+                                    <lightning:card>
+                                        <div style="border: 1px solid rgb(241, 238, 236); height:380px; text-align:center;border-radius: 25px;">
+                                            <div style="height:280px;background:rgb(241, 238, 236);border-top-left-radius: 25px;border-top-right-radius: 25px;padding: 10px;">
+                                                <div class="imglink"><img id="{!sd.Id}" aura:id="{!sd.Id}" onclick="{! c.handleIsOpenToggle  }" src="{!sd.Image_URL__c}" style="width:150px;"></img></div>
+                                                <div style="margin-top:10px; font-weight:700; font-size:14px" id="{!sd.Id}" aura:id="{!sd.Id}" onclick="{! c.handleIsOpenToggle  }" class="link">{!sd.Name}</div>
+                                                <div style="margin-top:10px; font-weight:700; font-size:14px">{!sd.Type__c} <aura:if isTrue="{!sd.Calories_Per_Serving__c > 0}">/ {!sd.Calories_Per_Serving__c} cals</aura:if></div>
+                                                <aura:if isTrue="{!sd.Allergens__c != null}">  
+                                                    <div style="margin-top:5px;font-weight:700; font-size:10px"><b>** Has allergens</b></div>
+                                                </aura:if>
+                                                <aura:if isTrue="{!sd.Gluten_Free__c == True || sd.Nut_Free__c == True || sd.Soy_Free__c == True}">
+                                                    <div style="margin-top:5px;font-weight:700; font-size:10px">
+                                                        <aura:if isTrue="{!sd.Gluten_Free__c == True}">  
+                                                            <b><i>* Gluten Free</i></b> &nbsp;
+                                                        </aura:if>
+                                                        <aura:if isTrue="{!sd.Nut_Free__c == True}">  
+                                                            <b><i>* Nut Free</i></b> &nbsp;
+                                                        </aura:if>
+                                                        <aura:if isTrue="{!sd.Soy_Free__c == True}">  
+                                                            <b><i>* Soy Free</i></b> &nbsp;
+                                                        </aura:if>
+                                                    </div>
+                                                </aura:if>
+                                                <div style="margin-top:5px;font-weight:700; font-size:10px">
+                                                    <a href="" id="{!sd.Id}" aura:id="{!sd.Id}" onclick="{! c.handleIsOpenToggle  }" class="link">Ingredients</a>
+                                                </div>
+                                                
+                                            </div>
+                                            <div style="height:75px;background:white;border-bottom-left-radius: 25px;border-bottom-right-radius: 25px;border: 1px solid rgb(241, 238, 236);padding: 10px;text-align:center;">
+                                                <div style="margin:10px; font-weight:700; font-size:16px; cursor: pointer;" class="select-item" id="{!sd.Id}" aura:id="{!sd.Id}" onclick="{! c.addItem }">Add Item +</div>
+                                            </div>
+                                        </div>
+                                        
+                                        
+                                    </lightning:card>
+                                </div>                            
+                            </aura:iteration>
+                        </div>
+                    </div>
+                    
+                </lightning:card>
+            </div>
+            <div class="slds-col" style="max-width: 500px; position: -webkit-sticky; position: sticky;top: 0;">
+                <lightning:card title="Your Box">
+                    <!-- div style="margin-left:10px">Welcome {!v.objClassController.opp.First_Name__c}</div -->
+                    <div style="margin-left:10px;margin-top:10px">Total Items: {!v.objClassController.totalItems}</div>
+                    <div style="margin-left:10px;margin-top:10px">Maximum number of meals: 12</div>
+                    
+                    
+                    <div class="slds-p-around_small">
+                        <div class="slds-form-element__control" style="margin-top:20px" > 
+                            <lightning:button variant="brand" label="Clear all selections" onclick="{! c.clearMeals }" /><lightning:button variant="brand" label="SUBMIT" onclick="{! c.submitMeal }" />
+                        </div>
+                        <aura:iteration items="{!v.objClassController.lstMealItems}" var="mi" indexVar="index">
+                            <lightning:card>
+                                <div style="border: 1px solid rgb(241, 238, 236); text-align:center;border-radius: 25px;">
+                                    <div class="slds-grid slds-gutters">
+                                        <div class="slds-col" style="width:40px">
+                                            <div style="font-weight:400; font-size:12px; text-align:center; margin-top: 12px;cursor: pointer;" class="select-item" id="{!mi.Meal__c}" aura:id="{!mi.Meal__c}" onclick="{! c.removeItem }"><lightning:icon size="small" iconName="utility:close" alternativeText="Remove" /></div>
+                                        </div>                                    
+                                        <div class="slds-col" style="width:300px;padding:0"> 
+                                            <div style="margin:10px; font-weight:400; font-size:14px; text-align:left; margin-top: 12px;">{!mi.Name}</div>
+                                        </div>
+                                        <div class="slds-grid" style="text-align:right;margin-right:20px">                                    
+                                            <div class="slds-col" style="width:10px;font-size:28px;text-align:center;padding: 0;cursor: pointer;" id="{!mi.Meal__c}" aura:id="{!mi.Meal__c}" onclick="{! c.subItem }">-</div>
+                                            
+                                            <div class="slds-col" style="width:40px;font-size:14px; text-align:center;padding: 0;margin-top:12px">
+                                                {!mi.Quantity__c}
+                                            </div>
+    
+                                            <div class="slds-col" style="width:10px;font-size:22px;text-align:center;padding: 0;margin-top: 4px;cursor: pointer;" id="{!mi.Meal__c}" aura:id="{!mi.Meal__c}" onclick="{! c.addItem }">+</div>
+                                            
+                                        </div>
+    
+                                    </div>
+                                </div>
+                            </lightning:card>
+                        </aura:iteration>
+                        
+                        <div class="slds-form-element slds-has-error">
+                            <div data-aura-rendered-by="400:0" class="slds-has-error slds-form-element__help">{!v.msg}</div>
+                        </div>                    
+                        
+                    </div>
+                </lightning:card>
+            </div>
+        </aura:if>
+    </div>
+    <aura:if isTrue="{!v.openState != 'closed'}">   
+        <div class="{!'modal_container slds-align_absolute-center modal-' + v.openState}">  
+                        
+            <!--###### MODAL BOX Start######--> 
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <!-- ###### MODAL BOX HEADER Start ######-->
+                    <header class="slds-modal__header">
+                        <lightning:buttonIcon iconName="utility:close"
+                                              onclick="{! c.handleIsOpenToggle }"
+                                              alternativeText="close"
+                                              variant="bare-inverse"
+                                              class="slds-modal__close"/>
+                        <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">{!v.objClassController.selectedMeal.Name}</h2>
+                    </header>
+                    <!--###### MODAL BOX BODY Part Start######-->
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                        <div style="margin-top:10px">{!v.objClassController.selectedMeal.Type__c}</div>
+                        <div style="margin-top:10px"><b>Ingredients: </b> {!v.objClassController.selectedMeal.Description__c}</div>
+                        <aura:if isTrue="{!v.objSelectedMeal.Allergens__c != null}">  
+                        	<div style="margin-top:10px"><b>Allergens: </b> {!v.objClassController.selectedMeal.Allergens__c}</div>
+                        </aura:if>
+                        <aura:if isTrue="{!v.objClassController.selectedMeal.Gluten_Free__c == True || v.objClassController.selectedMeal.Nut_Free__c == True}">
+                            <div style="margin-top:10px">
+                                <aura:if isTrue="{!v.objClassController.selectedMeal.Gluten_Free__c == True}">  
+                                    <b><i>* Gluten Free</i></b> &nbsp;
+                                </aura:if>
+                                <aura:if isTrue="{!v.objClassController.selectedMeal.Nut_Free__c == True}">  
+                                    <b><i>* Nut Free</i></b> &nbsp;
+                                </aura:if>
+                            </div>
+                        </aura:if>
+                    </div>
+                    <!--###### MODAL BOX FOOTER Part Start ######-->
+                    <footer class="slds-modal__footer">
+                        <lightning:button variant="brand" 
+                                          label="Close"
+                                          title="Close"
+                                          onclick="{! c.handleIsOpenToggle }"/>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+            <!--###### MODAL BOX Part END Here ######-->
+        
+        </div>
+    </aura:if>
+</aura:component>

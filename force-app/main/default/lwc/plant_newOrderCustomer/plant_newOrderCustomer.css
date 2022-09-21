@@ -1,0 +1,119 @@
+.inputTextColor{
+    background: rgb(201 201 201 / 44%);
+}
+
+.displayClass{
+    display: flex;
+}
+
+.mealBody{
+    background: #72626229;
+}
+
+svg.slds-icon.slds-icon-text-default.slds-icon_small {
+    background: silver !important;
+    border-radius: 12px !important;
+}
+
+li.slds-tabs_default__item {
+    background: silver;
+    border-right: 1px solid;
+    border-bottom: 1px solid;
+}
+
+:host {
+   --slds-c-tabs-background : silver;
+  }
+
+.cursorPointer{
+    cursor: pointer;
+}
+.layoutCss{
+    border-bottom: 0.2rem solid rgb(174 174 174);
+}
+.breakWord{
+    word-break: break-all;
+}
+
+.tableFixHead {
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-height: 35rem;
+}
+
+.tableFixHead.slds-box.slds-box_small::-webkit-scrollbar {
+    /* background: white; */
+    width: 0.6rem;
+}
+
+
+.tableFixHead.slds-box.slds-box_small::-webkit-scrollbar-track {
+    box-shadow: inset 0 0 6px rgb(0 0 0 / 30%) !important;
+}
+
+.tableFixHead.slds-box.slds-box_small::-webkit-scrollbar-thumb {
+    background-color: #747474;
+}
+
+.tableFixHead.slds-box.slds-box_small::-webkit-scrollbar-button:single-button {
+    background-position: center;
+
+}
+.tableFixHead.slds-box.slds-box_small::-webkit-scrollbar-button {
+    /* background: #c1c1c1; */
+    background: transparent;
+}
+
+th.headerfix {
+    background: #0176d3a1 !important;
+    font-weight: bold !important;
+    color: black !important;
+}
+.section_table_heading {
+    background-color: #edce66;
+    color: white;
+}
+
+/* .tableFixHead::-webkit-scrollbar-button:vertical:decrement {
+    border-bottom-left-radius: 8.5px;
+    border-bottom-right-radius: 8.5px;
+  } 
+  
+.tableFixHead::-webkit-scrollbar-button:vertical:increment {
+    border-top-left-radius: 8.5px;
+    border-top-right-radius: 8.5px;
+  } */
+.messageBox{
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-height: 15rem;
+}
+
+.slds-box.messageBox::-webkit-scrollbar {
+    width: 0.6rem !important;
+    background: #ffffff;
+}
+
+.slds-box.messageBox::-webkit-scrollbar-track {
+    box-shadow: inset 0 0 6px rgb(0 0 0 / 30%) !important;
+}
+
+.slds-box.messageBox::-webkit-scrollbar-thumb {
+    background-color: orange;
+    /* border-radius: 1rem; */
+}
+
+
+.slds-box.messageBox::-webkit-scrollbar-button:single-button {
+    background-position: center;
+
+}
+
+.slds-box.messageBox::-webkit-scrollbar-button {
+    /* background: #c1c1c1; */
+    background: transparent;
+}
+
+.messageBoxColor{
+    background: #ffa500e3;
+}

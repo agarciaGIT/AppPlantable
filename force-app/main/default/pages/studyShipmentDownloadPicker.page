@@ -1,0 +1,47 @@
+<apex:page controller="studyShipmentDownloadPicker" docType="html-5.0">
+    <apex:form > 
+        <div style="margin:20px">
+            Download Shipment Data
+        </div>
+        <div style="margin:20px">
+            <apex:input type="date" value="{!x_date}">    
+                <apex:actionSupport event="onchange" action="{!setDateString}" reRender="thePageBlockSection1"  />
+            </apex:input>
+            <apex:outputText >{!msg}</apex:outputText>
+        </div>
+
+        <apex:outputPanel id="thePageBlockSection1">                
+            <div style="margin:20px">
+                <a href="/apex/studyAccountAccessKeyDownload?all=true">Download All Access Keys</a>
+            </div>        
+            
+            <div style="margin:20px">
+                <a href="/apex/studyShipmentsDownload?dt={!sdate}">Download Shipments Data</a>
+            </div>        
+            <div style="margin:20px">
+                <a href="/apex/studyMealsByOrderDownload?dt={!sdate}">Download Meal Order Data</a>
+            </div>        
+        </apex:outputPanel>
+    </apex:form>
+    
+    <apex:includeLightning />     
+    <div  id="componentContainer" />    
+  
+      <div>Meals Last Updated on : {!lastMealUpdatedDate } </div>
+  
+    <script>           
+         var infoId  = "{!JSENCODE($CurrentPage.parameters.Id)}"; 
+    $Lightning.use("c:DownloadNutritionalInformationApp", function() {               
+        $Lightning.createComponent("c:DownloadNutritionalInformation",                   
+                                  {                       
+                                   orderId: infoId               
+                                      
+                                   },
+                                       "componentContainer",                   
+                                       function(cmp) {                      
+                                       console.log("LightningAppForVF loaded successfully in VF page");                   
+                                   }                
+                                       );           
+                                   });       
+                                       </script>     
+</apex:page>

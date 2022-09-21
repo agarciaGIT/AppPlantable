@@ -1,0 +1,59 @@
+.THIS .hide {
+        display: none;
+    } 
+
+.THIS .select-item {
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.THIS .spins {
+	margin-top: -50%;
+    position: fixed;
+    top: 50%;
+    bottom: 50%;
+    margin-bottom: -50%;
+}
+
+.THIS .formItem {
+    padding: 20px;
+}
+
+.THIS .caseItem {
+    border: 1px solid rgb(241, 238, 236); 
+    text-align:center;
+    border-radius: 25px;
+}
+
+.THIS .caseItem:hover{
+   background-color:rgb(191, 204, 224);
+    cursor: pointer;
+}
+
+.THIS .modal_backdrop {
+  transition: opacity .25s linear;
+}
+.THIS.modal-opening .modal_backdrop,
+.THIS.modal-closing .modal_backdrop {
+  opacity: 0;
+}
+.THIS.modal-open .modal_backdrop {
+  opacity: 1;
+}
+.THIS .modal {
+  transform: translateY(-20px);
+  opacity: 0;
+  transition: transform .5s linear, opacity .5s linear;
+}
+.THIS.modal-opening .modal {
+  transform: translateY(-20px);
+  opacity: 0;
+}
+.THIS.modal-open .modal {
+  transform: translateY(0px);
+  opacity: 1;
+}
+.THIS.modal-closing .modal {
+  transform: translateY(20px);
+  opacity: 0;
+}

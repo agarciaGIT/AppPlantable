@@ -1,0 +1,393 @@
+<template>
+	<lightning-card >
+		<template if:true={showSpinner}>
+			<lightning-spinner variant="brand" alternative-text="Loading" style="position: fixed;"></lightning-spinner>
+		</template>
+	
+			<template if:true={showCreateOrderView}>
+				<lightning-layout class="layoutCss">
+					<lightning-layout-item size="12" padding="around-small">
+						<div class="slds-text-heading_large slds-text-align_center"> <strong>Create a new Order</strong> </div>
+					</lightning-layout-item>
+				</lightning-layout>
+				<lightning-layout>
+					<lightning-layout-item size="1" padding="around-small"></lightning-layout-item>
+					<lightning-layout-item size="6" padding="around-small">
+						<div class="slds-size--7-of-12">
+							<div class="slds-text-heading_medium "> Product / Program </div>
+							<div class="picklist-container">
+								<lightning-combobox  data-field="product" readonly={shownavigationButton} name="Product" value={createOrderJson.product} onchange={handleChange}  options={productComoboxValues} dropdown-alignment="auto"> </lightning-combobox>
+							</div>
+					
+						</div>
+					</lightning-layout-item>
+				</lightning-layout>
+				<lightning-layout multiple-rows="true">
+					<lightning-layout-item size="1" padding="around-small"></lightning-layout-item>
+					<lightning-layout-item size="6" padding="around-small">
+
+						<lightning-layout-item size="12" padding="around-small">
+							<div class="slds-text-heading_medium"> Order Information </div>
+							<div class="picklist-container">
+								<lightning-combobox class="slds-size--7-of-12" read-only={selectedComboxboxvalues.orderInformation.disable} name="Account" onchange={handleChange} value={selectedComboxboxvalues.orderInformation.value} data-field="account" options={accountComoboxValues} dropdown-alignment="auto"> </lightning-combobox>
+							</div>
+								<template if:true={showAccountLookup.show}>
+									<div class="slds-size--7-of-12 slds-p-top_small">
+										<c-plant_lwc-lookup onrecordselection={handleRecordSelection} disablelookup={accountLookupDisable} object-api-name="Account" icon-name="standard:account" selected-value={selectedAccountName} place-holder-name="Select Account.." is-required=true> </c-plant_lwc-lookup>
+										</div>
+								</template>
+							<lightning-input class="slds-size--7-of-12" disabled={disableAccountEditForm} data-field="first name" value={createOrderJson.firstName} onchange={handleChange} type="text" placeholder="First Name"></lightning-input>
+							<lightning-input class="slds-size--7-of-12" disabled={disableAccountEditForm} type="text" value={createOrderJson.lastName}  data-field="last name" onchange={handleChange} placeholder="Last Name"></lightning-input>
+							<lightning-input class="slds-size--7-of-12" disabled={disableAccountEditForm} type="email" value={createOrderJson.email} data-field="email"  onchange={handleChange} pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" message-when-pattern-mismatch="Enter valid email" placeholder="Email"></lightning-input>
+							<div style="display: flex">
+								<lightning-input class="slds-size--7-of-12" disabled={disableAccountEditForm} type="tel" value={createOrderJson.phone} data-field="phone" onchange={handleChange} placeholder="Phone" pattern="[0-9+-]+" message-when-pattern-mismatch="Enter valid Phone" > </lightning-input>
+								<div class="slds-p-left_medium slds-p-top_large ">
+									<div class="displayClass">
+										<lightning-input type="checkbox" disabled={disableAccountEditForm} checked={createOrderJson.canSMS} data-field="can sms" onchange={handleChange}></lightning-input>
+										<div class="slds-text-heading_small">Can SMS</div>
+									</div>
+								</div>
+							</div>
+						</lightning-layout-item>
+						<lightning-layout-item size="12" padding="around-small">
+							<div class="slds-text-heading_medium "> Shipping Address </div>
+						
+								<lightning-tabset>
+									<template if:true={showExistingShippingTab}>
+										<lightning-tab data-field="shippingTab" onactive={handleShippingAndCardTab} label="Existing Address" value="Existing Address">
+												<div style="height:10rem;max-width:32rem">
+													<lightning-datatable 
+													data-tablename="shippingAddress"
+													max-row-selection="1" 
+													columns={columns} 
+													hide-checkbox-column={showShippingDatatableCheckBox}
+													data={shippingAddressListByAccount}
+													key-field="shippingAddressId"
+													onrowselection={handleShippingSelect}>
+													</lightning-datatable>
+												</div>
+										</lightning-tab>
+									</template>
+									<lightning-tab data-field="shippingTab" onactive={handleShippingAndCardTab} label="New Address" value="New Address">
+										<lightning-input class="slds-size--7-of-12" disabled={disableShippingInformation} type="text" value={createOrderJson.shippingAddress.street1} placeholder="Street 1" data-field="street 1" onchange={handleChange}></lightning-input>
+										<lightning-input class="slds-size--7-of-12"  disabled={disableShippingInformation} type="text" value={createOrderJson.shippingAddress.street2} placeholder="Street 2" data-field="street 2" onchange={handleChange}></lightning-input>
+										<lightning-input class="slds-size--7-of-12"  disabled={disableShippingInformation} type="text" value={createOrderJson.shippingAddress.street3} placeholder="Street 3" data-field="street 3" onchange={handleChange}></lightning-input>
+										<lightning-input class="slds-size--7-of-12"  disabled={disableShippingInformation} type="text" value={createOrderJson.shippingAddress.city} placeholder="City"  data-field="city" onchange={handleChange}></lightning-input>
+										<lightning-input class="slds-size--7-of-12"  disabled={disableShippingInformation} type="text" value={createOrderJson.shippingAddress.state} placeholder="State"  data-field="state" onchange={handleChange}></lightning-input>
+										<lightning-input class="slds-size--7-of-12"  disabled={disableShippingInformation} type="text" value={createOrderJson.shippingAddress.zip} placeholder="Zip"  data-field="zip" onchange={handleChange}></lightning-input>
+										<lightning-input class="slds-size--7-of-12"  disabled={disableShippingInformation} type="text" value={createOrderJson.shippingAddress.country} placeholder="Country"  data-field="country" onchange={handleChange}></lightning-input>
+									</lightning-tab>
+							
+								</lightning-tabset>
+						</lightning-layout-item>
+						<lightning-layout-item size="12" padding="around-medium">
+							<div class="slds-p-around_small slds-text-heading_medium slds-size--4-of-12">
+								<p style="font-weight: bold;" class="slds-p-bottom_x-small">Totals</p>
+								<p class="slds-p-bottom_x-small ">{productName}  {DiscountedPrice.price}</p>
+								<p style="border-bottom: 0.15rem solid silver;" class="slds-p-bottom_x-small">Discounts : {DiscountedPrice.discount}</p>
+								<p class="slds-text-align_center ">Total : {DiscountedPrice.total}</p>
+							</div>
+						</lightning-layout-item>
+						<lightning-layout multiple-rows="true">
+							<template if:false={shownavigationButton}>
+							<lightning-layout-item size="6" padding="around-medium">
+								<lightning-button disabled={disableCreateOrder} value="create Order" onclick={handleButton} label="Create Order" variant="brand"></lightning-button>
+							</lightning-layout-item>
+							</template>
+						</lightning-layout>
+					</lightning-layout-item>
+					<lightning-layout-item size="5" padding="around-small">
+						<lightning-layout-item size="12" padding="around-small">
+							<div class="slds-text-heading_medium"> Delivery Date </div>
+							<div class="picklist-container">
+								<lightning-combobox class="slds-size--7-of-12" read-only={selectedComboxboxvalues.DeliveryDate.disable} name="Account" data-field="Delivery Date"  onchange={handleChange} value={selectedComboxboxvalues.DeliveryDate.value} options={deleveryDateComoboxValues} dropdown-alignment="auto"> </lightning-combobox>
+							</div>
+							<template if:true={showDatePicker}>
+								<lightning-input class="slds-size--7-of-12" disabled={disableEdit} data-field="manual datePicker" onchange={handleChange} type="date"></lightning-input>
+							</template>
+						</lightning-layout-item>
+						<lightning-layout-item size="12" padding="around-small">
+							<div class="slds-text-heading_medium"> Discount Code </div>
+							<div class="displayClass">
+								<template if:true={showDiscountInputField}>
+								<lightning-input class="slds-size--7-of-12" placeholder="Enter Discount Code" type="text" data-field="Discount" onchange={handleChange}></lightning-input>
+								</template>
+								<template if:true={showDiscountAddIcon}>
+									<lightning-icon  class="slds-col slds-p-top_large slds-p-left_xx-small cursorPointer"  icon-name="utility:add" alternative-text="Info!" variant="info" title="Add Discount Code" size="small" data-field="Add Discount Code" onclick={handleChange}> </lightning-icon>
+								</template>
+							</div>
+			
+							<template for:each={DiscountCodes} for:item="code" for:index="index">
+								<div key={code} class="slds-p-top_xx-small slds-p-bottom_xx-small">
+									<div class="slds-grid slds-size--7-of-12 " style="background: #72626229;">
+										<p style="word-break: break-all; width: 90%;" class="slds-col slds-text-heading_large slds-text-align_center">{code}</p> <span class="slds-button__icon slds-col" aria-hidden="true">  
+										<lightning-icon icon-name="utility:close" data-field="Remove Discount Code" data-index={index} onclick={handleChange} title="Remove discount code"
+										 size="xx-Small" style="border-radius: 0.5rem;background:white;" class="cursorPointer slds-m-around_small slds-float_right slds-icon slds-icon slds-icon_x-small slds-icon-text-default" aria-hidden="true"></lightning-icon>  
+									   </span> </div>
+								</div>
+							</template>
+						</lightning-layout-item>
+						<lightning-layout-item size="12" padding="around-small">
+							<div class="slds-text-heading_medium"> Payment </div>
+							<div class="picklist-container">
+								<lightning-combobox onchange={handleChange} read-only={selectedComboxboxvalues.paymentMethod.disable} data-field="payment ComboBox" class="slds-size--7-of-12" name="payment" value={selectedComboxboxvalues.paymentMethod.value} options={paymentComoboxValues} dropdown-alignment="auto"> </lightning-combobox>
+							</div>
+							
+							<template if:true={showpaymentTabSet}>
+											<!-- <div class="picklist-container">
+										<lightning-combobox class="slds-size--7-of-12" read-only={selectedComboxboxvalues.cardInformation.disable} name="Card" onchange={handleChange} value={selectedComboxboxvalues.cardInformation.value} data-field="card combobox" options={cardComoboxValues} dropdown-alignment="auto"> </lightning-combobox>
+										</div> -->
+								<lightning-tabset >
+									<template if:true={showExistingShippingTab}>
+							
+										<lightning-tab  data-field="paymentTab" onactive={handleShippingAndCardTab} label="Existing card" value="Existing Card">
+												<div class="slds-size--7-of-12">
+													<c-plant_lwc-lookup onrecordselection={handleRecordSelection} disablelookup={PayementLookupVisible} object-api-name="Plant_Payment_Method__c" account-id={selectedAccountId} icon-name="custom:custom5" selected-value={selectedPaymentCard.Name} place-holder-name="Select Card.." is-required=true> </c-plant_lwc-lookup>
+													</div>
+										</lightning-tab>
+									</template>
+									<lightning-tab data-field="paymentTab" onactive={handleShippingAndCardTab} label="New Card" value="New Card">
+										<lightning-tabset>
+											<lightning-tab label="Billing Address">
+												<div class="slds-size--7-of-12">
+												<lightning-input  type="text" disabled={disableCardInformation} value={createOrderJson.cardInformation.billingAddress.street1}  placeholder="Street 1" data-field="street1 card" onchange={handleChange}></lightning-input>
+												<lightning-input  type="text" disabled={disableCardInformation} value={createOrderJson.cardInformation.billingAddress.street2} placeholder="Street 2" data-field="street2 card" onchange={handleChange}></lightning-input>
+												<lightning-input  type="text" disabled={disableCardInformation} value={createOrderJson.cardInformation.billingAddress.street3} placeholder="Street 3" data-field="street3 card" onchange={handleChange}></lightning-input>
+												<lightning-input  type="text" disabled={disableCardInformation} value={createOrderJson.cardInformation.billingAddress.city} placeholder="City"  data-field="city card" onchange={handleChange}></lightning-input>
+												<lightning-input  type="text" disabled={disableCardInformation} value={createOrderJson.cardInformation.billingAddress.state} placeholder="State"  data-field="state card" onchange={handleChange}></lightning-input>
+												<lightning-input  type="text" disabled={disableCardInformation} value={createOrderJson.cardInformation.billingAddress.zip} placeholder="Zip"  data-field="zip card" onchange={handleChange}></lightning-input>
+												<lightning-input  type="text" disabled={disableCardInformation} value={createOrderJson.cardInformation.billingAddress.country}  placeholder="Country"  data-field="country card" onchange={handleChange}></lightning-input>
+												<lightning-input  type="tel" disabled={disableCardInformation} value={createOrderJson.cardInformation.billingAddress.phone} data-field="phone card" onchange={handleChange} placeholder="Phone" pattern="[0-9+-]+" message-when-pattern-mismatch="Enter valid Phone" > </lightning-input>
+												<div class="displayClass slds-p-top_small">
+													<lightning-input  type="checkbox" data-field="can SMS Card" disabled={disableCardInformation} checked={createOrderJson.cardInformation.billingAddress.canSMS} onchange={handleChange}></lightning-input>
+													<div class="slds-text-heading_small">Can SMS</div>
+												</div>
+												</div>
+											</lightning-tab>
+											<lightning-tab label="Card Information">
+												<div class="slds-size--7-of-12">
+												<lightning-input  type="text" disabled={disableCardInformation} value={createOrderJson.cardInformation.name} placeholder="Name" 	data-field="card name" onchange={handleChange}></lightning-input>
+												<lightning-input  type="text" disabled={disableCardInformation} value={createOrderJson.cardInformation.cardnumber} pattern="[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9]{4}" message-when-pattern-mismatch="Enter valid card number" placeholder="Card Number" data-field="card number" onchange={handleChange}></lightning-input>
+												<lightning-input  type="text" disabled={disableCardInformation} value={createOrderJson.cardInformation.card_Last_4_Digits} pattern="[0-9]+" message-when-pattern-mismatch="Enter valid card last 4 digit" max-length="4" min-length="4" message-when-too-short="Enter 4 digits"  placeholder="card last4 digit" data-field="card last4 digit" onchange={handleChange}></lightning-input>
+												<div class="picklist-container">
+													<lightning-combobox  placeholder="Card type" readonly={disableCardInformation} name="Product" value={createOrderJson.cardInformation.card_Type} data-field="card type" onchange={handleChange}  options={cardTypeComboBoxvalues} dropdown-alignment="auto"> </lightning-combobox>
+												</div>
+												<!-- <lightning-input  type="text" disabled={disableCardInformation} value={createOrderJson.cardInformation.card_Type} placeholder="Card type" data-field="card type" onchange={handleChange}></lightning-input> -->
+												<lightning-input  type="text" disabled={disableCardInformation} value={createOrderJson.cardInformation.cvv} pattern="[0-9]+" message-when-pattern-mismatch="Enter valid card cvv" placeholder="cvv" data-field="card cvv" min-length="3" message-when-too-short="cvv should be 3 digit" max-length="3" onchange={handleChange}></lightning-input>
+												<lightning-input  type="date" disabled={disableCardInformation} value={createOrderJson.cardInformation.expDate} placeholder="Expiration Date" data-field="card expiration date" onchange={handleChange}></lightning-input>
+												</div>
+											</lightning-tab>
+										</lightning-tabset>
+									</lightning-tab>
+								</lightning-tabset>
+							</template>
+						</lightning-layout-item>
+						<lightning-layout-item size="12" class="" padding="around-small">
+							<div class="slds-text-heading_medium"> Meals </div>
+							<article class="slds-card slds-size--10-of-12">
+								<template for:each={selectedMealList} for:item="meal" for:index="index">
+									<div class="slds-card__body slds-card__body_inner mealBody" key={meal.mealID}>
+										<div class="slds-p-vertical_x-small slds-grid slds-grid_vertical-align-center ">
+											<span class="slds-p-right_small">
+											<lightning-icon icon-name="utility:user" alternative-text="Info!" variant="info"  title="info variant small" size="small"> </lightning-icon>
+											</span>
+											<lightning-formatted-text class=" breakWord slds-form-element__label slds-text-title_bold slds-col slds-text-heading_small slds-text-align_left" value={meal.Name}></lightning-formatted-text> 
+											<span style="background: white;" class="slds-text-heading_small slds-p-left_xx-small slds-p-right_xx-small">{meal.quantity}</span> </div>
+									</div>
+								</template>
+							</article>
+						</lightning-layout-item>
+						<template if:false={shownavigationButton}>
+							<lightning-layout>
+							<lightning-layout-item size="12">
+								<lightning-button value="Customize" label="Customize" variant="brand" onclick={handleButton}></lightning-button>
+							</lightning-layout-item>
+							</lightning-layout>
+						</template>
+					</lightning-layout-item>
+				</lightning-layout>
+				<template if:true={messageList.length}>
+					<lightning-layout multiple-rows="true">
+						<lightning-layout-item size="12" padding="around-small">
+							<div class="slds-box messageBox" >
+										<template for:each={messageList} for:item="message" for:index="index">
+										<div key={message.Sno} class="slds-box slds-box_small messageBoxColor" >
+										<p class="slds-text-heading_small">{message.msg}
+											<span class="slds-float_right">
+												<lightning-icon  icon-name=utility:warning size="small"  ></lightning-icon>
+											</span>
+										</p>
+									</div>
+								</template>
+							</div>
+						</lightning-layout-item>
+
+					</lightning-layout>
+				</template>
+	
+			</template>
+			
+			<template if:false={showCreateOrderView}>
+				<lightning-layout class="layoutCss">
+					<lightning-layout-item size="12" padding="around-small">
+						<div class="slds-text-heading_large slds-text-align_center"> <strong>Customize Meals</strong> </div>
+					</lightning-layout-item>
+				</lightning-layout>
+				<lightning-layout>
+					<lightning-layout-item size="6" padding="around-small">
+						<lightning-layout-item size="12" padding="around-small">
+						<div class="slds-text-heading_medium slds-p-bottom_small slds-text-align_center"> <strong>Choose Meals</strong> </div>
+							<lightning-tabset>
+								<lightning-tab data-field="mealTab" onactive={handleMealsTab} label="Snacks" value="Snacks">
+									<div class="tableFixHead slds-box slds-box_small">
+										<template for:each={mealsVisibleList} for:item="meal" for:index="index">
+											<div class="slds-card__body slds-card__body_inner mealBody" key={meal.Id}>
+												<div class="slds-p-vertical_x-small slds-grid slds-grid_vertical-align-center ">
+													<span class="slds-p-right_small">
+													<lightning-icon icon-name="utility:user" alternative-text="Info!" variant="info"   size="small"> </lightning-icon>
+													</span>
+													<lightning-formatted-text class=" breakWord slds-form-element__label slds-text-title_bold slds-col slds-text-heading_small slds-text-align_left" value={meal.Name}></lightning-formatted-text>
+													 <span class="slds-text-heading_medium slds-p-left_xx-small slds-p-right_xx-small">
+														<lightning-icon data-index={index} data-field="mealSelection" onclick={handleMealsTab} icon-name="utility:chevronright" alternative-text="add" variant="info" class="slds-col cursorPointer"
+														 size="small"> </lightning-icon>
+													</span> </div>
+											</div>
+										</template>
+									</div>
+								</lightning-tab>
+								<lightning-tab onactive={handleMealsTab} data-field="mealTab" value="Breakfast" label="Breakfast">
+									<div class="tableFixHead slds-box slds-box_small">
+										<template for:each={mealsVisibleList} for:item="meal" for:index="index">
+											<div class="slds-card__body slds-card__body_inner mealBody" key={meal.Id}>
+												<div class="slds-p-vertical_x-small slds-grid slds-grid_vertical-align-center ">
+													<span class="slds-p-right_small">
+													<lightning-icon icon-name="utility:user" alternative-text="Info!" variant="info"  size="small"> </lightning-icon>
+													</span>
+													<lightning-formatted-text class=" breakWord slds-form-element__label slds-text-title_bold slds-col slds-text-heading_small slds-text-align_left" value={meal.Name}></lightning-formatted-text> <span class="slds-text-heading_medium slds-p-left_xx-small slds-p-right_xx-small">
+														<lightning-icon data-index={index} data-field="mealSelection" onclick={handleMealsTab} icon-name="utility:chevronright" alternative-text="add" variant="info" class="slds-col cursorPointer"
+														title="info variant small" size="small"> </lightning-icon>
+													</span> </div>
+											</div>
+										</template>
+									</div>
+				
+								</lightning-tab>
+								<lightning-tab data-field="mealTab" onactive={handleMealsTab} value="Lunch" label="Lunch">
+									<div class="tableFixHead slds-box slds-box_small">
+										<template for:each={mealsVisibleList} for:item="meal" for:index="index">
+											<div class="slds-card__body slds-card__body_inner mealBody" key={meal.Id}>
+												<div class="slds-p-vertical_x-small slds-grid slds-grid_vertical-align-center ">
+													<span class="slds-p-right_small">
+													<lightning-icon icon-name="utility:user" alternative-text="Info!" variant="info"  size="small"> </lightning-icon>
+													</span>
+													<lightning-formatted-text class=" breakWord slds-form-element__label slds-text-title_bold slds-col slds-text-heading_small slds-text-align_left" value={meal.Name}></lightning-formatted-text> <span class="slds-text-heading_medium slds-p-left_xx-small slds-p-right_xx-small">
+														<lightning-icon data-index={index} data-field="mealSelection" onclick={handleMealsTab} icon-name="utility:chevronright" alternative-text="add" variant="info" class="slds-col cursorPointer"
+														title="info variant small" size="small"> </lightning-icon>
+													</span> </div>
+											</div>
+										</template>
+									</div>
+								</lightning-tab>
+								<lightning-tab data-field="mealTab" onactive={handleMealsTab} value="Dinner" label="Dinner">
+									<div class="tableFixHead slds-box slds-box_small">
+										<template for:each={mealsVisibleList} for:item="meal" for:index="index">
+											<div class="slds-card__body slds-card__body_inner mealBody" key={meal.Id}>
+												<div class="slds-p-vertical_x-small slds-grid slds-grid_vertical-align-center ">
+													<span class="slds-p-right_small">
+													<lightning-icon icon-name="utility:user" alternative-text="Info!" variant="info" size="small"> </lightning-icon>
+													</span>
+													<lightning-formatted-text class=" breakWord slds-form-element__label slds-text-title_bold slds-col slds-text-heading_small slds-text-align_left" value={meal.Name}></lightning-formatted-text> <span class="slds-text-heading_medium slds-p-left_xx-small slds-p-right_xx-small">
+														<lightning-icon data-index={index} data-field="mealSelection" onclick={handleMealsTab} icon-name="utility:chevronright" alternative-text="add" variant="info" class="slds-col cursorPointer"
+														title="Add meal" size="small"> </lightning-icon>
+													</span> </div>
+											</div>
+										</template>
+									</div>
+								</lightning-tab>
+							</lightning-tabset>
+						</lightning-layout-item>
+					</lightning-layout-item>
+					<lightning-layout-item size="6" padding="around-small">
+						<lightning-layout-item size="12" padding="around-small">
+						<div class="slds-text-heading_medium slds-p-bottom_small slds-text-align_center"> <strong>Selected Meals</strong> </div>
+							<template for:each={selectedMealList} for:item="meal" for:index="index">
+								<div class="slds-size--11-of-12 slds-grid slds-card__body slds-card__body_inner " key={meal.mealID}>
+									<div class="mealBody slds-col slds-p-vertical_x-small slds-grid slds-grid_vertical-align-center ">
+										<span class="slds-p-right_small slds-p-left_small">
+										<lightning-icon icon-name="utility:user" alternative-text="Info!" variant="info"  size="small"> </lightning-icon>
+										</span>
+										<lightning-formatted-text class=" breakWord slds-form-element__label slds-text-title_bold slds-col slds-text-heading_small slds-text-align_left slds-p" value={meal.Name}></lightning-formatted-text> 
+										<span class="slds-text-heading_medium slds-p-left_xx-small slds-p-right_xx-small">
+													<lightning-icon  data-index={index} data-field="mealQuantitySubstract" onclick={handleMealsTab} icon-name="utility:dash" alternative-text="add" variant="info" class="slds-col cursorPointer"
+													title="Decrease Quanity" size="x-small"> </lightning-icon>
+										</span> 
+										<span style="background: white;" class="slds-text-heading_medium slds-p-left_xx-small slds-p-right_xx-small">{meal.quantity}</span>
+										 <span class="slds-text-heading_medium slds-p-left_xx-small slds-p-right_xx-small">
+													<lightning-icon data-index={index} data-field="mealQuantityAdd" onclick={handleMealsTab} icon-name="utility:add" alternative-text="add" variant="info" class="slds-col cursorPointer"
+													title="Increase Quantity" size="x-small"> </lightning-icon>
+												</span>
+									</div>
+										<span class="slds-button__icon slds-float_right slds-m-around_xx-small" aria-hidden="true">  
+											<lightning-icon icon-name="utility:close" data-field="Remove Meal" data-index={index} onclick={handleMealsTab} title="Remove meal" size="small"  class="cursorPointer   slds-icon slds-icon slds-m-around_xx-small slds-icon-text-default" aria-hidden="true"></lightning-icon>  
+										</span> 
+								</div>
+							</template>
+							<!-- </div> -->
+						</lightning-layout-item>
+						</lightning-layout-item>
+				</lightning-layout>
+				<lightning-layout multiple-rows="true">
+					<lightning-layout-item padding="around-medium" size="6">
+						<lightning-button class="slds-float_right" disabled={disableSave} value="Save" label="Save" variant="brand" onclick={handleButton}></lightning-button>
+					</lightning-layout-item>
+					<lightning-layout-item padding="around-medium" size="6">
+						<lightning-button value="Cancel Meal" label="Cancel" variant="brand" onclick={handleButton}></lightning-button>
+					</lightning-layout-item>
+				</lightning-layout>
+			</template>
+	
+		<template if:true={showModal}>
+			<section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true"
+			class="slds-modal slds-fade-in-open slds-align_absolute-center">
+			<div class="slds-modal__container slds-p-around_medium">
+			   <button
+				  class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse"
+				  title="Close" onclick={closeModal}>
+				  <lightning-icon icon-name="utility:close" alternative-text="close"
+					 variant="inverse" size="small"></lightning-icon>
+				  <span class="slds-assistive-text">Close</span>
+			   </button>
+			   <div class="slds-modal__header">
+				  <h1 id="modal-heading-01" class="slds-modal__title slds-hyphenate">View Cart
+				  </h1>
+			   </div>
+			   <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+				<lightning-layout>
+					<lightning-layout-item size="12" padding="around-small">
+								<div class="slds-p-around_medium">
+							<p><lightning-formatted-url value={cartNavigation.url} onclick={navigateToRecordPage} tooltip="navigate" target="_blank"></lightning-formatted-url></p>
+								</div>
+					</lightning-layout-item>
+				</lightning-layout>
+			   </div>
+			</div>
+		 </section>
+		 <div class="slds-backdrop slds-backdrop_open" role="presentation"></div>
+		</template>
+		<template if:true={shownavigationButton}>
+		<lightning-layout multiple-rows="true">
+				<lightning-layout-item size="6" padding="around-medium">
+				<lightning-button class="slds-float_right" value="View Order" onclick={handleButton} label="View Cart" variant="brand"></lightning-button>
+				</lightning-layout-item>
+			<lightning-layout-item size="6" padding="around-medium">
+				<template if:true={disableEdit}>
+				<lightning-button   value="Edit Cart" label="Edit Cart" onclick={handleButton} variant="brand"></lightning-button>
+				</template>
+				<template if:false={disableEdit}>
+					<lightning-button  value="create Order" onclick={handleButton} label="Save" variant="brand"></lightning-button>
+				</template>
+			</lightning-layout-item>
+		</lightning-layout>
+	</template>
+	</lightning-card>
+</template>

@@ -1,0 +1,15 @@
+<apex:page showHeader="false" sidebar="false" standardStylesheets="false"  applyhtmltag="false" applyBodyTag="false" controller="UnsubscribeController" action="{!UnsubscribeController}">
+    <div style="text-align:center;margin:50px">
+        <div>
+            <img alt="emaillogo" src="https://myeuphebe.force.com/resource/ZeuseJonesEmailsCommon/images/logoNew.png" />
+        </div>
+        <div style="margin:20px;font-family:Helvetica;font-size:17px;font-weight:300;line-height:160%;text-align:center;color:#000000;">            
+            <apex:outputPanel rendered="{!mode == 'true'}">
+                <div>Sorry to see you go.</div>
+            </apex:outputPanel>
+            <apex:outputPanel rendered="{!mode == 'false'}">
+                <div style="">Welcome back!</div>
+            </apex:outputPanel>
+        </div>  
+    </div>
+</apex:page>

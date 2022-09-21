@@ -1,0 +1,209 @@
+<aura:component implements="flexipage:availableForAllPageTypes,force:appHostable" access="global" controller="SpendKPISummary">
+    
+	<ltng:require scripts="{!$Resource.UnderscoreJS}"
+					afterScriptsLoaded="{!c.afterScriptsLoaded}" />
+    
+    <!-- aura:handler name="init" value="{!this}" action="{!c.doInit}" / -->
+    <aura:attribute name="ready" type="Boolean" default="false"/>
+	<aura:attribute name="objClassController" type="SpendKPISummary"/>    
+    
+    <lightning:card iconName="standard:contact" title="Spend KPI Summary">
+        <div class="slds-p-around_small">
+            <table border="1" cellpadding="10">
+                <tr>
+                    <td class="slds-p-around_small slds-text-heading_small boldItem"></td>
+                    <td class="slds-p-around_small slds-text-heading_small boldItem"># of Paying Customers</td>
+                    <td class="slds-p-around_small slds-text-heading_small boldItem">Average # of Orders/ Purchases</td>
+                    <td class="slds-p-around_small slds-text-heading_small boldItem">Average # of boxes Purchased</td>
+                    <td class="slds-p-around_small slds-text-heading_small boldItem">Average # of Meals Purchased</td>
+                    <td class="slds-p-around_small slds-text-heading_small boldItem">% of Repeat Customers</td>
+                    
+                    <td class="slds-p-around_small slds-text-heading_small boldItem">Repeat Customers Avg Spend</td>
+                    
+                    <td class="slds-p-around_small slds-text-heading_small boldItem">Average Customer Spend </td>
+                    <td class="slds-p-around_small slds-text-heading_small boldItem">Average 3 Mo Spend</td>
+                    <td class="slds-p-around_small slds-text-heading_small boldItem">Average 6 Mo Spend</td>
+                    <td class="slds-p-around_small slds-text-heading_small boldItem">Average 12 Mo Spend</td>
+                    <td class="slds-p-around_small slds-text-heading_small boldItem">Average 18 Mo Spend</td>
+                    <td class="slds-p-around_small slds-text-heading_small boldItem">Average 24 Mo Spend</td>
+                    <td class="slds-p-around_small slds-text-heading_small boldItem">% Customers Active in Previous 3 Months</td>
+                    <td class="slds-p-around_small slds-text-heading_small boldItem">% Customers Active in Previous 6 Months</td>
+                    <td class="slds-p-around_small slds-text-heading_small boldItem">Customers Acquired in previous 3 Mos</td>
+                    <td class="slds-p-around_small slds-text-heading_small boldItem">Customers Acquired in previous 6 Mos</td>
+                    <td class="slds-p-around_small slds-text-heading_small boldItem">% Customers Active 3 Months after 1st Purchase</td>
+                    <td class="slds-p-around_small slds-text-heading_small boldItem">% Customers Active 6 Months after 1st purchase</td>
+                    <td class="slds-p-around_small slds-text-heading_small boldItem">Average First Purchase Spend ($) </td>
+                </tr>
+                <aura:iteration items="{!v.objClassController.lstYearlyData}" var="yd">
+                    <tr>
+                        <td class="slds-p-around_small">{!yd.name}</td>
+                        <td class="slds-p-around_small">{!yd.payingCust}</td>
+                        <td class="slds-p-around_small">{!yd.avgOrders}</td>
+                        <td class="slds-p-around_small">{!yd.avgBoxes}</td>
+                        <td class="slds-p-around_small">{!yd.avgMeals}</td>
+                        <td class="slds-p-around_small">{!yd.percRepeat}%</td>
+                        
+                        <td class="slds-p-around_small"><ui:outputCurrency aura:id="curr" value="{!yd.avgSpendRepeat}"/></td>
+                        
+                        <td class="slds-p-around_small"><ui:outputCurrency aura:id="curr" value="{!yd.avgCustSpend}"/></td>
+                        <td class="slds-p-around_small"><ui:outputCurrency aura:id="curr" value="{!yd.threeMonthSpend}"/></td>
+                        <td class="slds-p-around_small"><ui:outputCurrency aura:id="curr" value="{!yd.sixMonthSpend}"/></td>
+                        <td class="slds-p-around_small"><ui:outputCurrency aura:id="curr" value="{!yd.twelveMonthSpend}"/></td>
+                        <td class="slds-p-around_small"><ui:outputCurrency aura:id="curr" value="{!yd.eighteenMonthSpend}"/></td>
+                        <td class="slds-p-around_small"><ui:outputCurrency aura:id="curr" value="{!yd.twentyfourMonthSpend}"/></td>
+                        <td class="slds-p-around_small">{!yd.percActive3Prev}%</td>
+                        <td class="slds-p-around_small">{!yd.percActive6Prev}%</td>
+                        <td class="slds-p-around_small">{!yd.percAcquired3Prev}</td>
+                        <td class="slds-p-around_small">{!yd.percAcquired6Prev}</td>
+                        <td class="slds-p-around_small">{!yd.percActive3AfterFirst}%</td>
+                        <td class="slds-p-around_small">{!yd.percActive6AfterFirst}%</td>
+                        <td class="slds-p-around_small"><ui:outputCurrency aura:id="curr" value="{!yd.avgFirstSpend}"/></td>
+                    </tr>                
+                </aura:iteration>
+                <tr>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                    	<td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                </tr>
+                <aura:iteration items="{!v.objClassController.lstProductData}" var="yd">
+                    <tr>
+                        <td class="slds-p-around_small">{!yd.name}</td>
+                        <td class="slds-p-around_small">{!yd.payingCust}</td>
+                        <td class="slds-p-around_small">{!yd.avgOrders}</td>
+                        <td class="slds-p-around_small">{!yd.avgBoxes}</td>
+                        <td class="slds-p-around_small">{!yd.avgMeals}</td>
+                        <td class="slds-p-around_small">{!yd.percRepeat}%</td>
+                        
+                        <td class="slds-p-around_small"><ui:outputCurrency aura:id="curr" value="{!yd.avgSpendRepeat}"/></td>
+                        
+                        <td class="slds-p-around_small"><ui:outputCurrency aura:id="curr" value="{!yd.avgCustSpend}"/></td>
+                        <td class="slds-p-around_small"><ui:outputCurrency aura:id="curr" value="{!yd.threeMonthSpend}"/></td>
+                        <td class="slds-p-around_small"><ui:outputCurrency aura:id="curr" value="{!yd.sixMonthSpend}"/></td>
+                        <td class="slds-p-around_small"><ui:outputCurrency aura:id="curr" value="{!yd.twelveMonthSpend}"/></td>
+                        <td class="slds-p-around_small"><ui:outputCurrency aura:id="curr" value="{!yd.eighteenMonthSpend}"/></td>
+                        <td class="slds-p-around_small"><ui:outputCurrency aura:id="curr" value="{!yd.twentyfourMonthSpend}"/></td>
+                        <td class="slds-p-around_small">{!yd.percActive3Prev}%</td>
+                        <td class="slds-p-around_small">{!yd.percActive6Prev}%</td>
+                        <td class="slds-p-around_small">{!yd.percAcquired3Prev}</td>
+                        <td class="slds-p-around_small">{!yd.percAcquired6Prev}</td>
+                        <td class="slds-p-around_small">{!yd.percActive3AfterFirst}%</td>
+                        <td class="slds-p-around_small">{!yd.percActive6AfterFirst}%</td>
+                        <td class="slds-p-around_small"><ui:outputCurrency aura:id="curr" value="{!yd.avgFirstSpend}"/></td>
+                    </tr>                
+                </aura:iteration>
+                	<tr>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>                        
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                </tr>
+                
+                <aura:iteration items="{!v.objClassController.lstChannelData}" var="yd">
+                    <tr>
+                        <td class="slds-p-around_small">{!yd.name}</td>
+                        <td class="slds-p-around_small">{!yd.payingCust}</td>
+                        <td class="slds-p-around_small">{!yd.avgOrders}</td>
+                        <td class="slds-p-around_small">{!yd.avgBoxes}</td>
+                        <td class="slds-p-around_small">{!yd.avgMeals}</td>
+                        <td class="slds-p-around_small">{!yd.percRepeat}%</td>
+                        
+                        <td class="slds-p-around_small"><ui:outputCurrency aura:id="curr" value="{!yd.avgSpendRepeat}"/></td>
+                        
+                        <td class="slds-p-around_small"><ui:outputCurrency aura:id="curr" value="{!yd.avgCustSpend}"/></td>
+                        <td class="slds-p-around_small"><ui:outputCurrency aura:id="curr" value="{!yd.threeMonthSpend}"/></td>
+                        <td class="slds-p-around_small"><ui:outputCurrency aura:id="curr" value="{!yd.sixMonthSpend}"/></td>
+                        <td class="slds-p-around_small"><ui:outputCurrency aura:id="curr" value="{!yd.twelveMonthSpend}"/></td>
+                        <td class="slds-p-around_small"><ui:outputCurrency aura:id="curr" value="{!yd.eighteenMonthSpend}"/></td>
+                        <td class="slds-p-around_small"><ui:outputCurrency aura:id="curr" value="{!yd.twentyfourMonthSpend}"/></td>
+                        <td class="slds-p-around_small">{!yd.percActive3Prev}%</td>
+                        <td class="slds-p-around_small">{!yd.percActive6Prev}%</td>
+                        <td class="slds-p-around_small">{!yd.percAcquired3Prev}</td>
+                        <td class="slds-p-around_small">{!yd.percAcquired6Prev}</td>
+                        <td class="slds-p-around_small">{!yd.percActive3AfterFirst}%</td>
+                        <td class="slds-p-around_small">{!yd.percActive6AfterFirst}%</td>
+                        <td class="slds-p-around_small"><ui:outputCurrency aura:id="curr" value="{!yd.avgFirstSpend}"/></td>
+                    </tr>                
+                </aura:iteration>
+                <tr>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                </tr>
+				<aura:iteration items="{!v.objClassController.lstQuartData}" var="qd">
+                    <tr>
+                        <td class="slds-p-around_small">{!qd.name}</td>
+                        <td class="slds-p-around_small">{!qd.payingCust}</td>
+                        <td class="slds-p-around_small">{!qd.avgOrders}</td>
+                        <td class="slds-p-around_small">{!qd.avgBoxes}</td>
+                        <td class="slds-p-around_small">{!qd.avgMeals}</td>
+                        <td class="slds-p-around_small">{!qd.percRepeat}%</td>
+                        <td class="slds-p-around_small"><ui:outputCurrency aura:id="curr" value="{!qd.avgCustSpend}"/></td>
+                        <td class="slds-p-around_small"><ui:outputCurrency aura:id="curr" value="{!qd.threeMonthSpend}"/></td>
+                        <td class="slds-p-around_small"><ui:outputCurrency aura:id="curr" value="{!qd.sixMonthSpend}"/></td>
+                        <td class="slds-p-around_small"><ui:outputCurrency aura:id="curr" value="{!qd.twelveMonthSpend}"/></td>
+                        <td class="slds-p-around_small"><ui:outputCurrency aura:id="curr" value="{!qd.eighteenMonthSpend}"/></td>
+                        <td class="slds-p-around_small"><ui:outputCurrency aura:id="curr" value="{!qd.twentyfourMonthSpend}"/></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                        <td class="slds-p-around_small"></td>
+                    </tr>                
+                </aura:iteration>
+
+            </table>
+        </div>
+    </lightning:card>
+	
+</aura:component>

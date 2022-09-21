@@ -1,0 +1,234 @@
+public class Plant_TransComm_BC {
+
+
+    public class pubTransEvent {
+        public String type;
+        public String accountId;
+        public String orderId;
+        public String subscriptionId; 
+    }
+
+    public static pubTransEvent setTransactionEvent(String type, String accountId, String orderId, String subscriptionId) {
+        Plant_TransComm_BC.pubTransEvent pte = new Plant_TransComm_BC.pubTransEvent();
+        pte.type = type;
+        pte.accountId = accountId;
+        pte.orderId = orderId;
+        pte.subscriptionId = subscriptionId;
+        return pte;
+    }
+    
+    public static void publishTransactionEvent(List<pubTransEvent> pubEvents) {
+        List<Plant_Transaction__e> events = new List<Plant_Transaction__e>();
+        for(pubTransEvent pte :pubEvents) {
+            events.add(new Plant_Transaction__e(
+                Plant_Type__c = pte.type,
+                Plant_AccountId__c = pte.accountId,
+                Plant_OrderId__c = pte.orderId,
+                Plant_SubscriptionId__c = pte.subscriptionId
+            ));     
+        }
+        system.debug('new Plant_Transaction__e:' + events);
+                    
+        // Call method to publish events
+        List<Database.SaveResult> results = EventBus.publish(events);
+        system.debug('Publish Plant_Transaction__e:' + results);
+    }
+
+    public static PageReference emailTracker() {
+        
+        // Can test with these:
+        // https://euphebe--hicdev.sandbox.my.site.com/apex/Plant_TransCommEmailTracker?recid=a1Z3J0000011mvF
+        // https://euphebe--hicdev.sandbox.my.site.com/apex/Plant_TransCommEmailTracker?recid=a1Z3J0000011mvF&url=https%3A%2F%2Fcheckout.plantable.com%2Faccount%2Flogin
+        
+        PageReference pg = null;
+        
+        // Get the Notification Recipient ID
+        String recid = ApexPages.currentPage().getParameters().get('recid');
+        system.debug('recid:' + recid);
+
+        String url = ApexPages.currentPage().getParameters().get('url');
+        system.debug('url:' + url);
+        
+        List<Plant_Transaction_Comm__c> lstRec = [select Id, Plant_Is_Open__c, Plant_Open_Date_Time__c, Plant_Is_Clicked__c, Plant_Is_Clicked_Date_Time__c from Plant_Transaction_Comm__c where id = :recid];
+        system.debug('lstRec:' + lstRec);
+        if(!lstRec.isEmpty()) {
+            lstRec[0].Plant_Is_Open__c = True;
+            lstRec[0].Plant_Open_Date_Time__c =  DateTime.now();
+            if(url != NULL) {
+                lstRec[0].Plant_Is_Clicked__c = True;
+                lstRec[0].Plant_Is_Clicked_Date_Time__c =  DateTime.now();
+                if(url.indexOf('http') > -1) {
+                    pg = new PageReference(url);
+                } else {
+                    pg = new PageReference('/Login?start=' + url);
+                }
+                pg.setRedirect(true);
+            }
+            update lstRec;
+        }
+        
+        return pg;
+    }
+    
+    public static void sendTransComm(String plantTransCommId) {
+        
+        system.debug('sendTransComm:' + plantTransCommId);
+        
+        list<Plant_Transaction_Comm__c> transComms = [select Id, Name, Plant_Status__c, Plant_Type__c, Plant_Account__c, 
+                                                      Plant_Account__r.Email__c, Plant_Account__r.First_Name__c, Plant_Account__r.Last_Name__c,
+                                                      Plant_Order__r.Plant_Order_Properties__r.Shipping_Address__r.Plant_Street1__c,
+                                                      Plant_Order__r.Plant_Order_Properties__r.Shipping_Address__r.Plant_Street2__c,
+                                                      Plant_Order__r.Plant_Order_Properties__r.Shipping_Address__r.Plant_Street3__c,
+                                                      Plant_Order__r.Plant_Order_Properties__r.Shipping_Address__r.Plant_City__c,
+                                                      Plant_Order__r.Plant_Order_Properties__r.Shipping_Address__r.Plant_Province_State__c,
+                                                      Plant_Order__r.Plant_Order_Properties__r.Shipping_Address__r.Plant_Postal_Code__c,
+                                                      Plant_Order__r.Plant_Order_Properties__r.Shipping_Address__r.Plant_Country__c,
+                                                      Plant_Order__r.Plant_Order_Properties__r.Plant_Delivery_Date__c,
+                                                      Plant_Order__r.Plant_Order_Properties__r.Plant_Provider__c,
+                                                      Plant_Order__r.Plant_Order_Properties__r.Plant_Payment_Method__r.Plant_Card_Type__c,
+                                                      Plant_Order__r.Plant_Order_Properties__r.Plant_Payment_Method__r.Plant_Card_Last_4_Digits__c,
+                                                      Plant_Order__r.Plant_Order_Properties__r.Plant_Meal_Selection__c,
+                                                      Plant_Order__r.Plant_Order_Properties__r.RecordType.Name,
+                                                      Plant_Order__r.TotalAmount,
+                                                      Plant_Order__r.Plant_Main_Product__c,
+                                                      
+                                                      Plant_Subscription__r.Plant_Payment_Method__r.Plant_Card_Type__c,
+                                                      Plant_Subscription__r.Plant_Payment_Method__r.Plant_Card_Last_4_Digits__c,
+                                                                 
+                                                      Plant_Customer_Email__c, Plant_Error_Message__c, Plant_Comm_Sent__c
+                                                      from Plant_Transaction_Comm__c where id = :plantTransCommId and Plant_Status__c='Created'];
+        system.debug('transComms:' + transComms);
+    
+        if(!transComms.isEmpty()) {
+            Plant_Transaction_Comm__c transComm = transComms[0];
+            system.debug('transComm:' + transComm);
+            
+            // Prep Data
+            transComm.Plant_Customer_Email__c = transComm.Plant_Account__r.Email__c;
+            transComm.Plant_Customer_Name__c = transComm.Plant_Account__r.First_Name__c + ' ' + transComm.Plant_Account__r.Last_Name__c;
+            system.debug('prep1 transComm:' + transComm);
+            
+            if(transComm.Plant_Order__c != NULL && transComm.Plant_Order__r.Plant_Order_Properties__c != NULL) {
+                transComm.Plant_Payment_Method__c = transComm.Plant_Order__r.Plant_Order_Properties__r.Plant_Payment_Method__r.Plant_Card_Type__c + ' ' + transComm.Plant_Order__r.Plant_Order_Properties__r.Plant_Payment_Method__r.Plant_Card_Last_4_Digits__c;
+                transComm.Plant_Estimated_Delivery__c = transComm.Plant_Order__r.Plant_Order_Properties__r.Plant_Delivery_Date__c;
+                transComm.Plant_Product__c = transComm.Plant_Order__r.Plant_Main_Product__c;
+                transComm.Plant_Transaction_Amount__c = transComm.Plant_Order__r.TotalAmount;
+                
+                String strAddr = transComm.Plant_Order__r.Plant_Order_Properties__r.Shipping_Address__r.Plant_Street1__c;
+                if(transComm.Plant_Order__r.Plant_Order_Properties__r.Shipping_Address__r.Plant_Street2__c != NULL)
+                    strAddr = strAddr + '\n' + transComm.Plant_Order__r.Plant_Order_Properties__r.Shipping_Address__r.Plant_Street2__c;
+                if(transComm.Plant_Order__r.Plant_Order_Properties__r.Shipping_Address__r.Plant_Street3__c != NULL)
+                    strAddr = strAddr + '\n' + transComm.Plant_Order__r.Plant_Order_Properties__r.Shipping_Address__r.Plant_Street3__c;
+                strAddr = strAddr + '\n' + transComm.Plant_Order__r.Plant_Order_Properties__r.Shipping_Address__r.Plant_City__c;
+                strAddr = strAddr + ', ' + transComm.Plant_Order__r.Plant_Order_Properties__r.Shipping_Address__r.Plant_Province_State__c;
+                strAddr = strAddr + ', ' + transComm.Plant_Order__r.Plant_Order_Properties__r.Shipping_Address__r.Plant_Postal_Code__c;
+                strAddr = strAddr + ', ' + transComm.Plant_Order__r.Plant_Order_Properties__r.Shipping_Address__r.Plant_Country__c;
+                transComm.Plant_Customer_Address__c = strAddr;
+                
+                system.debug('prep2 transComm:' + transComm);
+                
+                if(transComm.Plant_Order__r.Plant_Order_Properties__r.Plant_Meal_Selection__c != NULL) {
+                    List<Plant_Meal_Selection_Meal__c> lstMeals = [select Id, Plant_Quantity__c, Plant_Meal__r.Name 
+                                                                   FROM Plant_Meal_Selection_Meal__c 
+                                                                   WHERE Plant_Meal_Selection__c = :transComm.Plant_Order__r.Plant_Order_Properties__r.Plant_Meal_Selection__c ORDER BY Plant_Quantity__c];
+                    system.debug('lstMeals:' + lstMeals);
+                    transComm.Plant_Meals__c = '';
+                    for(Plant_Meal_Selection_Meal__c msm :lstMeals) {
+                        transComm.Plant_Meals__c = transComm.Plant_Meals__c + msm.Plant_Quantity__c;
+                        transComm.Plant_Meals__c = transComm.Plant_Meals__c + ' ' + msm.Plant_Meal__r.Name + '<br>';
+                    }
+                    system.debug('prep3 transComm:' + transComm);
+                }
+            }
+            system.debug('after transComms:' + transComms);
+            update transComms;
+            
+            Plant_Transaction_Comm__c updateTransComm = sendSalesforceEmail(transComm);
+            system.debug('updateTransComm:' + updateTransComm);
+            
+            update updateTransComm;
+        }        
+    }
+    
+    public static Plant_Transaction_Comm__c sendSalesforceEmail(Plant_Transaction_Comm__c transComm) {        
+        String orgWideId = Label.PlantTransCommOrgWideId;
+        
+        system.debug('transComm:' + transComm);
+        system.debug('orgWideId:' + orgWideId);
+
+        List<EmailTemplate> lstEmailTemplates = [SELECT Id, Body, Subject, HtmlValue  from EmailTemplate where Name = :transComm.Plant_Type__c];
+        List<OrgWideEmailAddress> lstOrgWide = [select Id, Address, DisplayName from OrgWideEmailAddress where Id = :orgWideId];
+        
+        system.debug('lstEmailTemplates:' + lstEmailTemplates);
+        system.debug('lstOrgWide:' + lstOrgWide);
+        
+        if(transComm != NULL && transComm.Plant_Account__c != NULL && lstEmailTemplates != null && lstEmailTemplates.size() > 0 && lstOrgWide != null && lstOrgWide.size() > 0) {
+            
+            List<Contact> lstCont = [select Id from Contact where AccountId = :transComm.Plant_Account__c];
+            system.debug('lstCont:' + lstCont);
+            
+            if(!lstCont.isEmpty()) {
+                List<String> bodies = new List<String>();
+                bodies.add(lstEmailTemplates[0].HtmlValue);
+                
+                List<Messaging.RenderEmailTemplateBodyResult> resList = 
+                    Messaging.renderEmailTemplate(transComm.Plant_Account__c, transComm.Id, bodies);
+                
+                String msg;
+                if(!resList.IsEmpty()) {
+                    msg = resList[0].getMergedBody();
+                    msg = msg.replace('PlantTransCommTracker', 'XXX');
+                    system.debug('msg:' + msg);
+                }
+                transComm.Plant_Comm_Sent__c = msg;
+                
+                String errMsg = sendEmail(lstEmailTemplates[0].Id, lstCont[0].Id, 'noreply@plantable.com', transComm.Id, orgWideId);
+                if(errMsg == NULL) {
+                    transComm.Plant_Status__c = 'Sent';
+                } else {
+                    transComm.Plant_Status__c = 'Error';
+                    transComm.Plant_Error_Message__c = errMsg;
+                }
+                            
+            }
+
+        }
+        return transComm;
+    }
+    
+    public static String sendEmail(String templateId, String targetId, String replyTo, String whatObj, String ogrWideID) {
+
+        system.debug('sendEmail');
+        system.debug('templateId:' + templateId);
+        system.debug('targetId:' + targetId);
+        system.debug('replyTo:' + replyTo);
+        system.debug('whatObj:' + whatObj);
+        system.debug('ogrWideID:' + ogrWideID);
+        
+        String ret=null;
+        
+        Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
+        mail.setTemplateId(templateId);
+        mail.setSaveAsActivity(false);
+        mail.setTargetObjectId(targetId);        
+        mail.setReplyTo(replyTo);
+        mail.setWhatId(whatObj);
+        mail.setOrgWideEmailAddressId(ogrWideID);
+        
+        try {
+            Messaging.SendEmailResult[] resultMail = Messaging.sendEmail(new Messaging.SingleEmailMessage[] { mail }); 
+            system.debug('resultMail:' + resultMail);
+            if(!resultMail[0].isSuccess()) {
+                List<Messaging.SendEmailError> errors = resultMail[0].getErrors(); 
+                if(!errors.isEmpty()) {
+                    ret = errors[0].getMessage();
+                }
+            }
+        } catch(System.EmailException e) {
+            System.debug('EmailException error: '+ e);
+            ret = e.getMessage();
+        }
+        
+        return ret;
+    }
+}

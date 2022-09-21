@@ -1,0 +1,31 @@
+<aura:component controller="SearchEmailController" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId" access="global" >
+    <aura:attribute name="isButtonActive" type="Boolean" default="false" />
+    <aura:attribute name="spinner" type="boolean" default="FALSE"/>  
+    <lightning:card  title="Download Contact Csv"> 
+        <!--Use "slds-m-around- -xx-large" class to add standard Large padding to the component--> 
+        
+        <!--loading spinner start-->
+        <aura:if isTrue="{!v.spinner}">
+            <div aura:id="spinnerId" class="slds-spinner_container">
+                <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="alert">
+                    <span class="slds-assistive-text">Loading...</span>
+                    <div class="slds-spinner__dot-a"></div>
+                    <div class="slds-spinner__dot-b"></div>
+                </div>
+            </div>
+        </aura:if>
+        <!-- Loading spinner end--> 
+        <div class="slds-grid slds-wrap">
+            <div class="slds-col slds-size_2-of-12">
+                <span> <lightning:input aura:id="searchKey" type="Email" label="Searh" variant="label-hidden" placeholder="Enter email"/></span> 
+            </div>
+            <div class="slds-col slds-size_6-of-12">
+                <span>
+                    &nbsp;<button class="slds-button slds-button--brand" disabled="{!v.isButtonActive}" onclick="{!c.downloadContactCsv}">Download CSV</button> 
+                </span>
+                <span><h4>&nbsp;This takes a minute, please wait.</h4></span>
+            </div> 
+        </div> 
+    </lightning:card>
+    
+</aura:component>

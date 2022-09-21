@@ -1,0 +1,15 @@
+<design:component>
+    <design:attribute name="reportId" label="Report Id" description="The report ID." />
+    <design:attribute name="reportType" label="Report Type" description="The report Type (Lines, Doughnuts)" />
+    <design:attribute name="reportName" label="Report Name" description="The report Name" />
+    <design:attribute name="filtersSupported" label="Filters Supported" description="Filters Supported" />
+
+    <design:attribute name="tableColName" label="Table Col Name" description="If using table whats the col name" />
+    
+    <design:attribute name="groupByCol" label="Group by Col Number" description="Col number of report to group by" />
+    <design:attribute name="detailFilterCol" label="Filter Report by Col Number" description="Col number of report to filter by" />
+    <design:attribute name="detailFilterValue" label="Filter Report by Value" description="Value in col of report to filter by" />
+    <design:attribute name="uniqueCol" label="Unique Col Number" description="Col number of report to evaluate distinct, optional" />
+    
+
+</design:component>

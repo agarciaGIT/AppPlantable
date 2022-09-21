@@ -1,0 +1,4 @@
+<apex:page id="teckstIFrame" standardController="Case" extensions="TeckstController" showHeader="false" standardStylesheets="false" showQuickActionVfHeader="false">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />﻿
+  <apex:iframe src="{!iFrameUrl}" scrolling="true" id="theIFrame"/>
+</apex:page>

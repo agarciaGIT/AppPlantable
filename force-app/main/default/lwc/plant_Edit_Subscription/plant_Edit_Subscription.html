@@ -1,0 +1,144 @@
+<template>
+    <template if:true={showSpinner}>
+        <lightning-spinner variant="brand" alternative-text="Loading" style="position: fixed;"></lightning-spinner>
+    </template>
+
+        <lightning-layout multiple-rows="true">
+            <lightning-layout-item size="12"  padding="around-small">
+                <div>
+                    <p class="slds-text-heading_large slds-text-align_center"> Edit Subscription</p>
+                </div>
+            </lightning-layout-item>
+        </lightning-layout>
+
+        <lightning-layout multiple-rows="true" >
+            <lightning-layout-item size="12" padding="around-large">
+                <lightning-layout multiple-rows="true">
+                    <lightning-layout-item size="12" >
+                        <div>
+                            <p class="slds-text-heading_small slds-text-title_bold slds-p-bottom_small">
+                                Manage Subscription : {selectedSubscription.Name}
+                            </p>
+                        </div>
+                    </lightning-layout-item>
+                    <!-- <lightning-layout-item size="4" >
+                        <c-plant_lwc-lookup onrecordselection={handleRecordSelection}  object-api-name="Plant_Subscription__c" icon-name="custom:custom78" account-id={recordId} selected-value={selectedOrder.OrderNumber} place-holder-name="Select Order.." is-required=true> </c-plant_lwc-lookup>
+                    </lightning-layout-item>  -->
+                </lightning-layout>
+            </lightning-layout-item>
+    
+            <lightning-layout-item size="6" padding="around-large">
+                <lightning-layout multiple-rows="true">
+                    <lightning-layout-item size="12" >
+                        <div>
+                            <p class="slds-text-heading_medium ">Shipping Address</p>
+                        </div>
+                    </lightning-layout-item>
+    
+                    <lightning-layout-item size="12" >
+                        <lightning-input id="shippingstreet1"  type="text" data-field="shippingStreet1" placeholder="Street 1" ></lightning-input>
+                        <lightning-input id="shippingstreet2" type="text" data-field="shippingStreet2" placeholder="Street 2" ></lightning-input>
+                        <lightning-input id="shippingstreet3" type="text" data-field="shippingStreet3" placeholder="Street 3"></lightning-input>
+                        <lightning-input id="shippingCity" type="text" data-field="shippingCity" placeholder="City" ></lightning-input>
+                        <lightning-input id="shippingState" type="text" data-field="shippingState" placeholder="State" ></lightning-input>
+                        <lightning-input id="shippingstreetZip" type="text" data-field="shippingZip" placeholder="Zip"></lightning-input>
+                        <lightning-input id="shippingCountry" type="text" data-field="shippingCountry" placeholder="Country"  ></lightning-input>
+                        <lightning-layout multiple-rows="true">
+                            <lightning-layout-item size="6" padding="around-small">
+                                <lightning-button class="slds-float_right" variant="brand" label="Update"  value="Update Shipping Address" onclick={handleButton} ></lightning-button>
+                            </lightning-layout-item>
+                        </lightning-layout>
+                    </lightning-layout-item>
+                </lightning-layout>
+            </lightning-layout-item>
+    
+            <lightning-layout-item size="6" padding="around-large">
+                <lightning-layout multiple-rows="true">
+                    <lightning-layout-item size="12" >
+                        <div>
+                            <p class="slds-text-heading_medium" >
+                               Next Delivery Date:
+                            </p>
+                        </div>
+                    </lightning-layout-item>
+    
+                    <lightning-layout-item size="12" >
+                        <div class="picklist-container">
+                            <lightning-combobox  data-field="DeliveryDate"  name="DeliveryDate"   onchange={handleChange} dropdown-alignment="auto"> </lightning-combobox>
+                        </div>
+                    </lightning-layout-item>
+    
+                    <lightning-layout-item size="12" padding="around-small">
+                        <lightning-layout multiple-rows="true">
+                            <lightning-layout-item size="6" padding="around-small">
+                                <lightning-button class="slds-float_right"  variant="brand" label="Update" value="Update Delivery Date" onclick={handleButton} ></lightning-button>
+                            </lightning-layout-item>
+                        </lightning-layout>
+                    </lightning-layout-item>
+    
+                    <lightning-layout-item size="12">
+                        <lightning-layout multiple-rows="true">
+                            <lightning-layout-item size="12">
+                                <div>
+                                    <p class="slds-text-heading_medium">
+                                        Payment
+                                    </p>
+                                </div>
+                            </lightning-layout-item>
+    
+                            <lightning-layout-item size="12">
+                                <div class="picklist-container">
+                                    <lightning-combobox  data-field="Payment"  name="Payment"   onchange={handleChange}  dropdown-alignment="auto"> </lightning-combobox>
+                                </div>
+                            </lightning-layout-item>
+                            
+                            <lightning-layout-item size="12">
+                                <lightning-layout multiple-rows="true">
+                                    <lightning-layout-item size="6" padding="around-small">
+                                        <lightning-button class="slds-float_right"  variant="brand" label="Update" value="Update payment Detail" onclick={handleButton} ></lightning-button>
+                                    </lightning-layout-item>
+                                </lightning-layout>
+                            </lightning-layout-item>
+                        </lightning-layout>
+                    </lightning-layout-item>
+    
+                    <lightning-layout-item size="12">
+                        <lightning-layout multiple-rows="true">
+                            <lightning-layout-item size="12">
+                                <div >
+                                    <p class="slds-text-heading_medium">Meals</p>
+                                </div>
+                            </lightning-layout-item>
+    
+                            <lightning-layout-item size="12">
+                                <template for:each={selectedMealList} for:item="meal" for:index="index">
+                                    <div class="slds-card__body slds-card__body_inner mealBody" key={meal.mealId}>
+                                        <div class="slds-p-vertical_x-small slds-grid slds-grid_vertical-align-center ">
+                                            <span class="slds-p-right_small">
+                                            <lightning-icon icon-name="utility:user" alternative-text="Info!" variant="info"  title="info variant small" size="small"> </lightning-icon>
+                                            </span>
+                                            <lightning-formatted-text class=" breakWord slds-form-element__label slds-text-title_bold slds-col slds-text-heading_small slds-text-align_left" value={meal.Name}></lightning-formatted-text> 
+                                            <span style="background: white;" class="slds-text-heading_small slds-p-left_xx-small slds-p-right_xx-small">{meal.quantity}</span> </div>
+                                    </div>
+                                </template>
+                            </lightning-layout-item>
+
+                            <template if:true={showUpdateCustomizeMealButton}>
+                                <lightning-layout-item size="12">
+                                    <lightning-layout multiple-rows="true">
+                                        <lightning-layout-item size="6" padding="around-small">
+                                            <lightning-button class="slds-float_right"  value="Customize" label="Customize" variant="brand" onclick={handleButton}></lightning-button>
+                                        </lightning-layout-item>
+                                        <lightning-layout-item size="6" padding="around-small">
+                                            <lightning-button  value="Update Meal"  label="Update" variant="brand" onclick={handleButton}></lightning-button>
+                                        </lightning-layout-item>
+                                    </lightning-layout>
+                                </lightning-layout-item>
+                            </template>
+                        </lightning-layout>
+                    </lightning-layout-item>
+                </lightning-layout>
+            </lightning-layout-item>
+        </lightning-layout>
+    
+</template>

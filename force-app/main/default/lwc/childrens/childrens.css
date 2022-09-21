@@ -1,0 +1,4 @@
+:host{
+    --slds-c-badge-color-background: red;
+    --slds-c-badge-text-color: white;
+}

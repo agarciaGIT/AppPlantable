@@ -1,0 +1,17 @@
+<aura:component implements="flexipage:availableForAllPageTypes,force:appHostable" access="global" controller="csvDownloadCtrl">     
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:attribute name="isButtonActive" type="Boolean" default="false" />
+    
+    <!--aura init handler , call js "loadContactList" function on component load, and display contact data on table-->   
+    <aura:handler name="init" value="{!this}" action="{!c.loadIngredientsList}"/> 
+    
+    <!--Declare Attribute for store Contact Records List-->  
+    <aura:attribute name="ListOfContact" type="contact[]"/> 
+    
+ <!--Use "slds-m-around- -xx-large" class to add standard Large padding to the component--> 
+  <div>   
+    <button class="slds-button slds-button--brand" disabled="{!v.isButtonActive}" onclick="{!c.downloadCsv}">Download Nutritional Information</button> <br/><br/>
+      <h4>This takes a minute, please wait.</h4>
+  </div>
+</aura:component>

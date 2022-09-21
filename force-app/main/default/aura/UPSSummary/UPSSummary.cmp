@@ -1,0 +1,48 @@
+<aura:component implements="flexipage:availableForAllPageTypes,force:appHostable" access="global" controller="UPSSummaryController">
+
+    <ltng:require scripts="{!$Resource.UnderscoreJS}" afterScriptsLoaded="{!c.afterScriptsLoaded}" />
+
+    <aura:handler name="init" value="{!this}" action="{!c.refreshData}" />
+
+    <aura:attribute name="objClassController" type="UPSSummaryController"/>    
+    <aura:attribute name="shippingDate" type="Date" default="TODAY()" />
+    
+    
+    <aura:attribute name="Columns" type="List" />
+    <lightning:card iconName="standard:contact" title="UPS Summary">
+        
+        <div class="slds-p-around_small">
+            <ui:inputDate aura:id="dateField" label="Shipping Day" value="{!v.shippingDate}" displayDatePicker="true"/>
+            <lightning:button variant="brand" label="Refresh" onclick="{! c.refreshData }" />
+            <br/>
+            <br/>
+            <table border="1" cellpadding="10">
+                <tr>
+                   <td class="slds-p-around_small">Coolant Type</td>
+                    <aura:iteration items="{!v.objClassController.lstSummaryData}" var="sd">
+                        <td class="slds-p-around_small"><aura:if isTrue="{!sd.isNames==false}">{!sd.name}</aura:if><aura:if isTrue="{!sd.isNames==true}"></aura:if></td>
+                    </aura:iteration>
+                </tr>
+                <tr>
+                    <td class="slds-p-around_small">2 blocks dry ice</td>
+                    <aura:iteration items="{!v.objClassController.lstSummaryData}" var="sd">
+                        <td class="slds-p-around_small"><aura:if isTrue="{!sd.isNames==false}">{!sd.ice2}</aura:if><aura:if isTrue="{!sd.isNames==true}"><aura:unescapedHtml value="{!sd.ice2Names}"/></aura:if></td>
+                    </aura:iteration>
+                </tr>
+                <tr>
+                    <td class="slds-p-around_small">3 blocks dry ice</td>
+                    <aura:iteration items="{!v.objClassController.lstSummaryData}" var="sd">
+                        <td class="slds-p-around_small"><aura:if isTrue="{!sd.isNames==false}">{!sd.ice3}</aura:if><aura:if isTrue="{!sd.isNames==true}"><aura:unescapedHtml value="{!sd.ice3Names}"/></aura:if></td>
+                    </aura:iteration>
+                </tr>                
+                <tr>
+                    <td class="slds-p-around_small">Total</td>
+                    <aura:iteration items="{!v.objClassController.lstSummaryData}" var="sd">
+                        <td class="slds-p-around_small"><aura:if isTrue="{!sd.isNames==false}">{!sd.iceTotal}</aura:if><aura:if isTrue="{!sd.isNames==true}"></aura:if></td>
+                    </aura:iteration>
+                </tr>                
+            </table>     
+        </div>        
+
+    </lightning:card>
+</aura:component>

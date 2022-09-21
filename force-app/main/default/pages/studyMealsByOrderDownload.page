@@ -1,0 +1,2 @@
+<apex:page controller="studyMealsByOrderDownload"  showHeader="false" sidebar="false" standardStylesheets="false" contentType="text/csv#exportCustomOrders.csv">Name,Order Number,Date,Meal,Quantity
+{!csvString}</apex:page>

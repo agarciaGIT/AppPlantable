@@ -1,0 +1,43 @@
+<aura:component implements="flexipage:availableForAllPageTypes,force:appHostable" access="global" controller="ShipmentSummaryController">
+    
+    <ltng:require scripts="{!$Resource.UnderscoreJS}" afterScriptsLoaded="{!c.afterScriptsLoaded}" />
+    
+    <aura:handler name="init" value="{!this}" action="{!c.refreshData}" />
+
+    <aura:attribute name="objClassController" type="ShipmentSummaryController"/>    
+    <aura:attribute name="shippingDate" type="Date" default="TODAY()" />
+    
+
+    
+    <lightning:card iconName="standard:contact" title="Shipment Summary">
+        
+        <div class="slds-p-around_small">
+            <ui:inputDate aura:id="dateField" label="Shipping Day" value="{!v.shippingDate}" displayDatePicker="true"/>
+            <lightning:button variant="brand" label="Refresh" onclick="{! c.refreshData }" />
+            <br/>
+            <br/>
+            <table border="1" cellpadding="10">
+                <tr>
+                   <td class="slds-p-around_small">Name</td>
+                    <aura:iteration items="{!v.objClassController.lstSummaryData}" var="sd">
+                        <td class="slds-p-around_small"><b>{!sd.name}</b></td>
+                    </aura:iteration>
+                </tr>
+                <tr>
+                    <td class="slds-p-around_small">Total</td>
+                    <aura:iteration items="{!v.objClassController.lstSummaryData}" var="sd">
+                        <td class="slds-p-around_small">{!sd.total}</td>
+                    </aura:iteration>
+                </tr>
+                <tr>
+                    <td class="slds-p-around_small">%</td>
+                    <aura:iteration items="{!v.objClassController.lstSummaryData}" var="sd">
+                        <td class="slds-p-around_small">{!sd.percent}%</td>
+                    </aura:iteration>
+                </tr>
+            </table>
+
+        </div>        
+
+    </lightning:card>
+</aura:component>

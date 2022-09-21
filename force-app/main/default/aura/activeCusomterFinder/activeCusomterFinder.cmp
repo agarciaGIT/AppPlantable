@@ -1,0 +1,35 @@
+<aura:component implements="flexipage:availableForAllPageTypes,force:appHostable" access="global" controller="activeCustomerController">
+	<aura:attribute name="selectDate" type="Date" default="TODAY()" />
+    <aura:attribute name="accountListsData" type="activeCustomerController.accountLists"/> 
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    
+    <lightning:card iconName="standard:contact" title="Customer Finder">
+        
+        <div class="slds-p-around_small">
+            <ui:inputDate aura:id="dateField" label="Select Day" value="{!v.selectDate}" displayDatePicker="true"/>
+            <div style="margin-top:10px;margin-bottom:10px">
+                <lightning:button variant="brand" label="Refresh" onclick="{! c.doInit }" /> &nbsp;
+                <lightning:button variant="brand" label="Download" onclick="{! c.downloadData }" />
+            </div>
+            <br/>
+            <table border="1" cellpadding="10">
+                <tr>
+                    <td class="slds-p-around_small slds-text-heading_small boldItem">Customer Type</td>
+                    <td class="slds-p-around_small slds-text-heading_small boldItem">Amount</td>
+                </tr>
+                <tr>
+                    <td class="slds-p-around_small">Active</td>
+                    <td class="slds-p-around_small">{!v.accountListsData.activeCustomersCnt}</td>
+                </tr>
+                <tr>
+                    <td class="slds-p-around_small">InActive</td>
+                    <td class="slds-p-around_small">{!v.accountListsData.inactiveCustomersCnt}</td>
+                </tr>
+                <tr>
+                    <td class="slds-p-around_small">Lapsed</td>
+                    <td class="slds-p-around_small">{!v.accountListsData.lapsedCustomersCnt}</td>
+                </tr>
+            </table>
+        </div>
+    </lightning:card>
+</aura:component>

@@ -1,0 +1,135 @@
+<apex:page controller="packingSlipPDFPicker" docType="html-5.0">
+
+<style>
+
+#id_confrmdiv
+{
+    display: none;
+    background-color: #eee;
+    border-radius: 5px;
+    border: 1px solid #aaa;
+    position: fixed;
+    width: 300px;
+    left: 50%;
+    margin-left: -150px;
+    padding: 6px 8px 8px;
+    box-sizing: border-box;
+    text-align: center;
+}
+#id_confrmdiv button {
+    background-color: #ccc;
+    display: inline-block;
+    border-radius: 3px;
+    border: 1px solid #aaa;
+    padding: 2px;
+    text-align: center;
+    width: 80px;
+    cursor: pointer;
+}
+#id_confrmdiv .button:hover
+{
+    background-color: #ddd;
+}
+#confirmBox .message
+{
+    text-align: left;
+    margin-bottom: 8px;
+}
+
+</style>
+
+<script>
+
+function performValidation()
+{
+
+    if (confirm('Do you want to mark these packages as fulfilled?')) {
+      console.log('Thing was saved to the database.');
+      var ret = chefAlacarteMark();
+      //alert(ret);
+    } else {
+      console.log('Thing was not saved to the database.');
+      
+      //alert(ret);
+    }
+}
+
+
+function doSomething(){
+
+
+    if(selectedDateValue == "") {
+        alert("Please select a date!");
+        return false;
+    }
+
+    document.getElementById('id_confrmdiv').style.display="block"; //this is the replace of this line
+    
+    
+    document.getElementById('id_truebtn').onclick = function(){
+       var ret = chefAlacarteMark();
+    };
+    
+    document.getElementById('id_falsebtn').onclick = function(){
+         var ret = chefAlacarteMarkPreview();
+    };
+    return false;
+}
+
+function doSomethingPrinted() {
+    if(selectedDateValue == "") {
+        alert("Please select a date!");
+        return false;
+    }
+    
+    var ret = chefAlacarte();
+
+}
+
+</script>
+
+    <apex:form > 
+        <div style="margin:20px">
+            Download Shipment Data
+        </div>
+        <div style="margin:20px">
+            <apex:input id="selectedDate" type="date" value="{!x_date}">    
+                <apex:actionSupport event="onchange" action="{!setDateString}" reRender="thePageBlockSection1"  />
+            </apex:input>
+            <apex:outputText >{!msg}</apex:outputText>
+        </div>
+
+        <apex:outputPanel id="thePageBlockSection1">      
+        <script>
+            var selectedDateValue="{!sdate}";
+        </script>
+            <div style="margin:20px">
+                <apex:inputCheckbox value="{!mskOn}"/> MSK
+            </div>        
+            <div style="margin:20px">
+                <apex:commandButton value="Chef Slips" action="{!chefDownload}"/>
+            </div> 
+
+            
+            <div style="margin:20px">
+                <apex:commandbutton id="s1" value="A-la-carte Slips" onclick="doSomething();return false;"/>
+            </div>        
+
+
+            <div style="margin:20px">
+                <apex:commandButton value="View A-la-carte Slips Already Fulfilled" onclick="doSomethingPrinted();return false;"/>
+            </div>
+
+            
+            <apex:actionFunction name="chefAlacarteMarkPreview" action="{!chefAlacarteMarkPreview}" reRender="thePageBlockSection1"/>
+            <apex:actionFunction name="chefAlacarteMark" action="{!chefAlacarteMark}" reRender="thePageBlockSection1"/>            
+            <apex:actionFunction name="chefAlacarte" action="{!chefAlacarte}" reRender="thePageBlockSection1"/>                        
+            
+            <div id="id_confrmdiv">Do you want to mark these packages as fulfilled?<br/>
+                <button id="id_truebtn">Yes</button>
+                <button id="id_falsebtn">No</button>
+            </div>
+            
+        </apex:outputPanel>
+    </apex:form>
+</apex:page>

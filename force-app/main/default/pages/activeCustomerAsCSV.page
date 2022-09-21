@@ -1,0 +1,12 @@
+<apex:page controller="activeCustomerController" showHeader="false" sidebar="false" standardStylesheets="false" readOnly="false" contentType="text/csv#exportCustomers.csv">"ID","First Name","Last Name","Email","Type"    
+<apex:repeat value="{!activeCustomers}" var="cust">
+"{!cust.Id}","{!cust.First_Name__c}","{!cust.Last_Name__c}","{!cust.Email__c }","Active"
+</apex:repeat>
+<apex:repeat value="{!inactiveCustomers}" var="cust">
+"{!cust.Id}","{!cust.First_Name__c}","{!cust.Last_Name__c}","{!cust.Email__c }","Inactive"
+</apex:repeat>
+<apex:repeat value="{!lapsedCustomers}" var="cust">
+"{!cust.Id}","{!cust.First_Name__c}","{!cust.Last_Name__c}","{!cust.Email__c }","Lapsed"
+</apex:repeat>
+    
+</apex:page>

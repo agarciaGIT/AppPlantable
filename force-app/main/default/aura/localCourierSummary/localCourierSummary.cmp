@@ -1,0 +1,47 @@
+<aura:component implements="flexipage:availableForAllPageTypes,force:appHostable" access="global" controller="localCourierSummaryController">
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:attribute name="greeting" type="String" default="World" />
+    <aura:attribute name="shippingDate" type="Date" default="TODAY()" />
+    
+    <aura:attribute name="OtherShipmentNoListedCnt" type="Integer"/>
+    
+    <aura:attribute name="shipmentsData" type="object" />    
+	<aura:attribute name="objClassController" type="localCourierSummaryController"/>    
+    
+    
+    <aura:attribute name="Columns" type="List" />
+    <lightning:card iconName="standard:contact" title="Local Courier Summary">
+        
+        <div class="slds-p-around_small">
+            <ui:inputDate aura:id="dateField" label="Shipping Day" value="{!v.shippingDate}" displayDatePicker="true"/>
+            <lightning:button variant="brand" label="Refresh" onclick="{! c.refreshData }" />
+            <br/>
+            <br/>
+            <table border="1" cellpadding="10">
+                <tr>
+                    <td class="slds-p-around_small slds-text-heading_small boldItem"><ui:outputDate aura:id="oDate" value="{!v.shippingDate}"/></td>
+                    <td class="slds-p-around_small slds-text-heading_small boldItem">E28</td>
+                    <td class="slds-p-around_small slds-text-heading_small boldItem">A-la-carte</td>
+                    <td class="slds-p-around_small slds-text-heading_small boldItem">Mom</td>
+                    <td class="slds-p-around_small slds-text-heading_small boldItem">Lunch</td>
+                    <td class="slds-p-around_small slds-text-heading_small boldItem">Total</td>
+                    <td class="slds-p-around_small slds-text-heading_small boldItem">Dietary Resitrictions</td>
+                    <td class="slds-p-around_small slds-text-heading_small boldItem">New Bag</td>
+                </tr>
+                <aura:iteration items="{!v.objClassController.lstSummaryData}" var="sd">
+                    <tr>
+                        <td class="slds-p-around_small">{!sd.name}</td>
+                        <td class="slds-p-around_small"><aura:unescapedHtml value="{!sd.E28Cnt}"/></td>
+                        <td class="slds-p-around_small"><aura:if isTrue="{!sd.name=='Total'}">{!sd.alacarteCnt}</aura:if><aura:if isTrue="{!sd.name!='Total'}"><aura:unescapedHtml value="{!sd.alacarte}"/></aura:if></td>
+                        <td class="slds-p-around_small"><aura:if isTrue="{!sd.name=='Total'}">{!sd.momCnt}</aura:if><aura:if isTrue="{!sd.name!='Total'}"><aura:unescapedHtml value="{!sd.mom}"/></aura:if></td>
+                        <td class="slds-p-around_small"><aura:if isTrue="{!sd.name=='Total'}">{!sd.lunchCnt}</aura:if><aura:if isTrue="{!sd.name!='Total'}"><aura:unescapedHtml value="{!sd.lunch}"/></aura:if></td>
+                        <td class="slds-p-around_small boldItem"><aura:unescapedHtml value="{!sd.total}"/></td>
+                        <td class="slds-p-around_small"><aura:unescapedHtml value="{!sd.swap}"/></td>
+                        <td class="slds-p-around_small"><aura:unescapedHtml value="{!sd.isNew}"/></td>
+                    </tr>
+                </aura:iteration>
+            </table>     
+        </div>        
+
+    </lightning:card>
+</aura:component>

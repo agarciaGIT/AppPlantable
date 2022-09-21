@@ -1,0 +1,32 @@
+<apex:page controller="studyUploadHealth">
+    <apex:form rendered="{!results == '' && errors == ''}"> 
+        <div style="margin:20px">
+            Upload Health Update CSV
+        </div>
+        <div style="margin:20px">
+            <apex:inputFile value="{!contentFile}" filename="{!fileName}" />     
+        </div>
+        <div style="margin:20px">
+            <apex:commandButton action="{!ReadFile}" value="Upload Health Data" id="theButton"/> 
+        </div>        
+    </apex:form>
+    <apex:form > 
+        <apex:outputPanel layout="block" rendered="{!errors != ''}" id="errors">
+            <div style="margin:20px">
+                {!errors}
+            </div>
+            <div style="margin:20px">
+	            <apex:commandButton action="{!tryagain}" value="Try Again" id="tryagain"/>
+            </div>
+        </apex:outputPanel>
+        <apex:outputPanel layout="block" rendered="{!results != ''}" id="results">
+            <div style="margin:20px">
+	            {!results}
+            </div>
+            <div style="margin:20px">
+	            <apex:commandButton action="{!tryagain}" value="Load More" id="loadmore"/>
+            </div>            
+        </apex:outputPanel>
+        
+    </apex:form>
+</apex:page>

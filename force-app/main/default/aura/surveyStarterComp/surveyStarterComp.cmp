@@ -1,0 +1,10 @@
+<aura:component  implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" access="global"   controller="surveyStarterController">
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:attribute name="invoiceNumber" type="String" default="W1546042"/>
+
+    <div class="slds-col--padded slds-size--1-of-1 slds-medium--1-of-1 slds-large-size--1-of-1">         
+        <div class="slds-form-element__control" > 
+            <lightning:input label="Invoice Number" name="InvoiceNumber" value="{!v.invoiceNumber}" required="true" /> 
+        </div> 
+    </div>
+</aura:component>

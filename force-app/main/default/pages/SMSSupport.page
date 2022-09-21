@@ -1,0 +1,23 @@
+<apex:page sidebar="false" standardStylesheets="false" showheader="false">    
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>    
+    </head>
+    <apex:includeLightning />     
+    <div  id="componentContainer" />    
+  
+    <script>           
+         var caseId  = "{!JSENCODE($CurrentPage.parameters.caseId)}"; 
+    $Lightning.use("c:SMSSupportApp", function() {               
+        $Lightning.createComponent("c:SMSSupport",                   
+                                  {                       
+                                   caseId: caseId               
+                                      
+                                   },
+                                       "componentContainer",                   
+                                       function(cmp) {                      
+                                       console.log("LightningAppForVF loaded successfully in VF page");                   
+                                   }                
+                                       );           
+                                   });       
+                                       </script> 
+</apex:page>

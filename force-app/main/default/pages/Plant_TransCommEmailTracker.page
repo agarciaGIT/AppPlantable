@@ -1,0 +1,3 @@
+<apex:page controller="Plant_TransComm_BC" showHeader="false" sidebar="false" standardStylesheets="false" contentType="image/jpeg" action="{!emailTracker}">
+...
+</apex:page>

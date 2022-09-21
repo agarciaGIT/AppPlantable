@@ -1,0 +1,117 @@
+<apex:page renderAs="pdf" ContentType="application/pdf" controller="packingSlipPDF" showHeader="false" sidebar="false" standardStylesheets="false"  applyhtmltag="false" applyBodyTag="false" action="{!doInit}">
+    <!-- renderAs="pdf" ContentType="application/pdf"  -->
+    <head>
+        <style>
+            @page{
+                margin:0.25in;
+            }
+
+            .pageText {
+                font-family: sans-serif;
+                font-size: 15px;
+            }
+                        
+            .mealName {
+                font-family: sans-serif;
+                font-size: 15px;
+            }
+
+            .mealNameSmall {
+                font-family: sans-serif;
+                font-size: 13px;
+            }
+            
+            .metaData {
+                font-family: sans-serif;
+                font-size: 15px;
+            }
+
+            .header {
+                font-family: sans-serif;
+                font-size: 17px;
+                margin-top:15px;
+                margin-bottom:10px;
+            }
+
+            .metaTableTwoCol1 {
+                width: 300px;
+            }
+            
+            .metaTableTwoCol2 {
+                width: 400px;
+            }
+            
+            .chefMeal {
+                font-size:12px;
+                text-align:center
+            }
+            
+            .chefMealTDHeader {
+                text-align:center;
+                font-family: sans-serif;
+                font-size: 15px;
+                width: 10px;
+                height: 40px;
+            }
+            
+            .chefMealTDMealType {
+                text-align:center;
+                font-family: sans-serif;
+                font-size: 15px;
+                width: 10px;
+                height: 100px;
+            }
+            
+            .chefMealTD {
+                text-align:center;
+                border: 1px solid black;
+                font-family: sans-serif;
+                font-size: 15px;
+                width: 100px;
+                height: 100px;
+                padding: 10px;
+            }
+            
+            .tblrightborder {
+                border-right: 1px solid black;
+            }
+
+            .tblbottomborder {
+                border-bottom: 1px solid black;
+            }
+                    
+        </style>
+    </head> 
+    
+    <div class="main-pdf" >    
+        <apex:repeat value="{!slips}" var="slip" > 
+            <apex:outputPanel layout="block" style="page-break-inside: avoid;" rendered="{!slip != 'BREAK'}">  
+                <table width="100%" border="0">                
+                    <tr>
+                        <td>
+                            <div style="height:470px;">
+                                <div style="height:400px;margin-top:20px">
+                                    <div style="margin-left:15px;margin-bottom:20px;">
+                                        <apex:image url="{!URLFOR($Resource.PackingSlips,'images/plantable-logo-whilte.jpg')}" width="250"/>
+                                    </div>
+                                    <div style="margin-left:15px;">
+                                        <apex:outputText value="{!slip}" escape="false"></apex:outputText>                            
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="pageText" style="margin-top:20px;margin-left:15px">
+                                            Thank you for your order! If you have any questions or feedback, please contact us at orders@plantable.com. 
+                                    </div>
+                                </div>
+                            </div>
+                        </td>                            
+                    </tr>
+                </table>
+            </apex:outputPanel>
+            <apex:outputPanel layout="block" style="page-break-inside: avoid;" rendered="{!slip == 'BREAK'}">  
+                <div style="page-break-after:always;"></div>
+            </apex:outputPanel>
+        </apex:repeat>
+    </div>
+    
+</apex:page>

@@ -1,0 +1,250 @@
+<aura:component implements="flexipage:availableForAllPageTypes,force:appHostable,force:hasRecordId" access="global" controller="SMSSupportAppController">
+    
+    <ltng:require scripts="{!join(',',
+                           $Resource.CometD, 
+                           $Resource.jquery, 
+                           $Resource.jquerycometd, 
+                           $Resource.UnderscoreJS,
+                           $Resource.momentJS
+                           )}"
+                  afterScriptsLoaded="{!c.afterScriptsLoaded}" />
+    
+    <lightning:empApi aura:id="empApi"/>
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:attribute name="objClassController" type="SMSSupportAppController"/>    
+    <aura:attribute name="caseId" type="String"/>
+    <aura:attribute name="spinner" type="Boolean" default="true"/>
+    <aura:attribute name="msg" type="String"/>
+    <aura:attribute name="appPassword" type="String"/>
+    <aura:attribute name="newMsg" type="String"/>
+    
+    <aura:attribute name="openState" type="String" default="closed" />
+    <aura:attribute name="openDelay" type="Integer" default="500" />
+    <aura:attribute name="screenStep" type="String" default="none"/>
+    <aura:attribute name="oneCase" type="Boolean" default="false"/>
+    <aura:attribute name="contactFilter" type="String" default=""/>
+    <aura:attribute name="selectedContact" type="String" default=""/>
+    
+    
+    
+    <div class="slds-grid slds-wrap slds-gutters">        
+        
+        <aura:if isTrue="{!v.spinner}">
+            <lightning:spinner class="spins" size="large" variant="brand" alternativeText="Loading" />
+        </aura:if>
+        
+        <aura:if isTrue="{!v.screenStep == 'msgs'}">
+            <div class="slds-col slds-size_1-of-1 slds-large-size_12-of-12" style="max-width: 900px;">            
+                <lightning:card title="Messages">
+                    <!-- lightning:button label="Subscribe" onclick="{! c.subscribe }" /-->
+                    <div style="padding:20px;padding-top:0px">  
+                        
+                        
+                        <aura:if isTrue="{!v.objClassController.selectedContact}">
+                            {!v.objClassController.selectedContact.Name}<br></br> 
+                            {!v.objClassController.selectedContact.Phone}
+                        </aura:if>    
+                            
+                        <aura:if isTrue="{!!v.objClassController.selectedContact}">
+                            <div>
+                                Case {!v.objClassController.currentCase.CaseNumber}<br></br>
+                                {!v.objClassController.currentCase.Contact_Name__c} &nbsp; {!v.objClassController.currentCase.Subject} &nbsp; {!v.objClassController.currentCase.DateTimeOpen__c}
+                            </div>
+                            <div>
+                                <aura:iteration items="{!v.objClassController.caseOwners}" var="ca" indexVar="index">
+                                    <div>{!ca.index}</div>
+                                </aura:iteration>
+                            </div>
+                            <aura:if isTrue="{!!v.oneCase}">
+                                <div style="margin-top:5px">
+                                    <lightning:button variant="brand" label="Close Case" title="Close Case" onclick="{! c.handleCloseCase }"/>
+                                </div>
+                            </aura:if>                            
+                        </aura:if>
+                        
+                        <aura:if isTrue="{!!v.oneCase}">
+                            <div style="margin-top:5px">
+                                <lightning:button variant="Success" label="Back to Cases" title="Back to Cases" onclick="{! c.refreshCaseDataApp }"/>
+                            </div>
+                        </aura:if>
+                        
+                        
+                        <aura:if isTrue="{!v.objClassController.lstMsgData}">                            
+                            <!-- div class="slds-m-top_large" style="color:red">
+                                {!v.msg}
+                            </div -->
+                            <div style="margin-top:15px">
+                                <lightning:textarea value="{!v.newMsg}" placeholder="enter new message" label="Send Message" maxlength="1600" messageWhenTooLong="A maximum of 1600 characters are allowed in a text." messageWhenValueMissing="An empty text cannot be sent."></lightning:textarea>
+                            </div>
+                            <div style="margin-top:5px">
+                                <lightning:button variant="Success" label="Send" title="Send" onclick="{! c.handleSendSMS }"/> <span style="margin-left:20px"><lightning:button variant="brand" label="Refresh Messages" title="Refresh Messages" onclick="{! c.refreshMessages }"/></span>
+                            </div>
+                            <aura:iteration items="{!v.objClassController.lstMsgData}" var="msg" indexVar="index">
+                                <div class="slds-grid slds-gutters">
+                                    <div class="slds-col" style="width:300px;padding:0">     
+                                        <aura:if isTrue="{!msg.From__c != NULL}">
+                                            <lightning:card >
+                                                <div class="caseItem">
+                                                    <div class="slds-grid slds-gutters">
+                                                        <div class="slds-col" style="width:300px;padding:0">                                             
+                                                            <div style="margin:10px; font-weight:400; font-size:14px; text-align:left; margin-top: 12px; margin-left:30px;">
+                                                                <aura:unescapedHtml value="{!msg.Message__c}" />
+                                                            </div>
+                                                        </div>                                
+                                                        <div class="slds-col" style="width:300px;padding:0"> 
+                                                            <div style="margin:10px; font-weight:400; font-size:14px; text-align:left; margin-top: 12px;">{!msg.Date_Time__c}</div>
+                                                        </div>                                
+                                                    </div>
+                                                </div>
+                                            </lightning:card>                                     
+                                            
+                                        </aura:if>
+                                    </div>
+                                    <div class="slds-col" style="width:300px;padding:0">
+                                        <aura:if isTrue="{!msg.From__c == NULL}">
+                                            
+                                            <lightning:card >
+                                                <div class="caseItem">
+                                                    <div class="slds-grid slds-gutters">
+                                                        <div class="slds-col" style="width:300px;padding:0">                                             
+                                                            <div style="margin:10px; font-weight:400; font-size:14px; text-align:left; margin-top: 12px; margin-left:30px;">{!msg.Message__c}</div>
+                                                        </div>                                
+                                                        <div class="slds-col" style="width:300px;padding:0"> 
+                                                            <div style="margin:10px; font-weight:400; font-size:14px; text-align:left; margin-top: 12px;">{!msg.Date_Time__c}</div>
+                                                        </div>                                
+                                                    </div>
+                                                </div>
+                                            </lightning:card>
+                                            
+                                        </aura:if>
+                                    </div>       
+                                </div>
+                            </aura:iteration>
+                        </aura:if>                        
+                        <aura:if isTrue="{!!v.oneCase}">
+                            <div>
+                                <div onclick="{! c.backToCase }" class="select-item">Back to Cases</div>
+                            </div>
+                        </aura:if>
+                        
+                    </div>
+                </lightning:card>
+            </div>
+        </aura:if>        
+        
+        <aura:if isTrue="{!v.screenStep == 'pick'}">
+            <div class="slds-col slds-size_1-of-1 slds-large-size_12-of-12" style="max-width: 900px;">            
+                <lightning:card title="Select Case">
+                    <div style="padding:20px">    
+                        <div>
+                            <div class="topBottomSpaceSmall">Contacts: <lightning:input name="contact" value="{!v.contactFilter}" label=""/></div>
+                            <lightning:button variant="brand" label="Find Contacts" title="Find Contactss" onclick="{! c.getContactData }"/>
+                        </div>
+                        
+                        <div class="slds-m-top_large">
+                            <lightning:button variant="brand" label="Refresh Cases" title="Refresh Cases" onclick="{! c.refreshCaseDataApp }"/>
+                        </div>
+                        
+                        <div style="margin-top:5px">
+                            <aura:iteration items="{!v.objClassController.lstCaseData}" var="ca" indexVar="index">
+                                <lightning:card >
+                                    <div class="caseItem">
+                                        <div class="slds-grid slds-gutters">
+                                            <div class="slds-col slds-size_1-of-4" style="padding:0">                                             
+                                                <div style="margin:10px; font-weight:400; font-size:14px; text-align:left; margin-top: 12px; margin-left:30px;" id="{!ca.Id}" aura:id="{!ca.Id}" onclick="{! c.handleSelectCase }">
+                                                    <aura:if isTrue="{!ca.SMS_New_Msg__c}">
+                                                        **
+                                                    </aura:if>
+                                                    
+                                                    {!ca.CaseNumber}<br></br>
+                                                    {!ca.Contact_Name__c}
+                                                </div>
+                                            </div>                                
+                                            <div class="slds-col slds-size_1-of-4" style="padding:0">                                             
+                                                <div style="margin:10px; font-weight:400; font-size:14px; text-align:left; margin-top: 12px; margin-left:30px;" id="{!ca.Id}" aura:id="{!ca.Id}" onclick="{! c.handleSelectCase }">{!ca.Subject}</div>
+                                            </div>                                
+                                            <div class="slds-col slds-size_1-of-4" style="padding:0"> 
+                                                <div style="margin:10px; font-weight:400; font-size:14px; text-align:left; margin-top: 12px;" id="{!ca.Id}" aura:id="{!ca.Id}" onclick="{! c.handleSelectCase }">{!ca.DateTimeOpen__c}<br></br> 
+                                                    <aura:if isTrue="{!or(ca.Status == 'In Progress',ca.Status == 'New')}"><b>{!ca.Status}</b></aura:if>
+                                                    <aura:if isTrue="{!ca.Status == 'Closed'}">{!ca.Status}</aura:if>
+
+                                                </div>
+                                            </div>                                
+                                        </div>
+                                    </div>
+                                </lightning:card>
+                            </aura:iteration>
+                        </div>
+                    </div>
+                </lightning:card>
+            </div>
+        </aura:if>        
+        
+        
+        <aura:if isTrue="{!v.screenStep == 'pickContact'}">
+            <div class="slds-col slds-size_1-of-1 slds-large-size_12-of-12" style="max-width: 900px;">            
+                <lightning:card title="Select Case">
+                    <div style="padding:20px">    
+                        <div>
+                            <div class="topBottomSpaceSmall">Contacts: <lightning:input name="contact" value="{!v.contactFilter}" label=""/></div>
+                            <lightning:button variant="brand" label="Find Contacts" title="Find Contactss" onclick="{! c.getContactData }"/>
+                        </div>
+                        <div style="margin-top:5px">
+                            <aura:iteration items="{!v.objClassController.lstContactData}" var="con" indexVar="index">                               
+                                <lightning:card >
+                                    <div class="caseItem">
+                                        <div class="slds-grid slds-gutters">
+                                            <div class="slds-col slds-size_1-of-4" style="padding:0">                                             
+                                                <div style="margin:10px; font-weight:400; font-size:14px; text-align:left; margin-top: 12px; margin-left:30px;" id="{!con.Id}" aura:id="{!con.Id}" onclick="{! c.handleSelectContact }">
+                                                    {!con.Name}<br></br>
+                                                    {!con.Phone}
+                                                </div>
+                                            </div>                        
+                                        </div>
+                                    </div>
+                                </lightning:card>
+                            </aura:iteration>
+                        </div>
+                    </div>
+                </lightning:card>
+            </div>
+        </aura:if>              
+        <aura:if isTrue="{!v.screenStep == 'login'}">
+            <div class="slds-col slds-size_1-of-1 slds-large-size_12-of-12" style="max-width: 500px;">            
+                <lightning:card title="Login">
+                    <div class="slds-p-around_small">
+                        <div class="slds-grid slds-wrap slds-gutters">                
+                            <div class="slds-form slds-form_compound formItem">
+                                <fieldset class="slds-form-element">
+                                    <div class="slds-form-element__group">
+                                        <div class="slds-form-element__row">
+                                            <div class="slds-form-element slds-size_12-of-12">
+                                                <aura:if isTrue="{!v.useEmail}">
+                                                    <label class="slds-form-element__label" for="input-01">Password</label>
+                                                </aura:if>
+                                                <aura:if isTrue="{!v.useEmail != true}">
+                                                    <label class="slds-form-element__label" for="input-01">Please enter your access code</label>
+                                                </aura:if>
+                                                <lightning:input name="appPassword" niceName="Password" aura:id="appPassword" value="{!v.appPassword}"/>
+                                            </div>
+                                        </div>
+                                        <div class="slds-form-element__row">
+                                            <div class="slds-form-element__control" style="margin-top:20px" > 
+                                                <lightning:button variant="brand" label="Submit" onclick="{! c.loginApp }" />
+                                            </div>
+                                            <div class="slds-form-element slds-has-error">
+                                                <div data-aura-rendered-by="400:0" class="slds-has-error slds-form-element__help">{!v.msg}</div>
+                                            </div>                    
+                                            
+                                        </div>
+                                    </div>
+                                </fieldset>
+                            </div>
+                        </div>
+                    </div>
+                </lightning:card>
+            </div>
+        </aura:if>
+    </div>
+</aura:component>

@@ -1,0 +1,97 @@
+<aura:component implements="flexipage:availableForAllPageTypes,force:appHostable" access="global" controller="ReportChartController">
+    
+    <ltng:require scripts="{!join(',',
+    				$Resource.ChartJS23, 
+                    $Resource.UnderscoreJS,
+    				$Resource.OlympicDataService)}"
+					afterScriptsLoaded="{!c.afterScriptsLoaded}" />
+    
+    <aura:attribute name="ready" type="Boolean" default="false"/>
+    <aura:attribute name="reportId" type="String" default="00O1I000006gBQSUA2"/>
+    <aura:attribute name="reportType" type="String" default="Lines"/>
+    <aura:attribute name="reportName" type="String" default=""/>
+    <aura:attribute name="filterValue" type="String" default=""/>
+    <aura:attribute name="filterType" type="String" default=""/>
+    <aura:attribute name="filtersSupported" type="String" default=""/>
+    
+
+    <aura:attribute name="groupByCol" type="String" default=""/>
+    <aura:attribute name="detailFilterCol" type="String" default=""/>
+    <aura:attribute name="detailFilterValue" type="String" default=""/>
+    <aura:attribute name="uniqueCol" type="String" default=""/>
+    
+    
+    <aura:attribute name="chartInstance" type="String" default=""/>
+    
+    <aura:attribute name="stat1" type="String" default=""/>
+    <aura:attribute name="stat2" type="String" default=""/>
+    <aura:attribute name="stat3" type="String" default=""/>
+    <aura:attribute name="stat4" type="String" default=""/>
+    <aura:attribute name="stat5" type="String" default=""/>
+    <aura:attribute name="stat6" type="String" default=""/>
+    
+    
+    
+
+    <aura:attribute name="tableColName" type="String" default=""/>
+    <aura:attribute name="tableData" 
+					type="ReportChartController.TableRecord[]" />	
+
+    <aura:handler event="c:ReportChartFilterAppEvent" action="{!c.handleApplicationEventFired}"/>
+
+    
+    <lightning:card iconName="standard:contact" title="{!v.reportName}">
+        
+        <aura:if isTrue="{!v.reportType == 'Lines' || v.reportType == 'Doughnut'}">
+            <div style="margin:20px;">
+                <canvas aura:id="chart" height="300"></canvas>
+            </div>	       
+        </aura:if>
+        <aura:if isTrue="{!v.reportType == 'Table' || v.reportType == 'TableDetail'}">
+            <div style="margin:20px;">
+                <table border="1" cellpadding="10">
+                    <tr>
+                        <td class="slds-p-around_small slds-text-heading_small table-header">{!v.tableColName}</td>
+                        <td class="slds-p-around_small slds-text-heading_small table-header">Record Count</td>
+                        <td class="slds-p-around_small slds-text-heading_small table-header">% of Total</td>
+                    </tr>
+                    <aura:iteration items="{!v.tableData}" var="sd">
+                        <tr>
+                            <td class="slds-p-around_small">{!sd.col1}</td>
+                            <td class="slds-p-around_small">{!sd.col2}</td>
+                            <td class="slds-p-around_small">{!sd.col3}</td>
+                        </tr>
+                    </aura:iteration>
+                </table>
+            </div>	       
+        </aura:if>
+        <aura:if isTrue="{!v.reportType == 'Overview'}">
+			<div style="height:80px;">
+				<div style="margin:20px;text-align:center;float:left">
+					<b>Monthly Box Actual</b><br/>{!v.stat1}
+				</div>
+				<div style="margin:20px;text-align:center;float:left">
+					<b>Box Budget</b><br/>{!v.stat2}
+				</div>
+				<div style="margin:20px;text-align:center;float:left">
+					<b>+/-</b><br/>{!v.stat3}
+				</div>
+				<div style="margin:20px;text-align:center;float:left">
+					<b>Avg Box Sale price</b><br/>{!v.stat4}
+				</div>
+				<div style="margin:20px;text-align:center;float:left">
+					<b>Meals sold</b><br/>{!v.stat5}
+				</div>
+				<div style="margin:20px;text-align:center;float:left">
+					<b>New customers acquired</b><br/>{!v.stat6}
+				</div>
+			</div>
+        </aura:if>
+		
+		
+
+        
+        
+    </lightning:card>
+    
+</aura:component>

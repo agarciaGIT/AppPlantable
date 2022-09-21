@@ -1,0 +1,196 @@
+.THIS .hide {
+        display: none;
+    } 
+
+.THIS .select-item {
+}
+
+.THIS .select-item div label span { 
+	text-decoration: underline;
+    float: none;
+    font-weight: 700;
+    font-size: .75rem;    
+}
+
+.THIS .slds-form-element label abbr { 
+	text-decoration: none;
+}
+
+
+.THIS h1 {
+    margin-top:20px;
+    font-size: x-large;
+}
+
+.THIS h2 {
+    margin-top:20px;
+    font-size: larger;
+}
+
+.THIS .section-heading {
+    margin-top:40px;
+}
+
+.THIS .surveyFormItem {
+        margin-top: 30px;
+    } 
+
+.THIS .explain-text {
+	margin-top:5px;
+	margin-bottom:10px;    
+}
+
+.THIS .slds-checkbox {
+    margin-bottom:10px;    
+}
+
+.THIS .done-area {
+    padding: 30px;
+}
+
+.THIS p {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.THIS .slds-form-element__legend {
+    float:none;    
+    font-weight: 700;
+    font-size: .75rem;
+}
+
+.THIS .field-title {
+    text-decoration: underline;
+}
+
+
+.THIS .scale-first-item {
+    border: 1px solid black;
+    float:left;
+    width:40px;
+    height:40px;
+    line-height: 40px;
+    text-align: center;
+}
+
+.THIS .scale-other-items {
+    border: 1px solid black;
+    float:left;
+    width:40px;
+    height:40px;
+    line-height: 40px;
+    border-left: none;    
+    text-align: center;
+}
+
+
+.THIS .scale-selected {
+    background-color: lightcyan;
+}
+
+.THIS .scale-deselected {
+    background-color: white;
+}
+
+.THIS .scale-main {
+    width:400px;
+}
+
+.THIS .scale-legend {
+    display: inline-block;
+    width:400px;
+}
+
+.THIS .scale-legend-left {
+    width:115px;
+    float:left;
+    text-align:left;
+}
+
+.THIS .scale-legend-center {
+    width:133px;
+    float:left;
+    text-align:center;
+}
+
+.THIS .scale-legend-right {
+    width:151px;
+    float:left;
+    text-align:right;
+}
+
+.THIS .scale-text {
+    font-size: .8125rem;
+    margin-right: 0rem;
+}
+
+@media only screen 
+  and (min-device-width: 375px) 
+  and (max-device-width: 667px) 
+  and (-webkit-min-device-pixel-ratio: 2) {
+    
+    .THIS h2 {
+        margin-top:30px;
+        font-size: larger;
+    }
+    
+    .THIS .surveyFormItem {
+            margin-top: 30px;
+        } 
+    
+    .THIS .explain-text {
+        margin-top:15px;
+        margin-bottom:20px;    
+    }
+    
+    .THIS .slds-checkbox {
+        margin-bottom:20px;    
+    }
+    
+    .THIS .scale-first-item {
+        border: 1px solid black;
+        float:left;
+        width:30px;
+        height:30px;
+        line-height: 30px;
+        text-align: center;
+    }
+    
+    .THIS .scale-other-items {
+        border: 1px solid black;
+        float:left;
+        width:30px;
+        height:30px;
+        line-height: 30px;
+        border-left: none;    
+        text-align: center;
+    }
+    
+    .THIS .scale-main {
+        width:300px;
+    }
+    
+    .THIS .scale-legend {
+        display: inline-block;
+        width:300px;
+    }
+    
+    .THIS .scale-legend-left {
+        width:85px;
+        float:left;
+        text-align:left;
+    }
+    
+    .THIS .scale-legend-center {
+        width:100px;
+        float:left;
+        text-align:center;
+    }
+    
+    .THIS .scale-legend-right {
+        width:115px;
+        float:left;
+        text-align:right;
+    }    
+    
+}

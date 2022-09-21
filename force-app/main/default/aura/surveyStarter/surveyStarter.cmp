@@ -1,0 +1,413 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" access="global" controller ="surveyStarterController">
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:attribute name="msg" type="String"/>
+    <aura:attribute name="goalMsg" type="String"/>
+    <aura:attribute name="poisonMsg" type="String"/>
+    
+    <aura:attribute name="scaleList" type="List" default="[
+                                                        {'label': 'well', 'value': null, 'msg': null},
+                                                        {'label': 'sleep', 'value': null, 'msg': null},
+                                                        {'label': 'energy', 'value': null, 'msg': null},
+                                                        {'label': 'stress', 'value': null, 'msg': null},
+                                                        {'label': 'self', 'value': null, 'msg': null},
+                                                        ]"/>   
+    
+    <aura:attribute name="contactId" type="String"/>
+    <aura:attribute name="submit" type="Boolean" default="False"/>
+    <aura:attribute name="objClassController" type="surveyStarterController"/>    
+    
+    <aura:attribute name="GoalLoseWeight" type="Boolean" default="False"/>
+    <aura:attribute name="GoalLoseBellyFat" type="Boolean" default="False"/>
+    <aura:attribute name="GoalImproveEnergy" type="Boolean" default="False"/>
+    <aura:attribute name="GoalImproveMind" type="Boolean" default="False"/>
+    <aura:attribute name="GoalImproveHealth" type="Boolean" default="False"/>
+    <aura:attribute name="GoalNewLifeStyle" type="Boolean" default="False"/>
+    <aura:attribute name="GoalConvenience" type="Boolean" default="False"/>
+
+    <aura:attribute name="PoisonNoSugar" type="Boolean" default="False"/>
+    <aura:attribute name="PoisonNoGrains" type="Boolean" default="False"/>
+    <aura:attribute name="PoisonNoSnacks" type="Boolean" default="False"/>
+    <aura:attribute name="PoisonNoAlcohol" type="Boolean" default="False"/>
+        
+    <!-- lightning:button onclick="{!c.applyCSS}" label="Add Style" / -->
+    <!-- lightning:button onclick="{!c.removeCSS}" label="Remove Style" / -->
+    
+    <article class="slds-card surveyFormCard" style="max-width:55em" aura:id="changeIt">
+        <div class="slds-card__body slds-card__body_inner">
+            <div class="container hide" aura:id="surveyBody">
+                <div class="slds-col--padded slds-size--1-of-1 slds-medium--1-of-1 slds-large-size--1-of-1">         
+                    
+                    <div>
+                        <h1>Plantable Starter Survey</h1>
+                        <p>The purpose of this survey is to set your baseline measurements and for your coach to understand your goals. All information is private and personal and remains encrypted. It will never be shared.</p>
+                    </div>
+                    
+                    <div style="margin-top:20px">
+                        <abbr class="slds-required" title="required" data-aura-rendered-by="36:0">*</abbr> Indicates Required
+                    </div>
+                    
+					<div class="slds-form-element slds-has-error">
+                        <div data-aura-rendered-by="400:0" class="slds-has-error slds-form-element__help">{!v.msg}</div>
+                    </div>      
+                    
+					<div class="section-heading">
+                        <h2>About You</h2>
+                    </div>
+                    
+                    <div class="slds-form-element__control surveyFormItem select-item" > 
+                        <lightning:select value="{!v.objClassController.healthSurveyItem.Gender__c}" required="true" messageWhenValueMissing="Gender is required" name="Gender" label="Gender">       
+                            <option value="">Choose one...</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            <option value="other">Other</option>
+                        </lightning:select>        
+                    </div>      
+                    
+                    <div class="slds-form-element__control surveyFormItem" > 
+                        <legend class="slds-form-element__legend slds-form-element__label field-title">Age</legend>
+                        <lightning:select value="{!v.objClassController.healthSurveyItem.Age__c}" messageWhenValueMissing="Age is required" name="Age" label="">       
+                            <option value="">Choose one...</option>
+                            <option value="less than 18">Less than 18</option>
+                            <option value="18-24">18-24</option>
+                            <option value="25-34">25-34</option>
+                            <option value="35-44">35-44</option>
+                            <option value="45-54">45-54</option>
+                            <option value="55-64">55-64</option>
+                            <option value="65-74">65-74</option>
+                            <option value="75+">75+</option>
+                        </lightning:select>        
+                    </div>      
+                    
+                    <fieldset class="slds-form-element surveyFormItem">
+                        <span style="color:rgb(194, 57, 52)">*</span>&nbsp;<span class="slds-form-element__legend slds-form-element__label field-title">Goals</span>
+                        <div  class="explain-text">Listed below are some of the results Plantable achieves. Please select those that are most important for you.</div>
+                        <div class="slds-form-element__control">
+                            <span class="slds-checkbox">                                
+                                <lightning:input type="checkbox" label="Lose weight" checked="{!v.GoalLoseWeight}"/>
+                            </span>
+                            <span class="slds-checkbox">
+                                <lightning:input type="checkbox" label="Lose belly fat and hips" checked="{!v.GoalLoseBellyFat}"/>
+                            </span>
+                            <span class="slds-checkbox">
+                                <lightning:input type="checkbox" label="Improve energy" checked="{!v.GoalImproveEnergy}"/>
+                            </span>
+                            <span class="slds-checkbox">
+                                <lightning:input type="checkbox" label="Improve mind clarity" checked="{!v.GoalImproveMind}"/>
+                            </span>
+                            <span class="slds-checkbox">
+                                <lightning:input type="checkbox" label="Improve internal health (as observed through blood markers, such as cholesterol, LDL, blood sugar, etc.)" checked="{!v.GoalImproveHealth}"/>
+                            </span>
+                            <span class="slds-checkbox">
+                                <lightning:input type="checkbox" label="Learn a new lifestyle (long term change)" checked="{!v.GoalNewLifeStyle}"/>
+                            </span>
+                            <span class="slds-checkbox">
+                                <lightning:input type="checkbox" label="Ease and convenience" checked="{!v.GoalConvenience}"/>
+                            </span>
+                        </div>
+                        <div class="slds-form-element slds-has-error">
+                            <div class="slds-has-error slds-form-element__help">{!v.goalMsg}</div>
+                        </div>                                                  
+                    </fieldset>                
+                    
+                    <fieldset class="slds-form-element surveyFormItem">
+                        <span style="color:rgb(194, 57, 52)">*</span>&nbsp;<span class="slds-form-element__legend slds-form-element__label field-title">What's your biggest challenge?</span>
+                        <div class="explain-text">Plantable is predicated on reversing The Crappy Food Cycle and replacing it with the Real Food Cycle. Which do you think you will find the most challenging? Please select all that apply</div>
+                        <div class="slds-form-element__control">
+                            <span class="slds-checkbox">                                
+                                <lightning:input type="checkbox" label="No added sugar (including honey, maple syrup, agave &amp; artificial sweeteners!)" checked="{!v.PoisonNoSugar}"/>
+                            </span>
+                            <span class="slds-checkbox">
+                                <lightning:input type="checkbox" label="No refined grains (think bagels, baked goods, boxed cereals etc.)" checked="{!v.PoisonNoGrains}"/>
+                            </span>
+                            <span class="slds-checkbox">
+                                <lightning:input type="checkbox" label="No processed snacks (corn chips, pretzels, crackers etc.)" checked="{!v.PoisonNoSnacks}"/>
+                            </span>
+                            <span class="slds-checkbox">
+                                <lightning:input type="checkbox" label="No or reduced alcohol" checked="{!v.PoisonNoAlcohol}"/>
+                            </span>
+                        </div>
+                        <div class="slds-form-element slds-has-error">
+                            <div class="slds-has-error slds-form-element__help">{!v.poisonMsg}</div>
+                        </div>                                                  
+                    </fieldset>          
+                    
+                    <div class="section-heading">
+                        <h2>Your Current Well-Being</h2>
+                    </div>
+
+                    <div class="slds-form-element__control surveyFormItem"> 
+                        <div class="scale-main">
+                            <span style="color:rgb(194, 57, 52)">*</span>&nbsp;<span class="slds-form-element__legend slds-form-element__label field-title">Sleep Index</span>
+                            <div>
+                                <div class="scale-first-item" id="sleep~1" aura:id="sleep~1" onclick="{!c.setScale}">1</div>
+                                <div class="scale-other-items" id="sleep~2" aura:id="sleep~2" onclick="{!c.setScale}">2</div>
+                                <div class="scale-other-items" id="sleep~3" aura:id="sleep~3" onclick="{!c.setScale}">3</div>
+                                <div class="scale-other-items" id="sleep~4" aura:id="sleep~4" onclick="{!c.setScale}">4</div>
+                                <div class="scale-other-items" id="sleep~5" aura:id="sleep~5" onclick="{!c.setScale}">5</div>
+                                <div class="scale-other-items" id="sleep~6" aura:id="sleep~6" onclick="{!c.setScale}">6</div>
+                                <div class="scale-other-items" id="sleep~7" aura:id="sleep~7" onclick="{!c.setScale}">7</div>
+                                <div class="scale-other-items" id="sleep~8" aura:id="sleep~8" onclick="{!c.setScale}">8</div>
+                                <div class="scale-other-items" id="sleep~9" aura:id="sleep~9" onclick="{!c.setScale}">9</div>
+                                <div class="scale-other-items" id="sleep~10" aura:id="sleep~10" onclick="{!c.setScale}">10</div>
+                            </div>
+                            <div class="scale-legend">
+                                <div class="scale-legend-left"><span class="slds-form-element__label scale-text">It's Bad</span></div>
+                                <div class="scale-legend-center"><span class="slds-form-element__label scale-text">It's OK</span></div>
+                                <div class="scale-legend-right"><span class="slds-form-element__label scale-text">I sleep well</span></div>
+                            </div>
+                        </div>
+                        <div class="slds-form-element slds-has-error">
+                            <div class="slds-has-error slds-form-element__help">{!v.scaleList[1].msg}</div>
+                        </div>                                                  
+                        
+                    </div>                          
+
+					<div class="slds-form-element__control surveyFormItem" > 
+                        <div class="scale-main">
+                            <span style="color:rgb(194, 57, 52)">*</span>&nbsp;<span class="slds-form-element__legend slds-form-element__label field-title">Energy Level</span>
+                            <div>
+                                <div class="scale-first-item" id="energy~1" aura:id="energy~1" onclick="{!c.setScale}">1</div>
+                                <div class="scale-other-items" id="energy~2" aura:id="energy~2" onclick="{!c.setScale}">2</div>
+                                <div class="scale-other-items" id="energy~3" aura:id="energy~3" onclick="{!c.setScale}">3</div>
+                                <div class="scale-other-items" id="energy~4" aura:id="energy~4" onclick="{!c.setScale}">4</div>
+                                <div class="scale-other-items" id="energy~5" aura:id="energy~5" onclick="{!c.setScale}">5</div>
+                                <div class="scale-other-items" id="energy~6" aura:id="energy~6" onclick="{!c.setScale}">6</div>
+                                <div class="scale-other-items" id="energy~7" aura:id="energy~7" onclick="{!c.setScale}">7</div>
+                                <div class="scale-other-items" id="energy~8" aura:id="energy~8" onclick="{!c.setScale}">8</div>
+                                <div class="scale-other-items" id="energy~9" aura:id="energy~9" onclick="{!c.setScale}">9</div>
+                                <div class="scale-other-items" id="energy~10" aura:id="energy~10" onclick="{!c.setScale}">10</div>
+                            </div>
+                            <div class="scale-legend">
+                                <div class="scale-legend-left"><span class="slds-form-element__label scale-text">Constant fatigue</span></div>
+                                <div class="scale-legend-center"><span class="slds-form-element__label scale-text">I slump</span></div>
+                                <div class="scale-legend-right"><span class="slds-form-element__label scale-text">Sustained energy</span></div>
+                            </div>
+                        </div>
+                        <div class="slds-form-element slds-has-error">
+                            <div class="slds-has-error slds-form-element__help">{!v.scaleList[2].msg}</div>
+                        </div>                                                  
+                        
+                    </div>                          
+
+					<div class="slds-form-element__control surveyFormItem" > 
+						<span style="color:rgb(194, 57, 52)">*</span>&nbsp;<span class="slds-form-element__legend slds-form-element__label field-title">Stress Level</span>
+                        <div class="scale-main">
+                            <div>
+                                <div class="scale-first-item" id="stress~1" aura:id="stress~1" onclick="{!c.setScale}">1</div>
+                                <div class="scale-other-items" id="stress~2" aura:id="stress~2" onclick="{!c.setScale}">2</div>
+                                <div class="scale-other-items" id="stress~3" aura:id="stress~3" onclick="{!c.setScale}">3</div>
+                                <div class="scale-other-items" id="stress~4" aura:id="stress~4" onclick="{!c.setScale}">4</div>
+                                <div class="scale-other-items" id="stress~5" aura:id="stress~5" onclick="{!c.setScale}">5</div>
+                                <div class="scale-other-items" id="stress~6" aura:id="stress~6" onclick="{!c.setScale}">6</div>
+                                <div class="scale-other-items" id="stress~7" aura:id="stress~7" onclick="{!c.setScale}">7</div>
+                                <div class="scale-other-items" id="stress~8" aura:id="stress~8" onclick="{!c.setScale}">8</div>
+                                <div class="scale-other-items" id="stress~9" aura:id="stress~9" onclick="{!c.setScale}">9</div>
+                                <div class="scale-other-items" id="stress~10" aura:id="stress~10" onclick="{!c.setScale}">10</div>
+                            </div>
+                            <div class="scale-legend">
+                                <div class="scale-legend-left"><span class="slds-form-element__label scale-text">Really stressed</span></div>
+                                <div class="scale-legend-center"><span class="slds-form-element__label scale-text">Moderate</span></div>
+                                <div class="scale-legend-right"><span class="slds-form-element__label scale-text">What stress?</span></div>
+                            </div>
+                        </div>
+                        <div class="slds-form-element slds-has-error">
+                            <div class="slds-has-error slds-form-element__help">{!v.scaleList[3].msg}</div>
+                        </div>                                                  
+                        
+                    </div>                  
+                    
+					<div class="slds-form-element__control surveyFormItem" > 
+						<span style="color:rgb(194, 57, 52)">*</span>&nbsp;<span class="slds-form-element__legend slds-form-element__label field-title">Self-esteem Measure</span>
+                        <div class="scale-main">
+                            <div>
+                                <div class="scale-first-item" id="self~1" aura:id="self~1" onclick="{!c.setScale}">1</div>
+                                <div class="scale-other-items" id="self~2" aura:id="self~2" onclick="{!c.setScale}">2</div>
+                                <div class="scale-other-items" id="self~3" aura:id="self~3" onclick="{!c.setScale}">3</div>
+                                <div class="scale-other-items" id="self~4" aura:id="self~4" onclick="{!c.setScale}">4</div>
+                                <div class="scale-other-items" id="self~5" aura:id="self~5" onclick="{!c.setScale}">5</div>
+                                <div class="scale-other-items" id="self~6" aura:id="self~6" onclick="{!c.setScale}">6</div>
+                                <div class="scale-other-items" id="self~7" aura:id="self~7" onclick="{!c.setScale}">7</div>
+                                <div class="scale-other-items" id="self~8" aura:id="self~8" onclick="{!c.setScale}">8</div>
+                                <div class="scale-other-items" id="self~9" aura:id="self~9" onclick="{!c.setScale}">9</div>
+                                <div class="scale-other-items" id="self~10" aura:id="self~10" onclick="{!c.setScale}">10</div>
+                            </div>
+                            <div class="scale-legend">
+                                <div class="scale-legend-left"><span class="slds-form-element__label scale-text">Not great</span></div>
+                                <div class="scale-legend-center"><span class="slds-form-element__label scale-text">OK</span></div>
+                                <div class="scale-legend-right"><span class="slds-form-element__label scale-text">Fabulous</span></div>
+                            </div>
+                        </div>
+                        <div class="slds-form-element slds-has-error">
+                            <div class="slds-has-error slds-form-element__help">{!v.scaleList[4].msg}</div>
+                        </div>                                                  
+                        
+                    </div>                          
+                    
+                    
+                    <div class="section-heading">
+                        <h2>Baseline Measurements</h2>
+                    </div>
+                    
+                    <div class="slds-form slds-form_compound surveyFormItem">
+                        <fieldset class="slds-form-element">
+                            <legend class="slds-form-element__legend slds-form-element__label field-title">Height</legend>
+                            <div class="slds-form-element__group">
+                                <div class="slds-form-element__row">
+                                    <div class="slds-form-element slds-size_2-of-12">
+                                        <label class="slds-form-element__label" for="input-01">Feet</label>
+                                        <lightning:input name="Height Feet:Number:NotRequired:1:10" niceName="Height Feet" aura:id="inputFeet" value="{!v.objClassController.healthSurveyItem.Height_Feet__c}" onblur="{!c.onInputBlur}"/>
+                                    </div>
+                                    <div class="slds-form-element slds-size_2-of-12">
+                                        <label class="slds-form-element__label" for="input-02">Inches</label>
+                                        <lightning:input type="Integer" name="Height Inches:Number:NotRequired:1:10" niceName="Height Inches" value="{!v.objClassController.healthSurveyItem.Height_Inches__c}" onblur="{!c.onInputBlur}"/>
+                                    </div>
+                                    <div class="slds-form-element slds-size_8-of-12">
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </div>
+                    
+					<div class="slds-form slds-form_compound surveyFormItem">
+                        <fieldset class="slds-form-element">
+                            <legend class="slds-form-element__label slds-form-element__legend field-title">Waist</legend>
+                            <div class="slds-form-element__group">
+                                <div class="slds-form-element__row">
+                                    <div class="slds-form-element slds-size_3-of-12">
+                                        <label class="slds-form-element__label" for="input-01">Inches</label> <div data-recId="Waist" onmouseover="{!c.displayToolTip}" onmouseout="{!c.displayOutToolTip}" style="float:right"><lightning:icon iconName="utility:info" size="xx-small" alternativeText="Help"/></div>
+                                        <lightning:input name="Waist Inches:Number:NotRequired:1:100" value="{!v.objClassController.healthSurveyItem.Waist__c}" onblur="{!c.onInputBlur}"/>
+                                    </div>
+                                    <div class="slds-form-element slds-size_9-of-12" style="height: 10px;">
+                                        <div class="slds-popover slds-popover--tooltip slds-nubbin--left-top hide" role="tooltip" id="help" style="top:-18px;left:20px;" aura:id="WaistToolTip">
+                                            <div class="slds-popover__body">How to measure: measure the circumference around your belly button</div>
+                                        </div>  
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </div>                    
+                    
+					<div class="slds-form slds-form_compound surveyFormItem">
+                        <fieldset class="slds-form-element">
+                            <legend class="slds-form-element__label slds-form-element__legend field-title">Hips</legend>
+                            <div class="slds-form-element__group">
+                                <div class="slds-form-element__row">
+                                    <div class="slds-form-element slds-size_3-of-12">
+                                        <label class="slds-form-element__label" for="input-01">Inches</label> <div data-recId="Hips" onmouseover="{!c.displayToolTip}" onmouseout="{!c.displayOutToolTip}" style="float:right"><lightning:icon iconName="utility:info" size="xx-small" alternativeText="Help"/></div>
+                                        <lightning:input name="Hips Inches:Number:NotRequired:1:100" value="{!v.objClassController.healthSurveyItem.Hips_Inches__c}" onblur="{!c.onInputBlur}"/>
+                                    </div>
+                                    <div class="slds-form-element slds-size_9-of-12" style="height: 10px;">
+                                        <div class="slds-popover slds-popover--tooltip slds-nubbin--left-top hide" role="tooltip" id="help" style="top:-18px;left:20px;" aura:id="HipsToolTip">
+                                            <div class="slds-popover__body">How to measure: measure around the widest part of your hips</div>
+                                        </div>  
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </div>                    
+                    
+					<div class="slds-form slds-form_compound surveyFormItem">
+                        <fieldset class="slds-form-element">
+                            <legend class="slds-form-element__label slds-form-element__legend field-title">Weight</legend>
+                            <div class="slds-form-element__group">
+                                <div class="slds-form-element__row">
+                                    <div class="slds-form-element slds-size_3-of-12">
+                                        <label class="slds-form-element__label" for="input-01">Pounds</label> <div data-recId="Weight" onmouseover="{!c.displayToolTip}" onmouseout="{!c.displayOutToolTip}" style="float:right"><lightning:icon iconName="utility:info" size="xx-small" alternativeText="Help"/></div>
+                                        <lightning:input name="Weight Pounds:Number:NotRequired:1:500" value="{!v.objClassController.healthSurveyItem.Weight__c}" onblur="{!c.onInputBlur}"/>
+                                    </div>
+                                    <div class="slds-form-element slds-size_9-of-12" style="height: 10px;">
+                                        <div class="slds-popover slds-popover--tooltip slds-nubbin--left-top hide" role="tooltip" id="help" style="top:-18px;left:20px;" aura:id="WeightToolTip">
+                                            <div class="slds-popover__body">When to measure: ideally first thing in the am</div>
+                                        </div>  
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </div>                            
+                    
+                    <div class="section-heading">
+                        <h2>Recent medical data</h2>
+                    </div>                    
+                    
+                    <div class="slds-form-element__control surveyFormItem" > 
+                        <div class="slds-form-element__row">
+                            <div class="slds-form-element slds-size_2-of-12">
+                                <legend class="slds-form-element__label slds-form-element__legend field-title">Blood Sugar (HgbA1C)</legend>
+		                    	<lightning:input name="Blood Sugar:Number:NotRequired:1:20" value="{!v.objClassController.healthSurveyItem.HG_A1C__c}" label="" onblur="{!c.onInputBlur}"/>
+                            </div>
+                            <div class="slds-form-element slds-size_10-of-12">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="slds-form-element__control surveyFormItem" > 
+                        <div class="slds-form-element__row">
+                            <div class="slds-form-element slds-size_2-of-12">
+                                <legend class="slds-form-element__label slds-form-element__legend field-title">Total Cholesterol</legend>
+		                    	<lightning:input name="Total Cholesterol:Number:NotRequired:1:500" value="{!v.objClassController.healthSurveyItem.Total_Colesterol__c}" label="" onblur="{!c.onInputBlur}"/>
+                            </div>
+                            <div class="slds-form-element slds-size_10-of-12">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="slds-form-element__control surveyFormItem" > 
+                        <div class="slds-form-element__row">
+                            <div class="slds-form-element slds-size_2-of-12">
+                                <legend class="slds-form-element__label slds-form-element__legend field-title">LDL Cholesterol</legend>
+		                    	<lightning:input name="LDL:Number:NotRequired:1:500" value="{!v.objClassController.healthSurveyItem.LDL__c}" label="" onblur="{!c.onInputBlur}"/>
+                            </div>
+                            <div class="slds-form-element slds-size_10-of-12">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="slds-form-element__control surveyFormItem" > 
+                        <div class="slds-form-element__row">
+                            <div class="slds-form-element slds-size_2-of-12">
+                                <legend class="slds-form-element__label slds-form-element__legend field-title">Inflammation (hsCRP)</legend>
+                                <lightning:input name="hsCRP:Number:NotRequired:1:20" value="{!v.objClassController.healthSurveyItem.HS_CRP__c}" label="" onblur="{!c.onInputBlur}"/>
+                            </div>
+                            <div class="slds-form-element slds-size_10-of-12">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section-heading">
+                        <h2>Other</h2>
+                        <div>Please share anything else you would like us to know.</div>
+                    </div>                    
+
+                    <div class="slds-form-element__control" > 
+                        <div class="slds-form-element__row">
+                            <div class="slds-size_12-of-12">
+                                <lightning:textarea name="Comments" value="{!v.objClassController.healthSurveyItem.Comments__c}" label="" maxlength="800"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    
+                    <div class="slds-form-element__control" style="margin-top:20px" > 
+                        <lightning:button variant="brand" label="Submit" onclick="{! c.addSurvey }" />
+                    </div>        
+                    
+                    <div class="slds-form-element slds-has-error">
+                        <div data-aura-rendered-by="400:0" class="slds-has-error slds-form-element__help">{!v.msg}</div>
+                    </div>                    
+                    
+                    <div style="margin-top:20px">
+                    	This information, and the conversations you have with your coach are private and confidential. We will never, under any circumstances, share your information with anyone. The purpose of coaching information is to aid your success during your program. Results are aggregated but are never personally attributed. 
+                    </div>
+                </div>
+
+            </div>
+            <div class="container hide" aura:id="surveyDoneBody">
+                <div class="done-area">
+                    <p>Thank you for filling out your Starter Survey, and get ready to feel better, build healthy habits and unlock a totally new perspective on food.</p>
+                    <p><a href="https://calendly.com/plantable">Click here</a> to schedule a kick off call with your coach to go over your goals and set the stage for your one-on-one coaching. We are here for you 24/7 for support and encouragement and can be reached anytime at <a href="tel:+16469748200">(646) 974-8200</a> and Coach@Plantable.com.</p>
+                    <p>You’ve got this 💪🏻</p>
+                </div>
+            </div>
+        </div>
+    </article>
+</aura:component>
