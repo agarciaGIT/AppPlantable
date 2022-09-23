@@ -25,7 +25,7 @@ public  class Plant_TransactionTiggerHelper {
             List<Order> updateCurrent_Orders = new List<Order>(); //
             Map<String, String> ChargentIdVsOrderId_Map=new Map<String, String>();
             Map<Date, Plant_Shipping_Date__c> shipdateVsRecord=new Map<Date, Plant_Shipping_Date__c>();
-            
+            List<Plant_Order_Properties__c> updateOld_OdrPropertyList = new List<Plant_Order_Properties__c>();
             // List of Post Order Event Calls
             List<Plant_TransComm_BC.pubTransEvent> pubEvents = new List<Plant_TransComm_BC.pubTransEvent>();
 
@@ -60,6 +60,13 @@ public  class Plant_TransactionTiggerHelper {
                         oddr.Plant_Transaction_Id__c=cOrder_Vs_transactionId_Map.get(oddr.Plant_Subscription__r.Plant_Chargent_Order__c);
                         updateCurrent_Orders.add(oddr);
 
+                        // Updating Status of Old Order Property to paid.
+                        if(oddr.Plant_Order_Properties__c !=null){
+                            Plant_Order_Properties__c odrProperty = new Plant_Order_Properties__c();
+                            odrProperty.id = oddr.Plant_Order_Properties__c;
+                            odrProperty.Plant_Status__c = 'Paid';
+                            updateOld_OdrPropertyList.add(odrProperty);
+                        }
                         // Add post Order Event
                         pubEvents.add(Plant_TransComm_BC.setTransactionEvent('Order Paid',oddr.AccountId,oddr.id,null));
                         
@@ -84,6 +91,14 @@ public  class Plant_TransactionTiggerHelper {
                         oddr.Status = 'Activated';
                         oddr.Plant_Transaction_Id__c=cOrder_Vs_transactionId_Map.get(oddr.Plant_Subscription__r.Plant_Chargent_Order__c);
                         updateCurrent_Orders.add(oddr);
+
+                        // Updating Status of Old Order Property to paid.
+                        if(oddr.Plant_Order_Properties__c !=null){
+                            Plant_Order_Properties__c odrProperty = new Plant_Order_Properties__c();
+                            odrProperty.id = oddr.Plant_Order_Properties__c;
+                            odrProperty.Plant_Status__c = 'Paid';
+                            updateOld_OdrPropertyList.add(odrProperty);
+                        }
 
 						// AG - Add post Order Event
                         pubEvents.add(Plant_TransComm_BC.setTransactionEvent('Order Paid',oddr.AccountId,oddr.id,null));
@@ -149,7 +164,7 @@ public  class Plant_TransactionTiggerHelper {
                             nw_OrderProp.Plant_Can_SMS__c = oddr.Plant_Order_Properties__r.Plant_Can_SMS__c ;
                             nw_OrderProp.Plant_Email__c = oddr.Plant_Order_Properties__r.Plant_Email__c ;
                             nw_OrderProp.Shipping_Address__c = oddr.Plant_Subscription__r.Plant_Shipping_Address__c ;
-                            
+                            nw_OrderProp.Plant_Status__c = 'Pending Payment';
                             // new filed Plant_Subscription__r.Plant_Shipping_Date__c
                             nw_OrderProp.Plant_Shipping_Date__c =  oddr.Plant_Subscription__r.Plant_Shipping_Date__c;
                             nw_OrderProp.Plant_Delivery_Date__c =  oddr.Plant_Subscription__r.Plant_Next_Delivery_Date__c;
@@ -158,7 +173,7 @@ public  class Plant_TransactionTiggerHelper {
                             nw_OrderProp.Plant_Meal_Selection__c = oddr.Plant_Subscription__r.Plant_Meal_Selection__c;
                             nw_OrderProp.Plant_Payment_Method__c = oddr.Plant_Subscription__r.Plant_Payment_Method__c ;
                             nw_OrderProp.Plant_Recurrence__c = oddr.Plant_Order_Properties__r.Plant_Recurrence__c ;
-                            nw_OrderProp.Plant_Status__c = oddr.Plant_Order_Properties__r.Plant_Status__c ;
+                            //nw_OrderProp.Plant_Status__c = oddr.Plant_Order_Properties__r.Plant_Status__c ;
                             nw_OrderProp.Plant_Gift_Recipient__c = oddr.Plant_Order_Properties__r.Plant_Gift_Recipient__c ;
                                 insertOrderProperty_Map.put(oddr.Id,nw_OrderProp);
 
@@ -208,6 +223,10 @@ public  class Plant_TransactionTiggerHelper {
             if(!updateCurrent_Orders.isEmpty())
                 update updateCurrent_Orders;
 
+            // update current order related opportunity status to Paid.
+            if(!updateOld_OdrPropertyList.isEmpty()){
+                update updateOld_OdrPropertyList;
+            }
             // Insert Shipment
             if(!insertNonRecurrShipments.isEmpty())
                 insert insertNonRecurrShipments;

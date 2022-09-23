@@ -37,8 +37,8 @@ trigger Plant_TransactionCommTrigger on Plant_Transaction__e (after insert) {
     }
     
     // Call POST Transaction Handlers
-    if(!lstOrderEvents.isEmpty()) {
-        Plant_Orders_BC.postTransactionOrderHandler(lstSubscriptionEvents);
+    if(!lstSubscriptionEvents.isEmpty()) {
+        Plant_Subscriptions_BC.postTransactionOrderHandler(lstSubscriptionEvents);
     }
     
     // Send Communications

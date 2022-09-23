@@ -83,6 +83,7 @@ public class Plant_Orders_BC {
 
                                 opRecord.recordTypeId = oTypeMap.get(reqWrapper.product);
                                 response.product = reqWrapper.product;
+                                opRecord.Plant_Status__c = 'Abandoned';
 
                                 // Fill Recurrence value
                                 if(reqWrapper.product==Plant_Utility.default_recurrenceProductName || reqWrapper.product=='Quickstart'){
@@ -450,123 +451,187 @@ public class Plant_Orders_BC {
                     
                     // CREATE/update MEAL SELECTION RECORD
                     Plant_Meal_Selection__c new_MealSelection_Rec = new Plant_Meal_Selection__c();
+                    
                     Boolean isMsOld = false;
-                    
-                    // update meal selection
-                    if(!String.isBlank(reqWrapper.mealSelectionId) || opRecord.Plant_Meal_Selection__c!=null){
-                        System.debug('&&&&&&&& = > 5');
-                        new_MealSelection_Rec.Id = reqWrapper.mealSelectionId==''?opRecord.Plant_Meal_Selection__c:reqWrapper.mealSelectionId;
-                        isMsOld = true;
-                    }
-                    else{
-                        // insert meal selection
-                        System.debug('&&&&&&&& = > 6');
-                        new_MealSelection_Rec.recordTypeId = Schema.SObjectType.Plant_Meal_Selection__c.getRecordTypeInfosByName().get('Customer').getRecordTypeId();
-
-                        List<Plant_Meal_Selection__c> mealSelctRecdList = new List<Plant_Meal_Selection__c>();
-                        mealSelctRecdList.add(new_MealSelection_Rec);
-
-                        Database.SaveResult[] srList = Database.insert(mealSelctRecdList, false);
-                        Plant_Utility.dmlResultWrap dmlReslt = Plant_Utility.checkDML_Result(srList);
-                        if(dmlReslt.status=='error')
-                            msg += '\n Error Meal Selection: '+dmlReslt.messg;
-                        else 
-                            new_MealSelection_Rec.Id = dmlReslt.messg;
-                    }
-                    
-                    mealSelectionResp mealSel_Resp = new mealSelectionResp();
-                    mealSel_Resp.mealSelectionId = new_MealSelection_Rec.Id;
-                    
-                    
-                    // MEAL LIST VALIDATION**
-                    if(new_MealSelection_Rec!=null ){
-
-                        // CHECK existing MEAL SELECTION MEALS(records) & delete
-                        List<Plant_Meal_Selection_Meal__c> mealSlectionMeal_ExistingList = [SELECT id FROM Plant_Meal_Selection_Meal__c WHERE Plant_Meal_Selection__c=:new_MealSelection_Rec.Id];
-                        if(!mealSlectionMeal_ExistingList.isEmpty()){
-                            delete mealSlectionMeal_ExistingList;
-                        }
-
-                        if(reqWrapper.meals.size()!=0){
-                            System.debug('&&&&&&&& = > 7.1');
-                            // remove all selected list and add new meal list
-                            Plant_Utility.wrapMeal[] tempMealList = new List<Plant_Utility.wrapMeal>();
-                            tempMealList = reqWrapper.meals;
-
-                            // (New C req*)
-                            // check size by quantity
-                            Integer mealCount = 0;
-                            for(Plant_Utility.wrapMeal mel : tempMealList){
-                                if(mel.quantity.isNumeric()){
-                                    mealCount+=Integer.valueOf(mel.quantity);
-                                }
+                    if(reqWrapper.useChefMenu == true){
+                        //Custom Settings Planatable Internal Account...
+                        Map<string, plantable_Constants__c> mapCustomSettings=plantable_Constants__c.getall();
+                        plantable_Constants__c CustomSetting=mapCustomSettings.get('DevConstant');
+                        insert new_MealSelection_Rec;
+                        List<Plant_Meal_Selection__c> chefMeal_List=[Select id,(SELECT Id, IsDeleted, Name, CreatedDate, CreatedById, LastModifiedDate, LastModifiedById, SystemModstamp, Plant_Meal_Selection__c, Plant_Meal__c, Plant_Quantity__c FROM Meal_Selection_Meals__r Limit 200), 
+                        OwnerId, IsDeleted, Name, RecordTypeId, CreatedDate, CreatedById, LastModifiedDate, LastModifiedById, SystemModstamp, LastViewedDate, LastReferencedDate, Plant_Description__c, Plant_Owner__c from Plant_Meal_Selection__c where Plant_Owner__c=:CustomSetting.Plantable_Internal_Account__c Limit 1];
+                        // Cloning Meal Selection Meal Item for the related Opportunity Meal
+                        if(!chefMeal_List[0].Meal_Selection_Meals__r.isEmpty()){
+                                
+                            List<Plant_Meal_Selection_Meal__c> mealSelectionMeal_List=new List<Plant_Meal_Selection_Meal__c>();
+                            for(Plant_Meal_Selection_Meal__c mealSelectionMeal:chefMeal_List[0].Meal_Selection_Meals__r){
+                                Plant_Meal_Selection_Meal__c SelectionMeal=new Plant_Meal_Selection_Meal__c();
+                                SelectionMeal = mealSelectionMeal.clone(false, true, false, false);
+                                SelectionMeal.Plant_Meal_Selection__c=new_MealSelection_Rec.id;
+                                mealSelectionMeal_List.add(SelectionMeal);
                             }
 
-                            if(mealCount!=12){
+                            // Insert Meal in subscripiton Meal selection 
+                            if(!mealSelectionMeal_List.isEmpty()){
+                                insert mealSelectionMeal_List;
+                            }
+                        }
+                        // INSERT or UPDATE ORDER PROPERTY(op) **
+                        if(!String.isBlank(reqWrapper.cartId) || opRecord.id!=null){
+                            System.debug('&&&&&&&& = > 8');
+                            opRecord.Id = reqWrapper.cartId;
+                            // ADD ACCOUNT TO new  order propery: for existing customer
+                                opRecord.Plant_Meal_Selection__c = new_MealSelection_Rec.Id;
+                                if(existingCustomerId!='No' && existingCustomerId!=''){
+                                    opRecord.Plant_Account__c = existingCustomerId;
+                                    System.debug('###@ already account : order property update');
+                                }
+                            update opRecord;
+
+                            string tempMsg = msg;
+                            msg = (tempMsg=='')?'Operation encounter NONE exception':'Operation encounter exception: '+tempMsg;
+                            msg= 'Cart updated successfully:\n'+tempMsg;
+                            response.cartId = opRecord.id;
+                        }
+                        else {
+                            //INSERT
+                            System.debug('&&&&&&&& = > 9');
+                            
+                            opRecord.Plant_Meal_Selection__c = new_MealSelection_Rec.Id;
+                            // ADD ACCOUNT TO new  order propery: for existing customer
+                            if(existingCustomerId!='No' && existingCustomerId!=''){
+                                opRecord.Plant_Account__c = existingCustomerId;    
+                                System.debug('###@ order property insert: already account ');
+                            }
+                                
+                            insert opRecord;
+                            string tempMsg = msg;
+                            msg = (tempMsg=='')?'Operation encounter NONE exception':'Operation encounter exception: '+tempMsg;
+                            msg= 'Cart inserted successfully:\n'+tempMsg;
+                            response.cartId = opRecord.id;
+                        }
+                        
+                    }
+                    else{
+                        // update meal selection
+                        if(!String.isBlank(reqWrapper.mealSelectionId) || opRecord.Plant_Meal_Selection__c!=null){
+                            System.debug('&&&&&&&& = > 5');
+                            new_MealSelection_Rec.Id = reqWrapper.mealSelectionId==''?opRecord.Plant_Meal_Selection__c:reqWrapper.mealSelectionId;
+                            isMsOld = true;
+                        }
+                        else{
+                            // insert meal selection
+                            System.debug('&&&&&&&& = > 6');
+                            new_MealSelection_Rec.recordTypeId = Schema.SObjectType.Plant_Meal_Selection__c.getRecordTypeInfosByName().get('Customer').getRecordTypeId();
+
+                            List<Plant_Meal_Selection__c> mealSelctRecdList = new List<Plant_Meal_Selection__c>();
+                            mealSelctRecdList.add(new_MealSelection_Rec);
+
+                            Database.SaveResult[] srList = Database.insert(mealSelctRecdList, false);
+                            Plant_Utility.dmlResultWrap dmlReslt = Plant_Utility.checkDML_Result(srList);
+                            if(dmlReslt.status=='error')
+                                msg += '\n Error Meal Selection: '+dmlReslt.messg;
+                            else 
+                                new_MealSelection_Rec.Id = dmlReslt.messg;
+                        }
+                        
+                        mealSelectionResp mealSel_Resp = new mealSelectionResp();
+                        mealSel_Resp.mealSelectionId = new_MealSelection_Rec.Id;
+                        
+                        
+                        // MEAL LIST VALIDATION**
+                        if(new_MealSelection_Rec!=null ){
+
+                            // CHECK existing MEAL SELECTION MEALS(records) & delete
+                            List<Plant_Meal_Selection_Meal__c> mealSlectionMeal_ExistingList = [SELECT id FROM Plant_Meal_Selection_Meal__c WHERE Plant_Meal_Selection__c=:new_MealSelection_Rec.Id];
+                            if(!mealSlectionMeal_ExistingList.isEmpty()){
+                                delete mealSlectionMeal_ExistingList;
+                            }
+
+                            if(reqWrapper.meals.size()!=0){
+                                System.debug('&&&&&&&& = > 7.1');
+                                // remove all selected list and add new meal list
+                                Plant_Utility.wrapMeal[] tempMealList = new List<Plant_Utility.wrapMeal>();
+                                tempMealList = reqWrapper.meals;
+
+                                // (New C req*)
+                                // check size by quantity
+                                Integer mealCount = 0;
+                                for(Plant_Utility.wrapMeal mel : tempMealList){
+                                    if(mel.quantity.isNumeric()){
+                                        mealCount+=Integer.valueOf(mel.quantity);
+                                    }
+                                }
+
+                                if(mealCount!=12){
+                                    System.debug('&&&&&&&& = > 7');
+                                    msg+=', Please add 12 meal items';
+                                }
+                                else{   
+
+                                    Plant_Meals_BC.MealSelectionReq_Wrapper reqWp = new Plant_Meals_BC.MealSelectionReq_Wrapper();
+                                    reqWp.mealSelectionId = new_MealSelection_Rec.Id;
+                                    reqWp.mealList = tempMealList;
+            
+                                    Plant_Utility.responseWrapper setMeals_Response  = new Plant_Meals_BC().updateMealSelection(reqWp);
+            
+                                    if(setMeals_Response.statusCode!='200'){
+                                        msg+=','+setMeals_Response.msg;
+                                    }
+                                    else{
+                                        mealSel_Resp.mealSelectionList = setMeals_Response.result;
+                                    }
+
+                                }
+                                
+                            }
+                            else {
                                 System.debug('&&&&&&&& = > 7');
                                 msg+=', Please add 12 meal items';
                             }
-                            else{   
-
-                                Plant_Meals_BC.MealSelectionReq_Wrapper reqWp = new Plant_Meals_BC.MealSelectionReq_Wrapper();
-                                reqWp.mealSelectionId = new_MealSelection_Rec.Id;
-                                reqWp.mealList = tempMealList;
-        
-                                Plant_Utility.responseWrapper setMeals_Response  = new Plant_Meals_BC().updateMealSelection(reqWp);
-        
-                                if(setMeals_Response.statusCode!='200'){
-                                    msg+=','+setMeals_Response.msg;
-                                }
-                                else{
-                                    mealSel_Resp.mealSelectionList = setMeals_Response.result;
-                                }
-
-                            }
-                            
+                            response.mealSelection = mealSel_Resp;
                         }
                         else {
-                            System.debug('&&&&&&&& = > 7');
-                            msg+=', Please add 12 meal items';
+                            msg+=', Unable to create MealSelection';
                         }
-                        response.mealSelection = mealSel_Resp;
-                    }
-                    else {
-                        msg+=', Unable to create MealSelection';
+                        // INSERT or UPDATE ORDER PROPERTY(op) **
+                        if(!String.isBlank(reqWrapper.cartId) || opRecord.id!=null){
+                            System.debug('&&&&&&&& = > 8');
+                            opRecord.Id = reqWrapper.cartId;
+                            if(mealSel_Resp.mealSelectionId!=''&& mealSel_Resp.mealSelectionId!=null)
+                                opRecord.Plant_Meal_Selection__c = mealSel_Resp.mealSelectionId;
+                            // ADD ACCOUNT TO new  order propery: for existing customer
+                                if(existingCustomerId!='No' && existingCustomerId!=''){
+                                    opRecord.Plant_Account__c = existingCustomerId;
+                                    System.debug('###@ already account : order property update');
+                                }
+                            update opRecord;
+
+                            string tempMsg = msg;
+                            msg = (tempMsg=='')?'Operation encounter NONE exception':'Operation encounter exception: '+tempMsg;
+                            msg= 'Cart updated successfully:\n'+tempMsg;
+                            response.cartId = opRecord.id;
+                        }
+                        else {
+                            //INSERT
+                            System.debug('&&&&&&&& = > 9');
+                            if(mealSel_Resp.mealSelectionId!=''&& mealSel_Resp.mealSelectionId!=null)
+                                opRecord.Plant_Meal_Selection__c = mealSel_Resp.mealSelectionId;
+                            // ADD ACCOUNT TO new  order propery: for existing customer
+                            if(existingCustomerId!='No' && existingCustomerId!=''){
+                                opRecord.Plant_Account__c = existingCustomerId;    
+                                System.debug('###@ order property insert: already account ');
+                            }
+                                
+                            insert opRecord;
+                            string tempMsg = msg;
+                            msg = (tempMsg=='')?'Operation encounter NONE exception':'Operation encounter exception: '+tempMsg;
+                            msg= 'Cart inserted successfully:\n'+tempMsg;
+                            response.cartId = opRecord.id;
+                        }
                     }
                     
-                    // INSERT or UPDATE ORDER PROPERTY(op) **
-                    if(!String.isBlank(reqWrapper.cartId) || opRecord.id!=null){
-                        System.debug('&&&&&&&& = > 8');
-                        opRecord.Id = reqWrapper.cartId;
-                        // ADD ACCOUNT TO new  order propery: for existing customer
-                            if(existingCustomerId!='No' && existingCustomerId!=''){
-                                opRecord.Plant_Account__c = existingCustomerId;
-                                System.debug('###@ already account : order property update');
-                            }
-                        update opRecord;
-
-                        string tempMsg = msg;
-                        msg = (tempMsg=='')?'Operation encounter NONE exception':'Operation encounter exception: '+tempMsg;
-                        msg= 'Cart updated successfully:\n'+tempMsg;
-                        response.cartId = opRecord.id;
-                    }
-                    else {
-                        //INSERT
-                        System.debug('&&&&&&&& = > 9');
-                        if(mealSel_Resp.mealSelectionId!=''&& mealSel_Resp.mealSelectionId!=null)
-                            opRecord.Plant_Meal_Selection__c = mealSel_Resp.mealSelectionId;
-                        // ADD ACCOUNT TO new  order propery: for existing customer
-                        if(existingCustomerId!='No' && existingCustomerId!=''){
-                            opRecord.Plant_Account__c = existingCustomerId;    
-                            System.debug('###@ order property insert: already account ');
-                        }
-                            
-                        insert opRecord;
-                        string tempMsg = msg;
-                        msg = (tempMsg=='')?'Operation encounter NONE exception':'Operation encounter exception: '+tempMsg;
-                        msg= 'Cart inserted successfully:\n'+tempMsg;
-                        response.cartId = opRecord.id;
-                    }
+                    
 
                     // Remove existing discount code(if any)
                     boolean removeSuccess = true;
@@ -901,7 +966,8 @@ public class Plant_Orders_BC {
             else {// Account : Insert
                 Plant_Customer_BC.createAccount_Wrap Account_Wrap =new Plant_Customer_BC.createAccount_Wrap();
                 if(!String.isBlank(processOrderRecList[0].Plant_First_Name__c) && !String.isBlank(processOrderRecList[0].Plant_Last_Name__c)){
-                    Account_Wrap.AccountName=processOrderRecList[0].Plant_First_Name__c+' '+processOrderRecList[0].Plant_Last_Name__c;
+                    Account_Wrap.firstName=processOrderRecList[0].Plant_First_Name__c;
+                    Account_Wrap.lastName=processOrderRecList[0].Plant_Last_Name__c;
                 }
                 if(!String.isBlank(processOrderRecList[0].Plant_Phone__c)){
                 Account_Wrap.Phone = processOrderRecList[0].Plant_Phone__c;
@@ -959,6 +1025,7 @@ public class Plant_Orders_BC {
                     old_OpRec.Id = processOrder_ReqWrapper.cartId;
                     old_OpRec.Plant_Account__c = accountId_cap;
                     old_OpRec.Plant_Payment_Method__c = paymentRec.id;
+                    old_OpRec.Plant_Status__c = 'Pending Payment';
                     update old_OpRec;
 
 
@@ -2409,6 +2476,9 @@ public class Plant_Orders_BC {
                             if(!toUpdate_Shipment.isEmpty()){
                                 update toUpdate_Shipment;
                             }
+                            
+                            // AG - Add post Order Event
+                            Plant_TransComm_BC.publishTransactionEvent(Plant_TransComm_BC.setTransactionEvent('Order Cancelled',OrderList[0].AccountId,OrderList[0].id,null));
 
                             statusCode='200';
                             status='Success';
@@ -2598,6 +2668,9 @@ public class Plant_Orders_BC {
                                                     odr_Property.Plant_Delivery_Date__c = Date.valueOf(reqWrap.new_Delivery_Date);
                                                     odr_Property.Plant_Shipping_Date__c = sAddress.id;
                                                     update odr_Property;
+                                                    
+                                                    // AG - Add post Order Event
+                                                    Plant_TransComm_BC.publishTransactionEvent(Plant_TransComm_BC.setTransactionEvent('Order Date Change',odr[0].AccountId,odr[0].id,null));
                                                     
                                                     Status = 'Success';
                                                     StatusCode='200';
@@ -3021,6 +3094,9 @@ public class Plant_Orders_BC {
                                                             sfOrder.Plant_Shipping_Date__c = odr_Prop_recd.Plant_Shipping_Date__c;
                                                             sfOrder.Plant_Delivery_Date__c = Date.valueOf(updateShipReqBody.deliveryDate);
                                                             update sfOrder;
+
+                                                            // AG - Add post Order Event
+                                                            Plant_TransComm_BC.publishTransactionEvent(Plant_TransComm_BC.setTransactionEvent('Order Address Change',sfOrder.AccountId,sfOrder.id,null));
                                                             
                                                             status = 'Success';
                                                             statusCode='200';
@@ -3163,6 +3239,11 @@ public class Plant_Orders_BC {
                                                         // Updating Salesforce Order
                                                         update sfOrder;
                                                         // responseList.add(ordrPropert);
+
+                                                        // AG - Add post Order Event
+                                                        Plant_TransComm_BC.publishTransactionEvent(Plant_TransComm_BC.setTransactionEvent('Order Address Change',sfOrder.AccountId,sfOrder.id,null));
+                                                        
+                                                         
                                                         Status = 'Success';
                                                         StatusCode='200';
                                                         Msg='Shipping Address updated successfully';
@@ -3387,11 +3468,13 @@ public class Plant_Orders_BC {
     // 1. Set Order Type = New Business v Existsing Business
     // 2. Create OnBoarding record for any new customer
     // 3. Update Account Order KPIs; Total Orders, ...
+    // 4. Schedule Shipment Emails
     public static void postTransactionOrderHandler(List<Plant_Transaction__e> lstOrderEvents) {
         Set<String> orderIds = new Set<String>();
         Set<String> accountIds = new Set<String>();
         Set<String> setOrderPropIds = new Set<String>();
         MAP<String,Plant_Transaction__e> mapEvents = new MAP<String,Plant_Transaction__e>();
+        MAP<String,Order> mapEventOrder = new MAP<String,Order>();
         
         // Setup ID Lists
         for(Plant_Transaction__e pte :lstOrderEvents) {
@@ -3401,12 +3484,14 @@ public class Plant_Orders_BC {
         }
         System.debug('orderIds:' + orderIds);
         System.debug('accountIds:' + accountIds);
+        System.debug('mapEvents:' + mapEvents);
 
 		// Get ALL orders related to accounts in play        
         List<Order> lstOrders = [select Id, AccountId, ActivatedDate, TotalAmount, Plant_Main_Product__c,
                                  Plant_Order_Properties__c, Plant_Subscription__c,
                                  Plant_Subscription__r.Order_Count__c,
-                                 Discount_Codes_Used__c, Plant_Subscription_Order_Number__c 
+                                 Discount_Codes_Used__c, Plant_Subscription_Order_Number__c,
+                                 Plant_Shipping_Date__r.Plant_Shipping_Date__c
                                  from Order 
                                  where AccountId in :accountIds AND status = 'Activated'
                                 ORDER BY ActivatedDate];
@@ -3415,6 +3500,10 @@ public class Plant_Orders_BC {
             // Is order in play
             if(orderIds.contains(o.Id)) {
                 setOrderPropIds.add(o.Plant_Order_Properties__c);
+                Plant_Transaction__e fndEvt = mapEvents.get(o.Id);
+                if(fndEvt != NULL) {
+                	mapEventOrder.put(fndEvt.id, o);    
+                }
             }
         }
 		System.debug('setOrderPropIds:' + setOrderPropIds);        
@@ -3460,9 +3549,8 @@ public class Plant_Orders_BC {
         }
         System.debug('mapAccts:' + mapAccts);
         
-        
+        // Count Order KPIs By Account
         MAP<String, Account> mapOrdersAcct = new MAP<String, Account>();
-        // Count Orders By Account
         for(Order o :lstOrders) {
             
             System.debug('Order Loop:' + o);
@@ -3502,58 +3590,73 @@ public class Plant_Orders_BC {
         
         List<Order> updateOrders = new List<Order>();
         List<OnBoarding__c> insertOnBoardings = new List<OnBoarding__c>();
-        // Update main orders with Type
-        for(Order o :lstOrders) {
-            
-            System.debug('Order Loop2:' + o);
-            
-            Plant_Transaction__e fndEvt = mapEvents.get(o.Id);
-            
-            // Is order in play
-            if(orderIds.contains(o.Id) && fndEvt != NULL) {
-                
-                if(fndEvt.Plant_Type__c == 'Order Paid') {
-                
-                    System.debug('Order In Play:' + o);
-                    
-                    Account fndAccount = mapAccts.get(o.AccountId);
-                    System.debug('fndAccount:' + fndAccount);
-                    
-                    if(fndAccount!=NULL) {
-                        if(fndAccount.Total_Orders__c == 1) {
-                            o.Type = 'New Business';
-                            
-                            // Create OnBoarding Record
-                            OnBoarding__c newOnBoard = new OnBoarding__c(
-                                Account__c = o.AccountId
-                            );
-                            insertOnBoardings.add(newOnBoard);
-                            
-                        } else if(fndAccount.Total_Orders__c > 1) {
-                            o.Type = 'Existing Business';
-                        }
-                        System.debug('update order type:' + o);
-                    }
-                    
-                    String fndDisc = mapOrderPropDisc.get(o.Plant_Order_Properties__c);
-                    System.debug('fndAccount:' + fndAccount);
-                    
-                    if(fndDisc != NULL) {
-                        o.Discount_Codes_Used__c = fndDisc;
-                        System.debug('update order discount:' + o);
-                    }
-                    
-                    if(o.Plant_Subscription__c != NULL) {
-                        o.Plant_Subscription_Order_Number__c = o.Plant_Subscription__r.Order_Count__c;
-                    }
-                    
-                    if(fndAccount!=NULL || fndDisc!=NULL || o.Plant_Subscription__c != NULL) {
-                        updateOrders.add(o);
-                    }
-                }
-            }
-        }
         
+        // Process Orders from Trans Event
+        for(Plant_Transaction__e pte :lstOrderEvents) {
+            System.debug('pte:' + pte);
+            
+            Order fndOrder = mapEventOrder.get(pte.id);
+            System.debug('fndOrder:' + fndOrder);
+            
+            if(pte.Plant_Type__c == 'Order Cancelled') {
+            	
+                // Cancel Staged Scheduled Emails
+                Plant_TransComm_BC.cancelStagedScheduledTransComm('Order Shipment Upcoming', fndOrder.AccountId, fndOrder.Id, null);
+                Plant_TransComm_BC.cancelStagedScheduledTransComm('Order Shipment Sent', fndOrder.AccountId, fndOrder.Id, null);
+
+            } else if(pte.Plant_Type__c == 'Order Date Change' || pte.Plant_Type__c == 'Order Address Change') {
+                            
+                // Stage Scheduled Emails
+                // This is cancel the old one, and create a new one on the correct date
+                Plant_TransComm_BC.stageScheduledTransComm('Order Shipment Upcoming', fndOrder.AccountId, fndOrder.Id, null, fndOrder.Plant_Shipping_Date__r.Plant_Shipping_Date__c);
+                Plant_TransComm_BC.stageScheduledTransComm('Order Shipment Sent', fndOrder.AccountId, fndOrder.Id, null, fndOrder.Plant_Shipping_Date__r.Plant_Shipping_Date__c);
+                
+            } else if(pte.Plant_Type__c == 'Order Paid') {
+                
+                // Stage Scheduled Emails
+                Plant_TransComm_BC.stageScheduledTransComm('Order Shipment Upcoming', fndOrder.AccountId, fndOrder.Id, null, fndOrder.Plant_Shipping_Date__r.Plant_Shipping_Date__c);
+                Plant_TransComm_BC.stageScheduledTransComm('Order Shipment Sent', fndOrder.AccountId, fndOrder.Id, null, fndOrder.Plant_Shipping_Date__r.Plant_Shipping_Date__c);
+
+                // Update KPIs & Create Onboardings
+                Account fndAccount = mapAccts.get(fndOrder.AccountId);
+                System.debug('fndAccount:' + fndAccount);
+                
+                if(fndAccount!=NULL) {
+                    if(fndAccount.Total_Orders__c == 1) {
+                        fndOrder.Type = 'New Business';
+                        
+                        // Create OnBoarding Record
+                        OnBoarding__c newOnBoard = new OnBoarding__c(
+                            Account__c = fndOrder.AccountId
+                        );
+                        insertOnBoardings.add(newOnBoard);
+                        
+                    } else if(fndAccount.Total_Orders__c > 1) {
+                        fndOrder.Type = 'Existing Business';
+                    }
+                    System.debug('update order type:' + fndOrder);
+                }
+                
+                String fndDisc = mapOrderPropDisc.get(fndOrder.Plant_Order_Properties__c);
+                System.debug('fndAccount:' + fndAccount);
+                
+                if(fndDisc != NULL) {
+                    fndOrder.Discount_Codes_Used__c = fndDisc;
+                    System.debug('update order discount:' + fndOrder);
+                }
+                
+                if(fndOrder.Plant_Subscription__c != NULL) {
+                    fndOrder.Plant_Subscription_Order_Number__c = fndOrder.Plant_Subscription__r.Order_Count__c;
+                }
+                
+                if(fndAccount!=NULL || fndDisc!=NULL || fndOrder.Plant_Subscription__c != NULL) {
+                    updateOrders.add(fndOrder);
+                }                
+                
+            }
+            
+        }
+                
         if(!updateOrders.isEmpty()) {
             System.debug('update updateOrders:' + updateOrders);
         	update updateOrders;    
@@ -3589,6 +3692,7 @@ public class Plant_Orders_BC {
         public String email;
         public Plant_Utility.addressCapsule shippingAddress;
         public Boolean shipASAP;
+        public Boolean useChefMenu;
         // public String shipDate; //YYYY-MM-DD format
         public String DeliveryDate; //YYYY-MM-DD format
         public Plant_Utility.wrapMeal[] meals;

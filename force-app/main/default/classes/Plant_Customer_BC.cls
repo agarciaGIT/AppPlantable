@@ -22,6 +22,7 @@ public class Plant_Customer_BC {
         String existingCustomerId = '';
         String response='';
         List<Account> Plant_Account=new List<Account>();
+        List<Contact> Plant_Contact=new List<Contact>();
         List<userAuth_ResponseWrap> authResp_List = new List<userAuth_ResponseWrap>();
         try{
             if(Account_Wrap!=null){
@@ -45,7 +46,7 @@ public class Plant_Customer_BC {
                 }
                 
                 if(!String.isBlank(existingCustomerId)){
-                    List<Account> customer_RecdList = [SELECT Id, Name, Email__c, Phone, plant_Authentication_Token__c, plant_TokenLife__c FROM Account WHERE id=:existingCustomerId];
+                    List<Account> customer_RecdList = [SELECT Id,(Select id from Contacts Limit 200), Name, Email__c, Phone, plant_Authentication_Token__c, plant_TokenLife__c FROM Account WHERE id=:existingCustomerId];
                     if(!customer_RecdList.isEmpty()){
                         // if Multiple Account of same email
                         if(customer_RecdList.size()>1){
@@ -57,14 +58,19 @@ public class Plant_Customer_BC {
                             
                             for(Account acct:customer_RecdList){
                                 Account acc=new Account();
+                                Contact con = new Contact();
                                 acc.id=acct.id;
-                                if(!String.isBlank(Account_Wrap.name)){
-                                    acc.name=Account_Wrap.name;
+                                                                
+                                if(!String.isBlank(Account_Wrap.firstName) && !String.isBlank(Account_Wrap.lastname)){
+                                    acc.name=Account_Wrap.firstname+' '+Account_Wrap.lastname;
+                                    con.firstName = Account_Wrap.firstName;
+                                    con.lastName = Account_Wrap.lastname;
                                     msg+='Name is Edited';
                                 }
                                 if(!String.isBlank(Account_Wrap.phone)){
                                     if(Plant_Utility.CheckValidInteger(Account_Wrap.phone)){
                                         acc.Phone=Account_Wrap.phone;
+                                        con.Phone = Account_Wrap.phone;
                                         msg+=', Phone is Updated';
                                     }
                                     else{
@@ -75,6 +81,7 @@ public class Plant_Customer_BC {
                                 if(!String.isBlank(Account_Wrap.email)){
                                     if(Plant_Utility.checkEmail(Account_Wrap.email)){
                                         acc.Email__c=Account_Wrap.email.toLowerCase();
+                                        con.Email = Account_Wrap.email.toLowerCase();
                                         msg+=', Email is Updated';
                                     }
                                     else{
@@ -83,9 +90,18 @@ public class Plant_Customer_BC {
                                 }
                                 
                                 Plant_Account.add(acc); 
+                                if(!acct.Contacts.isEmpty()){
+                                    con.id=acct.Contacts[0].id;
+                                    Plant_Contact.add(con);
+                                }
+                                
                             }
                             // update account
                             update(Plant_Account);
+                            if(!Plant_Contact.isEmpty()){
+                                update(Plant_Contact);
+                            }
+                            
                             status = 'Success';
                             statusCode='200';
                             msg+=', Customer Information updated Sucessfully';
@@ -141,20 +157,18 @@ public class Plant_Customer_BC {
             // VALIDATION 1: Check if request wrapper has value
             if(Account_Wrap!=null){
                 
-                if(!String.isBlank(Account_Wrap.AccountName)){
+                if(!String.isBlank(Account_Wrap.firstName) || !String.isBlank(Account_Wrap.lastName)){
 
-                    if(Account_Wrap.AccountName.split(' ').size()>1){
-                        acc.First_Name__c = Account_Wrap.AccountName.split(' ')[0];
-                        acc.Last_Name__c = Account_Wrap.AccountName.split(' ')[1];
+                    if(!String.isBlank(Account_Wrap.firstName)){
+                        acc.First_Name__c = Account_Wrap.firstName;
                         con.FirstName = acc.First_Name__c;
+                    }
+                    if(!String.isBlank(Account_Wrap.lastName)){
+                        acc.Last_Name__c = Account_Wrap.lastName;
                         con.LastName = acc.Last_Name__c ;
                     }
-                    else{
-                        acc.First_Name__c=Account_Wrap.AccountName;
-                        con.LastName = acc.Last_Name__c ;
-                    }
-                        
-                    acc.Name=Account_Wrap.AccountName;
+                    acc.Name=Account_Wrap.firstName+' '+Account_Wrap.lastName;    
+                    
                     
                     // check email
                     if(!String.isBlank(Account_Wrap.email)){
@@ -1078,7 +1092,8 @@ public class Plant_Customer_BC {
     // wrap : customer info req details
     public class AccountInfo_Wrap{
         public String authenticationToken;
-        public String name;
+        public String firstname;
+        public String lastname;
         public String email;
         public String phone;
         
@@ -1199,7 +1214,8 @@ public class Plant_Customer_BC {
     // wrap 8:
     // desc: Wrapper to create Account
     public class createAccount_Wrap{
-        public String AccountName;
+        public String firstName;
+        public String lastName;
         public String Email;
         public String Phone;
         // public String Password;

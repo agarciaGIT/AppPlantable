@@ -520,6 +520,10 @@ public class Plant_Subscriptions_BC {
                                 subscription[0].Plant_New_Payment_Method_Id__c ='';
                                 System.debug('Tag 5 : ');
                                 update subscription;
+                                
+                                // AG - Add post Subscription Event
+                                Plant_TransComm_BC.publishTransactionEvent(Plant_TransComm_BC.setTransactionEvent('Subscription Payment Change',subscription[0].Plant_Account__c,null,subscription[0].Id));
+                                
                                 System.debug('Tag 6 : ');
                                 //Database.rollback(initial_SavePointState1);
                                 System.debug('Tag 7 : ');
@@ -782,6 +786,9 @@ public class Plant_Subscriptions_BC {
                                                     tempSub.Plant_Next_Delivery_Date__c = Date.valueOf(reqWrp.deliveryDate);
                                                     update tempSub;
                                                     
+                                                    // AG - Add post Subscription Event
+                                                    Plant_TransComm_BC.publishTransactionEvent(Plant_TransComm_BC.setTransactionEvent('Subscription Address Change',tempSub.Plant_Account__c,null,tempSub.Id));
+
                                                     // update next pending order
                                                     // Order next_Odr = new Order();
                                                     // next_Odr.Id = tempSub.Plant_Next_Pending_Order__c;
@@ -888,6 +895,9 @@ public class Plant_Subscriptions_BC {
                                                         tempSub.Plant_Next_Delivery_Date__c=Date.valueof(reqWrp.deliveryDate);
                                                         update tempSub;
                                                         
+                                                        // AG - Add post Subscription Event
+                                                        Plant_TransComm_BC.publishTransactionEvent(Plant_TransComm_BC.setTransactionEvent('Subscription Address Change',tempSub.Plant_Account__c,null,tempSub.Id));
+
                                                         // // update next pending order
                                                         // Order next_Odr = new Order();
                                                         // next_Odr.Id = tempSub.Plant_Next_Pending_Order__c;
@@ -1054,7 +1064,9 @@ public class Plant_Subscriptions_BC {
                                             // next_Odr.Plant_Shipping_Date__c = sAddress.id;
                                             // update next_Odr;
                                             
-                                            
+                                            // AG - Add post Subscription Event
+                                            Plant_TransComm_BC.publishTransactionEvent(Plant_TransComm_BC.setTransactionEvent('Subscription Date Change',subscriptionList[0].Plant_Account__c,null,subscriptionList[0].Id));
+
                                             Status = 'Success';
                                             StatusCode='200';
                                             
@@ -1124,8 +1136,11 @@ public class Plant_Subscriptions_BC {
         try{
             //Plant_Account__c
             List<Plant_Subscription__c> pt_Subs_List = [SELECT Id,Plant_Account__c,Plant_Status__c,Plant_Chargent_Order__c,Plant_Chargent_Order__r.ChargentOrders__Payment_Status__c,Plant_Account__r.plant_TokenCreatedDateTime__c FROM Plant_Subscription__c WHERE id=:subsRequestWrap.subscriptionId LIMIT 1];
-            Plant_Subscription__c pt_Subs = pt_Subs_List[0];
-            if(pt_Subs!=null){
+            
+            // AG - Protect pt_Subs_List[0]
+            if(!pt_Subs_List.isEmpty()){
+                	Plant_Subscription__c pt_Subs = pt_Subs_List[0];
+                
                  // VALIDATE: AuthenticationToken
                     String validationResult = plant_AuthorizeController.validateAccessToken('',pt_Subs.Plant_Account__c, subsRequestWrap.authenticationToken);
                     if(validationResult.startsWith('Success')){
@@ -1217,7 +1232,16 @@ public class Plant_Subscriptions_BC {
                                 update pt_Subs;
                                 // chargent update
                                 update chg_odr;
-        
+                                
+                                // AG - Add post Subscription Event
+                                if(subsRequestWrap.newStatus=='Paused') {
+                                	Plant_TransComm_BC.publishTransactionEvent(Plant_TransComm_BC.setTransactionEvent('Subscription Paused',pt_Subs.Plant_Account__c,null,pt_Subs.Id));    
+                                } else if(subsRequestWrap.newStatus=='Active') {
+                                    Plant_TransComm_BC.publishTransactionEvent(Plant_TransComm_BC.setTransactionEvent('Subscription Resumed',pt_Subs.Plant_Account__c,null,pt_Subs.Id));    
+                                } else if(subsRequestWrap.newStatus=='Canceled') {
+                                    Plant_TransComm_BC.publishTransactionEvent(Plant_TransComm_BC.setTransactionEvent('Subscription Cancelled',pt_Subs.Plant_Account__c,null,pt_Subs.Id));    
+                                }
+                                
                                 statusCode='200';
                                 status='Success';
                                 msg+='Subscription successfully updated!';
@@ -1368,6 +1392,9 @@ public class Plant_Subscriptions_BC {
                                     subs.Plant_Meal_Selection__c = new_MealSelection_RecId;
                                     update subs;
                                     
+                                    // AG - Add post Subscription Event
+                                    Plant_TransComm_BC.publishTransactionEvent(Plant_TransComm_BC.setTransactionEvent('Subscription Meal Change',subscriptionList[0].Plant_Account__c,null,subscriptionList[0].Id));
+
                                 }
                                 else{
                                     // return error
@@ -1547,6 +1574,7 @@ public class Plant_Subscriptions_BC {
     // This is to remove load from the actual transaction
     // Thigs we do here:
     // 1. Update Account Lookups
+    // 2. Stage scheduled communications (future charges)
     public static void postTransactionOrderHandler(List<Plant_Transaction__e> lstSubscriptionEvents) {
         
         // Setup ID Lists
@@ -1564,7 +1592,7 @@ public class Plant_Subscriptions_BC {
         }
         System.debug('mapAccts:' + mapAccts);
         
-        List<Plant_Subscription__c> lstSub = [select Id, RecordType.Name from Plant_Subscription__c where id in :mapAcctSubs.values()];
+        List<Plant_Subscription__c> lstSub = [select Id, RecordType.Name, Plant_Next_Charge_Date__c from Plant_Subscription__c where id in :mapAcctSubs.values()];
         System.debug('lstSub:' + lstSub);
         MAP<String,Plant_Subscription__c> mapSubs = new MAP<String,Plant_Subscription__c>();
         for(Plant_Subscription__c ps :lstSub) {
@@ -1585,6 +1613,7 @@ public class Plant_Subscriptions_BC {
                                 
             if(pte.Plant_Type__c == 'Subscription Created') {
             
+                // Update Account subscription lookups
                 if(fndSub != NULL && fndAcct != NULL) {
                     if(fndSub.RecordType.Name == 'Reboot') {
                         fndAcct.Plant_Reboot_Subscription__c = fndSub.Id;
@@ -1594,6 +1623,21 @@ public class Plant_Subscriptions_BC {
                     System.debug('Add updateAtts:' + fndAcct);
                     updateAtts.add(fndAcct);
                 }
+                
+                // Stage Scheduled Emails
+                Plant_TransComm_BC.stageScheduledTransComm('Subscription Payment Upcoming', fndAcct.Id, null, fndSub.Id, fndSub.Plant_Next_Charge_Date__c);
+                
+            } else if(pte.Plant_Type__c == 'Subscription Cancelled' || pte.Plant_Type__c == 'Subscription Paused') {
+                
+                // Cancel Staged Scheduled Emails
+                Plant_TransComm_BC.cancelStagedScheduledTransComm('Subscription Payment Upcoming', fndAcct.Id, null, fndSub.Id);
+             
+                
+            } else if(pte.Plant_Type__c == 'Subscription Date Change' || pte.Plant_Type__c == 'Subscription Address Change' || pte.Plant_Type__c == 'Subscription Resumed') {
+
+                // Stage Scheduled Emails
+                // This is cancel the old one, and create a new one on the correct date
+                Plant_TransComm_BC.stageScheduledTransComm('Subscription Payment Upcoming', fndAcct.Id, null, fndSub.Id, fndSub.Plant_Next_Charge_Date__c);
                 
             }
         }
