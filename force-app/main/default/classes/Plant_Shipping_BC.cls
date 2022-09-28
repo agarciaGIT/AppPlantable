@@ -424,7 +424,7 @@ public class Plant_Shipping_BC {
     }
     
     // Internal Methods
-    public static void paymentMethodTriggerHandler(List<Plant_Shipping_Address__c> lstShipAddrs) {
+    public static void shippingAddressTriggerHandler(List<Plant_Shipping_Address__c> lstShipAddrs) {
         MAP<String,Plant_Shipping_Address__c> mapShipAddrs = new MAP<String,Plant_Shipping_Address__c>();
         Set<String> accountIDs = new Set<String>();
         for(Plant_Shipping_Address__c sa :lstShipAddrs) {     

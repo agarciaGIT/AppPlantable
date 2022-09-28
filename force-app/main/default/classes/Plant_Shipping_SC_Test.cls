@@ -15,6 +15,30 @@ public with sharing class Plant_Shipping_SC_Test {
     }
     
     // AG Methods
+    public testMethod static void Orders_cloneShippingAddress(){
+        
+        Account accounts = Plant_TestDataFactory.createAccounts(1)[0];
+        insert accounts;
+        
+        Plant_Shipping_Address__c shippingAddress = Plant_TestDataFactory.createShippingAddress(1)[0];
+        shippingAddress.Plant_Account__c= accounts.id;
+        shippingAddress.Plant_Is_Account_Record__c = True;
+        insert shippingAddress;
+
+        Plant_Shipping_Address__c shippingAddress1 = Plant_TestDataFactory.createShippingAddress(1)[0];
+        shippingAddress1.Plant_Account__c= accounts.id;
+        shippingAddress1.Plant_Save_Shipping_Address__c = True;
+        insert shippingAddress1;
+
+        Plant_Shipping_Address__c clone = Plant_Shipping_BC.cloneShippingAddress(shippingAddress, shippingAddress.Id, True);
+        
+        List<Plant_Shipping_Address__c> lstShipAddrs = new List<Plant_Shipping_Address__c>();
+        lstShipAddrs.add(shippingAddress);
+        Plant_Shipping_BC.shippingAddressTriggerHandler(lstShipAddrs);
+        
+    }
+     
+    
     static testMethod void plant_Shipping_GetStates1(){
         Plant_Delivery_Schedule__c DeliverySchedule= Plant_TestDataFactory.createDeliverySchedule(1, 1)[0];
         insert DeliverySchedule;

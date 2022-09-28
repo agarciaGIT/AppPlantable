@@ -308,7 +308,7 @@ public class Plant_Orders_BC {
                         System.debug('@@@@@ shipping id ');
                         // existing Shipping address
                         List<Plant_Shipping_Address__c> exstShippngAddrs = [SELECT Id, Name, Plant_Account__c, Plant_First_Name__c, Plant_Last_Name__c, Plant_Street1__c, Plant_Province_State__c, Plant_City__c, Plant_Country__c, Plant_Postal_Code__c, 
-                                                    Plant_Phone__c, Plant_Can_SMS__c, Plant_Street2__c, Plant_Street3__c FROM Plant_Shipping_Address__c WHERE Id=:reqWrapper.ShippingAddressId];
+                                                    Plant_Phone__c, Plant_Can_SMS__c, Plant_Street2__c, Plant_Street3__c FROM Plant_Shipping_Address__c WHERE Plant_Is_Account_Record__c = True AND Id=:reqWrapper.ShippingAddressId];
                         
                         if(!exstShippngAddrs.isEmpty()){
                             opRecord.Shipping_Address__c = reqWrapper.ShippingAddressId;
@@ -362,7 +362,7 @@ public class Plant_Orders_BC {
                             shipAdd_rec.Plant_Last_Name__c = reqWrapper.shippingAddress.LastName;
                         else 
                             msg+=', lastname not available in shipping address';   
-
+						shipAdd_rec.Plant_Save_Shipping_Address__c = True;
                         list<Plant_Shipping_Address__c> newShipAddress = new list<Plant_Shipping_Address__c>();
                         newShipAddress.add(shipAdd_rec);
 
@@ -3156,7 +3156,7 @@ public class Plant_Orders_BC {
                                 // FOR EXISTING SHIPPING ADDRESS
                                 if(!String.isBlank(updateShipReqBody.shippingAddressId)){        
                                     
-                                    List<Plant_Shipping_Address__c> existingShippingAddress_List  = [ SELECT id,Plant_Province_State__c,Plant_Country__c,Plant_Postal_Code__c FROM Plant_Shipping_Address__c WHERE Id=:updateShipReqBody.shippingAddressId AND Plant_Account__c=:existingCustomerId ];
+                                    List<Plant_Shipping_Address__c> existingShippingAddress_List  = [ SELECT id,Plant_Province_State__c,Plant_Country__c,Plant_Postal_Code__c FROM Plant_Shipping_Address__c WHERE Plant_Is_Account_Record__c = True AND Id=:updateShipReqBody.shippingAddressId AND Plant_Account__c=:existingCustomerId ];
                                     if(!existingShippingAddress_List.isEmpty()){
                                         // VALIDATE SHIPPING ADDRESS
                                         Plant_Shipping_BC.deliveryDateWrapper tempAddrsWrap = new Plant_Shipping_BC.deliveryDateWrapper();
@@ -3183,9 +3183,12 @@ public class Plant_Orders_BC {
                                                             odr_Prop_recd.Id = sfOrder.Plant_Order_Properties__c;
                                                             odr_Prop_recd.Plant_Shipping_Date__c=avail_DeliveryDaye_Map.get(String.valueOf(sfOrder.Plant_Order_Properties__r.Plant_Delivery_Date__c)).split(':')[0];
                                                             odr_Prop_recd.Plant_Delivery_Date__c = Date.valueOf(updateShipReqBody.deliveryDate);
-                                                            odr_Prop_recd.Shipping_Address__c = updateShipReqBody.shippingAddressId;
+                                                            
+                                                            // AG Clone Account Record
+                                                            Plant_Shipping_Address__c cloneSA = Plant_Shipping_BC.cloneShippingAddress(existingShippingAddress_List[0], existingShippingAddress_List[0].Id, False);
+                                                            insert cloneSA;
+                                                            odr_Prop_recd.Shipping_Address__c = cloneSA.Id;
                                                             update odr_Prop_recd;
-
 
                                                             // Updating Sf ORder
                                                             sfOrder.Plant_Shipping_Date__c = odr_Prop_recd.Plant_Shipping_Date__c;
@@ -3237,129 +3240,130 @@ public class Plant_Orders_BC {
                                         if(sforder.Plant_Order_Properties__c!=null){
                                             
                                             Boolean newDateAvailabel = false;
-                
-                                                Plant_Order_Properties__c ordrPropert=new Plant_Order_Properties__c();
+                                            
+                                            Plant_Order_Properties__c ordrPropert=new Plant_Order_Properties__c();
+                                            
+                                            // VALIDATE: address US or Caneda
+                                            if(Plant_Utility.checkAddress(updateShipReqBody.shippingAddress)){
+                                                // Check: Delivery Date address
                                                 
-                                                // VALIDATE: address US or Caneda
-                                                if(Plant_Utility.checkAddress(updateShipReqBody.shippingAddress)){
-                                                    // Check: Delivery Date address
-                                                    
-                                                    Plant_Shipping_BC.deliveryDateWrapper tempAddrsWrap = new Plant_Shipping_BC.deliveryDateWrapper();
-                                                    tempAddrsWrap.state=updateShipReqBody.shippingAddress.state;
-                                                    tempAddrsWrap.zip=updateShipReqBody.shippingAddress.zip;
-                                                    
-                                                    Plant_Utility.responseWrapper availableDates_List = new Plant_Shipping_BC().getAvailableDeliveryDates(tempAddrsWrap);
-                                                    System.debug('&&&&&&&&#  = >'+availableDates_List);
-                                                    
-                                                    if(availableDates_List.status=='success'){
-                                                        if(availableDates_List.result!=null && availableDates_List.result.resultMap!=null){
-                                                            if(availableDates_List.result.resultMap.keySet().size()==0){
-                                                                Msg+='Shipping date not available for this address, ';
-                                                            }
-                                                            else{
-                                                                // check available shipping date from sf Delivery schedule records
-                                                                System.debug('@@@@ check date => '+updateShipReqBody.deliveryDate);
-                                                                
-                                                                if(Plant_Utility.checkDateFormat(updateShipReqBody.deliveryDate)){
-                                                                    Map<String,String> avail_DeliveryDaye_Map = (Map<String,String>)availableDates_List.result.resultMap;
-                                                                    if(avail_DeliveryDaye_Map.keySet().contains(updateShipReqBody.deliveryDate)){
-                                                                        if(sforder.Plant_Subscription__r.Plant_Next_Shipment_Date__c>Date.valueOf(updateShipReqBody.deliveryDate)){
-                                                                            ordrPropert.id=sforder.Plant_Order_Properties__c;
-                                                                            ordrPropert.Plant_Shipping_Date__c=avail_DeliveryDaye_Map.get(updateShipReqBody.deliveryDate).split(':')[0];
-                                                                            ordrPropert.Plant_Delivery_Date__c=Date.valueOf(updateShipReqBody.deliveryDate);
-                                                                            sfOrder.Plant_Shipping_Date__c = ordrPropert.Plant_Shipping_Date__c;
-                                                                            sfOrder.Plant_Delivery_Date__c = Date.valueOf(updateShipReqBody.deliveryDate);
-                                                                            
-                                                                            newDateAvailabel= true;
-                                                                            Msg+='Success: Shipping date updated successfully, ';
-                                                                        }else{
-                                                                            status = 'error';
-                                                                            statusCode='501';
-                                                                            msg+=', Delivery date is more than next order Shipping date:';
-                                                                        }
-                                                                    }
-                                                                    else {
-                                                                        ordrPropert.Plant_Shipping_Date__c = null;
-                                                                        Msg+='Shipping date not available for address, ';
+                                                Plant_Shipping_BC.deliveryDateWrapper tempAddrsWrap = new Plant_Shipping_BC.deliveryDateWrapper();
+                                                tempAddrsWrap.state=updateShipReqBody.shippingAddress.state;
+                                                tempAddrsWrap.zip=updateShipReqBody.shippingAddress.zip;
+                                                
+                                                Plant_Utility.responseWrapper availableDates_List = new Plant_Shipping_BC().getAvailableDeliveryDates(tempAddrsWrap);
+                                                System.debug('&&&&&&&&#  = >'+availableDates_List);
+                                                
+                                                if(availableDates_List.status=='success'){
+                                                    if(availableDates_List.result!=null && availableDates_List.result.resultMap!=null){
+                                                        if(availableDates_List.result.resultMap.keySet().size()==0){
+                                                            Msg+='Shipping date not available for this address, ';
+                                                        }
+                                                        else{
+                                                            // check available shipping date from sf Delivery schedule records
+                                                            System.debug('@@@@ check date => '+updateShipReqBody.deliveryDate);
+                                                            
+                                                            if(Plant_Utility.checkDateFormat(updateShipReqBody.deliveryDate)){
+                                                                Map<String,String> avail_DeliveryDaye_Map = (Map<String,String>)availableDates_List.result.resultMap;
+                                                                if(avail_DeliveryDaye_Map.keySet().contains(updateShipReqBody.deliveryDate)){
+                                                                    if(sforder.Plant_Subscription__r.Plant_Next_Shipment_Date__c>Date.valueOf(updateShipReqBody.deliveryDate)){
+                                                                        ordrPropert.id=sforder.Plant_Order_Properties__c;
+                                                                        ordrPropert.Plant_Shipping_Date__c=avail_DeliveryDaye_Map.get(updateShipReqBody.deliveryDate).split(':')[0];
+                                                                        ordrPropert.Plant_Delivery_Date__c=Date.valueOf(updateShipReqBody.deliveryDate);
+                                                                        sfOrder.Plant_Shipping_Date__c = ordrPropert.Plant_Shipping_Date__c;
+                                                                        sfOrder.Plant_Delivery_Date__c = Date.valueOf(updateShipReqBody.deliveryDate);
+                                                                        
+                                                                        newDateAvailabel= true;
+                                                                        Msg+='Success: Shipping date updated successfully, ';
+                                                                    }else{
+                                                                        status = 'error';
+                                                                        statusCode='501';
+                                                                        msg+=', Delivery date is more than next order Shipping date:';
                                                                     }
                                                                 }
                                                                 else {
-                                                                    Msg+='No Shipping date for this address, ';
+                                                                    ordrPropert.Plant_Shipping_Date__c = null;
+                                                                    Msg+='Shipping date not available for address, ';
                                                                 }
                                                             }
-                                                        }
-                                                        else{
-                                                            Msg+='Shipping date not available for this address*,';
+                                                            else {
+                                                                Msg+='No Shipping date for this address, ';
+                                                            }
                                                         }
                                                     }
                                                     else{
-                                                        Msg+='Shipping date Not available for this address, ';
+                                                        Msg+='Shipping date not available for this address*,';
                                                     }
-                                                    
-                                                    if(newDateAvailabel){
-                                                                                                                    
-                                                        Plant_Shipping_Address__c shipAdd_rec = new Plant_Shipping_Address__c();
-                                                        
-                                                        shipAdd_rec.Plant_Can_SMS__c = updateShipReqBody.shippingAddress.canSMS?true:false;
-                                                        if(!String.isBlank(updateShipReqBody.shippingAddress.street1)){
-                                                            shipAdd_rec.Plant_First_Name__c = updateShipReqBody.shippingAddress.firstName;
-                                                        }if(!String.isBlank(updateShipReqBody.shippingAddress.street1)){
-                                                            shipAdd_rec.Plant_Last_Name__c = updateShipReqBody.shippingAddress.LastName;
-                                                        }
-                                                        if(!String.isBlank(updateShipReqBody.shippingAddress.street1)){
-                                                            shipAdd_rec.Plant_street1__c = updateShipReqBody.shippingAddress.street1;
-                                                        }
-                                                        if(!String.isBlank(updateShipReqBody.shippingAddress.street2)){
-                                                            shipAdd_rec.Plant_street2__c = updateShipReqBody.shippingAddress.street2;
-                                                        }
-                                                        if(!String.isBlank(updateShipReqBody.shippingAddress.street3)){
-                                                            shipAdd_rec.Plant_street3__c = updateShipReqBody.shippingAddress.street3;
-                                                        }
-                                                        if(!String.isBlank(updateShipReqBody.shippingAddress.city))
-                                                            shipAdd_rec.Plant_City__c = updateShipReqBody.shippingAddress.city;
-                                                        if(!String.isBlank(updateShipReqBody.shippingAddress.country))
-                                                            shipAdd_rec.Plant_Country__c = updateShipReqBody.shippingAddress.country; 
-                                                        if(!String.isBlank(updateShipReqBody.shippingAddress.phone))     
-                                                            shipAdd_rec.Plant_Phone__c = updateShipReqBody.shippingAddress.phone;
-                                                        if(!String.isBlank(updateShipReqBody.shippingAddress.zip))      
-                                                            shipAdd_rec.Plant_Postal_Code__c = updateShipReqBody.shippingAddress.zip;
-                                                        if(!String.isBlank(updateShipReqBody.shippingAddress.state))      
-                                                            shipAdd_rec.Plant_Province_State__c = updateShipReqBody.shippingAddress.state;
-                                                        
-                                                        shipAdd_rec.Plant_Account__c=sforder.AccountId;
-                                                        insert shipAdd_rec;
-                                                        
-                                                        // Updating Order Property
-                                                        ordrPropert.Shipping_Address__c=shipAdd_rec.id;
-                                                        update ordrPropert;
-
-                                                        // Updating Salesforce Order
-                                                        update sfOrder;
-                                                        // responseList.add(ordrPropert);
-
-                                                        // AG - Add post Order Event
-                                                        Plant_TransComm_BC.publishTransactionEvent(Plant_TransComm_BC.setTransactionEvent('Order Address Change',sfOrder.AccountId,sfOrder.id,null));
-                                                        
-                                                         
-                                                        Status = 'Success';
-                                                        StatusCode='200';
-                                                        Msg='Shipping Address updated successfully';
-                                                    }
-                                                    else {
-                                                        Status = 'Success';
-                                                        StatusCode='200';
-                                                        Msg='Shipping date not available for this address';
-                                                    }
-                                                    
-                                                    
                                                 }
                                                 else{
-                                                    StatusCode='503';
-                                                    Status='error';
-                                                    Msg='Service Unavailable! Shipping address not inserted must be US or Canada';
+                                                    Msg+='Shipping date Not available for this address, ';
                                                 }
+                                                
+                                                if(newDateAvailabel){
+                                                    
+                                                    Plant_Shipping_Address__c shipAdd_rec = new Plant_Shipping_Address__c();
+                                                    
+                                                    shipAdd_rec.Plant_Can_SMS__c = updateShipReqBody.shippingAddress.canSMS?true:false;
+                                                    if(!String.isBlank(updateShipReqBody.shippingAddress.street1)){
+                                                        shipAdd_rec.Plant_First_Name__c = updateShipReqBody.shippingAddress.firstName;
+                                                    }if(!String.isBlank(updateShipReqBody.shippingAddress.street1)){
+                                                        shipAdd_rec.Plant_Last_Name__c = updateShipReqBody.shippingAddress.LastName;
+                                                    }
+                                                    if(!String.isBlank(updateShipReqBody.shippingAddress.street1)){
+                                                        shipAdd_rec.Plant_street1__c = updateShipReqBody.shippingAddress.street1;
+                                                    }
+                                                    if(!String.isBlank(updateShipReqBody.shippingAddress.street2)){
+                                                        shipAdd_rec.Plant_street2__c = updateShipReqBody.shippingAddress.street2;
+                                                    }
+                                                    if(!String.isBlank(updateShipReqBody.shippingAddress.street3)){
+                                                        shipAdd_rec.Plant_street3__c = updateShipReqBody.shippingAddress.street3;
+                                                    }
+                                                    if(!String.isBlank(updateShipReqBody.shippingAddress.city))
+                                                        shipAdd_rec.Plant_City__c = updateShipReqBody.shippingAddress.city;
+                                                    if(!String.isBlank(updateShipReqBody.shippingAddress.country))
+                                                        shipAdd_rec.Plant_Country__c = updateShipReqBody.shippingAddress.country; 
+                                                    if(!String.isBlank(updateShipReqBody.shippingAddress.phone))     
+                                                        shipAdd_rec.Plant_Phone__c = updateShipReqBody.shippingAddress.phone;
+                                                    if(!String.isBlank(updateShipReqBody.shippingAddress.zip))      
+                                                        shipAdd_rec.Plant_Postal_Code__c = updateShipReqBody.shippingAddress.zip;
+                                                    if(!String.isBlank(updateShipReqBody.shippingAddress.state))      
+                                                        shipAdd_rec.Plant_Province_State__c = updateShipReqBody.shippingAddress.state;
+                                                    
+                                                    shipAdd_rec.Plant_Account__c=sforder.AccountId;
+                                                    shipAdd_rec.Plant_Save_Shipping_Address__c = True;
+                                                    insert shipAdd_rec;
+                                                    
+                                                    // Updating Order Property
+                                                    ordrPropert.Shipping_Address__c=shipAdd_rec.id;
+                                                    update ordrPropert;
+                                                    
+                                                    // Updating Salesforce Order
+                                                    update sfOrder;
+                                                    // responseList.add(ordrPropert);
+                                                    
+                                                    // AG - Add post Order Event
+                                                    Plant_TransComm_BC.publishTransactionEvent(Plant_TransComm_BC.setTransactionEvent('Order Address Change',sfOrder.AccountId,sfOrder.id,null));
+                                                    
+                                                    
+                                                    Status = 'Success';
+                                                    StatusCode='200';
+                                                    Msg='Shipping Address updated successfully';
+                                                }
+                                                else {
+                                                    Status = 'Success';
+                                                    StatusCode='200';
+                                                    Msg='Shipping date not available for this address';
+                                                }
+                                                
+                                                
+                                            }
+                                            else{
+                                                StatusCode='503';
+                                                Status='error';
+                                                Msg='Service Unavailable! Shipping address not inserted must be US or Canada';
+                                            }
                                             
-
+                                            
                                         }
                                         else{
                                             status = 'Sucess';
@@ -3380,7 +3384,7 @@ public class Plant_Orders_BC {
                                 statusCode='200';
                                 msg+=', Time for Updating this order is Over';
                             }
-                        
+                            
                         }
                     }
                     else{
@@ -3829,61 +3833,64 @@ public class Plant_Orders_BC {
             Order fndOrder = mapEventOrder.get(pte.EventUuid);
             System.debug('fndOrder:' + fndOrder);
             
-            if(pte.Plant_Type__c == 'Order Cancelled') {
-            	
-                // Cancel Staged Scheduled Emails
-                Plant_TransComm_BC.cancelStagedScheduledTransComm('Order Shipment Upcoming', fndOrder.AccountId, fndOrder.Id, null);
-                Plant_TransComm_BC.cancelStagedScheduledTransComm('Order Shipment Sent', fndOrder.AccountId, fndOrder.Id, null);
-
-            } else if(pte.Plant_Type__c == 'Order Date Change' || pte.Plant_Type__c == 'Order Address Change') {
+            if(fndOrder != NULL) {
+                if(pte.Plant_Type__c == 'Order Cancelled') {
+                    
+                    // Cancel Staged Scheduled Emails
+                    Plant_TransComm_BC.cancelStagedScheduledTransComm('Order Shipment Upcoming', fndOrder.AccountId, fndOrder.Id, null);
+                    Plant_TransComm_BC.cancelStagedScheduledTransComm('Order Shipment Sent', fndOrder.AccountId, fndOrder.Id, null);
+                    
+                } else if(pte.Plant_Type__c == 'Order Date Change' || pte.Plant_Type__c == 'Order Address Change') {
+                    
+                    // Stage Scheduled Emails
+                    // This is cancel the old one, and create a new one on the correct date
+                    Plant_TransComm_BC.stageScheduledTransComm('Order Shipment Upcoming', fndOrder.AccountId, fndOrder.Id, null, fndOrder.Plant_Shipping_Date__r.Plant_Shipping_Date__c);
+                    Plant_TransComm_BC.stageScheduledTransComm('Order Shipment Sent', fndOrder.AccountId, fndOrder.Id, null, fndOrder.Plant_Shipping_Date__r.Plant_Shipping_Date__c);
+                    
+                } else if(pte.Plant_Type__c == 'Order Paid') {
+                    
+                    // Stage Scheduled Emails
+                    Plant_TransComm_BC.stageScheduledTransComm('Order Shipment Upcoming', fndOrder.AccountId, fndOrder.Id, null, fndOrder.Plant_Shipping_Date__r.Plant_Shipping_Date__c);
+                    Plant_TransComm_BC.stageScheduledTransComm('Order Shipment Sent', fndOrder.AccountId, fndOrder.Id, null, fndOrder.Plant_Shipping_Date__r.Plant_Shipping_Date__c);
+                    
+                    // Update KPIs & Create Onboardings
+                    Account fndAccount = mapAccts.get(fndOrder.AccountId);
+                    System.debug('fndAccount:' + fndAccount);
+                    
+                    if(fndAccount!=NULL) {
+                        if(fndAccount.Plant_Total_Orders__c == 1) {
+                            fndOrder.Type = 'New Business';
                             
-                // Stage Scheduled Emails
-                // This is cancel the old one, and create a new one on the correct date
-                Plant_TransComm_BC.stageScheduledTransComm('Order Shipment Upcoming', fndOrder.AccountId, fndOrder.Id, null, fndOrder.Plant_Shipping_Date__r.Plant_Shipping_Date__c);
-                Plant_TransComm_BC.stageScheduledTransComm('Order Shipment Sent', fndOrder.AccountId, fndOrder.Id, null, fndOrder.Plant_Shipping_Date__r.Plant_Shipping_Date__c);
-                
-            } else if(pte.Plant_Type__c == 'Order Paid') {
-                
-                // Stage Scheduled Emails
-                Plant_TransComm_BC.stageScheduledTransComm('Order Shipment Upcoming', fndOrder.AccountId, fndOrder.Id, null, fndOrder.Plant_Shipping_Date__r.Plant_Shipping_Date__c);
-                Plant_TransComm_BC.stageScheduledTransComm('Order Shipment Sent', fndOrder.AccountId, fndOrder.Id, null, fndOrder.Plant_Shipping_Date__r.Plant_Shipping_Date__c);
-
-                // Update KPIs & Create Onboardings
-                Account fndAccount = mapAccts.get(fndOrder.AccountId);
-                System.debug('fndAccount:' + fndAccount);
-                
-                if(fndAccount!=NULL) {
-                    if(fndAccount.Plant_Total_Orders__c == 1) {
-                        fndOrder.Type = 'New Business';
-                        
-                        // Create OnBoarding Record
-                        OnBoarding__c newOnBoard = new OnBoarding__c(
-                            Account__c = fndOrder.AccountId
-                        );
-                        insertOnBoardings.add(newOnBoard);
-                        
-                    } else if(fndAccount.Plant_Total_Orders__c > 1) {
-                        fndOrder.Type = 'Existing Business';
+                            // Create OnBoarding Record
+                            OnBoarding__c newOnBoard = new OnBoarding__c(
+                                Account__c = fndOrder.AccountId
+                            );
+                            insertOnBoardings.add(newOnBoard);
+                            
+                        } else if(fndAccount.Plant_Total_Orders__c > 1) {
+                            fndOrder.Type = 'Existing Business';
+                        }
+                        System.debug('update order type:' + fndOrder);
                     }
-                    System.debug('update order type:' + fndOrder);
+                    
+                    String fndDisc = mapOrderPropDisc.get(fndOrder.Plant_Order_Properties__c);
+                    System.debug('fndDisc:' + fndDisc);
+                    
+                    if(fndDisc != NULL) {
+                        fndOrder.Discount_Codes_Used__c = fndDisc;
+                        System.debug('update order discount:' + fndOrder);
+                    }
+                    
+                    if(fndOrder.Plant_Subscription__c != NULL) {
+                        fndOrder.Plant_Subscription_Order_Number__c = fndOrder.Plant_Subscription__r.Order_Count__c;
+                    }
+                    
+                    if(fndAccount!=NULL || fndDisc!=NULL || fndOrder.Plant_Subscription__c != NULL) {
+                        System.debug('updateOrders.add:' + updateOrders);
+                        updateOrders.add(fndOrder);
+                    }                
+                    
                 }
-                
-                String fndDisc = mapOrderPropDisc.get(fndOrder.Plant_Order_Properties__c);
-                System.debug('fndDisc:' + fndDisc);
-                
-                if(fndDisc != NULL) {
-                    fndOrder.Discount_Codes_Used__c = fndDisc;
-                    System.debug('update order discount:' + fndOrder);
-                }
-                
-                if(fndOrder.Plant_Subscription__c != NULL) {
-                    fndOrder.Plant_Subscription_Order_Number__c = fndOrder.Plant_Subscription__r.Order_Count__c;
-                }
-                
-                if(fndAccount!=NULL || fndDisc!=NULL || fndOrder.Plant_Subscription__c != NULL) {
-                    System.debug('updateOrders.add:' + updateOrders);
-                    updateOrders.add(fndOrder);
-                }                
                 
             }
             

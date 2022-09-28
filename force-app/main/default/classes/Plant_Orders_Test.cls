@@ -8,6 +8,27 @@ public class Plant_Orders_Test {
     
     
   // AG - test my stuyff
+   public testMethod static void Orders_clonePaymentMethod1(){
+       
+       Account accounts = Plant_TestDataFactory.createAccounts(1)[0];
+       insert accounts;
+       
+       Plant_Payment_Method__c pm = Plant_TestDataFactory.createPaymentMethod(accounts);
+       pm.Plant_Is_Account_Record__c = True;
+       insert pm;
+       
+       Plant_Payment_Method__c pm2 = Plant_TestDataFactory.createPaymentMethod(accounts);
+       pm2.Plant_Save_Payment_Method__c = True;
+       insert pm2;
+              
+       Plant_Payment_Method__c pmclone = Plant_Orders_BC.clonePaymentMethod(pm, pm.id, True);
+       
+       List<Plant_Payment_Method__c> lstPayMethods = new List<Plant_Payment_Method__c>();
+       lstPayMethods.add(pm);
+       Plant_Orders_BC.paymentMethodTriggerHandler(lstPayMethods); 
+           
+   }
+    
     public testMethod static void Orders_TestUpdateInventory1(){
         Meal__c meal=Plant_TestDataFactory.createMeal(1)[0];
         insert meal;
@@ -64,33 +85,37 @@ public class Plant_Orders_Test {
   
   public testMethod static void Orders_TestPostTrans1(){
         
-        Meal__c meal=Plant_TestDataFactory.createMeal(1)[0];
-        insert meal;
-        
-        Plant_Meal_Selection__c Mealselection=Plant_TestDataFactory.createMealSelection(1)[0];
-        insert MealSelection;
-        
-        Account accounts = Plant_TestDataFactory.createAccounts(1)[0];
-        insert accounts;
-        
-        Order order = new order(Accountid=accounts.id, EffectiveDate=System.today(), Status ='Draft');
-        insert order;
-        
-        Plant_Shipping_Date__c ShippingDate= Plant_TestDataFactory.createShippingDate(1)[0];
-        insert ShippingDate;
-        
-        Plant_Shipping_Address__c shippingAddress = Plant_TestDataFactory.createShippingAddress(1)[0];
-        shippingAddress.Plant_Account__c= accounts.id;
-        insert shippingAddress;
-        
-        Plant_Delivery_Schedule__c DeliverySchedule= Plant_TestDataFactory.createDeliverySchedule(1, 2)[0];
-        insert DeliverySchedule;
-        
-        Plant_Order_Properties__c orderProperty = Plant_TestDataFactory.createOrderProperties(1)[0];
-        orderProperty.Plant_Account__c= accounts.id;
-        orderProperty.Shipping_Address__c=shippingAddress.id;
-        insert orderProperty;
-    
+      Meal__c meal=Plant_TestDataFactory.createMeal(1)[0];
+      insert meal;
+      
+      Plant_Meal_Selection__c Mealselection=Plant_TestDataFactory.createMealSelection(1)[0];
+      insert MealSelection;
+      
+      Account accounts = Plant_TestDataFactory.createAccounts(1)[0];
+      insert accounts;
+      
+      Plant_Shipping_Date__c ShippingDate= Plant_TestDataFactory.createShippingDate(1)[0];
+      insert ShippingDate;
+      
+      Plant_Shipping_Address__c shippingAddress = Plant_TestDataFactory.createShippingAddress(1)[0];
+      shippingAddress.Plant_Account__c= accounts.id;
+      insert shippingAddress;
+      
+      Plant_Delivery_Schedule__c DeliverySchedule= Plant_TestDataFactory.createDeliverySchedule(1, 2)[0];
+      insert DeliverySchedule;
+      
+      Plant_Order_Properties__c orderProperty = Plant_TestDataFactory.createOrderProperties(1)[0];
+      orderProperty.Plant_Account__c= accounts.id;
+      orderProperty.Shipping_Address__c=shippingAddress.id;
+      insert orderProperty;
+      
+      Order order = Plant_TestDataFactory.creatOrderWithProduct(accounts.Id, 'PLANTALC');
+      
+      order.status = 'Activated';
+      order.Plant_Shipping_Date__c = ShippingDate.Id;
+      update order;
+      
+      
       List<Plant_TransComm_BC.pubTransEvent> pubEvents = new List<Plant_TransComm_BC.pubTransEvent>();
       pubEvents.add(Plant_TransComm_BC.setTransactionEvent('Order Paid',order.AccountId,order.id,null));
           

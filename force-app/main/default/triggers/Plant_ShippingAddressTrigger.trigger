@@ -6,5 +6,5 @@ trigger Plant_ShippingAddressTrigger on Plant_Shipping_Address__c (before insert
         }
     }
     System.debug('lstShipAddrs:' + lstShipAddrs);
-	Plant_Shipping_BC.paymentMethodTriggerHandler(lstShipAddrs);
+	Plant_Shipping_BC.shippingAddressTriggerHandler(lstShipAddrs);
 }
