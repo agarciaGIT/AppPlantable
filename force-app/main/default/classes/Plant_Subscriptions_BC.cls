@@ -147,10 +147,11 @@ public class Plant_Subscriptions_BC {
                                    if(subscriptionList[0].Plant_Chargent_Order__c!=null){
                                        
                                     // CHECK CARD INFORMATION
-                                        if(reqWrp.cardInformation!=null){
+                                        if(String.isBlank(reqWrp.paymentMethodId) && reqWrp.cardInformation!=null){
 
+                                            System.debug('NEW PAYMENT METHOD:' + reqWrp.cardInformation +'~'+ subscriptionList[0].Plant_Payment_Method__c);
+                                            
                                             // create new Payment method
-                                            newPaymentMethod.Plant_Account__c=existingCustomerId;
                                             newPaymentMethod.Plant_Customer_Name__c=reqWrp.cardInformation.name;
                                             if(!String.isBlank(reqWrp.cardInformation.expDate)){
                                                 if(Plant_Utility.checkDateFormat(reqWrp.cardInformation.expDate)){
@@ -245,6 +246,7 @@ public class Plant_Subscriptions_BC {
                                             else{
                                                 addressFlag = true;
                                             }
+                                            newPaymentMethod.Plant_Account__c = subscriptionList[0].Plant_Account__c;
                                             
                                             // billing address check:
                                             if(addressFlag){
@@ -254,12 +256,17 @@ public class Plant_Subscriptions_BC {
                                             }
                                             
                                             if(statusCode!='503'){
-                                                // INSERT NEW payment method
-                                                insert newPaymentMethod;
-                                                paymentMethod_Id = newPaymentMethod.Id;
+                                                // AG - Update Payment Method Info on Subscription
+                                                Plant_Payment_Method__c paymentRec = Plant_Orders_BC.clonePaymentMethod(newPaymentMethod, subscriptionList[0].Plant_Payment_Method__c, False);
+                                                System.debug('clone paymentRec:' + paymentRec);
+                                                update paymentRec;
+                                                paymentMethod_Id = paymentRec.Id;
                                             }                                      
                                         }
-                                        if(!String.isBlank(reqWrp.paymentMethodId)){
+                                        else if(!String.isBlank(reqWrp.paymentMethodId)){
+                                            
+                                            System.debug('EXISTING PAYMENT ID:' + reqWrp.paymentMethodId);
+                                            
                                             // EXISTING PAYMENT ID
                                             List<Plant_Payment_Method__c> existPaymentMethodList = [SELECT id,Plant_Account__c,Plant_Customer_Name__c, Plant_Card_Type__c, Plant_Card_Number__c,CCV__c, Plant_Card_Last_4_Digits__c,
                                                                                                     Plant_Expiration_Date__c, Plant_Street1__c, Plant_Street2__c, Plant_Street3__c, Plant_City__c, Plant_Country__c, Plant_Province_State__c, Plant_Postal_Code__c, Plant_Can_SMS__c, Plant_Phone__c FROM Plant_Payment_Method__c WHERE Plant_Is_Account_Record__c = true AND id=:reqWrp.paymentMethodId AND Plant_Account__c=:existingCustomerId];
@@ -270,8 +277,9 @@ public class Plant_Subscriptions_BC {
                                             }
                                             else{
                                                 // AG - Clone "account" payment record
-                                                Plant_Payment_Method__c paymentRec = Plant_Orders_BC.clonePaymentMethod(existPaymentMethodList[0], null, False);
-                                                insert paymentRec;
+                                                Plant_Payment_Method__c paymentRec = Plant_Orders_BC.clonePaymentMethod(existPaymentMethodList[0], subscriptionList[0].Plant_Payment_Method__c, False);
+                                                update paymentRec;
+                                                //insert paymentRec;
                                                 paymentMethod_Id = paymentRec.Id;
                                             }
                                             
@@ -279,18 +287,24 @@ public class Plant_Subscriptions_BC {
                                         else{
                                             statusCode='503';
                                             status='error';
-                                            msg += 'Existing Payment id is null inserting new card : ';
+                                            msg += 'Payment information not found : ';
                                         }
-                                        
+                                       
                                        if(!String.isBlank(paymentMethod_Id)){
-                                         // CLONE EXISTING cORDER 
-                                         List<ChargentOrders__ChargentOrder__c> toClone_Chargent = [SELECT id,ChargentOrders__Account__c,ChargentOrders__Transaction_Count_Recurring__c, ChargentOrders__Payment_Method__c, ChargentOrders__Card_Type__c, 
-                                                                                                    ChargentOrders__Charge_Amount__c, ChargentOrders__Subtotal__c, ChargentOrders__Payment_Status__c, 
-                                                                                                    ChargentOrders__Payment_Start_Date__c, ChargentOrders__Payment_Frequency__c, ChargentOrders__Payment_Stop__c, 
-                                                                                                    ChargentOrders__Payment_Count__c, ChargentOrders__Gateway__c  FROM ChargentOrders__ChargentOrder__c 
+                                           
+                                           System.debug('CLONE EXISTING cORDER:' + paymentMethod_Id);
+                                           
+                                           // CLONE EXISTING cORDER 
+                                           List<ChargentOrders__ChargentOrder__c> toClone_Chargent = [SELECT id,ChargentOrders__Account__c,ChargentOrders__Transaction_Count_Recurring__c, ChargentOrders__Payment_Method__c, ChargentOrders__Card_Type__c, 
+                                                                                                      ChargentOrders__Charge_Amount__c, ChargentOrders__Subtotal__c, ChargentOrders__Payment_Status__c, 
+                                                                                                      ChargentOrders__Payment_Start_Date__c, ChargentOrders__Payment_Frequency__c, ChargentOrders__Payment_Stop__c, 
+                                                                                                      ChargentOrders__Payment_Count__c, ChargentOrders__Gateway__c  FROM ChargentOrders__ChargentOrder__c 
                                                                                                     WHERE id=:subscriptionList[0].Plant_Chargent_Order__c];
                                          
-                                            if(toClone_Chargent.isEmpty()){
+                                            
+                                           System.debug('toClone_Chargent:' + toClone_Chargent);
+                                           
+                                           if(toClone_Chargent.isEmpty()){
                                                 statusCode='503';
                                                 status='error';
                                                 msg += 'Service Unavailable! Bad Record cOrder, Contact System Admin!';
@@ -316,10 +330,10 @@ public class Plant_Subscriptions_BC {
                                                 
                                                 cardUpdate_List.add(cResp);
                                                 
-                                                    statusCode='200';
-                                                    status='Success';
-                                                    msg+='Payment Information Saved! Please Authorize your card';
-                                               
+                                                statusCode='200';
+                                                status='Success';
+                                                msg+='Payment Information Saved! Please Authorize your card';
+                                                
                                             }
                                         }
                                        
@@ -760,13 +774,14 @@ public class Plant_Subscriptions_BC {
                         List<Plant_Subscription__c> subscriptionList = [SELECT id,Plant_Meal_Selection__c, Plant_Chargent_Order__r.ChargentOrders__Subtotal__c, Plant_Account__c, Plant_Status__c, RecordType.Name, Plant_Shipping_Address__c, Plant_Payment_Method__c,Plant_Chargent_Order__c,
                                                                         Plant_Next_Shipment_Date__c, Plant_Next_Charge_Date__c,Plant_Next_Delivery_Date__c FROM Plant_Subscription__c WHERE Id=:reqWrp.subscriptionId AND Plant_Account__c=:existingCustomerId];
                         
+                        System.debug('subscriptionList:'+subscriptionList);
                         if(!subscriptionList.isEmpty()){
                             
                             Plant_Subscription__c tempSub = subscriptionList[0];
                             
                             // VALIDATE: existing shipping address id, if valid
                             if(!String.isBlank(reqWrp.shipmentAddressId)){
-                                List<Plant_Shipping_Address__c> shipAddress=[Select id, Plant_Postal_Code__c, Plant_Province_State__c from Plant_Shipping_Address__c where id=:reqWrp.shipmentAddressId Limit 1];
+                                List<Plant_Shipping_Address__c> shipAddress=[Select id, Plant_Account__c,Plant_Is_Account_Record__c,Plant_First_Name__c,Plant_Last_Name__c,Plant_Can_SMS__c,Plant_Phone__c,Plant_Street1__c,Plant_Street2__c,Plant_Street3__c,Plant_City__c,Plant_Province_State__c,Plant_Postal_Code__c,Plant_Country__c from Plant_Shipping_Address__c where Plant_Is_Account_Record__c = True AND id=:reqWrp.shipmentAddressId Limit 1];
                                 // shipping id valid:
                                 if(!shipAddress.isEmpty()){
                                     Plant_Shipping_BC.deliveryDateWrapper tempAddrsWrap = new Plant_Shipping_BC.deliveryDateWrapper();
@@ -785,9 +800,14 @@ public class Plant_Subscriptions_BC {
                                             if(Plant_Utility.checkDateFormat(reqWrp.deliveryDate)){
                                                 Map<String,String> avail_DeliveryDaye_Map = (Map<String,String>)availableDates_List.result.resultMap;
                                                 if(avail_DeliveryDaye_Map.keySet().contains(reqWrp.deliveryDate)){
-                                                    
+                                                                                                        
+                                                    // AG - Update Address
+                                                    Plant_Shipping_Address__c cloneSA = Plant_Shipping_BC.cloneShippingAddress(shipAddress[0], tempSub.Plant_Shipping_Address__c, False);
+                                                    System.debug('Clone ShipAddr:'+cloneSA);
+                                                    update cloneSA;
+                                                                                                        
                                                     // UPDATE shipping address
-                                                    tempSub.Plant_Shipping_Address__c = reqWrp.shipmentAddressId;
+                                                    //tempSub.Plant_Shipping_Address__c = cloneSA.Id;
                                                     tempSub.Plant_Next_Delivery_Date__c = Date.valueOf(reqWrp.deliveryDate);
                                                     update tempSub;
                                                     
@@ -892,11 +912,21 @@ public class Plant_Subscriptions_BC {
                                                         if(!String.isBlank(reqWrp.shippingAddress.state))      
                                                             shipAdd_rec.Plant_Province_State__c = reqWrp.shippingAddress.state;
                                                             shipAdd_rec.Plant_Account__c=existingCustomerId;
-                                                        // INSERT NEW SHIPPING ADDRESS**
-                                                        insert shipAdd_rec;
                                                         
-                                                        // UPDATE SHIPPING ADDRESS**
-                                                        tempSub.Plant_Shipping_Address__c = shipAdd_rec.Id;
+                                                        // AG - Update instead of insert new ones
+                                                        shipAdd_rec.Plant_Save_Shipping_Address__c = True;
+                                                        //insert shipAdd_rec;
+                                                        
+                                                        // Update Address                                                      
+                                                        List<Plant_Shipping_Address__c> oldSAs = [select id, Plant_Account__c,Plant_Is_Account_Record__c,Plant_First_Name__c,Plant_Last_Name__c,Plant_Can_SMS__c,Plant_Phone__c,Plant_Street1__c,Plant_Street2__c,Plant_Street3__c,Plant_City__c,Plant_Province_State__c,Plant_Postal_Code__c,Plant_Country__c from Plant_Shipping_Address__c where id = :tempSub.Plant_Shipping_Address__c];
+                                                        System.debug('oldSAs:'+oldSAs);
+                                                        if(!oldSAs.isEmpty()) {
+                                                            Plant_Shipping_Address__c cloneSA = Plant_Shipping_BC.cloneShippingAddress(shipAdd_rec, oldSAs[0].Id, False);
+                                                            update cloneSA;    
+                                                        }                    
+                                                        
+                                                        // AG Remove - UPDATE SHIPPING ADDRESS
+                                                        // tempSub.Plant_Shipping_Address__c = shipAdd_rec.Id;
                                                         tempSub.Plant_Next_Delivery_Date__c=Date.valueof(reqWrp.deliveryDate);
                                                         update tempSub;
                                                         

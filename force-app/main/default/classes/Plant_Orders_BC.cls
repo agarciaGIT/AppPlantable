@@ -779,6 +779,7 @@ public class Plant_Orders_BC {
             String paymentCardType='';
             Plant_Order_Properties__c opRec = new Plant_Order_Properties__c(); // Order Property RECORD
             Plant_Payment_Method__c pymtMtdRec = new Plant_Payment_Method__c(); // payment method RECORD
+            Plant_Shipping_Address__c shipRec = new Plant_Shipping_Address__c(); // shipping address RECORD
             plantable_Constants__c custSettin = plantable_Constants__c.getValues('DevConstant'); // custom setting : constants
         
 
@@ -862,6 +863,14 @@ public class Plant_Orders_BC {
                 return responseWrap;
             }
 
+            // AG - validate Shipping Address
+            if(opRec.Shipping_Address__c != NULL) {
+                List<Plant_Shipping_Address__c> lstShip = [select Id, Plant_Account__c,Plant_Is_Account_Record__c,Plant_First_Name__c,Plant_Last_Name__c,Plant_Can_SMS__c,Plant_Phone__c,Plant_Street1__c,Plant_Street2__c,Plant_Street3__c,Plant_City__c,Plant_Province_State__c,Plant_Postal_Code__c,Plant_Country__c from Plant_Shipping_Address__c where id = :opRec.Shipping_Address__c];
+                if(!lstShip.isEmpty()) {
+                    // payment method exist in SF
+                    shipRec = lstShip[0];
+                }                
+            }
 
             // validation: 3 - Payment Method Id
             if(processOrder_ReqWrapper.paymentMethodId!='' && String.valueOf(processOrder_ReqWrapper.paymentMethodId).substring(0,15)==String.valueOf(opRec.Plant_Payment_Method__c).substring(0,15)){
@@ -1037,6 +1046,7 @@ public class Plant_Orders_BC {
                     Plant_Shipping_Address__c custmr_shipAddRec = new Plant_Shipping_Address__c();
                     custmr_shipAddRec.Id= opRec.Shipping_Address__c;
                     custmr_shipAddRec.Plant_Account__c = accountId_cap;
+                	System.debug('@@@@# update Ship address with account:' + custmr_shipAddRec);
                     update custmr_shipAddRec;
                     
                     // update Payment method**
@@ -1150,8 +1160,22 @@ public class Plant_Orders_BC {
                             subscpt.Plant_Status__c = 'Draft';
                             subscpt.Plant_Start_Date__c= opRec.Plant_Shipping_Date__r.Plant_Shipping_Date__c.addDays(5);
                             subscpt.Plant_Cadence__c='Weekly';
-                            subscpt.Plant_Shipping_Address__c = opRec.Shipping_Address__c;
-                            subscpt.Plant_Payment_Method__c = opRec.Plant_Payment_Method__c;
+                            
+                            // AG - Clone Address
+                            Plant_Shipping_Address__c cloneSA = Plant_Shipping_BC.cloneShippingAddress(shipRec, NULL, False);
+                            cloneSA.Plant_Account__c = accountId_cap;
+                            System.debug('Clone ShipAddr:'+cloneSA);
+                            insert cloneSA;
+
+                            subscpt.Plant_Shipping_Address__c = cloneSA.Id;
+                            
+                            // AG - Clone Payment Method
+                            Plant_Payment_Method__c clonePM = clonePaymentMethod(pymtMtdRec, null, False);
+                            clonePM.Plant_Account__c = accountId_cap;
+                            System.debug('Clone PayMeth:'+clonePM);
+                            insert clonePM;
+                            
+                            subscpt.Plant_Payment_Method__c = clonePM.Id;
                             subscpt.Plant_Delivery_Schedule__c=opRec.Delivery_Schedule__c;
                             subscpt.Plant_Shipping_Date__c=opRec.Plant_Shipping_Date__c;
                             subscpt.Plant_Chargent_Order__c = chrgnt_OrderRec.id;
@@ -3156,7 +3180,7 @@ public class Plant_Orders_BC {
                                 // FOR EXISTING SHIPPING ADDRESS
                                 if(!String.isBlank(updateShipReqBody.shippingAddressId)){        
                                     
-                                    List<Plant_Shipping_Address__c> existingShippingAddress_List  = [ SELECT id,Plant_Province_State__c,Plant_Country__c,Plant_Postal_Code__c FROM Plant_Shipping_Address__c WHERE Plant_Is_Account_Record__c = True AND Id=:updateShipReqBody.shippingAddressId AND Plant_Account__c=:existingCustomerId ];
+                                    List<Plant_Shipping_Address__c> existingShippingAddress_List  = [SELECT id,Plant_Account__c,Plant_Is_Account_Record__c,Plant_First_Name__c,Plant_Last_Name__c,Plant_Can_SMS__c,Plant_Phone__c,Plant_Street1__c,Plant_Street2__c,Plant_Street3__c,Plant_City__c,Plant_Province_State__c,Plant_Postal_Code__c,Plant_Country__c FROM Plant_Shipping_Address__c WHERE Plant_Is_Account_Record__c = True AND Id=:updateShipReqBody.shippingAddressId AND Plant_Account__c=:existingCustomerId ];
                                     if(!existingShippingAddress_List.isEmpty()){
                                         // VALIDATE SHIPPING ADDRESS
                                         Plant_Shipping_BC.deliveryDateWrapper tempAddrsWrap = new Plant_Shipping_BC.deliveryDateWrapper();
@@ -3185,10 +3209,13 @@ public class Plant_Orders_BC {
                                                             odr_Prop_recd.Plant_Delivery_Date__c = Date.valueOf(updateShipReqBody.deliveryDate);
                                                             
                                                             // AG Clone Account Record
-                                                            Plant_Shipping_Address__c cloneSA = Plant_Shipping_BC.cloneShippingAddress(existingShippingAddress_List[0], existingShippingAddress_List[0].Id, False);
-                                                            insert cloneSA;
-                                                            odr_Prop_recd.Shipping_Address__c = cloneSA.Id;
-                                                            update odr_Prop_recd;
+                                                            Plant_Shipping_Address__c cloneSA = Plant_Shipping_BC.cloneShippingAddress(existingShippingAddress_List[0], sfOrder.Plant_Order_Properties__r.Shipping_Address__c, False);
+                                                            System.debug('Clone ShipAddr:'+cloneSA);
+                                                            update cloneSA;
+                                                            
+                                                            
+                                                            //odr_Prop_recd.Shipping_Address__c = cloneSA.Id;
+                                                            //update odr_Prop_recd;
 
                                                             // Updating Sf ORder
                                                             sfOrder.Plant_Shipping_Date__c = odr_Prop_recd.Plant_Shipping_Date__c;
@@ -3331,11 +3358,19 @@ public class Plant_Orders_BC {
                                                     
                                                     shipAdd_rec.Plant_Account__c=sforder.AccountId;
                                                     shipAdd_rec.Plant_Save_Shipping_Address__c = True;
-                                                    insert shipAdd_rec;
+                                                    //insert shipAdd_rec;
+                                                    
+                                                    // Remove Old Address
+                                                    List<Plant_Shipping_Address__c> oldSAs = [select id,Plant_Account__c,Plant_Is_Account_Record__c,Plant_First_Name__c,Plant_Last_Name__c,Plant_Can_SMS__c,Plant_Phone__c,Plant_Street1__c,Plant_Street2__c,Plant_Street3__c,Plant_City__c,Plant_Province_State__c,Plant_Postal_Code__c,Plant_Country__c from Plant_Shipping_Address__c where id = :sfOrder.Plant_Order_Properties__r.Shipping_Address__c];
+                                                    System.debug('oldSAs:'+oldSAs);
+                                                    if(!oldSAs.isEmpty()) {
+                                                        Plant_Shipping_Address__c cloneSA = Plant_Shipping_BC.cloneShippingAddress(shipAdd_rec, oldSAs[0].Id, False);
+                                                        update cloneSA;        
+                                                    }                                                    
                                                     
                                                     // Updating Order Property
-                                                    ordrPropert.Shipping_Address__c=shipAdd_rec.id;
-                                                    update ordrPropert;
+                                                    //ordrPropert.Shipping_Address__c=shipAdd_rec.id;
+                                                    //update ordrPropert;
                                                     
                                                     // Updating Salesforce Order
                                                     update sfOrder;
@@ -3422,7 +3457,7 @@ public class Plant_Orders_BC {
         MAP<String,Plant_Payment_Method__c> mapPayMethods = new MAP<String,Plant_Payment_Method__c>();
         Set<String> accountIDs = new Set<String>();
         for(Plant_Payment_Method__c pm :lstPayMethods) {
-            if(pm.Plant_Save_Payment_Method__c == True) {
+            if(pm.Plant_Save_Payment_Method__c == True && pm.Plant_Account__c != NULL) {
 	            mapPayMethods.put(pm.Plant_Account__c +':'+ pm.Plant_Card_Last_4_Digits__c,pm);
                 accountIDs.add(pm.Plant_Account__c);
             }

@@ -428,7 +428,7 @@ public class Plant_Shipping_BC {
         MAP<String,Plant_Shipping_Address__c> mapShipAddrs = new MAP<String,Plant_Shipping_Address__c>();
         Set<String> accountIDs = new Set<String>();
         for(Plant_Shipping_Address__c sa :lstShipAddrs) {     
-            if(sa.Plant_Save_Shipping_Address__c == True) {
+            if(sa.Plant_Save_Shipping_Address__c == True && sa.Plant_Account__c != NULL) {
                 mapShipAddrs.put(sa.Plant_Account__c +':'+ sa.Plant_Street1__c,sa);
                 accountIDs.add(sa.Plant_Account__c);
             }
