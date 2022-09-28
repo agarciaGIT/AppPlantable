@@ -423,6 +423,95 @@ public class Plant_Shipping_BC {
         return [SELECT Id, Name, Plant_Shipping_Date__c, Plant_Total_Orders__c, Plant_One_Day_Shipping_Delivery_Date__c, Plant_2_Day_Shipping_Delivery_Date__c, X3_Day_Shipping_Delivery_Date__c, Is_Shipping_Date_Available__c FROM Plant_Shipping_Date__c WHERE id=:sId LIMIT 1];
     }
     
+    // Internal Methods
+    public static void paymentMethodTriggerHandler(List<Plant_Shipping_Address__c> lstShipAddrs) {
+        MAP<String,Plant_Shipping_Address__c> mapShipAddrs = new MAP<String,Plant_Shipping_Address__c>();
+        Set<String> accountIDs = new Set<String>();
+        for(Plant_Shipping_Address__c sa :lstShipAddrs) {     
+            if(sa.Plant_Save_Shipping_Address__c == True) {
+                mapShipAddrs.put(sa.Plant_Account__c +':'+ sa.Plant_Street1__c,sa);
+                accountIDs.add(sa.Plant_Account__c);
+            }
+        }
+        System.debug('mapShipAddrs:' + mapShipAddrs);
+        System.debug('accountIDs:' + accountIDs);
+        
+        List<Plant_Shipping_Address__c> lstExistingShippingAddrs = [select id, Plant_Account__c,
+                                                               Plant_City__c,
+                                                               Plant_Country__c,
+                                                               Plant_Phone__c,
+                                                               Plant_Postal_Code__c,
+                                                               Plant_Province_State__c,
+                                                               Plant_Street1__c,
+                                                               Plant_Street2__c,
+                                                               Plant_Street3__c,
+															   Plant_First_Name__c,
+															   Plant_Last_Name__c,
+															   Plant_Can_SMS__c
+                                                               from Plant_Shipping_Address__c 
+                                                               where Plant_Is_Account_Record__c = True AND
+                                                               Plant_Account__c in :accountIDs
+                                                              ];
+        System.debug('lstExistingShippingAddrs:' + lstExistingShippingAddrs);
+        
+        Map<String,Plant_Shipping_Address__c> mapExistingShippingAddrs = new Map<String,Plant_Shipping_Address__c>();
+        if(!lstExistingShippingAddrs.isEmpty()) {
+            for(Plant_Shipping_Address__c sa :lstExistingShippingAddrs){
+                mapExistingShippingAddrs.put(sa.Plant_Account__c +':'+ sa.Plant_Street1__c,sa);
+            }
+        }
+        System.debug('mapExistingShippingAddrs:' + mapExistingShippingAddrs);
+        
+        List<Plant_Shipping_Address__c> lstUpdateSA = new List<Plant_Shipping_Address__c>();
+        List<Plant_Shipping_Address__c> lstInsertSA = new List<Plant_Shipping_Address__c>();
+        for(String sa :mapShipAddrs.KeySet()) {
+            
+            System.debug('sa:' + sa);
+            
+            Plant_Shipping_Address__c fndPay = mapShipAddrs.get(sa);
+            Plant_Shipping_Address__c fndExistingPay = mapExistingShippingAddrs.get(sa);
+            System.debug('fndPay:' + fndPay);
+            System.debug('fndExistingPay:' + fndExistingPay);
+            
+            if(fndPay != NULL && fndExistingPay != NULL) {
+                Plant_Shipping_Address__c updatePM = cloneShippingAddress(fndPay, fndExistingPay.Id, True);
+                System.debug('lstUpdateSA add:' + updatePM);
+                lstUpdateSA.add(updatePM);
+            } else if(fndPay != NULL) {
+                Plant_Shipping_Address__c insertPM = cloneShippingAddress(fndPay, null, True);
+                System.debug('lstInsertSA add:' + insertPM);
+                lstInsertSA.add(insertPM);
+            }
+        }
+        if(!lstInsertSA.isEmpty())
+	        insert lstInsertSA;
+        if(!lstUpdateSA.isEmpty())
+	        update lstUpdateSA;
+    }
+    
+    public static Plant_Shipping_Address__c cloneShippingAddress(Plant_Shipping_Address__c shipAddr, String shipId, Boolean isAccount) {
+        Plant_Shipping_Address__c clonedSA = new Plant_Shipping_Address__c(
+                    Plant_Account__c = shipAddr.Plant_Account__c,
+                    Plant_Is_Account_Record__c = isAccount,
+            		Plant_First_Name__c = shipAddr.Plant_First_Name__c,
+            		Plant_Last_Name__c = shipAddr.Plant_Last_Name__c,
+            		Plant_Can_SMS__c = shipAddr.Plant_Can_SMS__c,
+                    Plant_Phone__c = shipAddr.Plant_Phone__c,
+                    Plant_Street1__c = shipAddr.Plant_Street1__c,
+                    Plant_Street2__c = shipAddr.Plant_Street2__c,
+                    Plant_Street3__c = shipAddr.Plant_Street3__c,
+                    Plant_City__c = shipAddr.Plant_City__c,
+                    Plant_Province_State__c = shipAddr.Plant_Province_State__c,
+                    Plant_Postal_Code__c = shipAddr.Plant_Postal_Code__c,
+                    Plant_Country__c = shipAddr.Plant_Country__c
+                );
+        if(shipId != NULL) {
+            clonedSA.Id = shipId;
+        }
+        return clonedSA;
+    } 
+    
+    
     // @ Wrapper class : 1
     public class deliveryDateWrapper{
         public String street1;
@@ -433,7 +522,7 @@ public class Plant_Shipping_BC {
         public String zip;
         public String country;
         public String phone;
-        public String canSMS;
+        public boolean canSMS;
         public String shippingDate;
         public String shippingAddressId;
         

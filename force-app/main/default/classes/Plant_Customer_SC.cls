@@ -59,12 +59,24 @@ public class Plant_Customer_SC {
         return addAddress;
     } 
     
+    // @ update customer shipping address
+    public static Plant_Utility.responseWrapper updateCustomerAddress_SC(Plant_Customer_BC.updateCustomerAddressWrap jsonWrapper){
+        Plant_Utility.responseWrapper addAddress = new Plant_Customer_BC().updateCustomerAddress(jsonWrapper);
+        return addAddress;
+    } 
+    
     // @ add Payment Method
     public static Plant_Utility.responseWrapper addCustomerPaymentMethod_SC(Plant_Customer_BC.addCustomerPaymentWrap jsonWrapper){
         Plant_Utility.responseWrapper addPayment = new Plant_Customer_BC().addCustomerPaymentMethod(jsonWrapper);
         return addPayment;
     } 
 
+    // @ update Payment Method
+    public static Plant_Utility.responseWrapper updateCustomerPaymentMethod_SC(Plant_Customer_BC.updateCustomerPaymentWrap jsonWrapper){
+        Plant_Utility.responseWrapper addPayment = new Plant_Customer_BC().updatePaymentMethod(jsonWrapper);
+        return addPayment;
+    } 
+        
     // @ delete Payment Method of Customer
     public static Plant_Utility.responseWrapper delCustomerPaymentMethod_SC(Plant_Customer_BC.delCustomerPaymentWrap jsonWrapper){
         Plant_Utility.responseWrapper delPayment = new Plant_Customer_BC().delCustomerPaymentMethod(jsonWrapper);

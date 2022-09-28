@@ -192,6 +192,7 @@ global class Plant_RESTCustomer {
                 String jsonRespBody = JSON.serialize(resultToken); 
                 res.responseBody = Blob.valueOf(jsonRespBody); 
             }
+            /*
             else if(req.requestURI.substring(req.requestURI.lastIndexOf('/')+1).equalsIgnoreCase('shippingaddress')){
                 System.debug('#### update shipping address ');
                 //String requestJson = req.requestBody.toString();
@@ -212,8 +213,37 @@ global class Plant_RESTCustomer {
                 
                 String jsonRespBody = JSON.serialize(addrsUpdt_resultList); 
                 res.responseBody = Blob.valueOf(jsonRespBody); 
-            }
+*/
+            else if(req.requestURI.substring(req.requestURI.lastIndexOf('/')+1).equalsIgnoreCase('shippingaddress')){
+                
+                Plant_Customer_BC.updateCustomerAddressWrap jsonWrapper = new Plant_Customer_BC.updateCustomerAddressWrap().parse(requestJson);
+                Plant_Utility.responseWrapper resultToken = Plant_Customer_SC.updateCustomerAddress_SC(jsonWrapper);
+                if(resultToken.statusCode=='200'){
+                    res.statusCode = Integer.valueOf(resultToken.statusCode);
+                    System.debug('@@@@## success dd');
+                }
+                else{
+                    res.statusCode = Integer.valueOf(resultToken.statusCode);
+                    System.debug('@@@@## error dd');
+                } 
+                String jsonRespBody = JSON.serialize(resultToken); 
+                res.responseBody = Blob.valueOf(jsonRespBody);  
 
+            } else if(req.requestURI.substring(req.requestURI.lastIndexOf('/')+1).equalsIgnoreCase('paymentmethod')){
+                
+                Plant_Customer_BC.updateCustomerPaymentWrap jsonWrapper = new Plant_Customer_BC.updateCustomerPaymentWrap().parse(requestJson);
+                Plant_Utility.responseWrapper resultToken = Plant_Customer_SC.updateCustomerPaymentMethod_SC(jsonWrapper);
+                if(resultToken.statusCode=='200'){
+                    res.statusCode = Integer.valueOf(resultToken.statusCode);
+                    System.debug('@@@@## success dd');
+                }
+                else{
+                    res.statusCode = Integer.valueOf(resultToken.statusCode);
+                    System.debug('@@@@## error dd');
+                } 
+                String jsonRespBody = JSON.serialize(resultToken); 
+                res.responseBody = Blob.valueOf(jsonRespBody);  
+            }
             else{
                 // RETURN ERROR
                 String status='error';

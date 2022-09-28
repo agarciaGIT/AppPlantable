@@ -127,7 +127,8 @@ public class Plant_Orders_BC {
                     }
 
                     // System.debug('@@@@ this existing customer id => '+existingCustomerId);
-                    // System.debug('@@@@ this existing reqWrapper.paymentMethodId => '+reqWrapper.paymentMethodId);
+                    System.debug('@@@@ this existing reqWrapper.paymentMethodId => '+reqWrapper.paymentMethodId);
+                    System.debug('@@@@ this existing reqWrapper.cardInformation => '+reqWrapper.cardInformation);
 
                     // Validation: Payment method Id's of existing customer 
                     if(!String.isBlank(reqWrapper.paymentMethodId) && existingCustomerId!='No' && existingCustomerId!=''){
@@ -2821,8 +2822,9 @@ public class Plant_Orders_BC {
                         List<Plant_Subscription__c> checkSubId = [Select id from Plant_Subscription__c where id=:subscriptionId AND Plant_Account__c=:existingCustomerId Limit 1];
                         if(!checkSubId.isEmpty()){
                             sfOrder_List = [SELECT id,(Select Product2.name from OrderItems Limit 1), Status, OrderNumber, EffectiveDate,
-                                    comty_Chargent_Order__r.ChargentOrders__Charge_Amount__c,
-                                    comty_Chargent_Order__r.ChargentOrders__Invoice_Number__c,
+                                    comty_Chargent_Order__r.ChargentOrders__Charge_Amount__c,Plant_Fulfillment_Status__c, Plant_Delivery_Date__c,
+                                    Modification_Deadline__c, Plant_Is_Subscription__c, Plant_Subscription__r.Order_Count__c, 
+                                    comty_Chargent_Order__r.ChargentOrders__Invoice_Number__c,Modification_Deadline_Exceeded__c,
                                     Plant_Order_Properties__r.Plant_Shipping_Date__r.Plant_Shipping_Date__c
                                     FROM Order WHERE AccountId=:existingCustomerId AND Plant_Subscription__c=:subscriptionId Limit 49999];
                         }
@@ -2834,9 +2836,10 @@ public class Plant_Orders_BC {
                     }
                     else{
                         sfOrder_List = [SELECT id,(Select Product2.name from OrderItems Limit 1), Status, OrderNumber, EffectiveDate,
-                                    comty_Chargent_Order__r.ChargentOrders__Charge_Amount__c,
-                                    comty_Chargent_Order__r.ChargentOrders__Invoice_Number__c,
-                                    Plant_Order_Properties__r.Plant_Shipping_Date__r.Plant_Shipping_Date__c
+                                        comty_Chargent_Order__r.ChargentOrders__Charge_Amount__c,Plant_Fulfillment_Status__c, Plant_Delivery_Date__c,
+                                        Modification_Deadline__c, Plant_Is_Subscription__c, Plant_Subscription__r.Order_Count__c,
+                                        comty_Chargent_Order__r.ChargentOrders__Invoice_Number__c,Modification_Deadline_Exceeded__c,
+                                        Plant_Order_Properties__r.Plant_Shipping_Date__r.Plant_Shipping_Date__c, Plant_Subscription__c
                                     FROM Order WHERE AccountId=:existingCustomerId Limit 49999];
 
                     }
@@ -2850,6 +2853,14 @@ public class Plant_Orders_BC {
                             order_res.ShipmentDate=ordr.Plant_Order_Properties__r.Plant_Shipping_Date__r.Plant_Shipping_Date__c;
                             order_res.status=ordr.Status;
                             order_res.AmountPaid=ordr.comty_Chargent_Order__r.ChargentOrders__Charge_Amount__c;
+                            order_res.isSubscription=ordr.Plant_Is_Subscription__c;
+                            if(ordr.Plant_Subscription__c!=null){
+                                order_res.orderCount=(Integer)ordr.Plant_Subscription__r.Order_Count__c;
+                            }
+                            
+                            order_res.fulfillmentStatus=ordr.Plant_Fulfillment_Status__c;
+                            order_res.deliveryDate=ordr.Plant_Delivery_Date__c;
+                            order_res.modificationDeadline=ordr.Modification_Deadline__c; 
                             if(!ordr.OrderItems.isEmpty()){
                                 order_res.product=ordr.OrderItems[0].product2.name;
                             }else{
@@ -2936,11 +2947,18 @@ public class Plant_Orders_BC {
                     if(!String.isBlank(OrderNo)){
                         sfOrder_List = [SELECT id,(Select Product2.name from OrderItems Limit 1), Status, OrderNumber, EffectiveDate,
                                         comty_Chargent_Order__r.ChargentOrders__Charge_Amount__c,Modification_Deadline_Exceeded__c, Modification_Deadline__c,
-                                        Plant_Order_Properties__r.Plant_Recurrence__c, Plant_Order_Properties__r.Plant_Meal_Selection__c,
+                                        Plant_Order_Properties__r.Plant_Recurrence__c, Plant_Order_Properties__r.Plant_Meal_Selection__c,Plant_Is_Subscription__c,
+                                        Plant_Subscription__r.Order_Count__c,Plant_Order_Properties__r.Plant_Shipping_Date__c,
                                         comty_Chargent_Order__r.ChargentOrders__Invoice_Number__c,Plant_Subscription__c, Plant_Subscription__r.Plant_Meal_Selection__c,
-                                        Plant_Order_Properties__r.Plant_Shipping_Date__r.Plant_Shipping_Date__c,
-                                        Plant_Order_Properties__r.Plant_Delivery_Date__c, comty_Chargent_Order__c,Plant_Delivery_Date__c,Plant_Shipping_Date__c, Plant_Shipping_Date__r.Plant_Shipping_Date__c
-                                        FROM Order WHERE AccountId=:existingCustomerId AND OrderNumber=:OrderNo Limit 1];
+                                        Plant_Subscription__r.Plant_Payment_Method__r.Plant_Card_Type__c, Plant_Subscription__r.Plant_Payment_Method__r.Plant_Card_Last_4_Digits__c,
+                                        Plant_Order_Properties__r.Plant_Shipping_Date__r.Plant_Shipping_Date__c,Plant_Fulfillment_Status__c,
+                                        Plant_Order_Properties__r.Plant_Delivery_Date__c, comty_Chargent_Order__c,Plant_Delivery_Date__c,Plant_Shipping_Date__c, Plant_Shipping_Date__r.Plant_Shipping_Date__c,
+                                        Plant_Order_Properties__r.Shipping_Address__r.Plant_Street1__c, Plant_Order_Properties__r.Shipping_Address__r.Plant_Street2__c,
+                                        Plant_Order_Properties__r.Shipping_Address__r.Plant_Street3__c,Plant_Order_Properties__r.Shipping_Address__r.Plant_Province_State__c,
+                                        Plant_Order_Properties__r.Shipping_Address__r.Plant_Country__c,Plant_Order_Properties__r.Shipping_Address__r.Plant_City__c,
+                                        Plant_Order_Properties__r.Shipping_Address__r.Plant_Postal_Code__c,Plant_Order_Properties__r.Shipping_Address__r.Plant_First_Name__c,
+                                        Plant_Order_Properties__r.Shipping_Address__r.Plant_Last_Name__c,Plant_Order_Properties__r.Shipping_Address__r.Plant_Phone__c
+                                         FROM Order WHERE AccountId=:existingCustomerId AND OrderNumber=:OrderNo Limit 1];
                         
                         if(!sfOrder_List.isEmpty()){
                             
@@ -2970,14 +2988,36 @@ public class Plant_Orders_BC {
                                 order_res.ModificationDeadlineExceeded=sfOrder.Modification_Deadline_Exceeded__c;
                                 order_res.ModificationDeadline=sfOrder.Modification_Deadline__c;
                                 order_res.Recurrence=(sfOrder.Plant_Order_Properties__c!=null && sfOrder.Plant_Order_Properties__r.Plant_Recurrence__c!= null) ? sfOrder.Plant_Order_Properties__r.Plant_Recurrence__c:'';
+                                order_res.fullfillmentStatus=sfOrder.Plant_Fulfillment_Status__c;
+                                order_res.isSubscription=sfOrder.Plant_Is_Subscription__c;
                                 if(!String.isBlank(sfOrder.Plant_Subscription__c)){
                                     order_res.MealSelectionId= sfOrder.Plant_Subscription__r.Plant_Meal_Selection__c;
+                                    if(sfOrder.Plant_Subscription__r.Plant_Payment_Method__c!=null){
+                                        order_res.cardLastFourDigits=sfOrder.Plant_Subscription__r.Plant_Payment_Method__r.Plant_Card_Last_4_Digits__c;
+                                        order_res.cardType=sfOrder.Plant_Subscription__r.Plant_Payment_Method__r.Plant_Card_Type__c;
+                                    }
+                                    order_res.orderCount=sfOrder.Plant_Subscription__r.Order_Count__c;
                                 }
                                 else if(!String.isBlank(sfOrder.Plant_Order_Properties__c)){
-                                    order_res.MealSelectionId= sfOrder.Plant_Order_Properties__r.Plant_Meal_Selection__c;
+                                    order_res.MealSelectionId = sfOrder.Plant_Order_Properties__r.Plant_Meal_Selection__c;
+                                    
                                 }
                                 else {
                                     order_res.MealSelectionId= '';
+                                }
+                                if(sfOrder.Plant_Order_Properties__c!=null){
+                                    if(sfOrder.Plant_Order_Properties__r.Plant_Shipping_Date__c!=null){
+                                        order_res.street1=sfOrder.Plant_Order_Properties__r.Shipping_Address__r.Plant_Street1__c;
+                                        order_res.street2=sfOrder.Plant_Order_Properties__r.Shipping_Address__r.Plant_Street2__c;
+                                        order_res.street3=sfOrder.Plant_Order_Properties__r.Shipping_Address__r.Plant_Street3__c;
+                                        order_res.state=sfOrder.Plant_Order_Properties__r.Shipping_Address__r.Plant_Province_State__c;
+                                        order_res.country=sfOrder.Plant_Order_Properties__r.Shipping_Address__r.Plant_Country__c;
+                                        order_res.city=sfOrder.Plant_Order_Properties__r.Shipping_Address__r.Plant_City__c;
+                                        order_res.postalCode=sfOrder.Plant_Order_Properties__r.Shipping_Address__r.Plant_Postal_Code__c;
+                                        order_res.firstName=sfOrder.Plant_Order_Properties__r.Shipping_Address__r.Plant_First_Name__c;
+                                        order_res.lastName=sfOrder.Plant_Order_Properties__r.Shipping_Address__r.Plant_Last_Name__c;
+                                        order_res.Phone=sfOrder.Plant_Order_Properties__r.Shipping_Address__r.Plant_Phone__c;
+                                    }
                                 }
                                 
                                 order_res.Subscription=sfOrder.Plant_Subscription__c;
@@ -3001,7 +3041,7 @@ public class Plant_Orders_BC {
                                         order_res.OrderMeal = [SELECT Plant_Meal__r.Name, Plant_Meal__r.Id, Plant_Meal__r.Meal_Description__c, 
                                         Plant_Meal__r.Nutritional_Label_Image_URL__c, Plant_Meal__r.Type__c, Plant_Meal__r.Cuisine__c, Plant_Meal__r.Calories_Per_Serving__c,
                                         Plant_Meal__r.Proteins__c, Plant_Meal__r.Image_URL__c, Plant_Meal__r.Allergens__c, Plant_Meal__r.Menu_Name__c, Plant_Meal__r.Inventory__c, 
-                                        Plant_Meal__r.Inventory_Sync__c, Plant_Meal__r.API_Enabled__c, Plant_Meal__r.Zipongo_Sampler__c, Plant_Meal__r.Dairy_Free__c, Plant_Meal__r.Gluten_Free__c, 
+                                        Plant_Meal__r.Inventory_Sync__c, Plant_Meal__r.Number_of_Servings__c, Plant_Meal__r.API_Enabled__c, Plant_Meal__r.Zipongo_Sampler__c, Plant_Meal__r.Dairy_Free__c, Plant_Meal__r.Gluten_Free__c, 
                                         Plant_Meal__r.Nut_Free__c, Plant_Meal__r.Inventory_Sync_Off_Call__c, Plant_Meal__r.Low_Inventory_Alert_Date_Time__c, 
                                         Plant_Meal__r.Sort_Rank__c, Plant_Meal__r.Soy_Free__c, Plant_Meal__r.Favorites__c, Plant_Meal__r.Status__c, Plant_Meal__r.Affiliate_Gift__c, Plant_Meal__r.Suggestic_ID__c, 
                                         Plant_Meal__r.Shopify_ID__c, Plant_Quantity__c, Plant_Meal_Selection__c, Plant_Meal_Selection__r.Name, 
@@ -3064,7 +3104,7 @@ public class Plant_Orders_BC {
             return responseWrap;
         }
     }
-
+    
     // Method 4~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // @ desc: update shipping address
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -4218,6 +4258,11 @@ public class Plant_Orders_BC {
         public Datetime DateOrdered;
         public String InvoiceNumber;
         public date ShipmentDate;
+        public boolean  isSubscription;
+        public Integer orderCount;
+        public String fulfillmentStatus;
+        public Date deliveryDate;
+        public Datetime modificationDeadline; 
     }
 
     // wrap 4: response to return Order Details.
@@ -4241,10 +4286,24 @@ public class Plant_Orders_BC {
         public String cardLastFourDigits;
         public Decimal TransactionAmount;
         public String PaymentMethod;
+        public String cardType;
+        public String street1;
+        public String street2;
+        public String street3;
+        public String state;
+        public String country;
+        public String city;
+        public String postalCode;
+        public String firstName;
+        public String lastName;
+        public String Phone;
+        public boolean isSubscription;
+        public Decimal orderCount;
+        public String fullfillmentStatus;
         public List<Plant_Meal_Selection_Meal__c> OrderMeal;
-        
     }
-// wrap 5
+    
+	// wrap 5
     // desc: to manage Shipping Address
     public class manageShipAddress{
         public String orderNumber;

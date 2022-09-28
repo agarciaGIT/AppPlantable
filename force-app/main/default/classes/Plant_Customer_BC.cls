@@ -12,6 +12,153 @@ public class Plant_Customer_BC {
     public Plant_Customer_BC() {
         
     }
+    
+    // AG Update Payment Method
+    public Plant_Utility.responseWrapper updatePaymentMethod(Plant_Customer_BC.updateCustomerPaymentWrap reqWrp){
+        String status='';
+        String statusCode='';
+        String msg='';
+        String existingCustomerId = '';
+        String response='';
+        List<userAuth_ResponseWrap> authResp_List = new List<userAuth_ResponseWrap>();
+        List<Plant_Payment_Method__c> Plant_Payment_Method=new List<Plant_Payment_Method__c>();
+        
+        try{
+            if(reqWrp!=null && reqWrp.paymentMethodId != NULL){
+                
+                // CHECK ACCOUNT TOKEN
+                if(!String.isBlank(reqWrp.authenticationToken)){
+                    String accAuthResut = plant_AuthorizeController.validate_ByAccessToken(reqWrp.authenticationToken);
+                    if(accAuthResut.startsWith('Success')){
+                        existingCustomerId =  accAuthResut.split(',')[1];
+                    }
+                    else{
+                        statusCode='503';
+                        status='error';
+                        msg+='Service Unavailable! Account : '+accAuthResut;
+                    }
+                }
+                else{
+                    statusCode='503';
+                    status='error';
+                    msg+='Invalid Authentication Token';
+                }
+                
+                if(!String.isBlank(existingCustomerId)){
+                    Plant_Payment_Method__c paymentRec = new Plant_Payment_Method__c();
+                    
+					if(reqWrp.cardInformation!=null){
+                        if(reqWrp.cardInformation.expDate!=null || reqWrp.cardInformation.name!=null
+                        || reqWrp.cardInformation.cvv!=null || reqWrp.cardInformation.cardnumber!=null
+                        || reqWrp.cardInformation.card_Last_4_Digits!=null || reqWrp.cardInformation.card_Type!=null){
+                            System.debug('@@@@# prepare card ');
+                            if(!String.isBlank(reqWrp.cardInformation.expDate) && Plant_Utility.checkDateFormat(reqWrp.cardInformation.expDate))
+                                paymentRec.Plant_Expiration_Date__c = Date.valueOf( reqWrp.cardInformation.expDate );
+                            else
+                                msg+=', wrong card input: expire date';
+                            if(!String.isBlank(reqWrp.cardInformation.name))     
+                                paymentRec.Plant_Customer_Name__c = reqWrp.cardInformation.name;
+                            else
+                                msg+=', wrong card input: card name';
+                            if(!String.isBlank(reqWrp.cardInformation.cvv) && Plant_Utility.CheckValidInteger(reqWrp.cardInformation.cvv))
+                                paymentRec.CCV__c = reqWrp.cardInformation.cvv.trim();
+                            else
+                                msg+=', wrong card input: card cvv';
+                            
+                            if(!String.isBlank(reqWrp.cardInformation.cardnumber) && Plant_Utility.CheckValidInteger(reqWrp.cardInformation.cardnumber))
+                                paymentRec.Plant_Card_Number__c = reqWrp.cardInformation.cardnumber;
+                            else
+                                msg+=', wrong card input: card number';
+                                if(!String.isBlank(reqWrp.cardInformation.card_Last_4_Digits) && Plant_Utility.CheckValidInteger(reqWrp.cardInformation.card_Last_4_Digits))
+                                paymentRec.Plant_Card_Last_4_Digits__c = reqWrp.cardInformation.card_Last_4_Digits;
+                            else
+                                msg+=', wrong card input: card last 4 digits';
+                                if(!String.isBlank(reqWrp.cardInformation.card_Type))
+                                paymentRec.Plant_Card_Type__c = reqWrp.cardInformation.card_Type;
+                            else
+                                msg+=', wrong card input: card_Type';
+                            
+                                if(reqWrp.cardInformation.billingAddress!=null){
+                                    Plant_Utility.addressCapsule billAdd = (Plant_Utility.addressCapsule)reqWrp.cardInformation.billingAddress;
+                                    System.debug('@@@@###  pre process billAdd => '+billAdd);                            
+                                    paymentRec.Plant_Can_SMS__c = billAdd.canSMS?true:false;
+                                    if(!String.isBlank(billAdd.street1) || !String.isBlank(billAdd.street2) || !String.isBlank(billAdd.street3)){
+                                        paymentRec.Plant_street1__c = billAdd.street1;
+                                        paymentRec.Plant_street2__c = billAdd.street2;
+                                        paymentRec.Plant_street3__c = billAdd.street3;
+                                    }
+                                    else
+                                        msg+=', billing street missing';
+                                    if(!String.isBlank(billAdd.city))
+                                        paymentRec.Plant_City__c = billAdd.city;
+                                    else
+                                        msg+=', billing city missing';
+                                    if(!String.isBlank(billAdd.country))
+                                        paymentRec.Plant_Country__c = billAdd.country; 
+                                    else
+                                        msg+=', billing country missing';
+                                    if(!String.isBlank(billAdd.phone))     
+                                        paymentRec.Plant_Phone__c = billAdd.phone;
+                                    else
+                                        msg+=', billing Phone missing';
+                                    if(!String.isBlank(billAdd.zip))      
+                                        paymentRec.Plant_Postal_Code__c = billAdd.zip;
+                                    else
+                                        msg+=', billing zip code missing';
+                                    if(!String.isBlank(billAdd.state))      
+                                        paymentRec.Plant_Province_State__c = billAdd.state;
+                                    else
+                                        msg+=', billing State missing';
+                                    }   
+                            List<Plant_Payment_Method__c> extPay = [select Id from Plant_Payment_Method__c where id = :reqWrp.paymentMethodId];
+                            if(!extPay.isEmpty()) {
+                                paymentRec.Id = extPay[0].Id;
+                                paymentRec.Plant_Account__c = existingCustomerId;
+                                paymentRec.Plant_Is_Account_Record__c = True;
+                                Database.update(paymentRec, false);
+                                statusCode='200';
+                                status='Success';
+                                msg+='Card Updated Successfull Id: '+paymentRec.id;
+                            } else {
+                                statusCode='501';
+                                status='error';
+                                msg+='Service Unavailable! Existing Card not found ';
+                            }             
+                        } else {
+                            statusCode='501';
+                            status='error';
+                            msg+='Service Unavailable! Missing required Card Details ';
+                        }             
+                    }
+                }
+                authResp_List.add(new Plant_Customer_BC.userAuth_ResponseWrap(response));
+                Plant_Utility.responseWrapper responseWrap = new Plant_Utility.responseWrapper(status,statusCode,msg,new Plant_Utility.responseListWrapper(Plant_Payment_Method));
+                return responseWrap;
+            } else {
+                System.debug('&&&&&&&& = > 13');
+                statusCode='503';
+                status='error';
+                msg+=', Service Unavailable!';
+                List<String> respList = new List<String>();
+                Plant_Utility.responseWrapper responseWrap = new Plant_Utility.responseWrapper(status,statusCode,msg,new Plant_Utility.responseListWrapper(respList));
+                return responseWrap;
+            }
+        }
+        catch(Exception ex){
+            System.debug('&&&&&&&& = > 20');
+            System.debug('@@@@@@@@@ EXCEPTION ENCOUNTERD OP: line: '+ex.getLineNumber()+' msg: '+ex.getCause()+' '+ex.getMessage());
+            statusCode='500';
+            status='error';
+            msg+=' Internal Server Error: '+ex.getMessage();
+            
+            
+            authResp_List.add(new Plant_Customer_BC.userAuth_ResponseWrap(response));
+            Plant_Utility.responseWrapper responseWrap = new Plant_Utility.responseWrapper(status,statusCode,msg,new Plant_Utility.responseListWrapper(authResp_List));
+            return responseWrap;
+        }
+        
+    }
+    
     // @ Method 1~~~~~~~~~~~~~~~~~~~~~~~~
     // @ Desc:  Account fields Update (NAME, EMAIL, PHONE) // Cart
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -46,7 +193,7 @@ public class Plant_Customer_BC {
                 }
                 
                 if(!String.isBlank(existingCustomerId)){
-                    List<Account> customer_RecdList = [SELECT Id,(Select id from Contacts Limit 200), Name, Email__c, Phone, plant_Authentication_Token__c, plant_TokenLife__c FROM Account WHERE id=:existingCustomerId];
+                    List<Account> customer_RecdList = [SELECT Id,(Select id from Contacts Limit 200), First_Name__c,Last_Name__c,Name, Email__c, Phone, plant_Authentication_Token__c, plant_TokenLife__c FROM Account WHERE id=:existingCustomerId];
                     if(!customer_RecdList.isEmpty()){
                         // if Multiple Account of same email
                         if(customer_RecdList.size()>1){
@@ -63,6 +210,8 @@ public class Plant_Customer_BC {
                                                                 
                                 if(!String.isBlank(Account_Wrap.firstName) && !String.isBlank(Account_Wrap.lastname)){
                                     acc.name=Account_Wrap.firstname+' '+Account_Wrap.lastname;
+                                    acc.First_Name__c = Account_Wrap.firstname;
+                                    acc.Last_Name__c = Account_Wrap.lastname;
                                     con.firstName = Account_Wrap.firstName;
                                     con.lastName = Account_Wrap.lastname;
                                     msg+='Name is Edited';
@@ -295,11 +444,13 @@ public class Plant_Customer_BC {
                 if(!String.isBlank(existingCustomerId)){
                     
                     // Validation: Customer Subscription Id
-                    List<Account> acc_List=[Select id, name, phone, email__c from account where id=:existingCustomerId];
+                    List<Account> acc_List=[Select id, name,First_Name__c,Last_Name__c, phone, email__c from account where id=:existingCustomerId];
                     if(!acc_List.isEmpty()){
                         accountInfo_RespWrap AccountInfo=new accountInfo_RespWrap();
-                        if(!String.isBlank(acc_List[0].name)){
-                            AccountInfo.AccountName = acc_List[0].name;
+                        if(!String.isBlank(acc_List[0].First_Name__c) || !String.isBlank(acc_List[0].Last_Name__c)){
+                            
+                            AccountInfo.firstName = acc_List[0].First_Name__c;
+                            AccountInfo.lastName = acc_List[0].Last_Name__c;
                         }
                         if(!String.isBlank(acc_List[0].email__c)){
                             AccountInfo.Email = acc_List[0].email__c;
@@ -443,7 +594,7 @@ public class Plant_Customer_BC {
                 AccountId = validationResult.split(',')[1];
                 System.debug('@@@@@@@@@@ AccountId Result  '+AccountId);
                 for(Plant_Shipping_Address__c oprop : [SELECT Id,Plant_Street1__c,Plant_Street2__c,Plant_Street3__c,Plant_City__c,Plant_Province_State__c,Plant_Country__c,Plant_Postal_Code__c,
-                                                       Plant_Account__c,Plant_First_Name__c, Plant_Last_Name__c,Plant_Phone__c,Plant_Can_SMS__c  FROM Plant_Shipping_Address__c WHERE Plant_Account__c=:AccountId ]){
+                                                       Plant_Account__c,Plant_First_Name__c, Plant_Last_Name__c,Plant_Phone__c,Plant_Can_SMS__c  FROM Plant_Shipping_Address__c WHERE Plant_Is_Account_Record__c = True AND Plant_Account__c=:AccountId ]){
                                                            
                                                            ShippngAddressDtl each_ShipRecd = new ShippngAddressDtl();
                                                            each_ShipRecd.shippingAddressId = oprop.Id;
@@ -749,6 +900,7 @@ public class Plant_Customer_BC {
                                 shipAdd_rec.Plant_Province_State__c = reqWrp.shippingAddress.state;
                                 shipAdd_rec.Plant_Account__c=existingCustomerId;
                             // INSERT NEW SHIPPING ADDRESS**
+                            shipAdd_rec.Plant_Is_Account_Record__c = True;
                             insert shipAdd_rec;
                             
                             StatusCode='200';
@@ -760,6 +912,102 @@ public class Plant_Customer_BC {
                             Status='error';
                             msg='Service Unavailable! No Delivery Schedule is found for this Address';
                         }                            
+                    }
+                    else{
+                        statusCode='503';
+                        status='error';
+                        msg+=', Shipping Address Must be from Us or canada';
+                    }
+                }
+            }
+            else{
+                statusCode='501';
+                status='error';
+                msg+='Service Unavailable! Incorrect request body';
+            }
+
+        }catch(Exception ex){
+            System.debug('@@@@@@@@@ EXCEPTION ENCOUNTERD: delete SA: '+ex.getLineNumber()+' msg: '+ex.getCause()+' '+ex.getMessage());
+            status = 'error';
+            statusCode='500';
+            msg='Internal Server Error: '+ex.getMessage();
+        }
+        
+        Plant_Utility.responseWrapper responseWrap = new Plant_Utility.responseWrapper(status,statusCode,msg,new Plant_Utility.responseListWrapper(new List<String>()));
+        return responseWrap;
+    }
+    
+    // @desc: add Customer shipping address
+    public Plant_Utility.responseWrapper updateCustomerAddress(updateCustomerAddressWrap reqWrp){
+        // validate if shipping address id correct
+        String status ='';
+        String statusCode ='';
+        String msg ='';
+        String existingCustomerId = '';
+        try{
+            if(reqWrp!=null){
+                
+                // CHECK ACCOUNT TOKEN
+                if(!String.isBlank(reqWrp.authenticationToken)){
+                    String accAuthResut = plant_AuthorizeController.validate_ByAccessToken(reqWrp.authenticationToken);
+                    if(accAuthResut.startsWith('Success')){
+                        existingCustomerId =  accAuthResut.split(',')[1];
+                    }
+                    else{
+                        statusCode='503';
+                        status='error';
+                        msg+='Service Unavailable! Account : '+accAuthResut;
+                    }
+                }
+                else{
+                    statusCode='503';
+                    status='error';
+                    msg+='Invalid Authentication Token';
+                }
+                if(!String.isBlank(existingCustomerId)){
+                    if(Plant_Utility.checkAddress(reqWrp.shippingAddress)){
+
+                        Plant_Shipping_Address__c shipAdd_rec = new Plant_Shipping_Address__c();
+                        shipAdd_rec.Plant_Can_SMS__c = reqWrp.shippingAddress.canSMS?true:false;
+                        if(!String.isBlank(reqWrp.shippingAddress.firstName)){
+                            shipAdd_rec.Plant_First_Name__c = reqWrp.shippingAddress.firstName;
+                        }if(!String.isBlank(reqWrp.shippingAddress.LastName)){
+                            shipAdd_rec.Plant_Last_Name__c = reqWrp.shippingAddress.LastName;
+                        }if(!String.isBlank(reqWrp.shippingAddress.street1)){
+                            shipAdd_rec.Plant_street1__c = reqWrp.shippingAddress.street1;
+                        }
+                        if(!String.isBlank(reqWrp.shippingAddress.street2)){
+                            shipAdd_rec.Plant_street2__c = reqWrp.shippingAddress.street2;
+                        }
+                        if(!String.isBlank(reqWrp.shippingAddress.street3)){
+                            shipAdd_rec.Plant_street3__c = reqWrp.shippingAddress.street3;
+                        }
+                        if(!String.isBlank(reqWrp.shippingAddress.city))
+                            shipAdd_rec.Plant_City__c = reqWrp.shippingAddress.city;
+                        if(!String.isBlank(reqWrp.shippingAddress.country))
+                            shipAdd_rec.Plant_Country__c = reqWrp.shippingAddress.country; 
+                        if(!String.isBlank(reqWrp.shippingAddress.phone))     
+                            shipAdd_rec.Plant_Phone__c = reqWrp.shippingAddress.phone;
+                        if(!String.isBlank(reqWrp.shippingAddress.zip))      
+                            shipAdd_rec.Plant_Postal_Code__c = reqWrp.shippingAddress.zip;
+                        if(!String.isBlank(reqWrp.shippingAddress.state))      
+                            shipAdd_rec.Plant_Province_State__c = reqWrp.shippingAddress.state;
+                        shipAdd_rec.Plant_Account__c=existingCustomerId;
+                        // UPDATE SHIPPING ADDRESS**
+                        List<Plant_Shipping_Address__c> lstExistingAddr = [select id from Plant_Shipping_Address__c where Id = :reqWrp.shippingAddressId];
+                        if(!lstExistingAddr.isEmpty()) {
+                            shipAdd_rec.Id = lstExistingAddr[0].id;
+                            shipAdd_rec.Plant_Is_Account_Record__c = True;
+                            update shipAdd_rec;
+                            
+                            StatusCode='200';
+                            Status='Success';
+                            msg='Address Updated Sucessfully Address Id : '+shipAdd_rec.id;
+                        } else {
+                            statusCode='503';
+                            status='error';
+                            msg+=', Existing Shipping Address not found';
+                        }
                     }
                     else{
                         statusCode='503';
@@ -1036,7 +1284,7 @@ public class Plant_Customer_BC {
                     System.debug('@@@@ ship Delete 1 '+psubscription);
                     System.debug('@@@@ ship Delete 2 '+odrProperties);
                     if(psubscription.isEmpty() && odrProperties.isEmpty()){
-                        List<Plant_Shipping_Address__c> shipAddressDelete=[Select id, name from Plant_Shipping_Address__c where id=:reqWrp.shippingAddressId AND Plant_Account__c=:existingCustomerId Limit 49999];
+                        List<Plant_Shipping_Address__c> shipAddressDelete=[Select id, name from Plant_Shipping_Address__c where Plant_Is_Account_Record__c = True AND id=:reqWrp.shippingAddressId AND Plant_Account__c=:existingCustomerId Limit 49999];
                         if(!shipAddressDelete.isEmpty()){
                             System.debug('@@@@ ship Delete 3 ');
                             //Database.delete(paymentMethodDelete, false);
@@ -1230,7 +1478,9 @@ public class Plant_Customer_BC {
     // wrap 8.1:
     // desc: Responce Wrapper to get Account information
     public class accountInfo_RespWrap{
-        public String AccountName;
+        //public String AccountName;
+        public String firstName;
+        public String lastName;
         public String Email;
         public String Phone;
     }
@@ -1395,6 +1645,18 @@ public class Plant_Customer_BC {
             return (addCustomerAddreeeWrap)System.JSON.deserialize(json, addCustomerAddreeeWrap.class);
         }
     }
+    
+    // @ Wrapper class : 2A
+    public class updateCustomerAddressWrap{
+        public String authenticationToken;
+        public Plant_Utility.addressCapsule shippingAddress;
+        public String shippingAddressId;
+        
+        //w desc:   parse and return wrapper object
+        public updateCustomerAddressWrap parse(String json){
+            return (updateCustomerAddressWrap)System.JSON.deserialize(json, updateCustomerAddressWrap.class);
+        }
+    }
 
     // @wrapper class : 4
     public class wrapResponse{
@@ -1425,6 +1687,19 @@ public class Plant_Customer_BC {
         }
     }
 
+    // wrap 8A: AG
+    // desc: Wrapper to delete Account Payment Method
+    public class updateCustomerPaymentWrap{
+        public String authenticationToken;
+        public String paymentMethodId;
+        public Plant_Orders_BC.cardWrapper cardInformation;
+        
+        //desc:   parse and return wrapper object
+        public updateCustomerPaymentWrap parse(String json){
+            return (updateCustomerPaymentWrap)System.JSON.deserialize(json, updateCustomerPaymentWrap.class);
+        }
+    }
+    
     // wrap 8:
     // desc: Wrapper to delete Account Payment Method
     public class delCustomerPaymentWrap{

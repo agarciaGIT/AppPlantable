@@ -93,7 +93,7 @@ public  class Plant_TransactionTiggerHelper {
                               Plant_Subscription__r.Plant_Status__c,Plant_Subscription__r.Plant_Cadence__c,Plant_Subscription__r.Plant_Start_Date__c,Plant_Subscription__r.Plant_Charge_Day__c,Plant_Subscription__r.Plant_Next_Delivery_Date__c,Plant_Subscription__r.Plant_Next_Shipment_Date__c,Plant_Subscription__r.Plant_Next_Charge_Date__c, 
                               Plant_Subscription__r.Plant_Shipping_Address__r.Plant_Postal_Code__c, Plant_Subscription__r.Plant_Shipping_Address__r.Plant_Province_State__c,Plant_Subscription__r.Plant_Chargent_Order__c,
                               Plant_Subscription__r.Ghost_Next_Shipment_Date__c, Plant_Subscription__r.Ghost_Shipment_Day__c,Plant_Subscription__r.Plant_Delivery_Schedule__c,
-                              (SELECT Id, IsDeleted, Name, SystemModstamp, LastViewedDate, LastReferencedDate, Plant_Order__c, Plant_Status__c, Plant_Delivery_Schedule__c, Plant_Shipping_Address__c, Plant_Tracking_Number__c, Plant_Flagged_Details__c, Chargent_Transaction__c FROM Shipments__r Limit 1), 
+                              (SELECT Id, IsDeleted, Name, SystemModstamp, LastViewedDate, LastReferencedDate, Plant_Order__c, Plant_Status__c,  Plant_Tracking_Number__c, Plant_Flagged_Details__c, Chargent_Transaction__c FROM Shipments__r Limit 1), 
                               Plant_Order_Properties__r.Shipping_Address__r.Plant_Province_State__c ,Plant_Order_Properties__r.Shipping_Address__r.Plant_Postal_Code__c ,Plant_Order_Properties__r.RecordTypeId,Plant_Order_Properties__r.RecordType.Name,
                               Plant_Order_Properties__r.plan_discountedAmount__c, Plant_Order_Properties__r.Plant_Account__c, Plant_Order_Properties__r.Plant_First_Name__c, Plant_Order_Properties__r.Plant_Last_Name__c, 
                               Plant_Order_Properties__r.Plant_Phone__c, Plant_Order_Properties__r.Plant_Can_SMS__c, Plant_Order_Properties__r.Plant_Email__c, Plant_Order_Properties__r.Shipping_Address__c, 
@@ -134,12 +134,10 @@ public  class Plant_TransactionTiggerHelper {
                         // Create Shipment
                         // insertNonRecurrShipments
                         Plant_Shipment__c shipmt=new Plant_Shipment__c();
-                        shipmt.Plant_Shipping_Address__c= oddr.Plant_Order_Properties__r.Shipping_Address__c;
+                        
                         shipmt.Plant_Status__c = 'Pending';
                         shipmt.Chargent_Transaction__c = cOrder_Vs_transactionId_Map.get(oddr.id);
-                        shipmt.Plant_Delivery_Schedule__c=oddr.Plant_Order_Properties__r.Delivery_Schedule__c;
                         shipmt.Plant_Order__c = oddr.id;
-
                         insertNonRecurrShipments.add(shipmt);
                         system.debug('@@@@ new shipment list:' + insertNonRecurrShipments);
                         
@@ -174,12 +172,9 @@ public  class Plant_TransactionTiggerHelper {
                             
                             // Create Shipment Plant_Shipment__c
                             Plant_Shipment__c shipmt=new Plant_Shipment__c();
-                            shipmt.Plant_Shipping_Address__c= oddr.Plant_Order_Properties__r.Shipping_Address__c;
                             shipmt.Plant_Status__c = 'Pending';
                             shipmt.Chargent_Transaction__c = cOrder_Vs_transactionId_Map.get(oddr.id);
-                            shipmt.Plant_Delivery_Schedule__c=oddr.Plant_Order_Properties__r.Delivery_Schedule__c;
                             shipmt.Plant_Order__c = oddr.id;
-
                             insertNonRecurrShipments.add(shipmt);
 
                             // Update Subscription Order_Count__c
@@ -227,10 +222,8 @@ public  class Plant_TransactionTiggerHelper {
                             
                             // CREATE SHIPMENT **
                             Plant_Shipment__c shipmt=new Plant_Shipment__c();
-                            shipmt.Plant_Shipping_Address__c= oddr.Plant_Order_Properties__r.Shipping_Address__c;
                             shipmt.Plant_Status__c = 'Pending';
                             shipmt.Chargent_Transaction__c = cOrder_Vs_transactionId_Map.get(oddr.id);
-                            shipmt.Plant_Delivery_Schedule__c=oddr.Plant_Order_Properties__r.Delivery_Schedule__c;
                             shipmt.Plant_Order__c = oddr.id;
                                 insertNonRecurrShipments.add(shipmt);
 

@@ -133,4 +133,48 @@ global class plant_RESTAuthorizeController {
         } 
         
     }
+
+    @HttpGet  
+    global static void getPassword() {  
+        
+        RestResponse res = RestContext.response;
+        RestRequest req = RestContext.request;  
+        res.addHeader('Content-Type', 'application/json');
+        
+        try{
+            String reqResource_endString = req.requestURI.substring(req.requestURI.lastIndexOf('/')+1);
+            
+            if(reqResource_endString=='forgetpasswordrequest'){
+                System.debug('######@@ Meal List endpoint');
+                // call get meal service class method
+                String param_emailId = req.params.get('emailId');
+                Plant_Utility.responseWrapper respWrap = plant_AuthorizeController_SC.forgotPasswordRequest_SC(param_emailId);
+                if(respWrap.statusCode=='200'){
+                    res.statusCode = Integer.valueOf(respWrap.statusCode);
+                    System.debug('@@@@## success');
+                }
+                else{
+                    res.statusCode = Integer.valueOf(respWrap.statusCode);
+                    System.debug('@@@@## error');
+                }   
+                
+                String jsonRespBody = JSON.serialize(respWrap); 
+                res.responseBody = Blob.valueOf(jsonRespBody); 
+            }
+            else{
+                Plant_Utility.responseWrapper respWrapErr = new Plant_Utility.responseWrapper('error','500','Service not found! Invalid endpoint',new Plant_Utility.responseListWrapper(new List<String>()));
+                res.statusCode = 500;
+                String jsonErrRespBody = JSON.serialize(respWrapErr); 
+                res.responseBody = Blob.valueOf(jsonErrRespBody);
+            }
+            
+        }
+        catch(Exception ex){
+            System.debug('@@@@@@ exception encounter => '+ex+' MSG: '+ex.getMessage()+' LINE: '+ex.getLineNumber()+' CAUSE: '+ex.getCause());
+            Plant_Utility.responseWrapper respWrapErr = new Plant_Utility.responseWrapper('error','500',ex.getMessage(),new Plant_Utility.responseListWrapper(new List<String>()));
+            res.statusCode = 500;
+            String jsonErrRespBody = JSON.serialize(respWrapErr); 
+            res.responseBody = Blob.valueOf(jsonErrRespBody);
+        }              
+    }
 }

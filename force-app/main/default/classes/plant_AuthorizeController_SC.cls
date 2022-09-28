@@ -35,4 +35,10 @@ public class plant_AuthorizeController_SC {
         Plant_Utility.responseWrapper expireToken_Result = new plant_AuthorizeController().expireAuthorizationToken(jsonWrapper);
         return expireToken_Result;
     }
+
+    // @ Generate Temporary Password
+    public static Plant_Utility.responseWrapper forgotPasswordRequest_SC(String emailId){
+        Plant_Utility.responseWrapper Authorization_resultList = new plant_AuthorizeController().forgotPasswordRequest(emailId);
+        return Authorization_resultList;
+    }
 }

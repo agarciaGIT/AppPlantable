@@ -282,6 +282,7 @@ public class plant_AuthorizeController {
                     if(acc[0].Plant_Temporary_Password_Deadline__c==false || acc[0].Plant_Change_Password__c==true){
                         acc[0].Plant_Change_Password__c=true;
                         acc[0].plant_UserPasswaord__c=reqst.newPassword;
+                        acc[0].Plant_Send_Reset_Password__c = false;
                         update acc;
                         status='Success';
                         statusCode='200';
@@ -365,6 +366,8 @@ public class plant_AuthorizeController {
             status = 'error';
             statusCode='500';
             msg='Internal Server Error: '+ex.getMessage();
+            Plant_Utility.responseWrapper responseWrap = new Plant_Utility.responseWrapper(status,statusCode,msg,new Plant_Utility.responseListWrapper(new List<String>()));
+            return responseWrap;
         }
 
         // FinResponse: generate token 
@@ -391,6 +394,66 @@ public class plant_AuthorizeController {
         System.debug('@@@ callout done => '+response);
     }
 
+    // METHOD: 7 (acces via REST)
+    // @desc: To generate Temporary Password at the time of Forget Password.
+    public plant_Utility.responseWrapper forgotPasswordRequest(String emailId){
+        String status='';
+        String statusCode='';
+        String msg='';
+        String existingCustomerId='';
+        List<tempPasswordResponse> tempPassword_List=new List<tempPasswordResponse>();
+        try {
+            if(!String.isBlank(emailId)){
+                List<Account> accList = [Select id, Plant_Temporary_Password_Deadline__c, 
+                Plant_Send_Reset_Password__c, Plant_Change_Password__c, plant_UserPasswaord__c from Account where Email__c=:emailId Limit 1];
+                if(!accList.isEmpty()){
+                    tempPasswordResponse tempPaswrd_Resp = new tempPasswordResponse();
+                    // create a temp 8 digit password
+                    String tempPass = Plant_Utility.rendomPassword(8);
+                    if(!String.isBlank(tempPass)){
+                        Account acc = new Account();
+                        acc.id = accList[0].id;
+                        acc.plant_UserPasswaord__c = tempPass;
+                        acc.Plant_Change_Password__c = true;
+                        acc.Plant_Send_Reset_Password__c = true;
+                        update acc;
+                        tempPaswrd_Resp.tempPassword=tempPass;
+                        tempPassword_List.add(tempPaswrd_Resp);
+                        status = 'Success';
+                        statusCode='200';
+                        msg+='Temporary Password generated Successfull, Please change your Password within 30 Minutes ';
+                        Plant_Utility.responseWrapper responseWrap = new Plant_Utility.responseWrapper(status,statusCode,msg,new Plant_Utility.responseListWrapper(tempPassword_List));
+                        return responseWrap;
+                    }
+                }
+                else{
+                    status = 'error';
+                    statusCode='500';
+                    msg+='No account found with this Email ';
+                }
+                
+            }
+            else{
+                status = 'error';
+                statusCode='500';
+                msg+='Incorrect Request body ';
+            }
+            
+        }
+        catch(Exception ex){
+            System.debug('@@@@@@@@@ get token EXCEPTION ENCOUNTERD: line: '+ex.getLineNumber()+' msg: '+ex.getCause()+' '+ex.getMessage());
+            status = 'error';
+            statusCode='500';
+            msg='Internal Server Error: '+ex.getMessage();
+            // FinResponse: generate token 
+            Plant_Utility.responseWrapper responseWrap = new Plant_Utility.responseWrapper(status,statusCode,msg,new Plant_Utility.responseListWrapper(tempPassword_List));
+            return responseWrap;
+        }
+
+        // FinResponse: generate token 
+        Plant_Utility.responseWrapper responseWrap = new Plant_Utility.responseWrapper(status,statusCode,msg,new Plant_Utility.responseListWrapper(tempPassword_List));
+        return responseWrap;
+    }
 
     // wrapper 1:
     // @desc: authorization request
@@ -447,5 +510,11 @@ public class plant_AuthorizeController {
         public ExpireToken_wrap parse(String json){
             return (ExpireToken_wrap)System.JSON.deserialize(json, ExpireToken_wrap.class);
         }
+    }
+
+    // wrapper 5:
+    // @desc: To return Temporary Password for forgot PAssword APIs.
+    public class tempPasswordResponse{
+        public String tempPassword; 
     }
 }
