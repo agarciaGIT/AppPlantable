@@ -14,7 +14,7 @@ public class Plant_LwcLookupController {
         Id currentUserRoleId = UserInfo.getUserRoleId();
         Set<Id> allUsers = getRoleSubordinateUsers(currentUserRoleId);
         if(objectName == 'Plant_Payment_Method__c'){
-          return Database.query('SELECT Id, Name FROM ' +objectName+ ' WHERE Name LIKE '+searchText+' AND Plant_Account__c='+searchAccountId+' LIMIT 6');  
+          return Database.query('SELECT Id, Name FROM ' +objectName+ ' WHERE Plant_Is_Account_Record__c = True AND Name LIKE '+searchText+' AND Plant_Account__c='+searchAccountId+' LIMIT 6');  
         }
         else{
         return Database.query('SELECT Id, Name FROM ' +objectName+ ' WHERE Name LIKE '+searchText+' LIMIT 6');  

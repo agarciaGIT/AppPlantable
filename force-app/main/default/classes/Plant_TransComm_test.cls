@@ -33,17 +33,16 @@ public class Plant_TransComm_test {
         return newTransComm;
     }
     
-    public static List<Plant_Meal_Selection_Meal__c> createMealSelMeals(List<Meal__c> meals, Plant_Meal_Selection__c Mealselection) {
-        List<Plant_Meal_Selection_Meal__c> msms = new List<Plant_Meal_Selection_Meal__c>();
-        for(Meal__c m :meals) {
-            Plant_Meal_Selection_Meal__c newMs = new Plant_Meal_Selection_Meal__c(
-                Plant_Quantity__c = 1,
-                Plant_Meal_Selection__c = Mealselection.Id,
-                Plant_Meal__c = m.id
-            );
-            msms.add(newMs);
-        }
-        return msms;
+    public static Plant_Shipping_Address__c createShippingAddress() {
+    	Plant_Shipping_Address__c shipAddr = new Plant_Shipping_Address__c(
+            Plant_Street1__c = '25A Jackson Pl',
+            Plant_Street2__c = '',
+            Plant_City__c = 'Brooklyn',
+            Plant_Province_State__c	= 'NY',
+			Plant_Country__c = 'US',
+			Plant_Postal_Code__c = '11209'
+        );
+        return shipAddr;
     }
     
 
@@ -78,7 +77,7 @@ public class Plant_TransComm_test {
         Plant_Meal_Selection__c Mealselection=Plant_TestDataFactory.createMealSelection(1)[0];
         insert MealSelection;
         
-        List<Plant_Meal_Selection_Meal__c> mealsels = createMealSelMeals(meals, MealSelection);
+        List<Plant_Meal_Selection_Meal__c> mealsels = Plant_TestDataFactory.createMealSelMeals(meals, MealSelection);
         insert mealsels;
         
         Plant_Order_Properties__c orderProperty = Plant_TestDataFactory.createOrderProperties(1)[0];
@@ -87,7 +86,13 @@ public class Plant_TransComm_test {
         orderProperty.Plant_Meal_Selection__c = MealSelection.id;
         insert orderProperty;
         
-        Order order = new order(AccountId=acct.id, EffectiveDate=System.today(), Status ='Draft',Plant_Order_Properties__c=orderProperty.id);
+        Plant_Shipping_Address__c shipAddr = createShippingAddress();
+        insert shipAddr;
+        
+        Plant_Subscription__c sub = new Plant_Subscription__c(Plant_Start_Date__c = Date.Today(), Plant_Account__c=acct.id, Plant_Status__c='Active',Plant_Shipping_Address__c = shipAddr.id, Plant_Meal_Selection__c = MealSelection.id);
+        insert sub;
+        
+        Order order = new order(AccountId=acct.id, EffectiveDate=System.today(), Status ='Draft',Plant_Order_Properties__c=orderProperty.id, Plant_Subscription__c = sub.id);
         insert order;
         
         Plant_Payment_Method__c pay = createPaymentMethod(acct);
@@ -98,6 +103,74 @@ public class Plant_TransComm_test {
         insert transcomm;
         
         Plant_TransComm_BC.sendTransComm(transcomm.id);
+
+
+        Plant_Transaction_Comm__c transcomm1 = createTransComm(null, sub.id, 'Subscription Created');
+        transcomm1.Plant_Account__c = acct.id;
+        insert transcomm1;
+        
+        Plant_TransComm_BC.sendTransComm(transcomm1.id);
+        
+        Plant_TransComm_BC.setTransactionEvent('Order Paid', acct.id, order.id, null);
+        
+        Plant_TransComm_BC.pubTransEvent pte = new Plant_TransComm_BC.pubTransEvent();
+        pte.type = 'Order Paid';
+        pte.accountId = 'Order Paid';
+        pte.orderId = order.id;
+        pte.subscriptionId = null;
+        pte.scheduleDateTime = null;
+
+        Plant_TransComm_BC.publishTransactionEvent(pte);
+        
+		List<Plant_TransComm_BC.pubTransEvent> pubEvents = new List<Plant_TransComm_BC.pubTransEvent>();
+        pubEvents.add(Plant_TransComm_BC.setTransactionEvent('Order Paid',acct.id, order.id, null));
+        Plant_TransComm_BC.publishTransactionEvents(pubEvents);
+        
+    }
+    
+    static testMethod void plant_PaidOrder_Test2(){
+    
+        Account acct = Plant_TestDataFactory.createAccounts(1)[0];
+        insert acct;    
+        
+        Contact cont = createContact(acct.id,'fname','lname','1234567890','email@email.com');
+        insert cont;
+        
+        Plant_Shipping_Address__c shippingAddress = Plant_TestDataFactory.createShippingAddress(1)[0];
+        shippingAddress.Plant_Account__c= acct.id;
+        insert shippingAddress;
+        
+        List<Meal__c> meals =Plant_TestDataFactory.createMeal(5);
+        insert meals;
+        
+        Plant_Meal_Selection__c Mealselection=Plant_TestDataFactory.createMealSelection(1)[0];
+        insert MealSelection;
+        
+        List<Plant_Meal_Selection_Meal__c> mealsels = Plant_TestDataFactory.createMealSelMeals(meals, MealSelection);
+        insert mealsels;
+        
+        Plant_Order_Properties__c orderProperty = Plant_TestDataFactory.createOrderProperties(1)[0];
+        orderProperty.Plant_Account__c= acct.id;
+        orderProperty.Shipping_Address__c=shippingAddress.id;
+        orderProperty.Plant_Meal_Selection__c = MealSelection.id;
+        insert orderProperty;
+
+        Plant_Shipping_Address__c shipAddr = createShippingAddress();
+        insert shipAddr;
+        
+        Plant_Subscription__c sub = new Plant_Subscription__c(Plant_Start_Date__c = Date.Today(), Plant_Account__c=acct.id, Plant_Status__c='Active',Plant_Shipping_Address__c = shipAddr.id, Plant_Meal_Selection__c = MealSelection.id);
+        insert sub;
+        
+        Order order = new order(AccountId=acct.id, EffectiveDate=System.today(), Status ='Draft',Plant_Order_Properties__c=orderProperty.id, Plant_Subscription__c = sub.id);
+        insert order;
+        
+        Plant_Payment_Method__c pay = createPaymentMethod(acct);
+        insert pay;
+        
+        Date dt = Date.today();
+        Plant_TransComm_BC.stageScheduledTransComm('Order Paid', acct.id, order.id, null, dt);
+        
+        Plant_TransComm_BC.cancelStagedScheduledTransComm('Order Paid', acct.id, order.id, null);
         
     }
 }

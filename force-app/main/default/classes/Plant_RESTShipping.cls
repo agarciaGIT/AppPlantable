@@ -45,9 +45,21 @@ global class Plant_RESTShipping {
                 String jsonRespBody = JSON.serialize(dd_resultList); 
                 res.responseBody = Blob.valueOf(jsonRespBody); 
             }
-            
-            // DELIVERY DATE**
-            
+            else if(req.requestURI.substring(req.requestURI.lastIndexOf('/')+1).equalsIgnoreCase('getshippingstates')){
+                
+                Plant_Utility.responseWrapper dd_resultList = Plant_Shipping_SC.getAvailableShippingStates();
+                if(dd_resultList.statusCode=='200'){
+                    res.statusCode = Integer.valueOf(dd_resultList.statusCode);
+                    System.debug('@@@@## success dd');
+                }
+                else{
+                    res.statusCode = Integer.valueOf(dd_resultList.statusCode);
+                    System.debug('@@@@## error dd');
+                }   
+                
+                String jsonRespBody = JSON.serialize(dd_resultList); 
+                res.responseBody = Blob.valueOf(jsonRespBody); 
+            }            
             else{
                 // RETURN ERROR
                 String status='error';

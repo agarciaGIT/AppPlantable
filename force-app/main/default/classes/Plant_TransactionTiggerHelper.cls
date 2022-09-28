@@ -26,8 +26,59 @@ public  class Plant_TransactionTiggerHelper {
             Map<String, String> ChargentIdVsOrderId_Map=new Map<String, String>();
             Map<Date, Plant_Shipping_Date__c> shipdateVsRecord=new Map<Date, Plant_Shipping_Date__c>();
             List<Plant_Order_Properties__c> updateOld_OdrPropertyList = new List<Plant_Order_Properties__c>();
-            // List of Post Order Event Calls
+            // AG - List of Post Order Event Calls
             List<Plant_TransComm_BC.pubTransEvent> pubEvents = new List<Plant_TransComm_BC.pubTransEvent>();
+            List<String> mealSelectionInsertIDs = new List<String>();
+
+            // AG - Get all product prices
+            Map<String, PlantProducts__c> plantProdSettings = PlantProducts__c.getAll();
+            System.debug('plantProdSettings:' + plantProdSettings);
+            Set<String> products = new Set<String>();
+            for(PlantProducts__c pp :plantProdSettings.values()) {
+                products.add(pp.ProductCode__c);
+            }
+            System.debug('products:' + products);
+            List<PricebookEntry> product_PricebookEntry_List = [SELECT Id,ProductCode,Product2Id,UnitPrice FROM PricebookEntry WHERE product2Id IN (SELECT id FROM product2 where ProductCode in :products)];
+            System.debug('product_PricebookEntry_List:' + product_PricebookEntry_List);
+
+            // BS - Bulkify**
+            Map<String, Plant_Shipping_Address__c> mapShipAddr = new Map<String,Plant_Shipping_Address__c>();
+            Set<String> shippindDurationId_List = new Set<String>();
+            Map<String, Plant_Delivery_Schedule__c> mapDelivSched = new Map<String,Plant_Delivery_Schedule__c>();
+            List<Plant_Shipping_Date__c> lstShippingDate = new List<Plant_Shipping_Date__c>();
+
+            // BS: FOR BULKIFICATION
+            for(Order oddr : [SELECT Id, Plant_Order_Properties__c,Plant_Shipping_Date__c,Plant_Shipping_Date__r.Plant_Shipping_Date__c, (Select id, OrderId, Product2Id, UnitPrice, PricebookEntryId, Quantity from OrderItems Limit 1), pricebook2id, comty_Chargent_Order__c,Plant_Subscription__c,
+                              Plant_Subscription__r.Plant_Shipping_Address__c,Plant_Subscription__r.Plant_Shipping_Date__c,Plant_Subscription__r.Plant_Meal_Selection__c,Plant_Subscription__r.Plant_Payment_Method__c, Plant_Subscription__r.Order_Count__c,Plant_Subscription__r.RecordType.Name,Plant_Subscription__r.Plant_Account__c,
+                              Plant_Subscription__r.Plant_Status__c,Plant_Subscription__r.Plant_Cadence__c,Plant_Subscription__r.Plant_Start_Date__c,Plant_Subscription__r.Plant_Charge_Day__c,Plant_Subscription__r.Plant_Next_Delivery_Date__c,Plant_Subscription__r.Plant_Next_Shipment_Date__c,Plant_Subscription__r.Plant_Next_Charge_Date__c, 
+                              Plant_Subscription__r.Plant_Shipping_Address__r.Plant_Postal_Code__c, Plant_Subscription__r.Plant_Shipping_Address__r.Plant_Province_State__c,Plant_Subscription__r.Plant_Chargent_Order__c,
+                              Plant_Subscription__r.Ghost_Next_Shipment_Date__c, Plant_Subscription__r.Ghost_Shipment_Day__c,Plant_Subscription__r.Plant_Delivery_Schedule__c  
+                              FROM Order WHERE comty_Chargent_Order__c IN: cOrder_Vs_transactionId_Map.keySet() ORDER BY CreatedDate DESC Limit 49999]){
+
+                // BULKIFICATION LOGIC** Plant_Shipping_Address__r
+                // fill mapShipAddr => id,shippingAddress__c
+                Plant_Shipping_Address__c rempShpAdd = new Plant_Shipping_Address__c();
+                rempShpAdd.Id = oddr.Plant_Subscription__r.Plant_Shipping_Address__c;
+                rempShpAdd.Plant_Postal_Code__c = oddr.Plant_Subscription__r.Plant_Shipping_Address__r.Plant_Postal_Code__c;
+                rempShpAdd.Plant_Province_State__c = oddr.Plant_Subscription__r.Plant_Shipping_Address__r.Plant_Province_State__c;
+                mapShipAddr.put(rempShpAdd.Id, rempShpAdd);
+
+                // shippind duration list
+                shippindDurationId_List.add(oddr.Plant_Subscription__r.Plant_Delivery_Schedule__c);
+            }
+
+            // fill mapDelivSched => zip:state , deliveryschedule__c
+            for(Plant_Delivery_Schedule__c durtn : [SELECT Id,Plant_Shipping_Duration__c,Plant_Zip_Code__c,Plant_State_Code__c FROM Plant_Delivery_Schedule__c WHERE Id IN:shippindDurationId_List]){
+                String tempKey = '';
+                tempKey = durtn.Plant_Zip_Code__c+':'+durtn.Plant_State_Code__c;
+                mapDelivSched.put(tempKey,durtn);
+            }
+
+            // Fill: lstShippingDate =>  List<ShippingDate> future date
+            for(Plant_Shipping_Date__c shp : [SELECT id,Plant_Shipping_Date__c,Plant_Total_Orders__c,Max_Orders_Allowed__c,Is_Shipping_Date_Available__c,X3_Day_Shipping_Delivery_Date__c,Plant_2_Day_Shipping_Delivery_Date__c,Plant_One_Day_Shipping_Delivery_Date__c FROM Plant_Shipping_Date__c WHERE Plant_Shipping_Date__c>Today]){
+                lstShippingDate.add(shp);
+            }
+            
 
             //Record for Plant Shipping Date
             for(Plant_Shipping_Date__c pshipDate:[Select id, name , Plant_Shipping_Date__c, Plant_One_Day_Shipping_Delivery_Date__c,Plant_Total_Orders__c,Max_Orders_Allowed__c,
@@ -50,10 +101,15 @@ public  class Plant_TransactionTiggerHelper {
                               Plant_Order_Properties__r.Plant_Recurrence__c, Plant_Order_Properties__r.Plant_Status__c, Plant_Order_Properties__r.Plant_Gift_Recipient__c, Plant_Order_Properties__r.Delivery_Schedule__c 
                               FROM Order WHERE comty_Chargent_Order__c IN: cOrder_Vs_transactionId_Map.keySet() ORDER BY CreatedDate DESC Limit 49999]){
                                
+                system.debug('@@@ oddr '+oddr);
+                                  
                 if(ChargentIdVsOrderId_Map.isEmpty() || !ChargentIdVsOrderId_Map.keySet().contains(oddr.comty_Chargent_Order__c)){
+                    
                     // NO RECURRING ORDER
                     ChargentIdVsOrderId_Map.put(oddr.comty_Chargent_Order__c, oddr.id);
                     if(oddr.Plant_Order_Properties__r.Plant_Recurrence__c == 'Once') {
+                    
+                        system.debug('@@@ NO RECURRING ORDER');
                         
                         // Set Order to Active
                         oddr.Status = 'Activated';
@@ -67,11 +123,14 @@ public  class Plant_TransactionTiggerHelper {
                             odrProperty.Plant_Status__c = 'Paid';
                             updateOld_OdrPropertyList.add(odrProperty);
                         }
-                        // Add post Order Event
+                        // AG - Add post Order Event
                         pubEvents.add(Plant_TransComm_BC.setTransactionEvent('Order Paid',oddr.AccountId,oddr.id,null));
                         
+                        // AG - Collect MealSelection IDs to update inventory
+						mealSelectionInsertIDs.add(oddr.Plant_Order_Properties__r.Plant_Meal_Selection__c);
+						
                         system.debug('@@@@ new order update list:' + updateCurrent_Orders);
-                        
+                                                
                         // Create Shipment
                         // insertNonRecurrShipments
                         Plant_Shipment__c shipmt=new Plant_Shipment__c();
@@ -87,6 +146,8 @@ public  class Plant_TransactionTiggerHelper {
                     }
                     else{// RECURRING ORDER
 
+                        system.debug('@@@ RECURRING ORDER');
+                        
                         // Set Order to Active
                         oddr.Status = 'Activated';
                         oddr.Plant_Transaction_Id__c=cOrder_Vs_transactionId_Map.get(oddr.Plant_Subscription__r.Plant_Chargent_Order__c);
@@ -103,8 +164,13 @@ public  class Plant_TransactionTiggerHelper {
 						// AG - Add post Order Event
                         pubEvents.add(Plant_TransComm_BC.setTransactionEvent('Order Paid',oddr.AccountId,oddr.id,null));
                         
+                        // AG - Collect MealSelection IDs to update inventory
+						mealSelectionInsertIDs.add(oddr.Plant_Order_Properties__r.Plant_Meal_Selection__c);
+                        
                         // FIREST ORDER
                         if(oddr.Plant_Subscription__r.Order_Count__c==0){
+                            
+                            system.debug('@@@ FIREST ORDER');
                             
                             // Create Shipment Plant_Shipment__c
                             Plant_Shipment__c shipmt=new Plant_Shipment__c();
@@ -122,13 +188,26 @@ public  class Plant_TransactionTiggerHelper {
                             subscpt.Plant_Next_Charge_Date__c=oddr.Plant_Shipping_Date__r.Plant_Shipping_Date__c.addDays(5);
                             subscpt.Order_Count__c =1 ; 
                             subscpt.Plant_Status__c = 'Active';
-                            subscpt.Plant_Next_Shipment_Date__c = Plant_Shipping_BC.getClosestShipmentDate(oddr.Plant_Shipping_Date__r.Plant_Shipping_Date__c.addDays(7), oddr.Plant_Order_Properties__r.Shipping_Address__c,NULL,NULL,NULL);
+                            
+                            // subscpt.Plant_Next_Shipment_Date__c = Plant_Shipping_BC.getClosestShipmentDate(oddr.Plant_Shipping_Date__r.Plant_Shipping_Date__c.addDays(7), oddr.Plant_Order_Properties__r.Shipping_Address__c,NULL,NULL,NULL);
+                            Map<String, Plant_Shipping_Address__c> temp_mapShipAddr = new Map<String,Plant_Shipping_Address__c>();
+                            temp_mapShipAddr.put(oddr.Plant_Subscription__r.Plant_Shipping_Address__c, mapShipAddr.get(oddr.Plant_Subscription__r.Plant_Shipping_Address__c));
+                            subscpt.Plant_Next_Shipment_Date__c = Plant_Shipping_BC.getClosestShipmentDate(oddr.Plant_Shipping_Date__r.Plant_Shipping_Date__c.addDays(7), oddr.Plant_Subscription__r.Plant_Shipping_Address__c,temp_mapShipAddr,mapDelivSched,lstShippingDate);
+                            
+                            // call method : param(state code list, zip code list, )
+                            // return map<shippingAddress(0,15)~shippingDate.addDays(7)
                             if(shipdateVsRecord.keyset().contains(subscpt.Plant_Next_Shipment_Date__c)){
                                 subscpt.Plant_Shipping_Date__c = shipdateVsRecord.get(subscpt.Plant_Next_Shipment_Date__c).id;
                             }
                             Decimal shippingDuration = Plant_Shipping_BC.getShippingDuration(oddr.Plant_Order_Properties__r.Shipping_Address__c,NULL,NULL);
                             if(shippingDuration != NULL) {
                                 subscpt.Plant_Next_Delivery_Date__c = subscpt.Plant_Next_Shipment_Date__c.addDays(Integer.valueOf(shippingDuration));
+                            }
+                            
+                            // AG - Add Price to Subscrption
+                            PricebookEntry pbe = Plant_Orders_BC.getPriceBookEntryByProduct(oddr.Plant_Order_Properties__r.RecordType.Name, product_PricebookEntry_List);
+                            if(pbe != NULL && pbe.UnitPrice != NULL) {
+                                subscpt.Plant_Amount__c = pbe.UnitPrice;
                             }
                             updateSubscription_List.add(subscpt);
 
@@ -143,6 +222,8 @@ public  class Plant_TransactionTiggerHelper {
                             // @ create order
                             // @ create order line
                             // @ update subscription
+                            
+                            system.debug('@@@ AUTOMATIC ORDE');
                             
                             // CREATE SHIPMENT **
                             Plant_Shipment__c shipmt=new Plant_Shipment__c();
@@ -199,7 +280,13 @@ public  class Plant_TransactionTiggerHelper {
                             subscpt.Id = oddr.Plant_Subscription__c;
                             subscpt.Plant_Next_Charge_Date__c=oddr.Plant_Subscription__r.Plant_Next_Charge_Date__c.addDays(7);
                             subscpt.Order_Count__c =oddr.Plant_Subscription__r.Order_Count__c+1; 
-                            subscpt.Plant_Next_Shipment_Date__c = Plant_Shipping_BC.getClosestShipmentDate(oddr.Plant_Subscription__r.Plant_Next_Shipment_Date__c.addDays(7), oddr.Plant_Subscription__r.Plant_Shipping_Address__c,NULL,NULL,NULL);
+                            
+                            // subscpt.Plant_Next_Shipment_Date__c = Plant_Shipping_BC.getClosestShipmentDate(oddr.Plant_Subscription__r.Plant_Next_Shipment_Date__c.addDays(7), oddr.Plant_Subscription__r.Plant_Shipping_Address__c,NULL,NULL,NULL);
+                            Map<String, Plant_Shipping_Address__c> temp_mapShipAddr = new Map<String,Plant_Shipping_Address__c>();
+                            temp_mapShipAddr.put(oddr.Plant_Subscription__r.Plant_Shipping_Address__c, mapShipAddr.get(oddr.Plant_Subscription__r.Plant_Shipping_Address__c));
+                            subscpt.Plant_Next_Shipment_Date__c = Plant_Shipping_BC.getClosestShipmentDate(oddr.Plant_Shipping_Date__r.Plant_Shipping_Date__c.addDays(7), oddr.Plant_Subscription__r.Plant_Shipping_Address__c,temp_mapShipAddr,mapDelivSched,lstShippingDate);
+                            
+
                             System.debug('@@@@ Plant next shipment Date '+subscpt.Plant_Next_Shipment_Date__c);
                             system.debug('@@@@ Plant shipping Date Map Record : '+shipdateVsRecord);
         
@@ -265,6 +352,9 @@ public  class Plant_TransactionTiggerHelper {
 
             // AG - Publish Post Order Events
             Plant_TransComm_BC.publishTransactionEvents(pubEvents);
+            
+            // AG - Update Inventory
+            Plant_Orders_BC.updateOrderInventory(mealSelectionInsertIDs, false);
         }
         catch(Exception ex){
             System.debug('@@@@@@@@@ EXCEPTION ENCOUNTERD SUBSCRIPTION : line: '+ex.getLineNumber()+' msg: '+ex.getCause()+' '+ex.getMessage());

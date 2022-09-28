@@ -73,7 +73,9 @@ public class Plant_DiscountCodes_BC {
                 else{
                     // get product default price
                     if(orderType!=''){
-                        PricebookEntry pbEntry = [SELECT Id, Product2Id,UnitPrice FROM PricebookEntry WHERE product2Id IN (SELECT id FROM product2 where Name=:orderType)];
+                        // AG - Changed 9/24/2022
+                        PricebookEntry pbEntry = Plant_Orders_BC.getPriceBookEntryByProduct(orderType,null);
+                        //PricebookEntry pbEntry = [SELECT Id, Product2Id,UnitPrice FROM PricebookEntry WHERE product2Id IN (SELECT id FROM product2 where Name=:orderType)];
                         default_Price.price = pbEntry.UnitPrice;
                         default_Price.total = pbEntry.UnitPrice;
 
@@ -395,7 +397,7 @@ public class Plant_DiscountCodes_BC {
             if(pbEntry!=null){
                 // System.debug('===> 1');
                 switch on discType {
-                    when 'Percent Off' {	
+                    when 'Percent Off' {    
                         // System.debug('===> 2');
                         original_price = pbEntry.UnitPrice;
                         
@@ -404,7 +406,7 @@ public class Plant_DiscountCodes_BC {
                                 nw_discount = (((amount!=null?amount:0)*pbEntry.UnitPrice)/100) + temp_OrdrProp.plan_discountedAmount__c;// total discount
                             else //Remove DC
                                 nw_discount = temp_OrdrProp.plan_discountedAmount__c - (((amount!=null?amount:0)*pbEntry.UnitPrice)/100);
-                        }	
+                        }   
                         else {
                             // System.debug('===> 2.1');
                             if(OperationType=='Add')
@@ -414,8 +416,8 @@ public class Plant_DiscountCodes_BC {
                         }    
                         nw_total = original_price - nw_discount;
                         
-                    }	
-                    when 'Fixed Amount Off' {		
+                    }   
+                    when 'Fixed Amount Off' {       
                         // System.debug('===> 3');
                         original_price = pbEntry.UnitPrice;
 
@@ -424,7 +426,7 @@ public class Plant_DiscountCodes_BC {
                                 nw_discount = (amount!=null?amount:0)+temp_OrdrProp.plan_discountedAmount__c;
                             else //Remove DC
                                 nw_discount = temp_OrdrProp.plan_discountedAmount__c -  (amount!=null?amount:0);
-                        }	
+                        }   
                         else {
                             if(OperationType=='Add')
                                 nw_discount = amount!=null?amount:0;
@@ -434,8 +436,8 @@ public class Plant_DiscountCodes_BC {
                         nw_total = original_price - nw_discount;
                         
                     }
-                    when 'Fixed Amount' {	
-                        // System.debug('===> 4');	
+                    when 'Fixed Amount' {   
+                        // System.debug('===> 4');  
                         original_price = pbEntry.UnitPrice;
                         if(OperationType=='Add'){
                             nw_discount = original_price - (amount!=null?amount:0);
@@ -447,7 +449,7 @@ public class Plant_DiscountCodes_BC {
                         }
                         
                     }
-                    when else {		  
+                    when else {       
                         // System.debug('===> 5');
                         errMsg = 'Error: Discount code not correct';
                     }

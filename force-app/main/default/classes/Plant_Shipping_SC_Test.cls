@@ -14,6 +14,25 @@ public with sharing class Plant_Shipping_SC_Test {
 
     }
     
+    // AG Methods
+    static testMethod void plant_Shipping_GetStates1(){
+        Plant_Delivery_Schedule__c DeliverySchedule= Plant_TestDataFactory.createDeliverySchedule(1, 1)[0];
+        insert DeliverySchedule;
+        
+        RestRequest request = new RestRequest();
+        request.addHeader('Content-Type', 'application/json');
+        request.requestUri= URL.getSalesforceBaseUrl().toExternalForm()+'/services/apexRest/shipping/v1/getshippingstates';
+        System.debug('@@@@ ENDPOINT ==> '+request.requestUri);
+        request.httpMethod='PUT';
+        RestContext.request=request;
+
+        RestResponse resp = new RestResponse();
+        RestContext.response = resp;
+		
+        Plant_RESTShipping.checkDeliveryDate();
+        
+    }
+    
     // @ Method 1
     static testMethod void plant_Shipping_Test1(){
         

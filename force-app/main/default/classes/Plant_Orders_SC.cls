@@ -83,8 +83,8 @@ public class Plant_Orders_SC {
 
      //@ Method to get details about orders created by Customer
     // @ Desc:  No. of orders and status
-    public static Plant_Utility.responseWrapper getOrder_SC(String authenticationToken){
-        Plant_Utility.responseWrapper orders_Result = new Plant_Orders_BC().getOrders(authenticationToken);
+    public static Plant_Utility.responseWrapper getOrder_SC(String authenticationToken, String subscriptionId){
+        Plant_Utility.responseWrapper orders_Result = new Plant_Orders_BC().getOrders(authenticationToken, subscriptionId);
         return orders_Result;
     }
 

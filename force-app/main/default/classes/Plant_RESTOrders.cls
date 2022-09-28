@@ -51,8 +51,9 @@ global class Plant_RESTOrders {
         
 		if(req.requestURI.substring(req.requestURI.lastIndexOf('/')+1).equalsIgnoreCase('list')){
             String param_Authentication = req.params.get('authenticationToken');
+            String param_SubscriptionId = req.params.get('subscriptionId');
             if(!String.isBlank(param_Authentication)){
-                Plant_Utility.responseWrapper resultToken = Plant_Orders_SC.getOrder_SC(param_Authentication);
+                Plant_Utility.responseWrapper resultToken = Plant_Orders_SC.getOrder_SC(param_Authentication, param_SubscriptionId);
                 if(resultToken.statusCode=='200'){
                     res.statusCode = Integer.valueOf(resultToken.statusCode);
                     System.debug('@@@@## success dd');

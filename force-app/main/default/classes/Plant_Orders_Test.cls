@@ -8,6 +8,60 @@ public class Plant_Orders_Test {
     
     
   // AG - test my stuyff
+    public testMethod static void Orders_TestUpdateInventory1(){
+        Meal__c meal=Plant_TestDataFactory.createMeal(1)[0];
+        insert meal;
+        
+        List<Meal__c> meals =Plant_TestDataFactory.createMeal(5);
+        insert meals;
+        
+        Plant_Meal_Selection__c Mealselection=Plant_TestDataFactory.createMealSelection(1)[0];
+        insert MealSelection;
+        
+        List<Plant_Meal_Selection_Meal__c> mealsels = Plant_TestDataFactory.createMealSelMeals(meals, MealSelection);
+        insert mealsels;
+        
+        Account accounts = Plant_TestDataFactory.createAccounts(1)[0];
+        insert accounts;
+        
+        Order order = new order(Accountid=accounts.id, EffectiveDate=System.today(), Status ='Draft');
+        insert order;
+        
+        Plant_Shipping_Date__c ShippingDate= Plant_TestDataFactory.createShippingDate(1)[0];
+        insert ShippingDate;
+        
+        Plant_Shipping_Address__c shippingAddress = Plant_TestDataFactory.createShippingAddress(1)[0];
+        shippingAddress.Plant_Account__c= accounts.id;
+        insert shippingAddress;
+        
+        Plant_Delivery_Schedule__c DeliverySchedule= Plant_TestDataFactory.createDeliverySchedule(1, 2)[0];
+        insert DeliverySchedule;
+        
+        Plant_Order_Properties__c orderProperty = Plant_TestDataFactory.createOrderProperties(1)[0];
+        orderProperty.Plant_Account__c= accounts.id;
+        orderProperty.Shipping_Address__c=shippingAddress.id;
+        insert orderProperty;
+        
+        List<String> mealSelectionIDs = new List<String>();
+        mealSelectionIDs.add(MealSelection.Id);
+        Plant_Orders_BC.updateOrderInventory(mealSelectionIDs, false);
+        
+        List<Meal__c> meals1 =Plant_TestDataFactory.createMeal(3);
+        insert meals1;
+        
+        Plant_Meal_Selection__c Mealselection1=Plant_TestDataFactory.createMealSelection(1)[0];
+        insert MealSelection1;
+        
+        List<Plant_Meal_Selection_Meal__c> mealsels1 = Plant_TestDataFactory.createMealSelMeals(meals1, MealSelection1);
+        insert mealsels1;
+        
+        Plant_Orders_BC.replaceOrderInventory(MealSelection.Id, MealSelection1.Id);
+        
+        Plant_TestDataFactory.creatProduct('PLANTALC');
+        Plant_Orders_BC.getPriceBookEntryByProduct('Reboot',null);
+    }
+    
+  
   public testMethod static void Orders_TestPostTrans1(){
         
         Meal__c meal=Plant_TestDataFactory.createMeal(1)[0];
@@ -60,7 +114,7 @@ public class Plant_Orders_Test {
   
   // Test Methods for pre-processOrder 
     public testMethod static void processOrderTest1(){
-       	cardWrapper cWrapper =new cardWrapper();
+        cardWrapper cWrapper =new cardWrapper();
         cWrapper.name='Test1';
         cWrapper.cardnumber='123443211234';
         cWrapper.cvv ='332';
@@ -92,7 +146,7 @@ public class Plant_Orders_Test {
     }
     
     public testMethod static void processOrderTest2(){
-       	TransactionReqWrap tWrap=new TransactionReqWrap();
+        TransactionReqWrap tWrap=new TransactionReqWrap();
         tWrap.cOrderId='';
         tWrap.sfOrderId='';
         tWrap.orderPropId='';
@@ -113,7 +167,7 @@ public class Plant_Orders_Test {
         Plant_RESTOrders.setProcessOrder(); 
     }    
     public testMethod static void processOrderTest3(){
-       	processPayment_Wrap pWrap=new processPayment_Wrap();
+        processPayment_Wrap pWrap=new processPayment_Wrap();
         pWrap.ObjectId='';
         pWrap.ChargeAmount=10;
         String jsonBody = Json.serialize(pWrap);
@@ -964,9 +1018,9 @@ public class Plant_Orders_Test {
         public String sfOrderId;
         public String orderPropId;
         public String paymentId;
-	}
+    }
     public class processPayment_Wrap{
         public String ObjectId;
         public Decimal ChargeAmount;
-	}
+    }
 }

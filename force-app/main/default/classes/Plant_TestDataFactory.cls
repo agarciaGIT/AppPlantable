@@ -11,6 +11,38 @@ public with sharing class Plant_TestDataFactory {
     public Plant_TestDataFactory() {
     }
     
+    // AG
+    public static PricebookEntry creatProduct(String ProdCode) {
+        Product2 prod = new Product2(Name = 'PRODZ',ProductCode = ProdCode);
+        insert prod;
+        
+        Id pricebookId = Test.getStandardPricebookId();
+        
+        Pricebook2 pricebook2 = new Pricebook2(Name='Plant_PIRCE', isActive=true);
+        insert pricebook2;
+        
+        PricebookEntry standardPrice = new PricebookEntry(Pricebook2Id = pricebookId, Product2Id = prod.Id,UnitPrice = 250.00, IsActive = true);
+        insert standardPrice;
+        
+        PricebookEntry Price = new PricebookEntry(Pricebook2Id = pricebook2.Id, Product2Id = prod.Id,UnitPrice = 250, IsActive = true);
+        insert Price;
+        
+        return Price;
+    }
+    
+    public static List<Plant_Meal_Selection_Meal__c> createMealSelMeals(List<Meal__c> meals, Plant_Meal_Selection__c Mealselection) {
+        List<Plant_Meal_Selection_Meal__c> msms = new List<Plant_Meal_Selection_Meal__c>();
+        for(Meal__c m :meals) {
+            Plant_Meal_Selection_Meal__c newMs = new Plant_Meal_Selection_Meal__c(
+                Plant_Quantity__c = 1,
+                Plant_Meal_Selection__c = Mealselection.Id,
+                Plant_Meal__c = m.id
+            );
+            msms.add(newMs);
+        }
+        return msms;
+    }
+    
     // @ Creating new meal list
     public static List<Meal__c> createMeal(Integer No_Of_Meals){
         List<Meal__c> Meals =new List<Meal__c>();

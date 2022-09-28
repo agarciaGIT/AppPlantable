@@ -50,17 +50,19 @@ public class Plant_Subscriptions_BC {
                 if(!String.isBlank(existingCustomerId)){
                     
                     for(Plant_Subscription__c subscription:[SELECT Id, Plant_Account__c, Plant_Status__c,Plant_Next_Charge_Date__c,Plant_Start_Date__c,
-                                                            Plant_Next_Shipment_Date__c, Plant_Next_Delivery_Date__c
+                                                            Plant_Next_Shipment_Date__c, Plant_Next_Delivery_Date__c,Order_Count__c, Recordtype.Name 
                                                             FROM Plant_Subscription__c WHERE Plant_Account__c=:existingCustomerId LIMIT 49999]){
                                                                 
                                                                 SubscriptionInfo_Wrap SubscriptionInfo=new SubscriptionInfo_Wrap();
                                                                 SubscriptionInfo.status=subscription.Plant_Status__c;
                                                                 SubscriptionInfo.SubscriptionId=subscription.Id;
+                                                                SubscriptionInfo.recordType = subscription.Recordtype.Name;
                                                                 //SubscriptionInfo.SfOrderNumber=subscription.Plant_Next_Pending_Order__r.OrderNumber;
                                                                 SubscriptionInfo.StartDate=subscription.Plant_Start_Date__c;
                                                                 SubscriptionInfo.nextscheduledCharge=subscription.Plant_Next_Charge_Date__c;
                                                                 SubscriptionInfo.nextShipmentDate=subscription.Plant_Next_Shipment_Date__c;
                                                                 SubscriptionInfo.nextDeliveryDate=subscription.Plant_Next_Delivery_Date__c;
+                                                                SubscriptionInfo.Order_Count = Integer.valueOf(subscription.Order_Count__c);
                                                                 SubscriptionInfo_List.add(SubscriptionInfo);
                                                             }
                     
@@ -260,14 +262,17 @@ public class Plant_Subscriptions_BC {
                                         if(!String.isBlank(reqWrp.paymentMethodId)){
                                             // EXISTING PAYMENT ID
                                             List<Plant_Payment_Method__c> existPaymentMethodList = [SELECT id,Plant_Account__c,Plant_Customer_Name__c, Plant_Card_Type__c, Plant_Card_Number__c,CCV__c, Plant_Card_Last_4_Digits__c,
-                                                                                                    Plant_Expiration_Date__c, Plant_Street1__c, Plant_Street2__c, Plant_Street3__c, Plant_City__c, Plant_Country__c, Plant_Province_State__c, Plant_Postal_Code__c, Plant_Can_SMS__c, Plant_Phone__c FROM Plant_Payment_Method__c WHERE id=:reqWrp.paymentMethodId AND Plant_Account__c=:existingCustomerId];
+                                                                                                    Plant_Expiration_Date__c, Plant_Street1__c, Plant_Street2__c, Plant_Street3__c, Plant_City__c, Plant_Country__c, Plant_Province_State__c, Plant_Postal_Code__c, Plant_Can_SMS__c, Plant_Phone__c FROM Plant_Payment_Method__c WHERE Plant_Is_Account_Record__c = true AND id=:reqWrp.paymentMethodId AND Plant_Account__c=:existingCustomerId];
                                             if(existPaymentMethodList.isEmpty()){
                                                 statusCode='503';
                                                 status='error';
                                                 msg += ', Service Unavailable! Invalid PaymentMethod Id';
                                             }
                                             else{
-                                                paymentMethod_Id = existPaymentMethodList[0].Id;
+                                                // AG - Clone "account" payment record
+                                                Plant_Payment_Method__c paymentRec = Plant_Orders_BC.clonePaymentMethod(existPaymentMethodList[0], null, False);
+                                                insert paymentRec;
+                                                paymentMethod_Id = paymentRec.Id;
                                             }
                                             
                                         }
@@ -1481,6 +1486,12 @@ public class Plant_Subscriptions_BC {
                 
                 for(Plant_Subscription__c subscription:[SELECT Id, Name, Plant_Account__c, Plant_Status__c, Plant_Next_Charge_Date__c, Plant_Start_Date__c,
                                                         Plant_Next_Shipment_Date__c, Plant_Next_Delivery_Date__c, Plant_Cadence__c, Order_Count__c,Plant_Delivery_Schedule__c,
+                                                        Plant_Payment_Method__r.Plant_Card_Last_4_Digits__c, Plant_Payment_Method__r.Plant_Card_Type__c,
+                                                        Plant_Shipping_Address__r.Plant_Street1__c, Plant_Shipping_Address__r.Plant_Street2__c, Plant_Shipping_Address__r.Plant_Street3__c,
+                                                        Plant_Shipping_Address__r.Plant_City__c,Plant_Shipping_Address__r.Plant_Province_State__c, 
+                                                        Plant_Shipping_Address__r.Plant_Country__c,Plant_Shipping_Address__r.Plant_Postal_Code__c,
+                                                        Plant_Shipping_Address__r.Plant_First_Name__c, Plant_Shipping_Address__r.Plant_Last_Name__c,
+                                                        Plant_Shipping_Address__r.Plant_Phone__c,
                                                         Plant_Shipping_Address__c, Plant_Payment_Method__c, Plant_Chargent_Order__c, Plant_Meal_Selection__c, RecordTypeId
                                                         FROM Plant_Subscription__c WHERE id=:subscriptionId AND Plant_Account__c=:existingCustomerId LIMIT 49999]){
                                                             
@@ -1508,9 +1519,21 @@ public class Plant_Subscriptions_BC {
                                                             }
                                                             if(subscription.Plant_Shipping_Address__c!=null){
                                                                 SubscriptionInfo.shippingAddress=subscription.Plant_Shipping_Address__c;
+                                                                SubscriptionInfo.street1=subscription.Plant_Shipping_Address__r.Plant_Street1__c;
+                                                                SubscriptionInfo.street2=subscription.Plant_Shipping_Address__r.Plant_Street2__c;
+                                                                SubscriptionInfo.street3=subscription.Plant_Shipping_Address__r.Plant_Street3__c;
+                                                                SubscriptionInfo.state=subscription.Plant_Shipping_Address__r.Plant_Province_State__c;
+                                                                SubscriptionInfo.country=subscription.Plant_Shipping_Address__r.Plant_Country__c;
+                                                                SubscriptionInfo.city=subscription.Plant_Shipping_Address__r.Plant_City__c;
+                                                                SubscriptionInfo.postalCode=subscription.Plant_Shipping_Address__r.Plant_Postal_Code__c;
+                                                                SubscriptionInfo.firstName=subscription.Plant_Shipping_Address__r.Plant_First_Name__c;
+                                                                SubscriptionInfo.lastName=subscription.Plant_Shipping_Address__r.Plant_Last_Name__c;
+                                                                SubscriptionInfo.Phone=subscription.Plant_Shipping_Address__r.Plant_Phone__c;
                                                             }
                                                             if(subscription.Plant_Payment_Method__c!=null){
                                                                 SubscriptionInfo.paymentMethod=subscription.Plant_Payment_Method__c;
+                                                                SubscriptionInfo.cardLastFourDigits=subscription.Plant_Payment_Method__r.Plant_Card_Last_4_Digits__c;
+                                                                SubscriptionInfo.cardType=subscription.Plant_Payment_Method__r.Plant_Card_Type__c;
                                                             }
                                                             if(subscription.Plant_Meal_Selection__c!=null){
                                                                 SubscriptionInfo.mealSelection=subscription.Plant_Meal_Selection__c;
@@ -1582,7 +1605,7 @@ public class Plant_Subscriptions_BC {
         for(Plant_Transaction__e pte :lstSubscriptionEvents) {
             mapAcctSubs.put(pte.Plant_AccountId__c, pte.Plant_SubscriptionId__c);
         }
-        System.debug('mapAcctSubs:' + mapAcctSubs);
+        System.debug('postTransactionOrderHandler mapAcctSubs:' + mapAcctSubs);
 
         List<Account> lstAccount = [select Id, Plant_Reboot_Subscription__c, Plant_Meal_Subscription__c from Account where id in :mapAcctSubs.keySet()];
         System.debug('lstAccount:' + lstAccount);
@@ -1659,6 +1682,8 @@ public class Plant_Subscriptions_BC {
         public date nextscheduledCharge;
         public date nextShipmentDate;
         public date nextDeliveryDate;
+        public Integer Order_Count;
+        public String recordType;
         
     }
 
@@ -1681,6 +1706,18 @@ public class Plant_Subscriptions_BC {
         public date nextShipmentDate;
         public date nextDeliveryDate;
         public String SubscriptionType;
+        public String cardLastFourDigits;
+        public String cardType;
+        public String street1;
+        public String street2;
+        public String street3;
+        public String state;
+        public String country;
+        public String city;
+        public String postalCode;
+        public String firstName;
+        public String lastName;
+        public String Phone;
         
     }
 

@@ -32,7 +32,28 @@ public class Plant_TransComm_BC {
         List<Database.SaveResult> results = EventBus.publish(events);
         system.debug('Publish Plant_Transaction__e:' + results);
     }
-    
+
+	// AG - Publish Post Transaction Events
+	// Testing:
+	// List<Plant_TransComm_BC.pubTransEvent> pubEvents = new List<Plant_TransComm_BC.pubTransEvent>();
+	// pubEvents.add(Plant_TransComm_BC.setTransactionEvent('Order Paid','0013J00000R2WHyQAN','8013J00000083oEQAQ',null));
+	// pubEvents.add(Plant_TransComm_BC.setTransactionEvent('Subscription Created','0013J00000R2WHyQAN',null,'a1F3J00000094hZUAQ'));
+	// Plant_TransComm_BC.publishTransactionEvents(pubEvents);
+	// select id from Plant_Subscription__c where id = 'a1F3J00000094hZ'
+	// 
+	// Plant_TransComm_BC.publishTransactionEvent(Plant_TransComm_BC.setTransactionEvent('Order Paid','0013J00000R2WHyQAN','8013J00000083oEQAQ',null));    
+	// Plant_TransComm_BC.publishTransactionEvent(Plant_TransComm_BC.setTransactionEvent('Order Meal Change','0013J00000R2WHyQAN','8013J00000083oEQAQ',null));    
+	// Plant_TransComm_BC.publishTransactionEvent(Plant_TransComm_BC.setTransactionEvent('Order Date Change','0013J00000R2WHyQAN','8013J00000083oEQAQ',null));    
+	// Plant_TransComm_BC.publishTransactionEvent(Plant_TransComm_BC.setTransactionEvent('Order Address Change','0013J00000R2WHyQAN','8013J00000083oEQAQ',null));    
+	// Plant_TransComm_BC.publishTransactionEvent(Plant_TransComm_BC.setTransactionEvent('Order Cancelled','0013J00000R2WHyQAN','8013J00000083oEQAQ',null));    
+    //
+    // Plant_TransComm_BC.publishTransactionEvent(Plant_TransComm_BC.setTransactionEvent('Subscription Payment Change','0013J00000R2WHyQAN',null,'a1F3J00000094hZUAQ'));    
+    // Plant_TransComm_BC.publishTransactionEvent(Plant_TransComm_BC.setTransactionEvent('Subscription Address Change','0013J00000R2WHyQAN',null,'a1F3J00000094hZUAQ'));    
+    // Plant_TransComm_BC.publishTransactionEvent(Plant_TransComm_BC.setTransactionEvent('Subscription Date Change','0013J00000R2WHyQAN',null,'a1F3J00000094hZUAQ'));    
+    // Plant_TransComm_BC.publishTransactionEvent(Plant_TransComm_BC.setTransactionEvent('Subscription Meal Change','0013J00000R2WHyQAN',null,'a1F3J00000094hZUAQ'));    
+    // Plant_TransComm_BC.publishTransactionEvent(Plant_TransComm_BC.setTransactionEvent('Subscription Paused','0013J00000R2WHyQAN',null,'a1F3J00000094hZUAQ'));    
+    // Plant_TransComm_BC.publishTransactionEvent(Plant_TransComm_BC.setTransactionEvent('Subscription Resumed','0013J00000R2WHyQAN',null,'a1F3J00000094hZUAQ'));
+    // Plant_TransComm_BC.publishTransactionEvent(Plant_TransComm_BC.setTransactionEvent('Subscription Cancelled','0013J00000R2WHyQAN',null,'a1F3J00000094hZUAQ'));
     public static void publishTransactionEvents(List<pubTransEvent> pubEvents) {
         List<Plant_Transaction__e> events = new List<Plant_Transaction__e>();
         for(pubTransEvent pte :pubEvents) {
@@ -62,6 +83,15 @@ public class Plant_TransComm_BC {
 		Map<String, Plant_Scheduled_Comms__c> settings = Plant_Scheduled_Comms__c.getAll();
         system.debug('settings:' + settings);
         
+        // Get Automated User Offset
+        Integer offset = Integer.valueOf(System.Label.PlantAutomatedUserOffset);
+        String UserInfoName = UserInfo.getName();//Returns the context user's full name.
+        System.Debug('UserInfoName:' + UserInfoName);
+        if(UserInfoName != 'Automated Process') {
+            offset = 0;
+        }
+
+        
         // Find duplicate staged transactions
         List<Plant_Transaction_Comm__c> existingTransComm = [select id from Plant_Transaction_Comm__c 
                                                              where Plant_Status__c = 'Scheduled' AND Plant_Account__c = :accountId AND
@@ -81,10 +111,15 @@ public class Plant_TransComm_BC {
         
         // Setup Date and Time to send
         Plant_Scheduled_Comms__c setting = settings.get(type);
+        if(Test.isRunningTest()) {
+            setting = new Plant_Scheduled_Comms__c();
+            setting.Time__c = 8;
+            setting.Days_Before_After__c = 0;
+        }
         if(setting != NULL) {
             DateTime dt = DateTime.newInstance(scheduleDate.year(), scheduleDate.month(), 
                                                scheduleDate.addDays(Integer.valueOf(setting.Days_Before_After__c)).day(), 
-                                               Integer.valueOf(setting.Time__c), 0, 0);
+                                               Integer.valueOf(setting.Time__c + offset), 0, 0);
             
             system.debug('dt:' + dt);
             
@@ -103,6 +138,9 @@ public class Plant_TransComm_BC {
         
     }
     
+    // AG - Cancel Scheduled Communication
+    // Testing:
+    // Plant_TransComm_BC.cancelStagedScheduledTransComm('Subscription Payment Upcoming', '0013J00000R2WHyQAN',null,'a1F3J00000094hZUAQ')
     public static void cancelStagedScheduledTransComm(String type, String accountId, String orderId, String subscriptionId) {
         // Find duplicate staged transactions
         List<Plant_Transaction_Comm__c> existingTransComm = [select id from Plant_Transaction_Comm__c 
@@ -217,19 +255,20 @@ public class Plant_TransComm_BC {
                 transComm.Plant_Product__c = transComm.Plant_Order__r.Plant_Main_Product__c;
                 transComm.Plant_Transaction_Amount__c = transComm.Plant_Order__r.TotalAmount;
                 transComm.Plant_Shipping_Date__c = transComm.Plant_Order__r.Plant_Shipping_Date__r.Plant_Shipping_Date__c;
-                    
-                String strAddr = transComm.Plant_Order__r.Plant_Order_Properties__r.Shipping_Address__r.Plant_Street1__c;
-                if(transComm.Plant_Order__r.Plant_Order_Properties__r.Shipping_Address__r.Plant_Street2__c != NULL)
-                    strAddr = strAddr + '\n' + transComm.Plant_Order__r.Plant_Order_Properties__r.Shipping_Address__r.Plant_Street2__c;
-                if(transComm.Plant_Order__r.Plant_Order_Properties__r.Shipping_Address__r.Plant_Street3__c != NULL)
-                    strAddr = strAddr + '\n' + transComm.Plant_Order__r.Plant_Order_Properties__r.Shipping_Address__r.Plant_Street3__c;
-                strAddr = strAddr + '\n' + transComm.Plant_Order__r.Plant_Order_Properties__r.Shipping_Address__r.Plant_City__c;
-                strAddr = strAddr + ', ' + transComm.Plant_Order__r.Plant_Order_Properties__r.Shipping_Address__r.Plant_Province_State__c;
-                strAddr = strAddr + ', ' + transComm.Plant_Order__r.Plant_Order_Properties__r.Shipping_Address__r.Plant_Postal_Code__c;
-                strAddr = strAddr + ', ' + transComm.Plant_Order__r.Plant_Order_Properties__r.Shipping_Address__r.Plant_Country__c;
-                transComm.Plant_Customer_Address__c = strAddr;
                 
-                system.debug('prep2 transComm:' + transComm);
+                if(transComm.Plant_Order__r.Plant_Order_Properties__r.Shipping_Address__c != NULL) {
+                    String strAddr = transComm.Plant_Order__r.Plant_Order_Properties__r.Shipping_Address__r.Plant_Street1__c;
+                    if(transComm.Plant_Order__r.Plant_Order_Properties__r.Shipping_Address__r.Plant_Street2__c != NULL)
+                        strAddr = strAddr + '\n' + transComm.Plant_Order__r.Plant_Order_Properties__r.Shipping_Address__r.Plant_Street2__c;
+                    if(transComm.Plant_Order__r.Plant_Order_Properties__r.Shipping_Address__r.Plant_Street3__c != NULL)
+                        strAddr = strAddr + '\n' + transComm.Plant_Order__r.Plant_Order_Properties__r.Shipping_Address__r.Plant_Street3__c;
+                    strAddr = strAddr + '\n' + transComm.Plant_Order__r.Plant_Order_Properties__r.Shipping_Address__r.Plant_City__c;
+                    strAddr = strAddr + ', ' + transComm.Plant_Order__r.Plant_Order_Properties__r.Shipping_Address__r.Plant_Province_State__c;
+                    strAddr = strAddr + ', ' + transComm.Plant_Order__r.Plant_Order_Properties__r.Shipping_Address__r.Plant_Postal_Code__c;
+                    strAddr = strAddr + ', ' + transComm.Plant_Order__r.Plant_Order_Properties__r.Shipping_Address__r.Plant_Country__c;
+                    transComm.Plant_Customer_Address__c = strAddr;
+                    system.debug('prep2 transComm:' + transComm);
+                }
                 
                 if(transComm.Plant_Order__r.Plant_Order_Properties__r.Plant_Meal_Selection__c != NULL) {
                     List<Plant_Meal_Selection_Meal__c> lstMeals = [select Id, Plant_Quantity__c, Plant_Meal__r.Name 
@@ -246,17 +285,19 @@ public class Plant_TransComm_BC {
                 
                 if(transComm.Plant_Order__r.Plant_Subscription__c != NULL) {
                     
-                    strAddr = transComm.Plant_Order__r.Plant_Subscription__r.Plant_Shipping_Address__r.Plant_Street1__c;
-                    if(transComm.Plant_Order__r.Plant_Subscription__r.Plant_Shipping_Address__r.Plant_Street2__c != NULL)
-                        strAddr = strAddr + '\n' + transComm.Plant_Order__r.Plant_Subscription__r.Plant_Shipping_Address__r.Plant_Street2__c;
-                    if(transComm.Plant_Order__r.Plant_Subscription__r.Plant_Shipping_Address__r.Plant_Street3__c != NULL)
-                        strAddr = strAddr + '\n' + transComm.Plant_Order__r.Plant_Subscription__r.Plant_Shipping_Address__r.Plant_Street3__c;
-                    strAddr = strAddr + '\n' + transComm.Plant_Order__r.Plant_Subscription__r.Plant_Shipping_Address__r.Plant_City__c;
-                    strAddr = strAddr + ', ' + transComm.Plant_Order__r.Plant_Subscription__r.Plant_Shipping_Address__r.Plant_Province_State__c;
-                    strAddr = strAddr + ', ' + transComm.Plant_Order__r.Plant_Subscription__r.Plant_Shipping_Address__r.Plant_Postal_Code__c;
-                    strAddr = strAddr + ', ' + transComm.Plant_Order__r.Plant_Subscription__r.Plant_Shipping_Address__r.Plant_Country__c;
-                    transComm.Plant_Subscription_Address__c = strAddr;
-					system.debug('prep4 transComm:' + transComm);
+                    if(transComm.Plant_Order__r.Plant_Subscription__r.Plant_Shipping_Address__c != NULL) {
+                        String strAddr = transComm.Plant_Order__r.Plant_Subscription__r.Plant_Shipping_Address__r.Plant_Street1__c;
+                        if(transComm.Plant_Order__r.Plant_Subscription__r.Plant_Shipping_Address__r.Plant_Street2__c != NULL)
+                            strAddr = strAddr + '\n' + transComm.Plant_Order__r.Plant_Subscription__r.Plant_Shipping_Address__r.Plant_Street2__c;
+                        if(transComm.Plant_Order__r.Plant_Subscription__r.Plant_Shipping_Address__r.Plant_Street3__c != NULL)
+                            strAddr = strAddr + '\n' + transComm.Plant_Order__r.Plant_Subscription__r.Plant_Shipping_Address__r.Plant_Street3__c;
+                        strAddr = strAddr + '\n' + transComm.Plant_Order__r.Plant_Subscription__r.Plant_Shipping_Address__r.Plant_City__c;
+                        strAddr = strAddr + ', ' + transComm.Plant_Order__r.Plant_Subscription__r.Plant_Shipping_Address__r.Plant_Province_State__c;
+                        strAddr = strAddr + ', ' + transComm.Plant_Order__r.Plant_Subscription__r.Plant_Shipping_Address__r.Plant_Postal_Code__c;
+                        strAddr = strAddr + ', ' + transComm.Plant_Order__r.Plant_Subscription__r.Plant_Shipping_Address__r.Plant_Country__c;
+                        transComm.Plant_Subscription_Address__c = strAddr;
+                        system.debug('prep4 transComm:' + transComm);
+                    }
                     
                     if(transComm.Plant_Order__r.Plant_Subscription__r.Plant_Meal_Selection__c != NULL) {
                         List<Plant_Meal_Selection_Meal__c> lstMeals = [select Id, Plant_Quantity__c, Plant_Meal__r.Name 

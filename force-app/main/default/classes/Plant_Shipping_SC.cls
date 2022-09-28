@@ -13,6 +13,12 @@ public class Plant_Shipping_SC {
     }
 
     // Get Next 10 Delivery Dates
+    public static Plant_Utility.responseWrapper getAvailableShippingStates(){
+        Plant_Utility.responseWrapper dd_resultList = new Plant_Shipping_BC().getAvailableShippingStates();
+        return dd_resultList;
+    }
+    
+    // Get Next 10 Delivery Dates
     public static Plant_Utility.responseWrapper getDeliveryDate(Plant_Shipping_BC.deliveryDateWrapper jsonWrapper){
         // Plant_Shipping_BC.deliveryDateWrapper jsonWrapper = new Plant_Shipping_BC.deliveryDateWrapper().parse(jsonReq);
         Plant_Utility.responseWrapper dd_resultList = new Plant_Shipping_BC().getAvailableDeliveryDates(jsonWrapper);

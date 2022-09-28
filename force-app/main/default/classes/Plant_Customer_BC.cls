@@ -354,7 +354,7 @@ public class Plant_Customer_BC {
                 result_paymtMtd.AccountId = AccountId;
 
                     for(Plant_Payment_Method__c oprop : [SELECT Id,Plant_Customer_Name__c, Plant_Card_Type__c,Plant_Card_Number__c,CCV__c,Plant_Card_Last_4_Digits__c,Plant_Expiration_Date__c,Plant_Street1__c,Plant_Street2__c,
-                                                Plant_Street3__c,Plant_City__c,Plant_Country__c,Plant_Province_State__c,Plant_Postal_Code__c,Plant_Can_SMS__c,Plant_Phone__c FROM Plant_Payment_Method__c WHERE Plant_Account__c=:AccountId ]){
+                                                Plant_Street3__c,Plant_City__c,Plant_Country__c,Plant_Province_State__c,Plant_Postal_Code__c,Plant_Can_SMS__c,Plant_Phone__c FROM Plant_Payment_Method__c WHERE Plant_Account__c=:AccountId AND Plant_Is_Account_Record__c = TRUE ]){
                     
                     paymentInfo paymt_Rcd = new paymentInfo();
                     paymt_Rcd.paymentId = oprop.Id;
@@ -878,6 +878,7 @@ public class Plant_Customer_BC {
                                         msg+=', billing State missing';
                                     }   
                             paymentRec.Plant_Account__c=existingCustomerId;
+                            paymentRec.Plant_Is_Account_Record__c = True;
                             Database.insert(paymentRec, false);
                             statusCode='200';
                             status='Success';
