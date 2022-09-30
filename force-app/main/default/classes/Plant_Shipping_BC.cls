@@ -424,9 +424,38 @@ public class Plant_Shipping_BC {
     }
     
     // Internal Methods
-    public static void shippingAddressTriggerHandler(List<Plant_Shipping_Address__c> lstShipAddrs) {
+    public static void shippingAddressTriggerHandler(List<Plant_Shipping_Address__c> lstShipAddrs, List<String> lstUpdatedShipAddressIds) {
         MAP<String,Plant_Shipping_Address__c> mapShipAddrs = new MAP<String,Plant_Shipping_Address__c>();
         Set<String> accountIDs = new Set<String>();
+        
+        
+		// Query Updates
+        List<Plant_Shipping_Address__c> lstUpdatedShipAddrs;
+        if(!lstUpdatedShipAddressIds.isEmpty()) {
+            lstUpdatedShipAddrs = [select id, 
+                                   Plant_Save_Shipping_Address__c,
+                                   Plant_Account__c,
+                                   Plant_Is_Account_Record__c,
+                                   Plant_First_Name__c,
+                                   Plant_Last_Name__c,
+                                   Plant_Can_SMS__c,
+                                   Plant_Phone__c,
+                                   Plant_Street1__c,
+                                   Plant_Street2__c,
+                                   Plant_Street3__c,
+                                   Plant_City__c,
+                                   Plant_Province_State__c,
+                                   Plant_Postal_Code__c,
+                                   Plant_Country__c
+                                   from Plant_Shipping_Address__c where id in :lstUpdatedShipAddressIds];
+            
+            if(!lstUpdatedShipAddrs.isEmpty()) {
+                for(Plant_Shipping_Address__c sa :lstUpdatedShipAddrs) {
+                    lstShipAddrs.add(sa);
+                }
+            }            
+        }        
+        
         for(Plant_Shipping_Address__c sa :lstShipAddrs) {     
             if(sa.Plant_Save_Shipping_Address__c == True && sa.Plant_Account__c != NULL) {
                 mapShipAddrs.put(sa.Plant_Account__c +':'+ sa.Plant_Street1__c,sa);
@@ -435,6 +464,9 @@ public class Plant_Shipping_BC {
         }
         System.debug('mapShipAddrs:' + mapShipAddrs);
         System.debug('accountIDs:' + accountIDs);
+        if(accountIDs.size() == 0) {
+            return;
+        }
         
         List<Plant_Shipping_Address__c> lstExistingShippingAddrs = [select id, Plant_Account__c,
                                                                Plant_City__c,
@@ -468,17 +500,17 @@ public class Plant_Shipping_BC {
             
             System.debug('sa:' + sa);
             
-            Plant_Shipping_Address__c fndPay = mapShipAddrs.get(sa);
-            Plant_Shipping_Address__c fndExistingPay = mapExistingShippingAddrs.get(sa);
-            System.debug('fndPay:' + fndPay);
-            System.debug('fndExistingPay:' + fndExistingPay);
+            Plant_Shipping_Address__c fndAddr = mapShipAddrs.get(sa);
+            Plant_Shipping_Address__c fndExistingShipAddr = mapExistingShippingAddrs.get(sa);
+            System.debug('fndAddr:' + fndAddr);
+            System.debug('fndExistingShipAddr:' + fndExistingShipAddr);
             
-            if(fndPay != NULL && fndExistingPay != NULL) {
-                Plant_Shipping_Address__c updatePM = cloneShippingAddress(fndPay, fndExistingPay.Id, True);
+            if(fndAddr != NULL && fndExistingShipAddr != NULL) {
+                Plant_Shipping_Address__c updatePM = cloneShippingAddress(fndAddr, fndExistingShipAddr.Id, True);
                 System.debug('lstUpdateSA add:' + updatePM);
                 lstUpdateSA.add(updatePM);
-            } else if(fndPay != NULL) {
-                Plant_Shipping_Address__c insertPM = cloneShippingAddress(fndPay, null, True);
+            } else if(fndAddr != NULL) {
+                Plant_Shipping_Address__c insertPM = cloneShippingAddress(fndAddr, null, True);
                 System.debug('lstInsertSA add:' + insertPM);
                 lstInsertSA.add(insertPM);
             }

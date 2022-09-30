@@ -3453,9 +3453,37 @@ public class Plant_Orders_BC {
 
     // AG -- Methods for Internal Use Only
     
-    public static void paymentMethodTriggerHandler(List<Plant_Payment_Method__c> lstPayMethods) {
+    public static void paymentMethodTriggerHandler(List<Plant_Payment_Method__c> lstPayMethods, List<String> lstUpdatedPayMethodIds) {
         MAP<String,Plant_Payment_Method__c> mapPayMethods = new MAP<String,Plant_Payment_Method__c>();
         Set<String> accountIDs = new Set<String>();
+        
+        // Query Updates
+        List<Plant_Payment_Method__c> lstUpdatedPayMethods;
+        if(!lstUpdatedPayMethodIds.isEmpty()) {
+            lstUpdatedPayMethods = [select id, Plant_Account__c,
+                                    Plant_Save_Payment_Method__c,
+                                    Plant_Card_Number__c,
+                                    Plant_Card_Last_4_Digits__c,
+                                    Plant_Card_Type__c,
+                                    CCV__c,
+                                    Plant_City__c,
+                                    Plant_Country__c,
+                                    Plant_Customer_Name__c,
+                                    Plant_Expiration_Date__c,
+                                    Plant_Phone__c,
+                                    Plant_Postal_Code__c,
+                                    Plant_Province_State__c,
+                                    Plant_Street1__c,
+                                    Plant_Street2__c,
+                                    Plant_Street3__c from Plant_Payment_Method__c where id in :lstUpdatedPayMethodIds];
+            
+            if(!lstUpdatedPayMethods.isEmpty()) {
+                for(Plant_Payment_Method__c pm :lstUpdatedPayMethods) {
+                    lstPayMethods.add(pm);
+                }
+            }            
+        }
+
         for(Plant_Payment_Method__c pm :lstPayMethods) {
             if(pm.Plant_Save_Payment_Method__c == True && pm.Plant_Account__c != NULL) {
 	            mapPayMethods.put(pm.Plant_Account__c +':'+ pm.Plant_Card_Last_4_Digits__c,pm);
@@ -3465,25 +3493,31 @@ public class Plant_Orders_BC {
         System.debug('mapPayMethods:' + mapPayMethods);
         System.debug('accountIDs:' + accountIDs);
         
-        List<Plant_Payment_Method__c> lstExistingPayMethods = [select id, Plant_Account__c,
-                                                               Plant_Card_Number__c,
-                                                               Plant_Card_Last_4_Digits__c,
-                                                               Plant_Card_Type__c,
-                                                               CCV__c,
-                                                               Plant_City__c,
-                                                               Plant_Country__c,
-                                                               Plant_Customer_Name__c,
-                                                               Plant_Expiration_Date__c,
-                                                               Plant_Phone__c,
-                                                               Plant_Postal_Code__c,
-                                                               Plant_Province_State__c,
-                                                               Plant_Street1__c,
-                                                               Plant_Street2__c,
-                                                               Plant_Street3__c
-                                                               from Plant_Payment_Method__c 
-                                                               where Plant_Is_Account_Record__c = True AND
-                                                               Plant_Account__c in :accountIDs
-                                                              ];
+        
+        if(accountIDs.size() == 0) {
+            return;
+        }
+        
+        List<Plant_Payment_Method__c> lstExistingPayMethods;
+        lstExistingPayMethods = [select id, Plant_Account__c,
+                                 Plant_Card_Number__c,
+                                 Plant_Card_Last_4_Digits__c,
+                                 Plant_Card_Type__c,
+                                 CCV__c,
+                                 Plant_City__c,
+                                 Plant_Country__c,
+                                 Plant_Customer_Name__c,
+                                 Plant_Expiration_Date__c,
+                                 Plant_Phone__c,
+                                 Plant_Postal_Code__c,
+                                 Plant_Province_State__c,
+                                 Plant_Street1__c,
+                                 Plant_Street2__c,
+                                 Plant_Street3__c
+                                 from Plant_Payment_Method__c 
+                                 where Plant_Is_Account_Record__c = True AND
+                                 Plant_Account__c in :accountIDs
+                                ];
         System.debug('lstExistingPayMethods:' + lstExistingPayMethods);
         
         Map<String,Plant_Payment_Method__c> mapExistingPM = new Map<String,Plant_Payment_Method__c>();
