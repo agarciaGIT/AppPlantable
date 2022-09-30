@@ -166,6 +166,7 @@ public class Plant_TransComm_BC {
         
         list<Plant_Transaction_Comm__c> transComms = [select Id, Name, Plant_Status__c, Plant_Type__c, Plant_Account__c, Plant_Shipping_Date__c,
                                                       Plant_Account__r.Email__c, Plant_Account__r.First_Name__c, Plant_Account__r.Last_Name__c,
+                                                      Plant_Account__r.Plant_UserPasswaord__c,
                                                       Plant_Order_Shipment_Tracking_Number__c,
                                                       
                                                       Plant_Order__r.Plant_Shipping_Date__r.Plant_Shipping_Date__c,
@@ -240,6 +241,7 @@ public class Plant_TransComm_BC {
             // Prep Data
             transComm.Plant_Customer_Email__c = transComm.Plant_Account__r.Email__c;
             transComm.Plant_Customer_Name__c = transComm.Plant_Account__r.First_Name__c + ' ' + transComm.Plant_Account__r.Last_Name__c;
+            transComm.Plant_Temp_Password__c = transComm.Plant_Account__r.Plant_UserPasswaord__c;
             system.debug('prep1 transComm:' + transComm);
             
             if(transComm.Plant_Order__c != NULL && transComm.Plant_Order__r.Plant_Order_Properties__c != NULL) {

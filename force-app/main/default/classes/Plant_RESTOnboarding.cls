@@ -32,10 +32,9 @@ global class Plant_RESTOnboarding {
                 System.debug('@@@@# REQUEST wrapper BODY: '+reqWrapper);
                 
                 
-                List<CustomerChargeEvent__e> inkEvents = new List<CustomerChargeEvent__e>();
-                inkEvents.add(new CustomerChargeEvent__e(RecordID__c='a1W3J0000009t57'));
-                
-                List<Database.SaveResult> results = EventBus.publish(inkEvents);                
+                //List<CustomerChargeEvent__e> inkEvents = new List<CustomerChargeEvent__e>();
+                //inkEvents.add(new CustomerChargeEvent__e(RecordID__c='a1W3J0000009t57'));
+                //List<Database.SaveResult> results = EventBus.publish(inkEvents);                
                 
                 // call get meal service class method
                 Plant_Utility.responseWrapper respWrap = Plant_OnBoarding_SC.getOnBoardingStatus(reqWrapper);
