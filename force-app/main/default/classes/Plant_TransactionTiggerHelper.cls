@@ -52,7 +52,7 @@ public  class Plant_TransactionTiggerHelper {
                               Plant_Subscription__r.Plant_Shipping_Address__c,Plant_Subscription__r.Plant_Shipping_Date__c,Plant_Subscription__r.Plant_Meal_Selection__c,Plant_Subscription__r.Plant_Payment_Method__c, Plant_Subscription__r.Order_Count__c,Plant_Subscription__r.RecordType.Name,Plant_Subscription__r.Plant_Account__c,
                               Plant_Subscription__r.Plant_Status__c,Plant_Subscription__r.Plant_Cadence__c,Plant_Subscription__r.Plant_Start_Date__c,Plant_Subscription__r.Plant_Charge_Day__c,Plant_Subscription__r.Plant_Next_Delivery_Date__c,Plant_Subscription__r.Plant_Next_Shipment_Date__c,Plant_Subscription__r.Plant_Next_Charge_Date__c, 
                               Plant_Subscription__r.Plant_Shipping_Address__r.Plant_Postal_Code__c, Plant_Subscription__r.Plant_Shipping_Address__r.Plant_Province_State__c,Plant_Subscription__r.Plant_Chargent_Order__c,
-                              Plant_Subscription__r.Ghost_Next_Shipment_Date__c, Plant_Subscription__r.Ghost_Shipment_Day__c,Plant_Subscription__r.Plant_Delivery_Schedule__c  
+                              Plant_Subscription__r.Ghost_Next_Shipment_Date__c, Plant_Subscription__r.Ghost_Shipment_Day__c,Plant_Subscription__r.Plant_Delivery_Schedule__c, Plant_Subscription__r.Plant_Delivery_Schedule__r.Plant_Shipping_Duration__c  
                               FROM Order WHERE comty_Chargent_Order__c IN: cOrder_Vs_transactionId_Map.keySet() ORDER BY CreatedDate DESC Limit 49999]){
 
                 // BULKIFICATION LOGIC** Plant_Shipping_Address__r
@@ -92,7 +92,7 @@ public  class Plant_TransactionTiggerHelper {
                               Plant_Subscription__r.Plant_Shipping_Address__c,Plant_Subscription__r.Plant_Shipping_Date__c,Plant_Subscription__r.Plant_Meal_Selection__c,Plant_Subscription__r.Plant_Payment_Method__c, Plant_Subscription__r.Order_Count__c,Plant_Subscription__r.RecordType.Name,Plant_Subscription__r.Plant_Account__c,
                               Plant_Subscription__r.Plant_Status__c,Plant_Subscription__r.Plant_Cadence__c,Plant_Subscription__r.Plant_Start_Date__c,Plant_Subscription__r.Plant_Charge_Day__c,Plant_Subscription__r.Plant_Next_Delivery_Date__c,Plant_Subscription__r.Plant_Next_Shipment_Date__c,Plant_Subscription__r.Plant_Next_Charge_Date__c, 
                               Plant_Subscription__r.Plant_Shipping_Address__r.Plant_Postal_Code__c, Plant_Subscription__r.Plant_Shipping_Address__r.Plant_Province_State__c,Plant_Subscription__r.Plant_Chargent_Order__c,
-                              Plant_Subscription__r.Ghost_Next_Shipment_Date__c, Plant_Subscription__r.Ghost_Shipment_Day__c,Plant_Subscription__r.Plant_Delivery_Schedule__c,
+                              Plant_Subscription__r.Ghost_Next_Shipment_Date__c, Plant_Subscription__r.Ghost_Shipment_Day__c,Plant_Subscription__r.Plant_Delivery_Schedule__c, Plant_Subscription__r.Plant_Delivery_Schedule__r.Plant_Shipping_Duration__c,
                               (SELECT Id, IsDeleted, Name, SystemModstamp, LastViewedDate, LastReferencedDate, Plant_Order__c, Plant_Status__c,  Plant_Tracking_Number__c, Plant_Flagged_Details__c, Chargent_Transaction__c FROM Shipments__r Limit 1), 
                               Plant_Order_Properties__r.Shipping_Address__r.Plant_Province_State__c ,Plant_Order_Properties__r.Shipping_Address__r.Plant_Postal_Code__c ,Plant_Order_Properties__r.RecordTypeId,Plant_Order_Properties__r.RecordType.Name,
                               Plant_Order_Properties__r.plan_discountedAmount__c, Plant_Order_Properties__r.Plant_Account__c, Plant_Order_Properties__r.Plant_First_Name__c, Plant_Order_Properties__r.Plant_Last_Name__c, 
@@ -194,8 +194,10 @@ public  class Plant_TransactionTiggerHelper {
                             if(shipdateVsRecord.keyset().contains(subscpt.Plant_Next_Shipment_Date__c)){
                                 subscpt.Plant_Shipping_Date__c = shipdateVsRecord.get(subscpt.Plant_Next_Shipment_Date__c).id;
                             }
-                            Decimal shippingDuration = Plant_Shipping_BC.getShippingDuration(oddr.Plant_Order_Properties__r.Shipping_Address__c,NULL,NULL);
-                            if(shippingDuration != NULL) {
+
+                            if(oddr.Plant_Subscription__r.Plant_Delivery_Schedule__r.Plant_Shipping_Duration__c != NULL) {
+                                Decimal shippingDuration = oddr.Plant_Subscription__r.Plant_Delivery_Schedule__r.Plant_Shipping_Duration__c;
+                        
                                 subscpt.Plant_Next_Delivery_Date__c = subscpt.Plant_Next_Shipment_Date__c.addDays(Integer.valueOf(shippingDuration));
                             }
                             
@@ -288,8 +290,10 @@ public  class Plant_TransactionTiggerHelper {
                             }
                             
                             subscpt.Plant_Status__c = 'Active';
-                            Decimal shippingDuration = Plant_Shipping_BC.getShippingDuration(oddr.Plant_Subscription__r.Plant_Shipping_Address__c,NULL,NULL);
-                            if(shippingDuration != NULL) {
+
+                            if(oddr.Plant_Subscription__r.Plant_Delivery_Schedule__r.Plant_Shipping_Duration__c != NULL) {
+                                Decimal shippingDuration = oddr.Plant_Subscription__r.Plant_Delivery_Schedule__r.Plant_Shipping_Duration__c;
+                            
                                 subscpt.Plant_Next_Delivery_Date__c = subscpt.Plant_Next_Shipment_Date__c.addDays(Integer.valueOf(shippingDuration));
                             }
                             updateSubscription_List.add(subscpt);

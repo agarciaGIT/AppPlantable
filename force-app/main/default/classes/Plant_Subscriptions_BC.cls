@@ -322,6 +322,7 @@ public class Plant_Subscriptions_BC {
                                                 subscriptionList[0].Plant_New_Payment_Method_Id__c = paymentMethod_Id;
 
                                                 update subscriptionList[0];
+
                                                 cardUpdateResp cResp=new cardUpdateResp();
                                                 cResp.cOrderId = new_cOrder.id;
                                                 cResp.subscriptionId = subscriptionList[0].id;
@@ -1622,152 +1623,115 @@ public class Plant_Subscriptions_BC {
 
     // Method 6:
     // Call to change status of subscription(Active/Pause/Cancel)
-    // public Plant_Utility.responseWrapper cancelSubscription(cancelSubscrptionWrap subsRequestWrap){
-    //     String statusCode='';
-    //     String status='';
-    //     String msg='';
-    //     String existingCustomerId='';
-    //     try{
-    //         if(subsRequestWrap!=null){
-    //             // VALIDATION 1: check Authorize token
-    //             String validationResult = plant_AuthorizeController.validate_ByAccessToken(subsRequestWrap.authenticationToken);
-    //             System.debug('### auth result=> '+validationResult);
-    //             if(validationResult.startsWith('Success')){
-    //                 existingCustomerId =  validationResult.split(',')[1];
-    //             }
-    //             else{
-    //                 statusCode='503';
-    //                 status='error';
-    //                 msg+=', Service Unavailable! Account : '+validationResult;
-    //             }
-    //             if(!String.isBlank(existingCustomerId)){
-    //                 //Plant_Account__c
-    //                 List<Plant_Subscription__c> pt_Subs_List = [SELECT Id,Plant_Account__c,Plant_Status__c,Plant_Chargent_Order__c,
-    //                 Plant_Chargent_Order__r.ChargentOrders__Payment_Status__c,Plant_Account__r.plant_TokenCreatedDateTime__c
-    //                  FROM Plant_Subscription__c WHERE id=:subsRequestWrap.subscriptionId AND Plant_Account__c=:existingCustomerId LIMIT 1];
+    public Plant_Utility.responseWrapper cancelSubscription(cancelSubscrptionWrap subsRequestWrap){
+        String statusCode='';
+        String status='';
+        String msg='';
+        String existingCustomerId='';
+        try{
+            if(subsRequestWrap!=null){
+                // VALIDATION 1: check Authorize token
+                String validationResult = plant_AuthorizeController.validate_ByAccessToken(subsRequestWrap.authenticationToken);
+                System.debug('### auth result=> '+validationResult);
+                if(validationResult.startsWith('Success')){
+                    existingCustomerId =  validationResult.split(',')[1];
+                }
+                else{
+                    statusCode='503';
+                    status='error';
+                    msg+=', Service Unavailable! Account : '+validationResult;
+                }
+                if(!String.isBlank(existingCustomerId)){
+                    //Plant_Account__c
+                    List<Plant_Subscription__c> pt_Subs_List = [SELECT Id,Plant_Start_Date__c, recordtype.Name, Plant_Status__c, Plant_Cadence__c, Plant_Charge_Day__c,Plant_Shipping_Address__c, Plant_Payment_Method__c, Plant_Account__c, 
+                                                                     Plant_Chargent_Order__c, Order_Count__c,Plant_New_Chargent_Order_Id__c, Plant_Next_Charge_Date__c,
+                                                                     (Select id, name, comty_Chargent_Order__c from Orders__r Order by createdDate DESC Limit 1),
+                                                                    Plant_New_Payment_Method_Id__c, Plant_Chargent_Order__r.ChargentOrders__Payment_Status__c, Plant_Account__r.plant_TokenCreatedDateTime__c
+                     FROM Plant_Subscription__c WHERE id=:subsRequestWrap.subscriptionId AND Plant_Account__c=:existingCustomerId LIMIT 1];
             
-    //                 if(!pt_Subs_List.isEmpty()){
+                    if(!pt_Subs_List.isEmpty()){
 
 
-    //                    ChargentOrders__ChargentOrder__c chg_odr = [SELECT id, ChargentOrders__Status__c, ChargentOrders__Payment_Status__c FROM  ChargentOrders__ChargentOrder__c WHERE id=:pt_Subs.Plant_Chargent_Order__c LIMIT 1];
+                       List<ChargentOrders__ChargentOrder__c> chg_odr = [SELECT id, ChargentOrders__Status__c, 
+                        ChargentOrders__Account__c,ChargentOrders__Transaction_Count_Recurring__c, ChargentOrders__Payment_Method__c, ChargentOrders__Card_Type__c, 
+                       ChargentOrders__Charge_Amount__c, ChargentOrders__Subtotal__c, ChargentOrders__Payment_Status__c, 
+                       ChargentOrders__Payment_Start_Date__c, ChargentOrders__Payment_Frequency__c, ChargentOrders__Payment_Stop__c, 
+                       ChargentOrders__Payment_Count__c, ChargentOrders__Gateway__c FROM  ChargentOrders__ChargentOrder__c WHERE id=:pt_Subs_List[0].Plant_Chargent_Order__c LIMIT 1];
                         
-    //                     // check if already cancled
-    //                     if(pt_Subs.Plant_Status__c == 'Canceled' && (chg_odr.ChargentOrders__Status__c=='Canceled' && chg_odr.ChargentOrders__Payment_Status__c=='Stopped')){
-    //                         // ALREADY CANCELED
-    //                         statusCode='503';
-    //                         status='error';
-    //                         msg+='Service Unavailable: Subscription Already Canceled';
-    //                     }
-    //                     else if(pt_Subs.Plant_Status__c == 'Expired' && (chg_odr.ChargentOrders__Status__c=='Complete' && chg_odr.ChargentOrders__Payment_Status__c=='Complete')){
-    //                         // ALREADY CANCELED
-    //                         statusCode='503';
-    //                         status='error';
-    //                         msg+='Service Unavailable: Subscription Already Expired';
-    //                     }
-    //                     else{
+                        // check if already cancled
+                        if(pt_Subs_List[0].Plant_Status__c == 'Canceled' && (chg_odr[0].ChargentOrders__Status__c=='Canceled' && chg_odr[0].ChargentOrders__Payment_Status__c=='Stopped')){
+                            // ALREADY CANCELED
+                            statusCode='503';
+                            status='error';
+                            msg+='Service Unavailable: Subscription Already Canceled';
+                        }
+                        else if(pt_Subs_List[0].Plant_Status__c == 'Expired' && (chg_odr[0].ChargentOrders__Status__c=='Complete' && chg_odr[0].ChargentOrders__Payment_Status__c=='Complete')){
+                            // ALREADY CANCELED
+                            statusCode='503';
+                            status='error';
+                            msg+='Service Unavailable: Subscription Already Expired';
+                        }
+                        else{
+                            ChargentOrders__ChargentOrder__c new_cOrder = chg_odr[0].clone(false, true, false, false);
+                            //new_cOrder.ChargentOrders__Card_Type__c = newPaymentMethod.Plant_Card_Type__c;
+                            new_cOrder.ChargentOrders__Payment_Start_Date__c = System.today(); 
+                            insert new_cOrder;
 
-    //                         if(subsRequestWrap.newStatus=='Paused'){
-    //                             if(pt_Subs.Plant_Status__c!=subsRequestWrap.newStatus){
-    //                                 pt_Subs.Plant_Status__c = subsRequestWrap.newStatus;
-    //                                 chg_odr.ChargentOrders__Payment_Status__c ='Stopped';
-    //                                 isUpdate = True;
-    //                             }
-    //                             else{
-    //                                 statusCode='200';
-    //                                 status='Success';
-    //                                 msg+='Subscription Already Paused';
-    //                             }
-    //                         }
-    //                         else if(subsRequestWrap.newStatus=='Expired'){
-    //                             if(pt_Subs.Plant_Status__c!=subsRequestWrap.newStatus){
-    //                                 pt_Subs.Plant_Status__c = subsRequestWrap.newStatus;
-    //                                 chg_odr.ChargentOrders__Payment_Status__c ='Complete';
-    //                                 chg_odr.ChargentOrders__Status__c ='Complete';
-    //                                 isUpdate = True;
-    //                             }
-    //                             else{
-    //                                 statusCode='200';
-    //                                 status='Success';
-    //                                 msg+='Subscription Already Expired';
-    //                             }
-    //                         }
-    //                         else if(subsRequestWrap.newStatus=='Active'){
-    //                             if(pt_Subs.Plant_Status__c!=subsRequestWrap.newStatus){
-    //                                 pt_Subs.Plant_Status__c = subsRequestWrap.newStatus;
-    //                                 chg_odr.ChargentOrders__Payment_Status__c ='Recurring';
-    //                                 chg_odr.ChargentOrders__Payment_Start_Date__c = System.today();
-    //                                 isUpdate = True;
-    //                             }
-    //                             else{
-    //                                 statusCode='200';
-    //                                 status='Success';
-    //                                 msg+='Subscription Already Active';
-    //                             }
-    //                         }
-    //                         else if(subsRequestWrap.newStatus=='Canceled'){
-    //                             if(pt_Subs.Plant_Status__c!=subsRequestWrap.newStatus){
-    //                                 pt_Subs.Plant_Status__c = subsRequestWrap.newStatus;
-    //                                 chg_odr.ChargentOrders__Payment_Status__c ='Stopped';
-    //                                 chg_odr.ChargentOrders__Status__c ='Canceled';
-    //                                 isUpdate = True;
-    //                             }
-    //                             else{
-    //                                 statusCode='200';
-    //                                 status='Success';
-    //                                 msg+='Subscription Already Canceled';
-    //                             }
-    //                         }
-    //                         else{
-    //                             statusCode='503';
-    //                             status='error';
-    //                             msg+='Service Unavailable: Unable to update to requested status';
-    //                         }
-        
-    //                         if(isUpdate){
-    //                             // System.debug('@@@@@ updating SUBSCRIPTION '+pt_Subs);
-    //                             // System.debug('@@@@@ updating Chargent order '+chg_odr);
-                                
-    //                             //Subscription update
-    //                             update pt_Subs;
-    //                             // chargent update
-    //                             update chg_odr;
-                                
-    //                             // AG - Add post Subscription Event
-    //                             if(subsRequestWrap.newStatus=='Paused') {
-    //                             	Plant_TransComm_BC.publishTransactionEvent(Plant_TransComm_BC.setTransactionEvent('Subscription Paused',pt_Subs.Plant_Account__c,null,pt_Subs.Id));    
-    //                             } else if(subsRequestWrap.newStatus=='Active') {
-    //                                 Plant_TransComm_BC.publishTransactionEvent(Plant_TransComm_BC.setTransactionEvent('Subscription Resumed',pt_Subs.Plant_Account__c,null,pt_Subs.Id));    
-    //                             } else if(subsRequestWrap.newStatus=='Canceled') {
-    //                                 Plant_TransComm_BC.publishTransactionEvent(Plant_TransComm_BC.setTransactionEvent('Subscription Cancelled',pt_Subs.Plant_Account__c,null,pt_Subs.Id));    
-    //                             }
-                                
-    //                             statusCode='200';
-    //                             status='Success';
-    //                             msg+='Subscription successfully updated!';
-    //                         }
-    //                     }
-    //                 }
-    //                 else{
-    //                     statusCode='503';
-    //                     status='error';
-    //                     msg+=', Service Unavailable! No Subscription Found';
-    //                 }
-    //             }
-    //         }
-    //     }   
-    //     catch(Exception ex){
-    //         System.debug('@@@@@@@@@ EXCEPTION ENCOUNTERD Subscription status update : line: '+ex.getLineNumber()+' msg: '+ex.getCause()+' '+ex.getMessage());
-    //         statusCode='500';
-    //         status='error';
-    //         msg+=' Internal Server Error: Subscription - '+ex.getMessage();
-    //         List<String> respList = new List<String>();
-    //         Plant_Utility.responseWrapper responseWrap = new Plant_Utility.responseWrapper(status,statusCode,msg,new Plant_Utility.responseListWrapper(respList));
-    //         return responseWrap;
-    //     }
-    //     List<String> respList = new List<String>();
-    //     Plant_Utility.responseWrapper responseWrap = new Plant_Utility.responseWrapper(status,statusCode,msg,new Plant_Utility.responseListWrapper(respList));
-    //     return responseWrap;
-    // }
+                            pt_Subs_List[0].Plant_New_Chargent_Order_Id__c = new_cOrder.Id;
+                            update pt_Subs_List[0];
+                                // Code to clone and add new order.
+                            Order odr=new Order();
+                            odr.AccountId = pt_Subs_List[0].Plant_Account__c;
+                            odr.Status = 'Draft';
+                            odr.Plant_Subscription__c = pt_Subs_List[0].id;
+                            odr.comty_Chargent_Order__c = new_cOrder.id;
+                            odr.EffectiveDate = System.Today();
+                            //odr.Plant_Is_Subscription__c = true;
+                            Pricebook2 std_Pbook    = [select id, name from Pricebook2 where isStandard = true limit 1];
+                            odr.Pricebook2Id=std_Pbook.id;
+                            
+                            insert odr;
+                            
+                            
+                            
+                            PricebookEntry priceBookEntry = Plant_Orders_BC.getPriceBookEntryByProduct(pt_Subs_List[0].recordType.Name,null);
+                            
+                            if(priceBookEntry != NULL) {
+                                OrderItem newLine = new OrderItem();
+                                newLine.OrderId = odr.id;
+                                newLine.PricebookEntryId = priceBookEntry.id;
+                                newLine.Quantity=1;
+                                newLine.UnitPrice = 50;
+                                //newLine.UnitPrice = priceBookEntry.UnitPrice;
+                                insert newLine;
+                                statusCode='200';
+                                status='Success';
+                                msg+=', Request for Cancel Subscription has been made';
+                            }
+                            
+                        }
+                    }
+                    else{
+                        statusCode='503';
+                        status='error';
+                        msg+=', Service Unavailable! No Subscription Found';
+                    }
+                }
+            }
+        }   
+        catch(Exception ex){
+            System.debug('@@@@@@@@@ EXCEPTION ENCOUNTERD Subscription status update : line: '+ex.getLineNumber()+' msg: '+ex.getCause()+' '+ex.getMessage());
+            statusCode='500';
+            status='error';
+            msg+=' Internal Server Error: Subscription - '+ex.getMessage();
+            List<String> respList = new List<String>();
+            Plant_Utility.responseWrapper responseWrap = new Plant_Utility.responseWrapper(status,statusCode,msg,new Plant_Utility.responseListWrapper(respList));
+            return responseWrap;
+        }
+        List<String> respList = new List<String>();
+        Plant_Utility.responseWrapper responseWrap = new Plant_Utility.responseWrapper(status,statusCode,msg,new Plant_Utility.responseListWrapper(respList));
+        return responseWrap;
+    }
     
     // AG - Internal Methods
     
@@ -1968,8 +1932,8 @@ public class Plant_Subscriptions_BC {
         public String subscriptionId;
         public String authenticationToken; // #new
 
-        public SubscrptionWrap parse(String sub_Json){
-            return (SubscrptionWrap)JSON.deserialize(sub_Json, SubscrptionWrap.class);
+        public cancelSubscrptionWrap parse(String sub_Json){
+            return (cancelSubscrptionWrap)JSON.deserialize(sub_Json, cancelSubscrptionWrap.class);
         }
     }
 

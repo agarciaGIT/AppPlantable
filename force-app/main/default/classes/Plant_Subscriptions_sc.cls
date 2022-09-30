@@ -66,4 +66,9 @@ public class Plant_Subscriptions_sc{
         return subsModification_Res;
     }
 
+    // @ Desc:  Update Subscription status
+    public static Plant_Utility.responseWrapper cancelSubscription_SC( Plant_Subscriptions_BC.cancelSubscrptionWrap subscDetails){
+        Plant_Utility.responseWrapper subsModification_Res= new Plant_Subscriptions_BC().cancelSubscription(subscDetails);
+        return subsModification_Res;
+    }
 }

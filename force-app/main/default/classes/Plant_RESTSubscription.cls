@@ -194,6 +194,21 @@ global class Plant_RESTSubscription {
                 String jsonRespBody = JSON.serialize(resultToken); 
                 res.responseBody = Blob.valueOf(jsonRespBody); 
             }
+            else if(req.requestURI.substring(req.requestURI.lastIndexOf('/')+1).equalsIgnoreCase('cancelSubscription')){
+                
+                Plant_Subscriptions_BC.cancelSubscrptionWrap jsonWrapper = new Plant_Subscriptions_BC.cancelSubscrptionWrap().parse(requestJson);
+                Plant_Utility.responseWrapper respWrap = Plant_Subscriptions_SC.cancelSubscription_SC(jsonWrapper);
+                if(respWrap.statusCode=='200'){
+                    res.statusCode = Integer.valueOf(respWrap.statusCode);
+                    System.debug('@@@@## delivery add ');
+                }
+                else{
+                    res.statusCode = Integer.valueOf(respWrap.statusCode);
+                    System.debug('@@@@## dd error ');
+                }    
+                String jsonRespBody = JSON.serialize(respWrap); 
+                res.responseBody = Blob.valueOf(jsonRespBody); 
+            }
 
             else{
                 // RETURN ERROR
