@@ -417,7 +417,12 @@ public class plant_AuthorizeController {
                         acc.Plant_Change_Password__c = true;
                         acc.Plant_Send_Reset_Password__c = true;
                         update acc;
-                        tempPaswrd_Resp.tempPassword=tempPass;
+                        
+                        // AG - Add Comm Event
+                        Plant_TransComm_BC.publishTransactionEvent(Plant_TransComm_BC.setTransactionEvent('Profile Forget Password',acc.id,null,null));
+                        
+                        // AG - Dont return it via API not safe
+                        //tempPaswrd_Resp.tempPassword=tempPass;
                         tempPassword_List.add(tempPaswrd_Resp);
                         status = 'Success';
                         statusCode='200';
