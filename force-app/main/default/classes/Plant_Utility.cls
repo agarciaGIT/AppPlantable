@@ -15,6 +15,12 @@ public class Plant_Utility {
     public Plant_Utility() {
 
     }
+    
+    // AG
+    public static Id GetRecordTypeId(String sobjectType, String name){
+        String recordTypeId = Schema.getGlobalDescribe().get(sobjectType).getDescribe().getRecordTypeInfosByName().get(name).getRecordTypeId();
+        return recordTypeId;
+    }
 
     // Method**
     // create method detail entry and return record

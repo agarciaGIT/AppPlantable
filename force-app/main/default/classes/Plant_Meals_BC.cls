@@ -192,6 +192,27 @@ public  class Plant_Meals_BC {
          return responseWrap;
      }
 
+    // AG - Internal Methods
+    public static List<Plant_Meal_Selection_Meal__c> cloneMealSelection(string mealSelectionId, String newMealSelId) {
+        List<Plant_Meal_Selection_Meal__c> mealSelectionMeal_List;
+        List<Plant_Meal_Selection__c> chefMeal_List=[Select id,(SELECT Id, IsDeleted, Name, CreatedDate, CreatedById, LastModifiedDate, LastModifiedById, SystemModstamp, Plant_Meal_Selection__c, Plant_Meal__c, Plant_Quantity__c FROM Meal_Selection_Meals__r Limit 200), 
+                                                     OwnerId, IsDeleted, Name, RecordTypeId, CreatedDate, CreatedById, LastModifiedDate, LastModifiedById, SystemModstamp, LastViewedDate, LastReferencedDate, Plant_Description__c, Plant_Owner__c from Plant_Meal_Selection__c where id=:mealSelectionId];
+        // Cloning Meal Selection Meal Item for the related Opportunity Meal
+        if(!chefMeal_List.isEmpty() && !chefMeal_List[0].Meal_Selection_Meals__r.isEmpty()){
+            
+            mealSelectionMeal_List=new List<Plant_Meal_Selection_Meal__c>();
+            for(Plant_Meal_Selection_Meal__c mealSelectionMeal:chefMeal_List[0].Meal_Selection_Meals__r){
+                Plant_Meal_Selection_Meal__c SelectionMeal=new Plant_Meal_Selection_Meal__c();
+                SelectionMeal = mealSelectionMeal.clone(false, true, false, false);
+                SelectionMeal.Plant_Meal_Selection__c=newMealSelId;
+                mealSelectionMeal_List.add(SelectionMeal);
+            }
+        }
+        return mealSelectionMeal_List;
+    }
+    
+    
+    
     // @Wrapper(w) class
     // desc:  hold user input for iteration
     public class MealSelectionReq_Wrapper{
