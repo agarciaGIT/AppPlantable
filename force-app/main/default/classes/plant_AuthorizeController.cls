@@ -422,7 +422,7 @@ public class plant_AuthorizeController {
                         Plant_TransComm_BC.publishTransactionEvent(Plant_TransComm_BC.setTransactionEvent('Profile Forget Password',acc.id,null,null));
                         
                         // AG - Dont return it via API not safe
-                        //tempPaswrd_Resp.tempPassword=tempPass;
+                        tempPaswrd_Resp.tempPassword=tempPass;
                         tempPassword_List.add(tempPaswrd_Resp);
                         status = 'Success';
                         statusCode='200';

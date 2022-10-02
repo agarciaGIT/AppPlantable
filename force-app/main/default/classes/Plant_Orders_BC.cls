@@ -1136,7 +1136,8 @@ public class Plant_Orders_BC {
                             chrgnt_OrderRec.ChargentOrders__Payment_Frequency__c='Once';
                         }
     
-                        chrgnt_OrderRec.ChargentOrders__Gateway__c = [SELECT id,Name FROM ChargentBase__Gateway__c WHERE Name=:Plant_Utility.gatwayName][0].id;
+                        // AG - Use Custom Label
+                        chrgnt_OrderRec.ChargentOrders__Gateway__c = [SELECT id,Name FROM ChargentBase__Gateway__c WHERE Id = :Label.PlantChargentGatewayId][0].id;
                         insert chrgnt_OrderRec;
     
                         // UPDATE sfOrder WITH chargent ORDER**
@@ -2845,11 +2846,11 @@ public class Plant_Orders_BC {
                     if(!String.isBlank(subscriptionId)){
                         List<Plant_Subscription__c> checkSubId = [Select id from Plant_Subscription__c where id=:subscriptionId AND Plant_Account__c=:existingCustomerId Limit 1];
                         if(!checkSubId.isEmpty()){
-                            sfOrder_List = [SELECT id,(Select Product2.name from OrderItems Limit 1), Status, OrderNumber, EffectiveDate,
+                            sfOrder_List = [SELECT id,(Select Product2.name from OrderItems Limit 1), Status, Plant_Invoice_Number__c, EffectiveDate,Plant_Main_Product__c,Plant_Amount_Paid__c,
                                     comty_Chargent_Order__r.ChargentOrders__Charge_Amount__c,Plant_Fulfillment_Status__c, Plant_Delivery_Date__c,
                                     Modification_Deadline__c, Plant_Is_Subscription__c, Plant_Subscription__r.Order_Count__c, 
                                     comty_Chargent_Order__r.ChargentOrders__Invoice_Number__c,Modification_Deadline_Exceeded__c,
-                                    Plant_Order_Properties__r.Plant_Shipping_Date__r.Plant_Shipping_Date__c
+                                    Plant_Display_Shipping_Date__c
                                     FROM Order WHERE AccountId=:existingCustomerId AND Plant_Subscription__c=:subscriptionId Limit 49999];
                         }
                         else{
@@ -2859,11 +2860,11 @@ public class Plant_Orders_BC {
                         }
                     }
                     else{
-                        sfOrder_List = [SELECT id,(Select Product2.name from OrderItems Limit 1), Status, OrderNumber, EffectiveDate,
+                        sfOrder_List = [SELECT id,(Select Product2.name from OrderItems Limit 1), Status, Plant_Invoice_Number__c, EffectiveDate,Plant_Main_Product__c,Plant_Amount_Paid__c,
                                         comty_Chargent_Order__r.ChargentOrders__Charge_Amount__c,Plant_Fulfillment_Status__c, Plant_Delivery_Date__c,
                                         Modification_Deadline__c, Plant_Is_Subscription__c, Plant_Subscription__r.Order_Count__c,
                                         comty_Chargent_Order__r.ChargentOrders__Invoice_Number__c,Modification_Deadline_Exceeded__c,
-                                        Plant_Order_Properties__r.Plant_Shipping_Date__r.Plant_Shipping_Date__c, Plant_Subscription__c
+                                        Plant_Display_Shipping_Date__c, Plant_Subscription__c
                                     FROM Order WHERE AccountId=:existingCustomerId Limit 49999];
 
                     }
@@ -2873,10 +2874,10 @@ public class Plant_Orders_BC {
                             
                             order_res.DateOrdered=ordr.EffectiveDate;
                             order_res.InvoiceNumber=ordr.comty_Chargent_Order__r.ChargentOrders__Invoice_Number__c;
-                            order_res.OrderNumber=ordr.OrderNumber;
-                            order_res.ShipmentDate=ordr.Plant_Order_Properties__r.Plant_Shipping_Date__r.Plant_Shipping_Date__c;
+                            order_res.OrderNumber=ordr.Plant_Invoice_Number__c;
+                            order_res.ShipmentDate=ordr.Plant_Display_Shipping_Date__c;
                             order_res.status=ordr.Status;
-                            order_res.AmountPaid=ordr.comty_Chargent_Order__r.ChargentOrders__Charge_Amount__c;
+                            order_res.AmountPaid=ordr.Plant_Amount_Paid__c;
                             order_res.isSubscription=ordr.Plant_Is_Subscription__c;
                             if(ordr.Plant_Subscription__c!=null){
                                 order_res.orderCount=(Integer)ordr.Plant_Subscription__r.Order_Count__c;
@@ -2886,7 +2887,7 @@ public class Plant_Orders_BC {
                             order_res.deliveryDate=ordr.Plant_Delivery_Date__c;
                             order_res.modificationDeadline=ordr.Modification_Deadline__c; 
                             if(!ordr.OrderItems.isEmpty()){
-                                order_res.product=ordr.OrderItems[0].product2.name;
+                                order_res.product=ordr.Plant_Main_Product__c;
                             }else{
                                 status = 'Sucess';
                                 statusCode='200';
@@ -2969,8 +2970,8 @@ public class Plant_Orders_BC {
                     List<Plant_Shipment__c> pshipment=new List<Plant_Shipment__c>();
                     
                     if(!String.isBlank(OrderNo)){
-                        sfOrder_List = [SELECT id,(Select Product2.name from OrderItems Limit 1), Status, OrderNumber, EffectiveDate,
-                                        comty_Chargent_Order__r.ChargentOrders__Charge_Amount__c,Modification_Deadline_Exceeded__c, Modification_Deadline__c,
+                        sfOrder_List = [SELECT id,(Select Product2.name from OrderItems Limit 1), Status, Plant_Invoice_Number__c, EffectiveDate,Plant_Main_Product__c,Plant_Amount_Paid__c,
+                                        comty_Chargent_Order__r.ChargentOrders__Charge_Amount__c,Modification_Deadline_Exceeded__c, Modification_Deadline__c,Plant_Display_Shipping_Date__c,
                                         Plant_Order_Properties__r.Plant_Recurrence__c, Plant_Order_Properties__r.Plant_Meal_Selection__c,Plant_Is_Subscription__c,
                                         Plant_Subscription__r.Order_Count__c,Plant_Order_Properties__r.Plant_Shipping_Date__c,
                                         comty_Chargent_Order__r.ChargentOrders__Invoice_Number__c,Plant_Subscription__c, Plant_Subscription__r.Plant_Meal_Selection__c,
@@ -2982,7 +2983,7 @@ public class Plant_Orders_BC {
                                         Plant_Order_Properties__r.Shipping_Address__r.Plant_Country__c,Plant_Order_Properties__r.Shipping_Address__r.Plant_City__c,
                                         Plant_Order_Properties__r.Shipping_Address__r.Plant_Postal_Code__c,Plant_Order_Properties__r.Shipping_Address__r.Plant_First_Name__c,
                                         Plant_Order_Properties__r.Shipping_Address__r.Plant_Last_Name__c,Plant_Order_Properties__r.Shipping_Address__r.Plant_Phone__c
-                                         FROM Order WHERE AccountId=:existingCustomerId AND OrderNumber=:OrderNo Limit 1];
+                                         FROM Order WHERE AccountId=:existingCustomerId AND Plant_Invoice_Number__c=:OrderNo Limit 1];
                         
                         if(!sfOrder_List.isEmpty()){
                             
@@ -3004,11 +3005,11 @@ public class Plant_Orders_BC {
                                 
                                 OrderDetails_Wrap order_res=new OrderDetails_Wrap();
                                 order_res.DateOrdered=sfOrder.EffectiveDate;
-                                order_res.InvoiceNumber = (sfOrder.comty_Chargent_Order__r!=null && sfOrder.comty_Chargent_Order__r.ChargentOrders__Invoice_Number__c!=null) ? sfOrder.comty_Chargent_Order__r.ChargentOrders__Invoice_Number__c : '';
-                                order_res.OrderNumber=sfOrder.OrderNumber;
-                                order_res.ShipmentDate= sfOrder.Plant_Shipping_Date__r.Plant_Shipping_Date__c;
+                                //order_res.InvoiceNumber = (sfOrder.comty_Chargent_Order__r!=null && sfOrder.comty_Chargent_Order__r.ChargentOrders__Invoice_Number__c!=null) ? sfOrder.comty_Chargent_Order__r.ChargentOrders__Invoice_Number__c : '';
+                                order_res.OrderNumber=sfOrder.Plant_Invoice_Number__c;
+                                order_res.ShipmentDate= sfOrder.Plant_Display_Shipping_Date__c;
                                 order_res.status=sfOrder.Status;
-                                order_res.AmountPaid=(sfOrder.comty_Chargent_Order__r!=null && sfOrder.comty_Chargent_Order__r.ChargentOrders__Charge_Amount__c!=null) ? sfOrder.comty_Chargent_Order__r.ChargentOrders__Charge_Amount__c :0.0;
+                                order_res.AmountPaid=sfOrder.Plant_Amount_Paid__c;
                                 order_res.ModificationDeadlineExceeded=sfOrder.Modification_Deadline_Exceeded__c;
                                 order_res.ModificationDeadline=sfOrder.Modification_Deadline__c;
                                 order_res.Recurrence=(sfOrder.Plant_Order_Properties__c!=null && sfOrder.Plant_Order_Properties__r.Plant_Recurrence__c!= null) ? sfOrder.Plant_Order_Properties__r.Plant_Recurrence__c:'';
@@ -3055,7 +3056,7 @@ public class Plant_Orders_BC {
                                 }
                                 
                                 if(!sfOrder.OrderItems.isEmpty()){
-                                    order_res.product=sfOrder.OrderItems[0].product2.name;
+                                    order_res.product=sfOrder.Plant_Main_Product__c;
                                 }
                                 else{
                                     msg+=', No product found for this Order';
@@ -3791,7 +3792,7 @@ public class Plant_Orders_BC {
         System.debug('mapEvents:' + mapEvents);
 
 		// Get ALL orders related to accounts in play        
-        List<Order> lstOrders = [select Id, AccountId, ActivatedDate, TotalAmount, Type, Plant_Main_Product__c,
+        List<Order> lstOrders = [select Id, AccountId, ActivatedDate, TotalAmount, Type, Plant_Main_Product__c,Plant_Replacement_Order__c,
                                  Plant_Order_Properties__c, Plant_Subscription__c,
                                  Plant_Subscription__r.Order_Count__c,
                                  Discount_Codes_Used__c, Plant_Subscription_Order_Number__c,
@@ -3858,6 +3859,10 @@ public class Plant_Orders_BC {
         for(Order o :lstOrders) {
             
             System.debug('Order Loop:' + o);
+            
+            if(o.Plant_Replacement_Order__c != NULL) {
+                continue;
+            }
             
 			Account fndAccount = mapAccts.get(o.AccountId);
             System.debug('fndAccount:' + fndAccount);
@@ -3994,336 +3999,6 @@ public class Plant_Orders_BC {
         
     }
     
-    // AG - This will create a copy of an order the customer needs to be shipped again
-    public static Order reshipOrder(String orderId) {
-        Order retOrder;
-        
-        System.debug('reshipOrder orderId:' + orderId);
-        
-        List<Order> lstOrder = [select Id,AccountId,EffectiveDate,Status,Plant_Fulfillment_Status__c,pricebook2id,comty_Chargent_Order__c,
-                                (Select id, OrderId, Product2Id, UnitPrice, PricebookEntryId, Quantity from OrderItems Limit 1),
-                                Plant_Main_Product__c,
-                                Plant_Order_Properties__c,
-                                Plant_Subscription__c,
-                                Plant_Display_Shipping_Date__c,
-                                
-                                Plant_Order_Properties__r.Plant_Account__c,
-                                Plant_Order_Properties__r.Plant_First_Name__c,
-                                Plant_Order_Properties__r.Plant_Last_Name__c,
-                                Plant_Order_Properties__r.Plant_Email__c,
-                                Plant_Order_Properties__r.Plant_Phone__c,
-                                Plant_Order_Properties__r.Plant_Can_SMS__c,
-                                Plant_Order_Properties__r.Plant_Provider__c,
-                                Plant_Order_Properties__r.Plant_Recurrence__c,
-                                Plant_Order_Properties__r.RecordTypeId,
-                                Plant_Order_Properties__r.Plant_Status__c,
-                                
-                                Plant_Order_Properties__r.Plant_Meal_Selection__c,
-                                Plant_Order_Properties__r.Plant_Payment_Method__c,
-                                Plant_Order_Properties__r.Shipping_Address__c,
-                                Plant_Order_Properties__r.Plant_Delivery_Date__c,
-                                Plant_Order_Properties__r.Plant_Shipping_Date__c,
-                                Plant_Order_Properties__r.Delivery_Schedule__c,
-                                
-                                Plant_Order_Properties__r.Plant_Payment_Method__r.Plant_Account__c,
-                                Plant_Order_Properties__r.Plant_Payment_Method__r.Plant_Card_Number__c,
-                                Plant_Order_Properties__r.Plant_Payment_Method__r.Plant_Card_Type__c,
-                                Plant_Order_Properties__r.Plant_Payment_Method__r.CCV__c,
-                                Plant_Order_Properties__r.Plant_Payment_Method__r.Plant_Card_Last_4_Digits__c,
-                                Plant_Order_Properties__r.Plant_Payment_Method__r.Plant_City__c,
-                                Plant_Order_Properties__r.Plant_Payment_Method__r.Plant_Country__c,
-                                Plant_Order_Properties__r.Plant_Payment_Method__r.Plant_Customer_Name__c,
-                                Plant_Order_Properties__r.Plant_Payment_Method__r.Plant_Expiration_Date__c,
-                                Plant_Order_Properties__r.Plant_Payment_Method__r.Plant_Phone__c,
-                                Plant_Order_Properties__r.Plant_Payment_Method__r.Plant_Postal_Code__c,
-                                Plant_Order_Properties__r.Plant_Payment_Method__r.Plant_Province_State__c,
-                                Plant_Order_Properties__r.Plant_Payment_Method__r.Plant_Street1__c,
-                                Plant_Order_Properties__r.Plant_Payment_Method__r.Plant_Street2__c,
-                                Plant_Order_Properties__r.Plant_Payment_Method__r.Plant_Street3__c,
-                                
-                                Plant_Order_Properties__r.Shipping_Address__r.Plant_Save_Shipping_Address__c,
-                                Plant_Order_Properties__r.Shipping_Address__r.Plant_Account__c,
-                                Plant_Order_Properties__r.Shipping_Address__r.Plant_Is_Account_Record__c,
-                                Plant_Order_Properties__r.Shipping_Address__r.Plant_First_Name__c,
-                                Plant_Order_Properties__r.Shipping_Address__r.Plant_Last_Name__c,
-                                Plant_Order_Properties__r.Shipping_Address__r.Plant_Can_SMS__c,
-                                Plant_Order_Properties__r.Shipping_Address__r.Plant_Phone__c,
-                                Plant_Order_Properties__r.Shipping_Address__r.Plant_Street1__c,
-                                Plant_Order_Properties__r.Shipping_Address__r.Plant_Street2__c,
-                                Plant_Order_Properties__r.Shipping_Address__r.Plant_Street3__c,
-                                Plant_Order_Properties__r.Shipping_Address__r.Plant_City__c,
-                                Plant_Order_Properties__r.Shipping_Address__r.Plant_Province_State__c,
-                                Plant_Order_Properties__r.Shipping_Address__r.Plant_Postal_Code__c,
-                                Plant_Order_Properties__r.Shipping_Address__r.Plant_Country__c
-
-                              FROM Order WHERE id = :orderId];
-        
-        System.debug('lstOrder:' + lstOrder);
-        
-        if(!lstOrder.isEmpty()) {
-            Order orgOrder = lstOrder[0];
-            
-            newOrderWrapper newOrderWrap = new newOrderWrapper();
-            newOrderWrap.AccountId = orgOrder.AccountId;
-            newOrderWrap.Product = orgOrder.Plant_Main_Product__c;
-            
-            newOrderWrap.FirstName = orgOrder.Plant_Order_Properties__r.Plant_First_Name__c;
-            newOrderWrap.LastName = orgOrder.Plant_Order_Properties__r.Plant_Last_Name__c;
-            newOrderWrap.Email = orgOrder.Plant_Order_Properties__r.Plant_Email__c;
-            newOrderWrap.Phone = orgOrder.Plant_Order_Properties__r.Plant_Phone__c;
-            newOrderWrap.CanSMS = orgOrder.Plant_Order_Properties__r.Plant_Can_SMS__c;
-            newOrderWrap.Provider = orgOrder.Plant_Order_Properties__r.Plant_Provider__c;
-            
-            newOrderWrap.CardNumber = orgOrder.Plant_Order_Properties__r.Plant_Payment_Method__r.Plant_Card_Number__c;
-            newOrderWrap.CardType = orgOrder.Plant_Order_Properties__r.Plant_Payment_Method__r.Plant_Card_Type__c;
-            newOrderWrap.CCV = orgOrder.Plant_Order_Properties__r.Plant_Payment_Method__r.CCV__c;
-            newOrderWrap.CardLast4Digits = orgOrder.Plant_Order_Properties__r.Plant_Payment_Method__r.Plant_Card_Last_4_Digits__c;
-            newOrderWrap.BillingCity = orgOrder.Plant_Order_Properties__r.Plant_Payment_Method__r.Plant_City__c;
-            newOrderWrap.BillingCountry = orgOrder.Plant_Order_Properties__r.Plant_Payment_Method__r.Plant_Country__c;
-            newOrderWrap.BillingCustomerName = orgOrder.Plant_Order_Properties__r.Plant_Payment_Method__r.Plant_Customer_Name__c;
-            newOrderWrap.ExpirationDate = orgOrder.Plant_Order_Properties__r.Plant_Payment_Method__r.Plant_Expiration_Date__c;
-            newOrderWrap.BillingPhone = orgOrder.Plant_Order_Properties__r.Plant_Payment_Method__r.Plant_Phone__c;
-            newOrderWrap.BillingPostalCode = orgOrder.Plant_Order_Properties__r.Plant_Payment_Method__r.Plant_Postal_Code__c;
-            newOrderWrap.BillingProvinceState = orgOrder.Plant_Order_Properties__r.Plant_Payment_Method__r.Plant_Province_State__c;
-            newOrderWrap.BillingStreet1 = orgOrder.Plant_Order_Properties__r.Plant_Payment_Method__r.Plant_Street1__c;
-            newOrderWrap.BillingStreet2 = orgOrder.Plant_Order_Properties__r.Plant_Payment_Method__r.Plant_Street2__c;
-            newOrderWrap.BillingStreet3 = orgOrder.Plant_Order_Properties__r.Plant_Payment_Method__r.Plant_Street3__c;
-            
-            newOrderWrap.ShippingFirstName = orgOrder.Plant_Order_Properties__r.Shipping_Address__r.Plant_First_Name__c;
-            newOrderWrap.ShippingLastName = orgOrder.Plant_Order_Properties__r.Shipping_Address__r.Plant_Last_Name__c;
-            newOrderWrap.ShippingPhone = orgOrder.Plant_Order_Properties__r.Shipping_Address__r.Plant_Phone__c;
-            newOrderWrap.ShippingStreet1 = orgOrder.Plant_Order_Properties__r.Shipping_Address__r.Plant_Street1__c;
-            newOrderWrap.ShippingStreet2 = orgOrder.Plant_Order_Properties__r.Shipping_Address__r.Plant_Street2__c;
-            newOrderWrap.ShippingStreet3 = orgOrder.Plant_Order_Properties__r.Shipping_Address__r.Plant_Street3__c;
-            newOrderWrap.ShippingCity = orgOrder.Plant_Order_Properties__r.Shipping_Address__r.Plant_City__c;
-            newOrderWrap.ShippingProvinceState = orgOrder.Plant_Order_Properties__r.Shipping_Address__r.Plant_Province_State__c;
-            newOrderWrap.ShippingPostalCode = orgOrder.Plant_Order_Properties__r.Shipping_Address__r.Plant_Postal_Code__c;
-            newOrderWrap.ShippingCountry = orgOrder.Plant_Order_Properties__r.Shipping_Address__r.Plant_Country__c;
-            
-            System.debug('newOrderWrap:' + newOrderWrap);
-            
-            // Meals
-            newOrderWrap.meals = new List<newOrderMealWrapper>();
-            List<Plant_Meal_Selection_Meal__c> mealSelMeals = Plant_Meals_BC.cloneMealSelection(orgOrder.Plant_Order_Properties__r.Plant_Meal_Selection__c, null);
-            System.debug('mealSelMeals:' + mealSelMeals);
-            
-            for(Plant_Meal_Selection_Meal__c m :mealSelMeals) {
-                newOrderMealWrapper newMeal = new newOrderMealWrapper();
-                newMeal.MealId = m.Plant_Meal__c;
-                newMeal.Quantity = Integer.valueOf(m.Plant_Quantity__c);
-                newOrderWrap.meals.add(newMeal);
-            }
-            System.debug('newOrderWrap.meals:' + newOrderWrap.meals);
-            
-            // Ship ASAP
-            Plant_Shipping_BC.deliveryDateWrapper tempAddrsWrap = new Plant_Shipping_BC.deliveryDateWrapper();
-            tempAddrsWrap.state=orgOrder.Plant_Order_Properties__r.Shipping_Address__r.Plant_Province_State__c;
-            tempAddrsWrap.zip=orgOrder.Plant_Order_Properties__r.Shipping_Address__r.Plant_Postal_Code__c;
-            Plant_Utility.responseWrapper availableDates_List = new Plant_Shipping_BC().getAvailableDeliveryDates(tempAddrsWrap);
-            System.debug('availableDates_List:' + availableDates_List);
-            
-            if(availableDates_List.status=='success'){
-                
-                Map<String,String> avail_DeliveryDaye_Map = (Map<String,String>)availableDates_List.result.resultMap;
-                List<String> DeliveryDateList =new List<String>(avail_DeliveryDaye_Map.Keyset());
-                DeliveryDateList.sort();                
-                newOrderWrap.deliveryDate = DeliveryDateList[0];
-            }
-            System.debug('newOrderWrap.deliveryDate:' + newOrderWrap.deliveryDate);
-            
-            retOrder = createOrder(newOrderWrap);
-        }
-        return retOrder;
-    }
-    
-    public static Order createOrder(newOrderWrapper newOrderWrap) {
-        Order retOrder;
-        
-		System.debug('createOrder newOrderWrap:' + newOrderWrap);
-        
-        if(newOrderWrap != NULL) {
-            
-            Map<String,String> prodRecTypeIdMap = Plant_Utility.getAvailableOrderType();
-            System.debug('prodRecTypeIdMap:' + prodRecTypeIdMap);
-            
-            Plant_Order_Properties__c newOP = new Plant_Order_Properties__c(
-                Plant_Account__c = newOrderWrap.AccountId,
-                Plant_First_Name__c = newOrderWrap.FirstName,
-                Plant_Last_Name__c = newOrderWrap.LastName,
-                Plant_Email__c = newOrderWrap.Email,
-                Plant_Phone__c = newOrderWrap.Phone,
-                Plant_Can_SMS__c = newOrderWrap.CanSMS,
-                Plant_Provider__c = newOrderWrap.Provider,
-                Plant_Recurrence__c = 'Once',
-                RecordTypeId = Plant_Utility.GetRecordTypeId('Plant_Order_Properties__c',newOrderWrap.Product),
-                Plant_Status__c = 'Pending Payment'
-            );
-            System.debug('newOP:' + newOP);
-            
-            Plant_Meal_Selection__c newMS = new Plant_Meal_Selection__c();
-            insert newMS;
-            
-            for(newOrderMealWrapper m :newOrderWrap.meals) {
-                Plant_Meal_Selection_Meal__c newMSM = new Plant_Meal_Selection_Meal__c(
-                    Plant_Meal_Selection__c = newMS.Id,
-                	Plant_Meal__c = m.MealId,
-                    Plant_Quantity__c = m.Quantity
-                );
-                System.debug('newMSM:' + newMSM);
-                insert newMSM;
-            }
-            System.debug('newMS:' + newMS);
-            newOP.Plant_Meal_Selection__c = newMS.Id;
-            
-            Plant_Payment_Method__c newPM = new Plant_Payment_Method__c(
-                Plant_Account__c = newOrderWrap.AccountId,
-                Plant_Is_Account_Record__c = False,
-                Plant_Card_Number__c = newOrderWrap.CardNumber,
-                Plant_Card_Type__c = newOrderWrap.CardType,
-                CCV__c = newOrderWrap.CCV,
-                Plant_Card_Last_4_Digits__c = newOrderWrap.CardLast4Digits,
-                Plant_City__c = newOrderWrap.BillingCity,
-                Plant_Country__c = newOrderWrap.BillingCountry,
-                Plant_Customer_Name__c = newOrderWrap.BillingCustomerName,
-                Plant_Expiration_Date__c = newOrderWrap.ExpirationDate,
-                Plant_Phone__c = newOrderWrap.BillingPhone,
-                Plant_Postal_Code__c = newOrderWrap.BillingPostalCode,
-                Plant_Province_State__c = newOrderWrap.BillingProvinceState,
-                Plant_Street1__c = newOrderWrap.BillingStreet1,
-                Plant_Street2__c = newOrderWrap.BillingStreet2,
-                Plant_Street3__c = newOrderWrap.BillingStreet3
-            );
-            System.debug('newPM:' + newPM);
-            insert newPM;
-            newOP.Plant_Payment_Method__c = newPM.Id;
-            
-            
-            Plant_Shipping_Address__c newSA = new Plant_Shipping_Address__c(
-                Plant_Account__c = newOrderWrap.AccountId,
-                Plant_Is_Account_Record__c = false,
-                Plant_First_Name__c = newOrderWrap.ShippingFirstName,
-                Plant_Last_Name__c = newOrderWrap.ShippingLastName,
-                Plant_Can_SMS__c = newOrderWrap.CanSMS,
-                Plant_Phone__c = newOrderWrap.ShippingPhone,
-                Plant_Street1__c = newOrderWrap.ShippingStreet1,
-                Plant_Street2__c = newOrderWrap.ShippingStreet2,
-                Plant_Street3__c = newOrderWrap.ShippingStreet3,
-                Plant_City__c = newOrderWrap.ShippingCity,
-                Plant_Province_State__c = newOrderWrap.ShippingProvinceState,
-                Plant_Postal_Code__c = newOrderWrap.ShippingPostalCode,
-                Plant_Country__c = newOrderWrap.ShippingCountry
-            );
-            insert newSA;
-            System.debug('newSA:' + newSA);
-            newOP.Shipping_Address__c = newSA.Id;
-            
-            // Shipping Date
-            Plant_Shipping_BC.deliveryDateWrapper tempAddrsWrap = new Plant_Shipping_BC.deliveryDateWrapper();
-            tempAddrsWrap.state=newOrderWrap.ShippingProvinceState;
-            tempAddrsWrap.zip=newOrderWrap.ShippingPostalCode;
-            Plant_Utility.responseWrapper availableDates_List = new Plant_Shipping_BC().getAvailableDeliveryDates(tempAddrsWrap);
-            System.debug('availableDates_List:' + availableDates_List);
-            
-            if(availableDates_List.status=='success'){
-                Map<String,String> avail_DeliveryDaye_Map = (Map<String,String>)availableDates_List.result.resultMap;
-                System.debug('avail_DeliveryDaye_Map:' + avail_DeliveryDaye_Map);
-                
-                newOP.Plant_Delivery_Date__c = Date.valueOf(newOrderWrap.deliveryDate);
-                newOP.Plant_Shipping_Date__c=avail_DeliveryDaye_Map.get(newOrderWrap.deliveryDate).split(':')[0];
-                newOP.Delivery_Schedule__c=avail_DeliveryDaye_Map.get(newOrderWrap.deliveryDate).split(':')[1];  
-                
-                System.debug('newOP.Plant_Delivery_Date__c:' + newOP.Plant_Delivery_Date__c);
-                System.debug('newOP.Plant_Shipping_Date__c:' + newOP.Plant_Shipping_Date__c);
-                System.debug('newOP.Delivery_Schedule__c:' + newOP.Delivery_Schedule__c);
-            }
-            System.debug('newOP:' + newOP);
-            insert newOP;
-           
-            // Order Item
-            Map<String, PlantProducts__c> plantProdSettings = PlantProducts__c.getAll();
-            System.debug('plantProdSettings:' + plantProdSettings);
-            
-            PlantProducts__c fndProdCode = plantProdSettings.get(newOrderWrap.Product);
-            System.debug('fndProdCode:' + fndProdCode);
-            
-            List<PricebookEntry> lstPrice = [select id, Pricebook2Id, Product2Id, UnitPrice from PricebookEntry where Product2.ProductCode = :fndProdCode.ProductCode__c];
-            System.debug('lstPrice:' + lstPrice);
-            
-            if(!lstPrice.isEmpty()) {
-                
-                Order newOrder = new Order(
-                    AccountId = newOrderWrap.AccountId,
-                    EffectiveDate = Date.Today(),
-                    Plant_Fulfillment_Status__c = null,
-                    Plant_Order_Properties__c = newOP.Id,
-                    Plant_Subscription__c = null,
-                    Plant_Shipping_Date__c = newOP.Plant_Shipping_Date__c,
-                    Status = 'Draft',
-                    Pricebook2Id = lstPrice[0].Pricebook2Id
-                );
-                System.debug('newOrder:' + newOrder);
-                insert newOrder;
-                
-                
-                OrderItem i = new OrderItem(
-                    OrderId = newOrder.id,
-                    Quantity = 1,
-                    UnitPrice = lstPrice[0].UnitPrice,
-                    Product2id = lstPrice[0].Product2Id,
-                    PricebookEntryId = lstPrice[0].id
-                );
-                insert i;
-            }
-        }
-        
-        return retOrder;
-    }
-    
-    // AG - Wrapper to create a new order
-    public class newOrderMealWrapper{
-    	public String MealId;   
-        public Integer Quantity;
-    }
-    
-    public class newOrderWrapper{
-        public String AccountId;
-        public String Product;
-        public List<newOrderMealWrapper> meals;
-        public String deliveryDate;
-        
-        public String FirstName;
-        public String LastName;
-        public String Email;
-        public String Phone;
-        public Boolean CanSMS;
-        public String Provider;
-        
-        public String CardNumber;
-        public String CardType;
-        public String CCV;
-        public String CardLast4Digits;
-        public String BillingCity;
-        public String BillingCountry;
-        public String BillingCustomerName;
-        public Date ExpirationDate;
-        public String BillingPhone;
-        public String BillingPostalCode;
-        public String BillingProvinceState;
-        public String BillingStreet1;
-        public String BillingStreet2;
-        public String BillingStreet3;
-        
-        public String ShippingFirstName;
-        public String ShippingLastName;
-        public String ShippingPhone;
-        public String ShippingStreet1;
-        public String ShippingStreet2;
-        public String ShippingStreet3;
-        public String ShippingCity;
-        public String ShippingProvinceState;
-        public String ShippingPostalCode;
-        public String ShippingCountry;
-    }
     
     
     // @ wrapper class 1: order property "Request" json

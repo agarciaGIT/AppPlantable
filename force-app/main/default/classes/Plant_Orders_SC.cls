@@ -104,4 +104,50 @@ public class Plant_Orders_SC {
         return AddressDetails_Result;
     }
     
+    // AG - InvocableMethods
+    @InvocableMethod(label='PlantOrderMethods' description='Operate Plant Order Methods.')
+    public static void shopifyMethods(List<List<String>> inputParams) {  
+        
+        System.debug('inputParams:' + inputParams);
+        
+        String method;
+        String param1;
+        String param2;
+        String param3;
+        String param4;
+        
+        for(List<String> ids :inputParams) {
+        
+            //List<String> ids = inputParams[0];
+            
+            if(!ids.isEmpty()){
+                Integer cnt=0;
+                for(String idVal :ids) {
+                    if(cnt==0)
+                        method = idVal;
+                    else if(cnt==1)
+                        param1 = idVal;
+                    else if(cnt==2)
+                        param2 = idVal;
+                    else if(cnt==3)
+                        param3 = idVal;
+                    else if(cnt==4)
+                        param4 = idVal;
+                    cnt++;
+                }
+                System.debug('method:' + method);
+                System.debug('param1:' + param1);
+                System.debug('param2:' + param2);
+                System.debug('param3:' + param3);
+                System.debug('param4:' + param4);
+                
+                if(method == 'reShipOrder') {
+                    Plant_Orders_BC.reshipOrder(param1);
+                }
+                
+            }
+        }
+   
+    }        
+    
 }

@@ -13,8 +13,9 @@ public with sharing class Plant_TestDataFactory {
     
     // AG
     public static Plant_Payment_Method__c createPaymentMethod(Account acct){
-      Plant_Payment_Method__c newPay = new Plant_Payment_Method__c(
-          Plant_Account__c = acct.id,
+        Plant_Payment_Method__c newPay = new Plant_Payment_Method__c(
+            Plant_Customer_Name__c = 'fn ln',
+            Plant_Account__c = acct.id,
             Plant_Card_Type__c = 'Visa',
             Plant_Card_Number__c = '4242424242424242'
         );

@@ -8,7 +8,7 @@
 
 trigger Plant_TransactionTigger on ChargentOrders__Transaction__c (after insert, after update) { 
     // active - unactive trigger
-    if(!plantable_TriggersSwitch__c.getValues('plantableHIC_Switches').pauseChargentTransaction_Trigger__c){
+    if(!Test.isRunningTest() && !plantable_TriggersSwitch__c.getValues('plantableHIC_Switches').pauseChargentTransaction_Trigger__c){
         System.debug('@@## TRANSACTION TRIGGER START');
         if(Trigger.isAfter){
             Map<String,String> cOrder_Vs_transactionId_Map = new Map<String,String>();
