@@ -74,7 +74,7 @@ public class Plant_DiscountCodes_BC {
                     // get product default price
                     if(orderType!=''){
                         // AG - Changed 9/24/2022
-                        PricebookEntry pbEntry = Plant_Orders_BC.getPriceBookEntryByProduct(orderType,null);
+                        PricebookEntry pbEntry = Plant_Orders_BC_Helper.getPriceBookEntryByProduct(orderType,null);
                         //PricebookEntry pbEntry = [SELECT Id, Product2Id,UnitPrice FROM PricebookEntry WHERE product2Id IN (SELECT id FROM product2 where Name=:orderType)];
                         default_Price.price = pbEntry.UnitPrice;
                         default_Price.total = pbEntry.UnitPrice;

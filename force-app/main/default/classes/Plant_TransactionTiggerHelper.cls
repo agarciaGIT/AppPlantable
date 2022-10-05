@@ -202,7 +202,7 @@ public  class Plant_TransactionTiggerHelper {
                             }
                             
                             // AG - Add Price to Subscrption
-                            PricebookEntry pbe = Plant_Orders_BC.getPriceBookEntryByProduct(oddr.Plant_Order_Properties__r.RecordType.Name, product_PricebookEntry_List);
+                            PricebookEntry pbe = Plant_Orders_BC_Helper.getPriceBookEntryByProduct(oddr.Plant_Order_Properties__r.RecordType.Name, product_PricebookEntry_List);
                             if(pbe != NULL && pbe.UnitPrice != NULL) {
                                 subscpt.Plant_Amount__c = pbe.UnitPrice;
                             }
@@ -351,7 +351,7 @@ public  class Plant_TransactionTiggerHelper {
             Plant_TransComm_BC.publishTransactionEvents(pubEvents);
             
             // AG - Update Inventory
-            Plant_Orders_BC.updateOrderInventory(mealSelectionInsertIDs, false);
+            Plant_Orders_BC_Helper.updateOrderInventory(mealSelectionInsertIDs, false);
         }
         catch(Exception ex){
             System.debug('@@@@@@@@@ EXCEPTION ENCOUNTERD SUBSCRIPTION : line: '+ex.getLineNumber()+' msg: '+ex.getCause()+' '+ex.getMessage());

@@ -73,7 +73,7 @@ public class Plant_TransComm_BC {
     
     // AG - Prepare a communication to go out in the future
     // Creates the TransComm record with just Type, and Lokups
-    // Plant_ScheduledTransCommBatch.cls will run looking for these to call sendTransComm()
+    // Plant_BatchSendScheduledTransComm.cls will run looking for these to call sendTransComm()
     // Testing:
     // Date dt = Date.today();
     // Plant_TransComm_BC.stageScheduledTransComm('Subscription Payment Upcoming','0013J00000R2NxfQAF',null,'a1F3J00000094Z1',dt);

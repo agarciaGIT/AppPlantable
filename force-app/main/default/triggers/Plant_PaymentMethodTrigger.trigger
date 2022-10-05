@@ -6,6 +6,6 @@ trigger Plant_PaymentMethodTrigger on Plant_Payment_Method__c (before insert, be
         }
     }
     System.debug('lstPayMethods:' + lstPayMethods);
-    Plant_Orders_BC.paymentMethodTriggerHandler(lstPayMethods);
+    Plant_Orders_BC_Helper.paymentMethodTriggerHandler(lstPayMethods);
 */
 }

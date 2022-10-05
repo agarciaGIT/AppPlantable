@@ -44,7 +44,7 @@ trigger Plant_PaymentMethodChangeEventTrigger on Plant_Payment_Method__ChangeEve
     System.debug('lstCreatredPayMethods:' + lstCreatredPayMethods);
     System.debug('lstUpdatedPayMethodIds:' + lstUpdatedPayMethodIds);
     if(!lstCreatredPayMethods.isEmpty() || !lstUpdatedPayMethodIds.isEmpty()) {
-    	Plant_Orders_BC.paymentMethodTriggerHandler(lstCreatredPayMethods, lstUpdatedPayMethodIds);    
+        Plant_Orders_BC_Helper.paymentMethodTriggerHandler(lstCreatredPayMethods, lstUpdatedPayMethodIds);    
     }
-	
+    
 }

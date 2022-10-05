@@ -28,6 +28,9 @@ global class batchCompleteProviderOrders implements Database.Batchable<sObject>,
     global void execute(Database.BatchableContext BC, List<API_Request__c> scope){
         for(API_Request__c ar :scope) {
             // Add Pine Items for Studies
+            
+            System.debug('ar:' + ar);
+            
             if(ar.Request_Type__c == 'Create Order' && ar.Study_ID__c != NULL) {
                 API_Request_Line_Item__c arli1 = new API_Request_Line_Item__c();
                 arli1.API_Request__c = ar.Id;
@@ -47,11 +50,15 @@ global class batchCompleteProviderOrders implements Database.Batchable<sObject>,
                 arli2.Code__c = 'Free Shipping';
                 arli2.Amount__c = 0;
                 insert arli2;
-
+                
+                System.debug('arli1:' + arli1);
+                System.debug('arli2:' + arli2);
             }
+            
             ar.Enable_Automation__c = True;
             
         }
+        System.debug('update scope:' + scope);
         update scope;
         
         MAP<String,String> mapReqType = new MAP<String,String>();
@@ -59,9 +66,6 @@ global class batchCompleteProviderOrders implements Database.Batchable<sObject>,
         List<API_Request__c> apir = [select ID, Request_Type__c, Account__c, Opportunity__c from API_Request__c where ID in :scope];
         for(API_Request__c ar :apir) {
             mapReqType.put(ar.Account__c, ar.Request_Type__c);
-            //if(ar.Request_Type__c == 'Create Order') {
-            //    shopifyClass.updateInventory(ar.Opportunity__c, false);    
-            //}
             opIDs.add(ar.Opportunity__c);
         }
         
@@ -75,6 +79,7 @@ global class batchCompleteProviderOrders implements Database.Batchable<sObject>,
         }
         update lstAcct;
         
+        /*
         List<Opportunity> lstOpp = [select Id, External_Order_Number__c, External_Order_Number_Display__c from Opportunity where Id in :opIDs];
         for(Opportunity opp :lstOpp) {
             System.debug('opp:' + opp);
@@ -87,7 +92,8 @@ global class batchCompleteProviderOrders implements Database.Batchable<sObject>,
         for(API_Request__c ar :scope) {
             ar.Enable_Automation__c = False;
         }
-        update scope;        
+        update scope;      
+		*/
     }
     
     global void finish(Database.BatchableContext BC){

@@ -253,7 +253,7 @@ public class Plant_Subscriptions_BC {
                                             
                                             if(statusCode!='503'){
                                                 // AG - Update Payment Method Info on Subscription
-                                                Plant_Payment_Method__c paymentRec = Plant_Orders_BC.clonePaymentMethod(newPaymentMethod, subscriptionList[0].Plant_Payment_Method__c, False);
+                                                Plant_Payment_Method__c paymentRec = Plant_Orders_BC_Helper.clonePaymentMethod(newPaymentMethod, subscriptionList[0].Plant_Payment_Method__c, False);
                                                 System.debug('clone paymentRec:' + paymentRec);
                                                 update paymentRec;
                                                 paymentMethod_Id = paymentRec.Id;
@@ -273,7 +273,7 @@ public class Plant_Subscriptions_BC {
                                             }
                                             else{
                                                 // AG - Clone "account" payment record
-                                                Plant_Payment_Method__c paymentRec = Plant_Orders_BC.clonePaymentMethod(existPaymentMethodList[0], subscriptionList[0].Plant_Payment_Method__c, False);
+                                                Plant_Payment_Method__c paymentRec = Plant_Orders_BC_Helper.clonePaymentMethod(existPaymentMethodList[0], subscriptionList[0].Plant_Payment_Method__c, False);
                                                 update paymentRec;
                                                 //insert paymentRec;
                                                 paymentMethod_Id = paymentRec.Id;
@@ -447,7 +447,7 @@ public class Plant_Subscriptions_BC {
                     List<Plant_Subscription__c> subscription = [SELECT Id, Plant_Start_Date__c, Plant_Status__c, Plant_Cadence__c, Plant_Charge_Day__c, Plant_Shipping_Address__c, Plant_Payment_Method__c, Plant_Account__c, 
                                                                      Plant_Chargent_Order__c, Order_Count__c,Plant_New_Chargent_Order_Id__c, Plant_Next_Charge_Date__c, (Select id, name, comty_Chargent_Order__c from Orders__r Order by createdDate DESC Limit 1),
                                                                     Plant_New_Payment_Method_Id__c FROM Plant_Subscription__c where id=:reqWrap.subscriptionID AND Plant_Account__c=:existingCustomerId Limit 1];
-					
+                    
 
                     if(cOrder_List.isEmpty() || paymentMethodList.isEmpty() || subscription.isEmpty()){
                         statusCode='503';
@@ -1171,7 +1171,7 @@ public class Plant_Subscriptions_BC {
             
             // AG - Protect pt_Subs_List[0]
             if(!pt_Subs_List.isEmpty()){
-                	Plant_Subscription__c pt_Subs = pt_Subs_List[0];
+                    Plant_Subscription__c pt_Subs = pt_Subs_List[0];
                 
                  // VALIDATE: AuthenticationToken
                     String validationResult = plant_AuthorizeController.validateAccessToken('',pt_Subs.Plant_Account__c, subsRequestWrap.authenticationToken);
@@ -1267,7 +1267,7 @@ public class Plant_Subscriptions_BC {
                                 
                                 // AG - Add post Subscription Event
                                 if(subsRequestWrap.newStatus=='Paused') {
-                                	Plant_TransComm_BC.publishTransactionEvent(Plant_TransComm_BC.setTransactionEvent('Subscription Paused',pt_Subs.Plant_Account__c,null,pt_Subs.Id));    
+                                    Plant_TransComm_BC.publishTransactionEvent(Plant_TransComm_BC.setTransactionEvent('Subscription Paused',pt_Subs.Plant_Account__c,null,pt_Subs.Id));    
                                 } else if(subsRequestWrap.newStatus=='Active') {
                                     Plant_TransComm_BC.publishTransactionEvent(Plant_TransComm_BC.setTransactionEvent('Subscription Resumed',pt_Subs.Plant_Account__c,null,pt_Subs.Id));    
                                 } else if(subsRequestWrap.newStatus=='Canceled') {
@@ -1702,7 +1702,7 @@ public class Plant_Subscriptions_BC {
                             
                             List<Product2> pdct=[Select id, Name from Product2 where id=:label.Plant_CancelSubscriptionProductId Limit 1];
                             if(!pdct.isEmpty()){
-                                PricebookEntry priceBookEntry = Plant_Orders_BC.getPriceBookEntryByProduct(pdct[0].name,null);
+                                PricebookEntry priceBookEntry = Plant_Orders_BC_Helper.getPriceBookEntryByProduct(pdct[0].name,null);
                                     System.debug('@@@@ 7');
                                 if(priceBookEntry != NULL) {
                                     OrderItem newLine = new OrderItem();
@@ -1892,7 +1892,7 @@ public class Plant_Subscriptions_BC {
         System.debug('lstAccount:' + lstAccount);
         MAP<String,Account> mapAccts = new MAP<String,Account>();
         for(Account a :lstAccount) {
-			mapAccts.put(a.id, a);
+            mapAccts.put(a.id, a);
         }
         System.debug('mapAccts:' + mapAccts);
         
@@ -1900,7 +1900,7 @@ public class Plant_Subscriptions_BC {
         System.debug('lstSub:' + lstSub);
         MAP<String,Plant_Subscription__c> mapSubs = new MAP<String,Plant_Subscription__c>();
         for(Plant_Subscription__c ps :lstSub) {
-			mapSubs.put(ps.id, ps);
+            mapSubs.put(ps.id, ps);
         }
         System.debug('mapSubs:' + mapSubs);
         

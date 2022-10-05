@@ -6,14 +6,18 @@ trigger Plant_APIRequestChangeEventTrigger on API_Request__ChangeEvent (after in
     SET<String> apiReqsIDs = new SET<String>();
     for(API_Request__ChangeEvent event :Trigger.new){
         EventBus.ChangeEventHeader header = event.ChangeEventHeader;
-        if (header.changetype == 'UPDATE' && event.Enable_Automation__c == TRUE) {
+        
+        System.debug('header:' + header.changetype);
+        System.debug('event:' + event.Enable_Automation__c);
+        
+        if((header.changetype == 'UPDATE' || header.changetype == 'CREATE') && event.Enable_Automation__c == TRUE) {
             List<String> ids = header.getRecordIds();
             apiReqsIDs.add(ids[0]);    
         }
     }
     System.debug('apiReqsIDs:' + apiReqsIDs);
     for(String apir :apiReqsIDs) {
-    	Plant_Orders_BC_Helper.subscriptionLegacyLoadHandler(apiReqsIDs);    
+    	Plant_Orders_BC_Helper.apiRequestChangeTriggerHandler(apir);    
     }
     
 }

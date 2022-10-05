@@ -1,4 +1,5 @@
 trigger customerChargeTrigger on CustomerChargeEvent__e (after insert) {
+/*
     for (CustomerChargeEvent__e event : Trigger.New) {
         System.enqueueJob(new Plant_ProcessTransaction_Queueable(event.RecordID__c));
         //System.enqueueJob(new Plant_ProcessTransaction_Queueable(siteBody));
@@ -8,4 +9,5 @@ trigger customerChargeTrigger on CustomerChargeEvent__e (after insert) {
     //    Name = 'customerChargeTrigger '
     //);
     //insert apir;
+  */
 }

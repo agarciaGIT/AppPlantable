@@ -12,6 +12,26 @@ public with sharing class Plant_TestDataFactory {
     }
     
     // AG
+    public static Plant_Subscription__c createSubscription(Account acct, Plant_Shipping_Address__c sa, Plant_Payment_Method__c pm, Plant_Delivery_Schedule__c ds, Plant_Shipping_Date__c sd) {
+        
+        Plant_Subscription__c newSub = new Plant_Subscription__c(
+            Plant_Start_Date__c = Date.today(),
+            RecordTypeId = Plant_Utility.GetRecordTypeId('Plant_Subscription__c','Reboot'),
+            Plant_Account__c = acct.id,
+            Plant_Shipping_Address__c = sa.id,
+            Plant_Payment_Method__c = pm.id,
+            Plant_Delivery_Schedule__c = ds.id,
+            Plant_Shipping_Date__c = sd.id,
+            Plant_Next_Shipment_Date__c = sd.Plant_Shipping_Date__c,
+            Plant_Amount__c = 100,
+            Plant_Next_Charge_Date__c = sd.Plant_Shipping_Date__c.addDays(-2),
+            Plant_Next_Delivery_Date__c = sd.Plant_Shipping_Date__c.addDays(2),
+            Order_Count__c=1
+        );
+        return newSub;
+    }
+     
+    
     public static Plant_Payment_Method__c createPaymentMethod(Account acct){
         Plant_Payment_Method__c newPay = new Plant_Payment_Method__c(
             Plant_Customer_Name__c = 'fn ln',
@@ -70,7 +90,7 @@ public with sharing class Plant_TestDataFactory {
     }
     
     public static PricebookEntry creatProduct(String ProdCode) {
-        Product2 prod = new Product2(Name = 'PRODZ',ProductCode = ProdCode);
+        Product2 prod = new Product2(Name = ProdCode,ProductCode = ProdCode);
         insert prod;
         
         Id pricebookId = Test.getStandardPricebookId();
@@ -110,7 +130,7 @@ public with sharing class Plant_TestDataFactory {
              Inventory__c=9, Inventory_Sync__c=True, API_Enabled__c=True, Zipongo_Sampler__c=True, 
              Dairy_Free__c=True, Gluten_Free__c=True, Nut_Free__c=True, Inventory_Sync_Off_Call__c='under the label',
              Sort_Rank__c=12, Soy_Free__c=True, Favorites__c=True,
-              Status__c='Active', Affiliate_Gift__c=True, Suggestic_ID__c='Label346776', Shopify_ID__c='shdfkjsh');
+              Status__c='Active', Affiliate_Gift__c=True, Suggestic_ID__c='SuggesticID', Shopify_ID__c='ShopifyID');
             Meals.add(Meal);
         }
         return Meals;
@@ -198,7 +218,7 @@ public with sharing class Plant_TestDataFactory {
         for ( Integer i = 0 ; i < numberShippingDates ; i++ ) {
             
             Plant_Shipping_Date__c ShippingDate = new Plant_Shipping_Date__c(Name='Shiping'+i, 
-              Plant_Shipping_Date__c=System.today()+2, Plant_Total_Orders__c=3);
+              Plant_Shipping_Date__c=System.today()+2+i, Plant_Total_Orders__c=3);
             ShippingDates.add(ShippingDate);
         }
         return ShippingDates;

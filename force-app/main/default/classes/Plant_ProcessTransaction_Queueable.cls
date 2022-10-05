@@ -1,7 +1,7 @@
 /*
-* @ desc        :	Class to execute chargent API for ProcessTransaction
+* @ desc        :   Class to execute chargent API for ProcessTransaction
 * @ test        : 
-* @ trigger     :   Plant_Site_ReqBody_Trigger	
+* @ trigger     :   Plant_Site_ReqBody_Trigger  
 * @ Created By  :   Bhagwan S
 * */
 

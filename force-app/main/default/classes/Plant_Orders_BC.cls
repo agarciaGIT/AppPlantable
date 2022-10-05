@@ -86,7 +86,7 @@ public class Plant_Orders_BC {
                                 opRecord.Plant_Status__c = 'Abandoned';
 
                                 // AG - Add Price to Return
-                                PricebookEntry pbe = getPriceBookEntryByProduct(reqWrapper.product,null);
+                                PricebookEntry pbe = Plant_Orders_BC_Helper.getPriceBookEntryByProduct(reqWrapper.product,null);
                                 response.listPrice = String.valueOf(pbe.UnitPrice);
                                 
                                 // Fill Recurrence value
@@ -137,7 +137,7 @@ public class Plant_Orders_BC {
                         
                         if(!list_ExistingPaymentMtd.isEmpty()){                            
                             // AG - Clone "account" payment record
-                            paymentRec = clonePaymentMethod(list_ExistingPaymentMtd[0], null, False);
+                            paymentRec = Plant_Orders_BC_Helper.clonePaymentMethod(list_ExistingPaymentMtd[0], null, False);
                             
                             // Insert new paymentRec(for: new user)
                             list<Plant_Payment_Method__c> newPaymentMtod = new list<Plant_Payment_Method__c>();
@@ -489,6 +489,7 @@ public class Plant_Orders_BC {
                         //Custom Settings Planatable Internal Account...
                         Map<string, plantable_Constants__c> mapCustomSettings=plantable_Constants__c.getall();
                         plantable_Constants__c CustomSetting=mapCustomSettings.get('DevConstant');
+                        new_MealSelection_Rec.Plant_Type__c = 'Chef Menu';
                         insert new_MealSelection_Rec;
                         List<Plant_Meal_Selection__c> chefMeal_List=[Select id,(SELECT Id, IsDeleted, Name, CreatedDate, CreatedById, LastModifiedDate, LastModifiedById, SystemModstamp, Plant_Meal_Selection__c, Plant_Meal__c, Plant_Quantity__c FROM Meal_Selection_Meals__r Limit 200), 
                         OwnerId, IsDeleted, Name, RecordTypeId, CreatedDate, CreatedById, LastModifiedDate, LastModifiedById, SystemModstamp, LastViewedDate, LastReferencedDate, Plant_Description__c, Plant_Owner__c from Plant_Meal_Selection__c where Plant_Owner__c=:CustomSetting.Plantable_Internal_Account__c Limit 1];
@@ -546,6 +547,7 @@ public class Plant_Orders_BC {
                     }
                     else{
                         // update meal selection
+                        new_MealSelection_Rec.Plant_Type__c = 'Custom';
                         if(!String.isBlank(reqWrapper.mealSelectionId) || opRecord.Plant_Meal_Selection__c!=null){
                             System.debug('&&&&&&&& = > 5');
                             new_MealSelection_Rec.Id = reqWrapper.mealSelectionId==''?opRecord.Plant_Meal_Selection__c:reqWrapper.mealSelectionId;
@@ -1088,7 +1090,7 @@ public class Plant_Orders_BC {
 
                     // create order item: GET PRODUCT(pricebook entry) BY ORDER PROPERTY RECORD TYPE
                     // AG - Changed 9/24/2022
-                    PricebookEntry priceBookEntry = getPriceBookEntryByProduct(opRec.recordType.Name,null);
+                    PricebookEntry priceBookEntry = Plant_Orders_BC_Helper.getPriceBookEntryByProduct(opRec.recordType.Name,null);
                     if(priceBookEntry != NULL) {
                         OrderItem newLine = new OrderItem();
                         newLine.OrderId = sf_order.id;
@@ -1171,7 +1173,7 @@ public class Plant_Orders_BC {
                             subscpt.Plant_Shipping_Address__c = cloneSA.Id;
                             
                             // AG - Clone Payment Method
-                            Plant_Payment_Method__c clonePM = clonePaymentMethod(pymtMtdRec, null, False);
+                            Plant_Payment_Method__c clonePM = Plant_Orders_BC_Helper.clonePaymentMethod(pymtMtdRec, null, False);
                             clonePM.Plant_Account__c = accountId_cap;
                             System.debug('Clone PayMeth:'+clonePM);
                             insert clonePM;
@@ -2394,11 +2396,12 @@ public class Plant_Orders_BC {
                                     Plant_Meals_BC.MealSelectionReq_Wrapper mealSelectionWrap = new Plant_Meals_BC.MealSelectionReq_Wrapper();
                                     // Inserting new meal selection 
                                     Plant_Meal_Selection__c mselection = new Plant_Meal_Selection__c();
+                                    mselection.Plant_Type__c = 'Custom';
                                     insert mselection;
                                     // Updating Order Property
                                     Plant_Order_Properties__c odrpropty=new Plant_Order_Properties__c();
                                     odrpropty.id=OrderList[0].Plant_Order_Properties__c;
-                                    odrpropty.Plant_Meal_Selection__c=mselection.id;
+                                    odrpropty.Plant_Meal_Selection__c=mselection.id;                                    
                                     update odrpropty;
                                                                         
                                     mealSelectionWrap.mealSelectionId = mselection.id;
@@ -2412,8 +2415,10 @@ public class Plant_Orders_BC {
                                     Plant_TransComm_BC.publishTransactionEvent(Plant_TransComm_BC.setTransactionEvent('Order Meal Change',OrderList[0].AccountId,OrderList[0].id,null));
                                     
                                     // AG - Update Inventory
-                                    Plant_Orders_BC.replaceOrderInventory(OrderList[0].Plant_Order_Properties__r.Plant_Meal_Selection__c, mselection.id);
+                                    Plant_Orders_BC_Helper.replaceOrderInventory(OrderList[0].Plant_Order_Properties__r.Plant_Meal_Selection__c, mselection.id);
 
+                                    
+                                    
                                     return mealUpdate_Response;
                                 }
                                 else{
@@ -2978,7 +2983,7 @@ public class Plant_Orders_BC {
                                         Plant_Subscription__r.Plant_Payment_Method__r.Plant_Card_Type__c, Plant_Subscription__r.Plant_Payment_Method__r.Plant_Card_Last_4_Digits__c,
                                         Plant_Order_Properties__r.Plant_Shipping_Date__r.Plant_Shipping_Date__c,Plant_Fulfillment_Status__c,
                                         Plant_Order_Properties__r.Plant_Delivery_Date__c, comty_Chargent_Order__c,Plant_Delivery_Date__c,Plant_Shipping_Date__c, Plant_Shipping_Date__r.Plant_Shipping_Date__c,
-                                        Plant_Order_Properties__r.Shipping_Address__r.Plant_Street1__c, Plant_Order_Properties__r.Shipping_Address__r.Plant_Street2__c,
+                                        Plant_Order_Properties__r.Shipping_Address__c, Plant_Order_Properties__r.Shipping_Address__r.Plant_Street1__c, Plant_Order_Properties__r.Shipping_Address__r.Plant_Street2__c,
                                         Plant_Order_Properties__r.Shipping_Address__r.Plant_Street3__c,Plant_Order_Properties__r.Shipping_Address__r.Plant_Province_State__c,
                                         Plant_Order_Properties__r.Shipping_Address__r.Plant_Country__c,Plant_Order_Properties__r.Shipping_Address__r.Plant_City__c,
                                         Plant_Order_Properties__r.Shipping_Address__r.Plant_Postal_Code__c,Plant_Order_Properties__r.Shipping_Address__r.Plant_First_Name__c,
@@ -3008,6 +3013,7 @@ public class Plant_Orders_BC {
                                 //order_res.InvoiceNumber = (sfOrder.comty_Chargent_Order__r!=null && sfOrder.comty_Chargent_Order__r.ChargentOrders__Invoice_Number__c!=null) ? sfOrder.comty_Chargent_Order__r.ChargentOrders__Invoice_Number__c : '';
                                 order_res.OrderNumber=sfOrder.Plant_Invoice_Number__c;
                                 order_res.ShipmentDate= sfOrder.Plant_Display_Shipping_Date__c;
+                                order_res.ShippingAddresId =sfOrder.Plant_Order_Properties__r.Shipping_Address__c;
                                 order_res.status=sfOrder.Status;
                                 order_res.AmountPaid=sfOrder.Plant_Amount_Paid__c;
                                 order_res.ModificationDeadlineExceeded=sfOrder.Modification_Deadline_Exceeded__c;
@@ -3454,551 +3460,6 @@ public class Plant_Orders_BC {
 
     // AG -- Methods for Internal Use Only
     
-    public static void paymentMethodTriggerHandler(List<Plant_Payment_Method__c> lstPayMethods, List<String> lstUpdatedPayMethodIds) {
-        MAP<String,Plant_Payment_Method__c> mapPayMethods = new MAP<String,Plant_Payment_Method__c>();
-        Set<String> accountIDs = new Set<String>();
-        
-        // Query Updates
-        List<Plant_Payment_Method__c> lstUpdatedPayMethods;
-        if(!lstUpdatedPayMethodIds.isEmpty()) {
-            lstUpdatedPayMethods = [select id, Plant_Account__c,
-                                    Plant_Save_Payment_Method__c,
-                                    Plant_Card_Number__c,
-                                    Plant_Card_Last_4_Digits__c,
-                                    Plant_Card_Type__c,
-                                    CCV__c,
-                                    Plant_City__c,
-                                    Plant_Country__c,
-                                    Plant_Customer_Name__c,
-                                    Plant_Expiration_Date__c,
-                                    Plant_Phone__c,
-                                    Plant_Postal_Code__c,
-                                    Plant_Province_State__c,
-                                    Plant_Street1__c,
-                                    Plant_Street2__c,
-                                    Plant_Street3__c from Plant_Payment_Method__c where id in :lstUpdatedPayMethodIds];
-            
-            if(!lstUpdatedPayMethods.isEmpty()) {
-                for(Plant_Payment_Method__c pm :lstUpdatedPayMethods) {
-                    lstPayMethods.add(pm);
-                }
-            }            
-        }
-
-        for(Plant_Payment_Method__c pm :lstPayMethods) {
-            if(pm.Plant_Save_Payment_Method__c == True && pm.Plant_Account__c != NULL) {
-	            mapPayMethods.put(pm.Plant_Account__c +':'+ pm.Plant_Card_Last_4_Digits__c,pm);
-                accountIDs.add(pm.Plant_Account__c);
-            }
-        }
-        System.debug('mapPayMethods:' + mapPayMethods);
-        System.debug('accountIDs:' + accountIDs);
-        
-        
-        if(accountIDs.size() == 0) {
-            return;
-        }
-        
-        List<Plant_Payment_Method__c> lstExistingPayMethods;
-        lstExistingPayMethods = [select id, Plant_Account__c,
-                                 Plant_Card_Number__c,
-                                 Plant_Card_Last_4_Digits__c,
-                                 Plant_Card_Type__c,
-                                 CCV__c,
-                                 Plant_City__c,
-                                 Plant_Country__c,
-                                 Plant_Customer_Name__c,
-                                 Plant_Expiration_Date__c,
-                                 Plant_Phone__c,
-                                 Plant_Postal_Code__c,
-                                 Plant_Province_State__c,
-                                 Plant_Street1__c,
-                                 Plant_Street2__c,
-                                 Plant_Street3__c
-                                 from Plant_Payment_Method__c 
-                                 where Plant_Is_Account_Record__c = True AND
-                                 Plant_Account__c in :accountIDs
-                                ];
-        System.debug('lstExistingPayMethods:' + lstExistingPayMethods);
-        
-        Map<String,Plant_Payment_Method__c> mapExistingPM = new Map<String,Plant_Payment_Method__c>();
-        if(!lstExistingPayMethods.isEmpty()) {
-            for(Plant_Payment_Method__c pm :lstExistingPayMethods){
-                mapExistingPM.put(pm.Plant_Account__c +':'+ pm.Plant_Card_Last_4_Digits__c,pm);
-            }
-        }
-        System.debug('mapExistingPM:' + mapExistingPM);
-        
-        List<Plant_Payment_Method__c> lstUpdatePM = new List<Plant_Payment_Method__c>();
-        List<Plant_Payment_Method__c> lstInsertPM = new List<Plant_Payment_Method__c>();
-        for(String pm :mapPayMethods.KeySet()) {
-            
-            System.debug('pm:' + pm);
-            
-            Plant_Payment_Method__c fndPay = mapPayMethods.get(pm);
-            Plant_Payment_Method__c fndExistingPay = mapExistingPM.get(pm);
-            System.debug('fndPay:' + fndPay);
-            System.debug('fndExistingPay:' + fndExistingPay);
-            
-            if(fndPay != NULL && fndExistingPay != NULL) {
-                Plant_Payment_Method__c updatePM = clonePaymentMethod(fndPay, fndExistingPay.Id, True);
-                System.debug('lstUpdatePM add:' + updatePM);
-                lstUpdatePM.add(updatePM);
-            } else if(fndPay != NULL) {
-                Plant_Payment_Method__c insertPM = clonePaymentMethod(fndPay, null, True);
-                System.debug('lstInsertPM add:' + insertPM);
-                lstInsertPM.add(insertPM);
-            }
-        }
-        if(!lstInsertPM.isEmpty())
-	        insert lstInsertPM;
-        if(!lstUpdatePM.isEmpty())
-	        update lstUpdatePM;
-    }
-    
-    public static Plant_Payment_Method__c clonePaymentMethod(Plant_Payment_Method__c payRec, String payId, Boolean isAccount) {
-        Plant_Payment_Method__c clonedPM = new Plant_Payment_Method__c(
-                    Plant_Account__c = payRec.Plant_Account__c,
-                    Plant_Is_Account_Record__c = isAccount,
-                    Plant_Card_Number__c = payRec.Plant_Card_Number__c,
-                    Plant_Card_Type__c = payRec.Plant_Card_Type__c,
-                    CCV__c = payRec.CCV__c,
-                    Plant_Card_Last_4_Digits__c = payRec.Plant_Card_Last_4_Digits__c,
-                    Plant_City__c = payRec.Plant_City__c,
-                    Plant_Country__c = payRec.Plant_Country__c,
-                    Plant_Customer_Name__c = payRec.Plant_Customer_Name__c,
-                    Plant_Expiration_Date__c = payRec.Plant_Expiration_Date__c,
-                    Plant_Phone__c = payRec.Plant_Phone__c,
-                    Plant_Postal_Code__c = payRec.Plant_Postal_Code__c,
-                    Plant_Province_State__c = payRec.Plant_Province_State__c,
-                    Plant_Street1__c = payRec.Plant_Street1__c,
-                    Plant_Street2__c = payRec.Plant_Street2__c,
-                    Plant_Street3__c = payRec.Plant_Street3__c
-                );
-        if(payId != NULL) {
-            clonedPM.Id = payId;
-        }
-        return clonedPM;
-    }
-    
-    public static PricebookEntry getPriceBookEntryByProduct(String prod, List<PricebookEntry> allPrices) {
-        
-        // Use Custom Settings to get product
-        Map<String, PlantProducts__c> plantProdSettings = PlantProducts__c.getAll();
-        System.debug('plantProdSettings:' + plantProdSettings);
-        
-        PlantProducts__c fndProdCode = plantProdSettings.get(prod);
-        System.debug('fndProdCode:' + fndProdCode);
-        
-        String prodCode = '';
-        if(fndProdCode != NULL) {
-            prodCode = fndProdCode.ProductCode__c;
-        }
-        if(Test.isRunningTest()) {
-            prodCode='PLANTALC';
-        }
-        System.debug('prodCode:' + prodCode);
-        
-        PricebookEntry priceBookEntry;
-        if(allPrices != NULL) {
-            for(PricebookEntry pbe :allPrices) {
-                System.debug('pbe:' + pbe);
-                    
-                if(pbe.ProductCode == prodCode) {
-                    priceBookEntry = pbe;
-                    break;
-                }
-            }
-        } else {
-            List<PricebookEntry> product_PricebookEntry_List = [SELECT Id, Product2Id,UnitPrice FROM PricebookEntry WHERE product2Id IN (SELECT id FROM product2 where ProductCode=:prodCode)];
-            if(!product_PricebookEntry_List.isEmpty()) {
-                priceBookEntry = product_PricebookEntry_List[0];
-            }                
-        }
-        return priceBookEntry;
-    }
-        
-    // Update Meal Inventory when order's Meals are updated
-    public static void replaceOrderInventory(String orgMealSelectionId, String newMealSelectionId) {
-        
-        System.debug('orgMealSelectionId:' + orgMealSelectionId);
-        System.debug('newMealSelectionId:' + newMealSelectionId);
-        
-        List<Plant_Meal_Selection_Meal__c> lstMealSels = [select Id, Plant_Meal__c, Plant_Quantity__c, Plant_Meal_Selection__c
-														  FROM Plant_Meal_Selection_Meal__c WHERE Plant_Meal_Selection__c = :orgMealSelectionId OR
-                                                          Plant_Meal_Selection__c = :newMealSelectionId];
-        System.debug('lstMealSels:' + lstMealSels);
-        
-        MAP<String,Plant_Meal_Selection_Meal__c> mapOrgMealSelMeals = new MAP<String,Plant_Meal_Selection_Meal__c>();
-        MAP<String,Plant_Meal_Selection_Meal__c> mapNewMealSelMeals = new MAP<String,Plant_Meal_Selection_Meal__c>();
-        SET<String> mealIDs = new SET<String>();
-        for(Plant_Meal_Selection_Meal__c msm :lstMealSels) {
-            if(msm.Plant_Meal_Selection__c == orgMealSelectionId) {
-                mapOrgMealSelMeals.put(msm.Plant_Meal__c, msm);
-            } else {
-                mapNewMealSelMeals.put(msm.Plant_Meal__c, msm);
-            }
-            mealIDs.add(msm.Plant_Meal__c);
-        }
-        System.debug('mapOrgMealSelMeals:' + mapOrgMealSelMeals);
-        System.debug('mapNewMealSelMeals:' + mapNewMealSelMeals);
-        System.debug('mealIDs:' + mealIDs);
-        
-        
-        List<Meal__c> lstMeals = [select Id, Number_of_Servings__c, Inventory__c from Meal__c where Id in :mealIDs];
-        System.debug('lstMeals:' + lstMeals);
-        
-		MAP<String,Meal__c> mapMeals = new MAP<String,Meal__c>();
-        for(Meal__c m :lstMeals) {
-            mapMeals.put(m.Id,m);
-        }
-        System.debug('mapMeals:' + mapMeals);
-        
-        List<Meal__c> updateMeals = new List<Meal__c>();
-        for(Plant_Meal_Selection_Meal__c msm :mapOrgMealSelMeals.values()) {
-            
-            System.debug('Org msm:' + msm);            
-            Meal__c fndMeal = mapMeals.get(msm.Plant_Meal__c); 
-            Integer numServ = 1;
-            if(fndMeal.Number_of_Servings__c != NULL) {
-            	numServ = Integer.valueOf(fndMeal.Number_of_Servings__c);    
-            }
-            System.debug('fndMeal:' + fndMeal);
-            System.debug('numServ:' + numServ);
-            
-            Plant_Meal_Selection_Meal__c fndNewMealSel = mapNewMealSelMeals.get(msm.Plant_Meal__c);             
-            System.debug('fndNewMealSel:' + fndNewMealSel);
-            
-            // New Meal not found, put old meal back in inventory
-            if(fndNewMealSel == NULL) {
-                fndMeal.Inventory__c = fndMeal.Inventory__c + (msm.Plant_Quantity__c * numServ);
-                System.debug('Not Found Update Meal Inv:' + fndMeal.Inventory__c);
-                updateMeals.add(fndMeal);
-            } else if(fndNewMealSel.Plant_Quantity__c != msm.Plant_Quantity__c) {
-                // New Meal found, diff quantity and update inventory
-                Decimal diff = msm.Plant_Quantity__c - fndNewMealSel.Plant_Quantity__c;
-                System.debug('diff:' + diff);
-                
-                fndMeal.Inventory__c = fndMeal.Inventory__c + (diff * numServ);
-                System.debug('Found Update Meal Inv:' + fndMeal.Inventory__c);
-                updateMeals.add(fndMeal);
-            }
-        }
-        
-        // Find any new meals and remove from inventory
-       	for(Plant_Meal_Selection_Meal__c msm :mapNewMealSelMeals.values()) {
-            System.debug('New msm:' + msm); 
-                       
-            Plant_Meal_Selection_Meal__c fndOrgMealSel = mapOrgMealSelMeals.get(msm.Plant_Meal__c); 
-            System.debug('fndOrgMealSel:' + fndOrgMealSel);
-            
-            // If not found, must be new meal, remove from inventory
-            if(fndOrgMealSel == NULL) {
-                
-                System.debug('Org msm:' + msm);            
-                Meal__c fndMeal = mapMeals.get(msm.Plant_Meal__c); 
-                Integer numServ = 1;
-                if(fndMeal.Number_of_Servings__c != NULL) {
-                    numServ = Integer.valueOf(fndMeal.Number_of_Servings__c);    
-                }
-                System.debug('fndMeal:' + fndMeal);
-                System.debug('numServ:' + numServ);
-                
-                fndMeal.Inventory__c = fndMeal.Inventory__c - (msm.Plant_Quantity__c * numServ);
-                System.debug('Found New Meal Update Inv:' + fndMeal.Inventory__c);
-                updateMeals.add(fndMeal);
-            }
-        }
-        
-        System.debug('updateMeals:' + updateMeals);
-        update updateMeals;
-        
-    }
-    
-    // Update Meal Inventory when orders are purchased or cancelled
-    // Restock, means put them back in stock
-    // TO DO - On Packing Slips we need to also Multiply Quantity Order x Number of Servings
-    public static void updateOrderInventory(List<String> mealSelectionIDs, Boolean isRestock) {
-    	List<Plant_Meal_Selection_Meal__c> lstMealSels = [select Id, Plant_Meal__c, Plant_Quantity__c
-														  FROM Plant_Meal_Selection_Meal__c WHERE Plant_Meal_Selection__c in :mealSelectionIDs];
-
-        System.debug('lstMealSels:' + lstMealSels);
-        
-        SET<String> mealIDs = new SET<String>();
-        for(Plant_Meal_Selection_Meal__c msm :lstMealSels) {
-            mealIDs.add(msm.Plant_Meal__c);
-        }
-        System.debug('mealIDs:' + mealIDs);
-        
-        List<Meal__c> lstMeals = [select Id, Number_of_Servings__c, Inventory__c from Meal__c where Id in :mealIDs];
-		MAP<String,Meal__c> mapMeals = new MAP<String,Meal__c>();
-        for(Meal__c m :lstMeals) {
-            mapMeals.put(m.Id,m);
-        }
-        System.debug('mapMeals:' + mapMeals);
-        
-		List<Meal__c> updateMeals = new List<Meal__c>();
-        for(Plant_Meal_Selection_Meal__c msm :lstMealSels) {
-            System.debug('msm:' + msm);
-            
-			Meal__c fndMeal = mapMeals.get(msm.Plant_Meal__c);
-            System.debug('fndMeal:' + fndMeal);
-            
-            Integer numServ = 1;
-            if(fndMeal.Number_of_Servings__c != NULL) {
-            	numServ = Integer.valueOf(fndMeal.Number_of_Servings__c);    
-            }
-            
-            if(fndMeal != NULL) {
-                if(isRestock == TRUE) {
-                	fndMeal.Inventory__c = fndMeal.Inventory__c + (msm.Plant_Quantity__c * numServ);
-                } else {
-                	fndMeal.Inventory__c = fndMeal.Inventory__c - (msm.Plant_Quantity__c * numServ);
-                }		
-                System.debug('updateMeals:' + fndMeal);
-				updateMeals.add(fndMeal);                            
-            }        
-        }
-        if(updateMeals.size() > 0) {
-            System.debug('update all Meals:' + updateMeals);
-        	update updateMeals;
-        }
-	} 
-
-	
-	// AG 9/21/2022
-    // Post Transaction Handler - After an Order Payment or Change is made this method will handle any remaining non-criitical work
-    // This is to remove load from the actual transaction
-    // Things we do here:
-    // 1. Set Order Type = New Business v Existsing Business
-    // 2. Create OnBoarding record for any new customer
-    // 3. Update Account Order KPIs; Total Orders, ...
-    // 4. Schedule Shipment Emails
-    public static void postTransactionOrderHandler(List<Plant_Transaction__e> lstOrderEvents) {
-        Set<String> orderIds = new Set<String>();
-        Set<String> accountIds = new Set<String>();
-        Set<String> setOrderPropIds = new Set<String>();
-        MAP<String,Plant_Transaction__e> mapEvents = new MAP<String,Plant_Transaction__e>();
-        MAP<String,Order> mapEventOrder = new MAP<String,Order>();
-        
-        // Setup ID Lists
-        for(Plant_Transaction__e pte :lstOrderEvents) {
-            orderIds.add(pte.Plant_OrderId__c);
-            accountIds.add(pte.Plant_AccountId__c);
-            mapEvents.put(pte.Plant_OrderId__c, pte);
-        }
-        System.debug('postTransactionOrderHandler orderIds:' + orderIds);
-        System.debug('accountIds:' + accountIds);
-        System.debug('mapEvents:' + mapEvents);
-
-		// Get ALL orders related to accounts in play        
-        List<Order> lstOrders = [select Id, AccountId, ActivatedDate, TotalAmount, Type, Plant_Main_Product__c,Plant_Replacement_Order__c,
-                                 Plant_Order_Properties__c, Plant_Subscription__c,
-                                 Plant_Subscription__r.Order_Count__c,
-                                 Discount_Codes_Used__c, Plant_Subscription_Order_Number__c,
-                                 Plant_Shipping_Date__r.Plant_Shipping_Date__c
-                                 from Order 
-                                 where AccountId in :accountIds AND status = 'Activated'
-                                ORDER BY ActivatedDate];
-        System.debug('lstOrders:' + lstOrders);
-        for(Order o :lstOrders) {
-            // Is order in play
-            if(orderIds.contains(o.Id)) {
-                setOrderPropIds.add(o.Plant_Order_Properties__c);
-                Plant_Transaction__e fndEvt = mapEvents.get(o.Id);
-                if(fndEvt != NULL) {
-                	mapEventOrder.put(fndEvt.EventUuid, o);    
-                }
-            }
-        }
-		System.debug('setOrderPropIds:' + setOrderPropIds);        
-        
-        // Get Accounts in play
-        List<Account> lstAccount = [select Id, Type, Plant_Total_Orders__c,Plant_Total_Revenue__c, 
-                                    Plant_Reboot_Orders__c, Plant_Reboot_Revenue__c, Plant_Reboot_First_Order__c, Plant_Reboot_Last_Order__c,
-                                    Plant_A_La_Carte_Orders__c, Plant_A_La_Carte_Revenue__c, Plant_A_La_Carte_First_Order__c, Plant_A_La_Carte_Last_Order__c,
-                                    Plant_Quickstart_Orders__c, Plant_Quickstart_Revenue__c, Plant_Quickstart_First_Order__c, Plant_Quickstart_Last_Order__c
-                                    from Account where id in :accountIds];
-        System.debug('lstAccount:' + lstAccount);
-        
-        // Get Discount Codes
-        List<Plant_Discount_Selection__c> lstDiscSels = [select Id, Plant_Order_Properties__c, Plant_Discount_Code__r.Plant_Code__c 
-                                                         FROM Plant_Discount_Selection__c where Plant_Order_Properties__c in:setOrderPropIds ];
-        Map<String,String> mapOrderPropDisc = new Map<String,String>();
-        for(Plant_Discount_Selection__c ds :lstDiscSels) {
-            mapOrderPropDisc.put(ds.Plant_Order_Properties__c,ds.Plant_Discount_Code__r.Plant_Code__c);
-        }
-        System.debug('mapOrderPropDisc:' + mapOrderPropDisc);  
-        
-        // Init map
-        MAP<String, Account> mapAccts = new MAP<String, Account>();
-        for(Account acct :lstAccount) {
-            // Reset Counters
-            acct.Total_Orders__c = 0;
-            acct.Plant_Total_Orders__c = 0;
-            acct.Plant_Total_Revenue__c = 0;
-            acct.Plant_Reboot_Orders__c = 0;
-            acct.Plant_Reboot_Revenue__c = 0;
-            acct.Plant_Reboot_First_Order__c = NULL;
-            acct.Plant_Reboot_Last_Order__c = NULL;
-            acct.Plant_A_La_Carte_Orders__c = 0;
-            acct.Plant_A_La_Carte_Revenue__c = 0;
-            acct.Plant_A_La_Carte_First_Order__c = NULL;
-            acct.Plant_A_La_Carte_Last_Order__c = NULL;
-            acct.Plant_Quickstart_Orders__c = 0;
-            acct.Plant_Quickstart_Revenue__c = 0;
-            acct.Plant_Quickstart_First_Order__c = NULL;
-            acct.Plant_Quickstart_Last_Order__c = NULL;
-            
-            mapAccts.put(acct.Id, acct);
-        }
-        System.debug('mapAccts:' + mapAccts);
-        
-        // Count Order KPIs By Account
-        MAP<String, Account> mapOrdersAcct = new MAP<String, Account>();
-        for(Order o :lstOrders) {
-            
-            System.debug('Order Loop:' + o);
-            
-            if(o.Plant_Replacement_Order__c != NULL) {
-                continue;
-            }
-            
-			Account fndAccount = mapAccts.get(o.AccountId);
-            System.debug('fndAccount:' + fndAccount);
-            
-            if(fndAccount!=NULL) {
-                fndAccount.Plant_Total_Orders__c++;
-                fndAccount.Plant_Total_Revenue__c+=o.TotalAmount;
-                if(o.Plant_Main_Product__c == 'Reboot') {
-                    fndAccount.Plant_Reboot_Orders__c++;
-                    fndAccount.Plant_Reboot_Revenue__c+=o.TotalAmount;
-                    if(fndAccount.Plant_Reboot_First_Order__c == NULL) {
-                        fndAccount.Plant_Reboot_First_Order__c = Date.ValueOf(o.ActivatedDate);
-                    }
-                    fndAccount.Plant_Reboot_Last_Order__c = Date.ValueOf(o.ActivatedDate);          
-                } else if(o.Plant_Main_Product__c == 'A-la-carte') {
-                    fndAccount.Plant_A_La_Carte_Orders__c++;
-                    fndAccount.Plant_A_La_Carte_Revenue__c+=o.TotalAmount;
-                    if(fndAccount.Plant_A_La_Carte_First_Order__c == NULL) {
-                        fndAccount.Plant_A_La_Carte_First_Order__c = Date.ValueOf(o.ActivatedDate);
-                    }
-                    fndAccount.Plant_A_La_Carte_Last_Order__c = Date.ValueOf(o.ActivatedDate);   
-                } else if(o.Plant_Main_Product__c == 'Quickstart') {
-                    fndAccount.Plant_Quickstart_Orders__c++;
-                    fndAccount.Plant_Quickstart_Revenue__c+=o.TotalAmount;
-                    if(fndAccount.Plant_Quickstart_First_Order__c == NULL) {
-                        fndAccount.Plant_Quickstart_First_Order__c = Date.ValueOf(o.ActivatedDate);
-                    }
-                    fndAccount.Plant_Quickstart_Last_Order__c = Date.ValueOf(o.ActivatedDate);   
-                }                    
-                System.debug('update order count:' + fndAccount);
-                mapAccts.put(fndAccount.Id, fndAccount);
-            }                
-        }
-        
-        List<Order> updateOrders = new List<Order>();
-        List<OnBoarding__c> insertOnBoardings = new List<OnBoarding__c>();
-        
-        // Process Orders from Trans Event
-        for(Plant_Transaction__e pte :lstOrderEvents) {
-            System.debug('pte:' + pte);
-            
-            Order fndOrder = mapEventOrder.get(pte.EventUuid);
-            System.debug('fndOrder:' + fndOrder);
-            
-            if(fndOrder != NULL) {
-                if(pte.Plant_Type__c == 'Order Cancelled') {
-                    
-                    // Cancel Staged Scheduled Emails
-                    Plant_TransComm_BC.cancelStagedScheduledTransComm('Order Shipment Upcoming', fndOrder.AccountId, fndOrder.Id, null);
-                    Plant_TransComm_BC.cancelStagedScheduledTransComm('Order Shipment Sent', fndOrder.AccountId, fndOrder.Id, null);
-                    
-                } else if(pte.Plant_Type__c == 'Order Date Change' || pte.Plant_Type__c == 'Order Address Change') {
-                    
-                    // Stage Scheduled Emails
-                    // This is cancel the old one, and create a new one on the correct date
-                    Plant_TransComm_BC.stageScheduledTransComm('Order Shipment Upcoming', fndOrder.AccountId, fndOrder.Id, null, fndOrder.Plant_Shipping_Date__r.Plant_Shipping_Date__c);
-                    Plant_TransComm_BC.stageScheduledTransComm('Order Shipment Sent', fndOrder.AccountId, fndOrder.Id, null, fndOrder.Plant_Shipping_Date__r.Plant_Shipping_Date__c);
-                    
-                } else if(pte.Plant_Type__c == 'Order Paid') {
-                    
-                    // Stage Scheduled Emails
-                    Plant_TransComm_BC.stageScheduledTransComm('Order Shipment Upcoming', fndOrder.AccountId, fndOrder.Id, null, fndOrder.Plant_Shipping_Date__r.Plant_Shipping_Date__c);
-                    Plant_TransComm_BC.stageScheduledTransComm('Order Shipment Sent', fndOrder.AccountId, fndOrder.Id, null, fndOrder.Plant_Shipping_Date__r.Plant_Shipping_Date__c);
-                    
-                    // Update KPIs & Create Onboardings
-                    Account fndAccount = mapAccts.get(fndOrder.AccountId);
-                    System.debug('fndAccount:' + fndAccount);
-                    
-                    if(fndAccount!=NULL) {
-                        if(fndAccount.Plant_Total_Orders__c == 1) {
-                            fndOrder.Type = 'New Business';
-                            
-                            // Create OnBoarding Record
-                            OnBoarding__c newOnBoard = new OnBoarding__c(
-                                Account__c = fndOrder.AccountId
-                            );
-                            insertOnBoardings.add(newOnBoard);
-                            
-                            // AG - Public New Customer Event
-                            if(fndOrder.Plant_Main_Product__c == 'Reboot') {
-                            	Plant_TransComm_BC.publishTransactionEvent(Plant_TransComm_BC.setTransactionEvent('Welcome Reboot',fndOrder.AccountId,null,null));    
-                            } else if(fndOrder.Plant_Main_Product__c == 'Quickstart') {
-                                Plant_TransComm_BC.publishTransactionEvent(Plant_TransComm_BC.setTransactionEvent('Welcome Quickstart',fndOrder.AccountId,null,null));    
-                            } else {
-                                Plant_TransComm_BC.publishTransactionEvent(Plant_TransComm_BC.setTransactionEvent('Welcome A-la-carte',fndOrder.AccountId,null,null));                                    
-                            }
-                            
-                        } else if(fndAccount.Plant_Total_Orders__c > 1) {
-                            fndOrder.Type = 'Existing Business';
-                        }
-                        System.debug('update order type:' + fndOrder);
-                    }
-                    
-                    String fndDisc = mapOrderPropDisc.get(fndOrder.Plant_Order_Properties__c);
-                    System.debug('fndDisc:' + fndDisc);
-                    
-                    if(fndDisc != NULL) {
-                        fndOrder.Discount_Codes_Used__c = fndDisc;
-                        System.debug('update order discount:' + fndOrder);
-                    }
-                    
-                    if(fndOrder.Plant_Subscription__c != NULL) {
-                        fndOrder.Plant_Subscription_Order_Number__c = fndOrder.Plant_Subscription__r.Order_Count__c;
-                    }
-                    
-                    if(fndAccount!=NULL || fndDisc!=NULL || fndOrder.Plant_Subscription__c != NULL) {
-                        System.debug('updateOrders.add:' + updateOrders);
-                        updateOrders.add(fndOrder);
-                    }                
-                    
-                }
-                
-            }
-            
-        }
-                
-        if(!updateOrders.isEmpty()) {
-            System.debug('update updateOrders:' + updateOrders);
-        	update updateOrders;    
-        }
-        
-        List<Account> updateAccounts = new List<Account>();
-        for(Account a :mapAccts.values()) {
-            updateAccounts.add(a);
-        }
-        if(!updateAccounts.isEmpty()) {
-            System.debug('update updateAccounts:' + updateAccounts);
-        	update updateAccounts;    
-        }
-        if(!insertOnBoardings.isEmpty()) {
-            System.debug('insert insertOnBoardings:' + insertOnBoardings);
-        	insert insertOnBoardings;    
-        }
-        
-    }
-    
     
     
     // @ wrapper class 1: order property "Request" json
@@ -4372,6 +3833,7 @@ public class Plant_Orders_BC {
         public String MealSelectionId;
         public String Subscription;
         public String ShipmentStatus;
+        public String ShippingAddresId;
         public Date DeliveryDate;
         public String TrackingNumber;
         public Datetime PaymentDate;

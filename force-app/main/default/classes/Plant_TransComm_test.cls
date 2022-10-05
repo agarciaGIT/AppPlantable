@@ -169,8 +169,15 @@ public class Plant_TransComm_test {
         
         Date dt = Date.today();
         Plant_TransComm_BC.stageScheduledTransComm('Order Paid', acct.id, order.id, null, dt);
+
+		DateTime dtn = DateTime.newInstance(dt.year(), dt.month(), dt.day(), 8, 0, 0);
+        Database.executeBatch(new Plant_BatchSendScheduledTransComm(dtn,NULL));
         
         Plant_TransComm_BC.cancelStagedScheduledTransComm('Order Paid', acct.id, order.id, null);
+        
+    }
+    
+    static testMethod void plant_BatchScheduledSend(){
         
     }
 }
