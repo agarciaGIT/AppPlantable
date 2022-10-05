@@ -22,8 +22,11 @@
                                 </p>
                             </div>
                         </lightning-layout-item>
-                        <lightning-layout-item size="4" >
+                        <!-- <lightning-layout-item size="4" >
                             <c-plant_lwc-lookup onrecordselection={handleRecordSelection}  object-api-name="Order" icon-name="standard:orders" account-id={customerAccount.Id} selected-value={selectedOrder.OrderNumber} place-holder-name="Select Order.." is-required=true> </c-plant_lwc-lookup>
+                        </lightning-layout-item> -->
+                        <lightning-layout-item size="4" >
+                            <lightning-combobox  data-field="OrdeDetailDropDown"  name="OrdeDetailDropDown"  options={orderList} value={selectedOrderObj.OrderNumber} onchange={handleChange} dropdown-alignment="auto"> </lightning-combobox>
                         </lightning-layout-item>
                     </lightning-layout>
                 </lightning-layout-item>

@@ -7,6 +7,7 @@ import updatePaymentDetails from "@salesforce/apex/plant_Edit_OrderController.up
 import updateShippingDetails from "@salesforce/apex/plant_Edit_OrderController.updateShippingDetails";
 import updateDeliveryDate from "@salesforce/apex/plant_Edit_OrderController.updateDeliveryDate";
 import getOrderDetails from "@salesforce/apex/plant_Edit_OrderController.getOrderDetails";
+import getOrderList from "@salesforce/apex/plant_Edit_OrderController.getOrderList";
 import {ShowToastEvent} from 'lightning/platformShowToastEvent';
 import getMeals from "@salesforce/apex/Plant_NewOrderCustomerController.getMeals";
 
@@ -27,6 +28,8 @@ export default class plant_Edit_Order extends LightningElement {
 	@track showEditView = true;
 	@track mealsVisibleList = new Array();
 	@track customerAccount = { "Id" : '',"Token" : '' }
+	@track orderList = new Array();
+	@track selectedOrderObj = {Id : '' , OrderNumber : ''};
 
 	connectedCallback(){
 		this.showSpinner = true;
@@ -36,7 +39,7 @@ export default class plant_Edit_Order extends LightningElement {
 				response = JSON.parse(response);
 				if (response.statusCode == 200) {
 					this.allMealsBackupList = response.result.resultArr;
-					console.log('allMealsBackupList:::'+JSON.stringify(response.result.resultArr))
+					//console.log('allMealsBackupList:::'+JSON.stringify(response.result.resultArr))
 				}
 
 			}).catch(error => {
@@ -55,9 +58,24 @@ export default class plant_Edit_Order extends LightningElement {
 			if(this.customerAccount.Token && this.customerAccount.Token != ''){
 				validateAccessToken({token : this.customerAccount.Token})
 				.then(response =>{
+					console.log('valid Response Token::',response);
 					this.showSpinner = false;
 					if(response.includes('Success')){
 						this.authorisationTokenExpired = false;
+						getOrderList({authorisationToken : this.customerAccount.Token}).then(orderResponse =>{
+							orderResponse = JSON.parse(orderResponse);
+							if(orderResponse.hasOwnProperty('statusCode') && orderResponse.statusCode == '200'){
+								if(orderResponse.hasOwnProperty('result') && orderResponse.result.hasOwnProperty('resultArr') && orderResponse.result.resultArr.length > 0){
+									let orderList = new Array();
+									orderResponse.result.resultArr.forEach(element =>{
+										orderList.push({label : element.OrderNumber , value : element.OrderNumber})
+									})
+									this.orderList = orderList;
+									console.log('orderList::',this.orderList)
+								}
+							}
+							console.log('OrderResponse::'+orderResponse);
+						})
 						console.log('Token Is Available');
 					}
 					else{
@@ -84,8 +102,8 @@ export default class plant_Edit_Order extends LightningElement {
 		this.selectedOrder.Id = (event.detail.selectedRecordId ? event.detail.selectedRecordId : '');
 		this.selectedOrder.OrderNumber = (event.detail.selectedValue ? event.detail.selectedValue : '');
 		if(this.selectedOrder.Id && this.selectedOrder.Id !='' && this.selectedOrder.OrderNumber && this.selectedOrder.OrderNumber != '' ){
-			this.showSpinner = true;
-			getOrderDetails({orderId : this.selectedOrder.Id , authorisationToken: (this.customerAccount.Token && this.customerAccount.Token != '' ? this.customerAccount.Token : '')})
+			//this.showSpinner = true;
+			/* getOrderDetails({orderId : this.selectedOrder.Id , authorisationToken: (this.customerAccount.Token && this.customerAccount.Token != '' ? this.customerAccount.Token : '')})
 			.then(orderResponse =>{
 				console.log('orderResponse:::',orderResponse);
 				orderResponse = JSON.parse(orderResponse);
@@ -140,7 +158,7 @@ export default class plant_Edit_Order extends LightningElement {
 			}).catch(error =>{
 				this.showSpinner = false;
 				console.log('order Error::',error);
-			})
+			}) */
 		}
 		else{
 			this.shippingDetails = {}

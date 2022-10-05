@@ -11,6 +11,8 @@ public class plant_Edit_OrderController {
 
     @AuraEnabled(cacheable=true)
     public static string getOrderDetails(string orderId , String authorisationToken){
+        return 'test';
+    /*
         try {
             paymentDetailWrapper paymentDetailWrapperDetails = new paymentDetailWrapper(null,null,null,null);
             availableDeliveryDateWrapper availableDeliveryDatesWrapper = new availableDeliveryDateWrapper(null,null,null,null);
@@ -22,7 +24,7 @@ public class plant_Edit_OrderController {
                                 Plant_Order_Properties__r.Shipping_Address__r.Plant_Street3__c,Plant_Order_Properties__r.Shipping_Address__r.Plant_City__c,
                                 Plant_Order_Properties__r.Shipping_Address__r.Plant_Province_State__c,Plant_Order_Properties__r.Shipping_Address__r.Plant_Country__c,
                                 Plant_Order_Properties__r.Shipping_Address__r.Plant_Postal_Code__c,Plant_Order_Properties__r.Shipping_Address__r.Plant_Phone__c,
-                                Plant_Order_Properties__r.Shipping_Address__r.Plant_Can_SMS__c /*,Plant_Order_Properties__r.Plant_Shipping_Date__c */  FROM Order WHERE Id =:orderId limit 1
+                                Plant_Order_Properties__r.Shipping_Address__r.Plant_Can_SMS__c   FROM Order WHERE Id =:orderId limit 1
                                 ];
             map<string,string> paymentDetailObj = new map<string,string>();
             if(authorisationToken != null && authorisationToken != ''){
@@ -93,11 +95,22 @@ public class plant_Edit_OrderController {
                 }
                 responseWrapper responseWrapperData = new responseWrapper(shippingDataWrapper,availableDeliveryDatesWrapper,paymentDetailWrapperDetails , selectedMealListWrapper);
                 System.debug('responseWrapperData:::'+JSON.serializePretty(responseWrapperData));
+                
                 return JSON.serialize(responseWrapperData);
             }
             else{
                 return null;
-            }
+            }  
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }  */
+    }
+
+    @AuraEnabled
+    public static string getOrderList(String authorisationToken ){
+        try {
+            Plant_Orders_BC Plant_Orders_BC = new Plant_Orders_BC();
+            return JSON.serialize(Plant_Orders_BC.getOrders(authorisationToken , ''));
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
         }
@@ -134,7 +147,8 @@ public class plant_Edit_OrderController {
 
     @AuraEnabled
     public static string updateShippingDetails(string shippingJSON){
-        try {
+        return 'test';
+        /*try {
             Plant_Customer_BC.manageShipAddress  shippingWrapper = (Plant_Customer_BC.manageShipAddress) JSON.deserializeStrict(shippingJSON, Plant_Customer_BC.manageShipAddress.class);
             System.debug('shippingWrapper:::'+JSON.serializePretty(shippingWrapper));
             Plant_Customer_BC Plant_Customer_BC = new Plant_Customer_BC();
@@ -143,7 +157,7 @@ public class plant_Edit_OrderController {
 
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
-        }
+        } */
     }
 
     @AuraEnabled

@@ -1,6 +1,7 @@
 public class Plant_Orders_BC_Helper {
     
     // AG - This will create a copy of an order the customer needs to be shipped again
+    /*
     public static Order reshipOrderBulk(String orderId) {
         Order retOrder;
         
@@ -197,7 +198,8 @@ public class Plant_Orders_BC_Helper {
         }
         return retOrder;
     } 
-
+	*/
+    
     public static Order reshipOrder(String orderId) {
         Order retOrder;
         
@@ -352,7 +354,7 @@ public class Plant_Orders_BC_Helper {
             retOrder = retOrderWrapper.newOrder;
             
             // Stage Payment
-            ChargentOrders__ChargentOrder__c corder = stagePayment(retOrder.Id, newOrderWrap, retOrder.Amount_to_Pay__c);
+            ChargentOrders__ChargentOrder__c corder = stagePayment(newOrderWrap, retOrder.Amount_to_Pay__c);
             insert corder;
             System.debug('corder:' + corder);
             
@@ -414,6 +416,9 @@ public class Plant_Orders_BC_Helper {
             if(isBulk) {
                 retWrapper.newMealSelection = newMS;
             } else {
+                if(newOrderWrap.isChefMenu) {
+                    newMS.Plant_Make_Chef_Menu__c = true;
+                }
                 insert newMS;    
                 newMSId = newMS.Id;
             }
@@ -625,13 +630,13 @@ public class Plant_Orders_BC_Helper {
         return retWrapper;
     }
     
-    public static ChargentOrders__ChargentOrder__c stagePayment(String orderId, newOrderWrapper newOrderWrap, Decimal amount) {
+    public static ChargentOrders__ChargentOrder__c stagePayment(newOrderWrapper newOrderWrap, Decimal amount) {
         ChargentOrders__ChargentOrder__c corder;
         
         System.debug('stagePayment:' + newOrderWrap);
         System.debug('stagePayment amount:' + amount);
         
-        if(orderId != NULL && newOrderWrap != NULL) {
+        if(newOrderWrap != NULL) {
             corder = new ChargentOrders__ChargentOrder__c(
                 ChargentOrders__Account__c = newOrderWrap.AccountId,
                 ChargentOrders__Gateway__c = Label.PlantChargentGatewayId,
@@ -652,7 +657,7 @@ public class Plant_Orders_BC_Helper {
         System.debug('corder:' + corder);
         return corder;
     }
-    
+        
     public static ChargentOrders__Transaction__c makePayment(String corderId, newOrderWrapper newOrderWrap, Decimal amount) {
         ChargentOrders__Transaction__c ctrans;
         
@@ -689,6 +694,359 @@ public class Plant_Orders_BC_Helper {
         return ctrans;
     }
     
+    // Load Subscriptions (set Account, Plant_Next_Shipment_Date__c, Plant_Next_Charge_Date__c, Order_Count__c, Plant_Amount__c)
+    // Load Meal Selections (just insert with Plant_Make_Chef_Menu__c = True)
+    // Load Shipping Addresses and relate to Subscriptions
+    // Update Subscriptions, check Plant_Import_Legacy_Data__c to fire
+    public static void subscriptionLegacyLoadHandler(SET<String> subIds) {
+        
+        MAP<String,Plant_Subscription__c> mapSub = new MAP<String,Plant_Subscription__c>();
+        SET<Date> shipdates = new SET<Date>();
+        SET<String> stcs = new SET<String>();
+        SET<String> zips = new SET<String>();
+        
+        list<Plant_Subscription__c> lstSubs = [select Id, RecordType.Name, Plant_Account__c, Plant_Shipping_Address__r.Plant_Province_State__c, Plant_Shipping_Address__r.Plant_Postal_Code__c,
+                                               Plant_Payment_Method__c, Plant_Delivery_Schedule__c, Plant_Shipping_Date__c, Plant_Next_Shipment_Date__c,Plant_Amount__c,Plant_Next_Charge_Date__c, 
+                                               Order_Count__c, Plant_Next_Delivery_Date__c from Plant_Subscription__c where id in :subIds];
+		System.debug('lstSubs:' + lstSubs);
+
+        if(!lstSubs.isEmpty()) {
+            for(Plant_Subscription__c sub :lstSubs) {
+                mapSub.put(sub.Id,sub);
+                
+                if(sub.Plant_Next_Shipment_Date__c != NULL) {
+                    shipdates.add(sub.Plant_Next_Shipment_Date__c);
+                }
+                if(sub.Plant_Shipping_Address__r.Plant_Province_State__c != NULL) {
+                    stcs.add(sub.Plant_Shipping_Address__r.Plant_Province_State__c);
+                }
+                if(sub.Plant_Shipping_Address__r.Plant_Postal_Code__c != NULL) {
+                    zips.add(sub.Plant_Shipping_Address__r.Plant_Postal_Code__c);
+                }
+            }
+        }
+        System.debug('mapSub:' + mapSub);
+        if(!mapSub.isEmpty()) {
+                        
+            List<Plant_Delivery_Schedule__c> lstDS = [select id, Plant_Shipping_Duration__c, Plant_State_Code__c, Plant_Zip_Code__c from Plant_Delivery_Schedule__c where Plant_State_Code__c = :stcs OR Plant_Zip_Code__c in :zips];
+            MAP<String,Plant_Delivery_Schedule__c> mapDelivery = new MAP<String,Plant_Delivery_Schedule__c>();
+            if(!lstDS.isEmpty()) {                
+                for(Plant_Delivery_Schedule__c ds :lstDS) {
+                    mapDelivery.put(ds.Plant_State_Code__c + ':' + ds.Plant_Zip_Code__c, ds);
+                }
+            }
+            System.debug('mapDelivery:' + mapDelivery);
+            
+            List<Plant_Shipping_Date__c> listSD = [select id, Plant_Shipping_Date__c from Plant_Shipping_Date__c where Plant_Shipping_Date__c in :shipdates];
+            System.debug('listSD:' + listSD);
+            
+            MAP<Date,Plant_Shipping_Date__c> mapSD = new MAP<Date,Plant_Shipping_Date__c>();
+            if(!listSD.isEmpty()) {
+                for(Plant_Shipping_Date__c sd :listSD) {
+                    mapSD.put(sd.Plant_Shipping_Date__c,sd);
+                }                
+            }
+            System.debug('mapSD:' + mapSD);
+            
+            List<ChargentOrders__ChargentOrder__c> insertChrgOrds = new List<ChargentOrders__ChargentOrder__c>();
+            for(Plant_Subscription__c sub :mapSub.values()){
+                
+                System.debug('sub:' + sub);
+                
+                Plant_Delivery_Schedule__c fndDS = mapDelivery.get(sub.Plant_Shipping_Address__r.Plant_Province_State__c + ':' + sub.Plant_Shipping_Address__r.Plant_Postal_Code__c);
+                Plant_Shipping_Date__c fndSD = mapSD.get(sub.Plant_Next_Shipment_Date__c);
+                
+                System.debug('fndDS:' + fndDS);
+                System.debug('fndSD:' + fndSD);
+                
+                if(fndDS != NULL && fndSD != NULL) {
+                    sub.Plant_Delivery_Schedule__c = fndDS.Id;
+                    sub.Plant_Shipping_Date__c = fndSD.Id;
+                    sub.Plant_Next_Delivery_Date__c = fndSD.Plant_Shipping_Date__c.addDays(Integer.valueOf(fndDS.Plant_Shipping_Duration__c));
+                    System.debug('sub update:' + sub);
+                    mapSub.put(sub.id,sub);
+                    
+                    newOrderWrapper newOrderWrap = new newOrderWrapper();
+                    newOrderWrap.AccountId = sub.Plant_Account__c;
+
+                    ChargentOrders__ChargentOrder__c corder = stagePayment(newOrderWrap, sub.Plant_Amount__c);
+                    corder.ChargentOrders__Payment_Start_Date__c = sub.Plant_Next_Charge_Date__c;
+                    corder.ChargentOrders__Next_Transaction_Date__c = sub.Plant_Next_Charge_Date__c;
+                    corder.ChargentOrders__Payment_Count__c = Integer.valueOf(sub.Order_Count__c);                        
+                    corder.ChargentOrders__Payment_Frequency__c = 'Weekly';
+                    corder.ChargentOrders__Payment_Status__c = 'Recurring';
+                    
+                    if(sub.RecordType.Name == 'Reboot') {
+                        corder.ChargentOrders__Payment_Stop__c = 'Count';
+                    } else {
+                        corder.ChargentOrders__Payment_Stop__c = 'Unending';
+                    }
+                    corder.Plant_Migrate_Data_Order__c = sub.Id;
+                    System.debug('corder:' + corder);
+                    insertChrgOrds.add(corder);
+                }
+
+            }
+            System.debug('insert insertChrgOrds:' + insertChrgOrds);
+            insert insertChrgOrds;
+            
+            MAP<String,ChargentOrders__ChargentOrder__c> mapCO = new MAP<String,ChargentOrders__ChargentOrder__c>();
+            for(ChargentOrders__ChargentOrder__c co :insertChrgOrds) {
+                mapCO.put(co.Plant_Migrate_Data_Order__c, co);
+            }
+            System.debug('mapCO:' + mapCO);
+            
+            List<Plant_Subscription__c> updateSubs = new List<Plant_Subscription__c>();
+            for(Plant_Subscription__c sub :mapSub.values()){
+                System.debug('sub:' + sub);
+                
+                ChargentOrders__ChargentOrder__c fndCO = mapCO.get(sub.Id);
+                if(fndCO != NULL) {
+                    sub.Plant_Chargent_Order__c = fndCO.Id;
+                }
+                System.debug('updateSubs:' + sub);
+                updateSubs.add(sub);
+            }
+            update updateSubs;
+        }
+    }
+    
+    // AG - Legacy Import Meal Selection
+    // Make Meal Selection Chef Menu
+    public static void mealSelectionChangeEventHandler(Set<String> mealSelIds) {
+        if(!mealSelIds.isEmpty()) {
+            List<Plant_Meal_Selection_Meal__c> lstMSM = [select id, Plant_Meal__c, Plant_Quantity__c from Plant_Meal_Selection_Meal__c where Plant_Meal_Selection__r.Plant_Owner__c != NULL AND Plant_Meal_Selection__r.Plant_Description__c = 'Chef Menu'];
+            System.debug('lstMSM:' + lstMSM);
+            
+            if(!lstMSM.isEmpty()) {
+                List<Plant_Meal_Selection_Meal__c> insertMSM = new List<Plant_Meal_Selection_Meal__c>();
+                for(String ce :mealSelIds) {
+                    System.debug('ce:' + ce);
+                    
+                    for(Plant_Meal_Selection_Meal__c msm :lstMSM) {
+                        Plant_Meal_Selection_Meal__c newMSM = new Plant_Meal_Selection_Meal__c(
+                            Plant_Meal__c = msm.Plant_Meal__c,
+                            Plant_Quantity__c = msm.Plant_Quantity__c,
+                            Plant_Meal_Selection__c = ce
+                        );
+                        insertMSM.add(newMSM);
+                    }   
+                    System.debug('insertMSM:' + insertMSM);
+                }
+                insert insertMSM;
+            }
+        }
+    }
+    
+    public static void apiRequestChangeTriggerHandler(String apiReqId) {
+        List<API_Request__c> lstAPIReqs = [select Id, Order__c, Order_Number__c, OrderId__c, Auto_Order_Number__c, 
+                                           First_Name__c,Last_Name__c,Customer_Email__c,Created_At__c,
+                                           Phone__c, Company__c,Street1__c,Street2__c,City__c,State__c,Zip__c, Country__c,
+                                           Ship_Date__c,Is_Custom__c,Shipping_Company__c,Shipping_First_Name__c,Shipping_Last_Name__c,Shipping_Phone__c,
+                                           Shipping_Street1__c, Shipping_Street2__c,Shipping_City__c,Shipping_State__c,Shipping_Zip__c,Shipping_Country__c,
+                                           Billing_Company__c,Billing_First_Name__c,Billing_Last_Name__c,Billing_Phone__c,Billing_Street1__c,Billing_Street2__c,
+                                           Billing_City__c,Billing_State__c,Billing_Zip__c,Billing_Country__c,Charge_Amount__c, Charge_Source__c,
+                                           (Select id, Type__c, Code__c, Quantity__c,Amount__c,Ship_Date__c,External_Id__c from  API_Request_Line_Items__r)
+                                           from API_Request__c where Request_Type__c = 'Create Order' AND id = :apiReqId];
+        
+        System.debug('lstAPIReqs:' + lstAPIReqs);
+        if(!lstAPIReqs.isEmpty()) {
+            API_Request__c apiReq = lstAPIReqs[0];
+            List<Account> lstAccts = [select id, Name from Account where Email__c = :apiReq.Customer_Email__c];
+            System.debug('lstAccts:' + lstAccts);
+            
+            Account acct;
+            if(!lstAccts.isEmpty()) {
+                acct = lstAccts[0];
+            } else {
+                // TO DO: Create Account
+                acct = new Account(
+                    Name = apiReq.First_Name__c + ' ' + apiReq.Last_Name__c,
+                    RecordTypeId = Plant_Utility.GetRecordTypeId('Account','Individual'),
+                    First_Name__c = apiReq.First_Name__c,
+                    Last_Name__c = apiReq.Last_Name__c,
+                    Email__c = apiReq.Customer_Email__c,
+                    Phone = apiReq.Phone__c,
+                    BillingStreet = apiReq.Billing_Street1__c,
+                    BillingCity = apiReq.Billing_City__c,
+                    BillingState = apiReq.Billing_State__c,
+                    BillingPostalCode = apiReq.Billing_Zip__c,
+                    BillingCountry = apiReq.Billing_Country__c 
+                );
+                System.debug('insert acct:' + acct);
+                insert acct;
+                
+                Contact cont = new Contact(
+                    AccountId = acct.id,
+                    FirstName = apiReq.First_Name__c,
+                    LastName = apiReq.Last_Name__c,
+                    Phone = apiReq.Phone__c,
+                    Email = apiReq.Customer_Email__c,
+                    MailingStreet = apiReq.Street1__c,
+                    MailingCity = apiReq.City__c,
+                    MailingState = apiReq.State__c,
+                    MailingPostalCode = apiReq.Zip__c,
+                    MailingCountry = apiReq.Country__c,
+                    RecordTypeId = Plant_Utility.GetRecordTypeId('Contact','Customer')
+                );
+                System.debug('insert cont:' + cont);
+                insert cont;
+                
+            }
+            
+            newOrderWrapper newOrderWrap = new newOrderWrapper();
+            newOrderWrap.AccountId = acct.Id;
+            //newOrderWrap.Product = orgOrder.Plant_Main_Product__c;
+
+            newOrderWrap.FirstName = apiReq.First_Name__c;
+            newOrderWrap.LastName = apiReq.Last_Name__c;
+            newOrderWrap.Email = apiReq.Customer_Email__c;
+            newOrderWrap.Phone = apiReq.Phone__c;
+            newOrderWrap.CanSMS = True;
+            //newOrderWrap.Provider = orgOrder.Plant_Order_Properties__r.Plant_Provider__c;
+            
+            newOrderWrap.BillingFirstName = apiReq.Billing_First_Name__c;
+            newOrderWrap.BillingLastName = apiReq.Billing_Last_Name__c;
+            newOrderWrap.CardNumber = null;
+            newOrderWrap.CardType = apiReq.Charge_Source__c;
+            newOrderWrap.CCV = null;
+            newOrderWrap.CardLast4Digits = null;
+            newOrderWrap.BillingCity = apiReq.Billing_City__c;
+            newOrderWrap.BillingCountry = apiReq.Billing_Country__c;
+            newOrderWrap.BillingCustomerName = apiReq.Billing_First_Name__c + ' ' + apiReq.Billing_Last_Name__c;
+            newOrderWrap.ExpirationDate = null;
+            newOrderWrap.BillingPhone = apiReq.Billing_Phone__c;
+            newOrderWrap.BillingPostalCode = apiReq.Billing_Zip__c;
+            newOrderWrap.BillingProvinceState = apiReq.Billing_State__c;
+            newOrderWrap.BillingStreet1 = apiReq.Street1__c;
+            newOrderWrap.BillingStreet2 = apiReq.Street2__c;
+            newOrderWrap.BillingStreet3 = NULL;
+
+            newOrderWrap.ShippingFirstName = apiReq.Shipping_First_Name__c;
+            newOrderWrap.ShippingLastName = apiReq.Shipping_Last_Name__c;
+            newOrderWrap.ShippingPhone = apiReq.Shipping_Phone__c;
+            newOrderWrap.ShippingStreet1 = apiReq.Shipping_Street1__c;
+            newOrderWrap.ShippingStreet2 = apiReq.Shipping_Street2__c;
+            newOrderWrap.ShippingStreet3 = NULL;
+            newOrderWrap.ShippingCity = apiReq.Shipping_City__c;
+            newOrderWrap.ShippingProvinceState = apiReq.Shipping_State__c;
+            newOrderWrap.ShippingPostalCode = apiReq.Shipping_Zip__c;
+            newOrderWrap.ShippingCountry = apiReq.Shipping_Country__c;
+            System.debug('newOrderWrap:' + newOrderWrap);
+            
+            // Meals
+            newOrderWrap.meals = new List<newOrderMealWrapper>();
+
+            List<Meal__c> lstMeals = [select id, Shopify_ID__c from Meal__c where API_Enabled__c = true AND Status__c = 'Active' AND Shopify_ID__c != NULL];
+            System.debug('lstMeals:' + lstMeals);
+            
+            MAP<String,Meal__c> mapMeals = new MAP<String,Meal__c>();
+            if(!lstMeals.isEmpty()) {
+                for(Meal__c m :lstMeals) {
+                    mapMeals.put(m.Shopify_ID__c, m);
+                }
+            }
+            System.debug('mapMeals:' + mapMeals);
+            
+            for(API_Request_Line_Item__c apil :apiReq.API_Request_Line_Items__r) {
+                System.debug('apil:' + apil);
+                
+                if(apil.Type__c == 'Product') {
+                    if(apil.Code__c == 'ZPEALC') {
+                        newOrderWrap.Product = 'A-la-carte';
+                        newOrderWrap.Provider = 'Zipongo';
+                        newOrderWrap.ProductOverride = 'ZPEALC';
+                        newOrderWrap.PriceOverride = apil.Amount__c; 
+                    } else if(apil.Code__c == '3928880709750') {
+                        // Study Order
+                        newOrderWrap.Product = 'A-la-carte';
+                        newOrderWrap.Provider = 'Study';
+                        newOrderWrap.PriceOverride = 0;
+                        newOrderWrap.isChefMenu = True;
+                    }
+                } else if(apil.Type__c == 'Meal' && apil.Code__c != NULL) {
+                    Meal__c fndMeal = mapMeals.get(apil.Code__c);
+                    if(fndMeal != NULL) {
+                        newOrderMealWrapper newMeal = new newOrderMealWrapper();
+                        newMeal.MealId = fndMeal.Id;
+                        newMeal.Quantity = Integer.valueOf(apil.Quantity__c);
+                        newOrderWrap.meals.add(newMeal);
+                    }
+                }
+            }
+            System.debug('newOrderWrap:' +newOrderWrap);
+            System.debug('newOrderWrap.meals:' + newOrderWrap.meals);
+            
+            List<Plant_Delivery_Schedule__c> lstDS = [select id, Plant_Shipping_Duration__c, Plant_State_Code__c, Plant_Zip_Code__c from Plant_Delivery_Schedule__c where Plant_State_Code__c = :apiReq.Shipping_State__c OR Plant_Zip_Code__c = :apiReq.Shipping_Zip__c];
+            System.debug('lstDS:' +lstDS);
+            
+            MAP<String,Plant_Delivery_Schedule__c> mapDelivery = new MAP<String,Plant_Delivery_Schedule__c>();
+            if(!lstDS.isEmpty()) {                
+                for(Plant_Delivery_Schedule__c ds :lstDS) {
+                    mapDelivery.put(ds.Plant_State_Code__c + ':' + ds.Plant_Zip_Code__c, ds);
+                }
+            }
+            System.debug('mapDelivery:' + mapDelivery);
+            
+            Date enddt = apiReq.Ship_Date__c.addDays(10);
+            List<Plant_Shipping_Date__c> lstShipDates = [select id, Plant_Shipping_Date__c from Plant_Shipping_Date__c where Plant_Shipping_Date__c >= :apiReq.Ship_Date__c];
+            System.debug('lstShipDates:' +lstShipDates);
+
+            Date shipDate;
+            if(!lstShipDates.isEmpty()) {
+                for(Plant_Shipping_Date__c sd :lstShipDates) {
+                    if(apiReq.Ship_Date__c >= sd.Plant_Shipping_Date__c) {
+                        shipDate = sd.Plant_Shipping_Date__c;
+                    }
+                }
+            }
+            System.debug('shipDate:' +shipDate);
+            
+            if(shipDate != NULL) {
+                Plant_Delivery_Schedule__c fndDS = mapDelivery.get(apiReq.Shipping_State__c + ':' + apiReq.Shipping_Zip__c);
+                System.debug('fndDS:' +fndDS);
+                
+                if(fndDS != NULL) {
+                    Date dt = shipDate.addDays(Integer.valueOf(fndDS.Plant_Shipping_Duration__c));
+                    DateTime dtm = DateTime.newInstance(dt.year(), dt.month(), dt.day());
+                    newOrderWrap.deliveryDate = dtm.formatGMT('yyyy-MM-dd');
+                }
+                System.debug('newOrderWrap.deliveryDate:' +newOrderWrap.deliveryDate);
+                
+                // Setup Overrides
+                //newOrderWrap.ShippingDateOverride = Date.newInstance(2021,1,1);
+                //newOrderWrap.ShippingDurationOverride = 2;
+                //newOrderWrap.OrderNumberOverride = 'S12345';
+                //newOrderWrap.OrderPropertiesRecordTypeIdOverride = Plant_Utility.GetRecordTypeId('Plant_Order_Properties__c','Legacy');
+                //newOrderWrap.CloseDateOverride = Date.newInstance(2021,1,1);
+                
+                
+                // Create Order
+                retNewOrderWrapper retOrderWrapper = createOrder(newOrderWrap, False, Null);
+                System.debug('retOrderWrapper:' + retOrderWrapper);
+                
+                Order retOrder = retOrderWrapper.newOrder;
+                
+                // Stage Payment
+                ChargentOrders__ChargentOrder__c corder = stagePayment(newOrderWrap, retOrder.Amount_to_Pay__c);
+                insert corder;
+                System.debug('corder:' + corder);
+                
+                retOrder.comty_Chargent_Order__c = corder.id;
+                update retOrder;
+                
+                // Make Payment
+                ChargentOrders__Transaction__c ctrans = makePayment(corder.Id, newOrderWrap, retOrder.Amount_to_Pay__c);
+                insert ctrans;
+                
+                apiReq.Order__c = retOrder.Id;
+                apiReq.Account__c = acct.Id;
+                update apiReq;
+            }
+        }
+    }
+
+    
     // AG - Wrapper to create a new order
     public class newOrderMealWrapper{
         public String MealId;   
@@ -708,6 +1066,7 @@ public class Plant_Orders_BC_Helper {
         public String OrderPropertiesRecordTypeIdOverride;
         public Date CloseDateOverride;
         public String OrgOrderId;
+        public Boolean isChefMenu;
         
         public List<newOrderMealWrapper> meals;
         public String deliveryDate;

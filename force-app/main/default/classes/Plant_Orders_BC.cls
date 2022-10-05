@@ -2385,7 +2385,7 @@ public class Plant_Orders_BC {
                     // VALIDATION 2: Check Order Number If not emptu
                     if(!String.isBlank(odrMeal_WrapObj.OrderNumber) && Plant_Utility.CheckValidInteger(odrMeal_WrapObj.OrderNumber)){
                         // VALIDATION 3: Check Order and Modification Deadline validaiton
-                        List<Order> OrderList =  [SELECT id, AccountId, OrderNumber,Modification_Deadline_Exceeded__c, Plant_Order_Properties__c,Plant_Order_Properties__r.Plant_Meal_Selection__c FROM Order WHERE OrderNumber=:odrMeal_WrapObj.OrderNumber AND AccountId=:existingCustomerId ]; 
+                        List<Order> OrderList =  [SELECT id, AccountId, OrderNumber,Modification_Deadline_Exceeded__c, Plant_Order_Properties__c,Plant_Order_Properties__r.Plant_Meal_Selection__c FROM Order WHERE Plant_Invoice_Number__c=:odrMeal_WrapObj.OrderNumber AND AccountId=:existingCustomerId ]; 
                         if(!OrderList.isEmpty()){
                             if(!OrderList[0].Modification_Deadline_Exceeded__c){
                                 // VALIDATION : check if meal selection record avialable
@@ -2496,7 +2496,7 @@ public class Plant_Orders_BC {
             if(existingCustomerId!=null){
                 // check orderNumber valid with Account
                 //Validate 2: check ORDER NO
-                List<Order> orderList = [SELECT id,OrderNumber,Modification_Deadline_Exceeded__c, status, AccountId,comty_Chargent_Order__c, Plant_Order_Properties__c, Plant_Order_Properties__r.Plant_Meal_Selection__c,Plant_Subscription__c FROM Order WHERE AccountId=:existingCustomerId AND OrderNumber=:cancelOrderReq.orderNo];
+                List<Order> orderList = [SELECT id,OrderNumber,Modification_Deadline_Exceeded__c, status, AccountId,comty_Chargent_Order__c, Plant_Order_Properties__c, Plant_Order_Properties__r.Plant_Meal_Selection__c,Plant_Subscription__c FROM Order WHERE AccountId=:existingCustomerId AND Plant_Invoice_Number__c=:cancelOrderReq.orderNo];
                 if(orderList.isEmpty()){
                     statusCode='503';
                     status='error';
@@ -2694,7 +2694,7 @@ public class Plant_Orders_BC {
                     List<Order> odr= [SELECT Id, OwnerId, ContractId, AccountId,  StatusCode, OrderNumber, TotalAmount, CreatedDate, CreatedById, LastModifiedDate, 
                     Recurring_Payment_Order__c, Chargent_Order__c, Plant_Order_Properties__c, Plant_Subscription__c, comty_Chargent_Order__c, 
                     Plant_Order_Properties__r.Shipping_Address__r.Plant_Province_State__c, Plant_Order_Properties__r.Shipping_Address__r.Plant_Postal_Code__c,
-                    Amount_to_Pay__c, Plant_Subscription__r.Plant_Next_Shipment_Date__c, Modification_Deadline_Exceeded__c, Plant_Delivery_Date__c, Plant_Shipping_Date__c FROM Order where OrderNumber=:reqWrap.orderNumber AND AccountId=:existingCustomerId Limit 1];
+                    Amount_to_Pay__c, Plant_Subscription__r.Plant_Next_Shipment_Date__c, Modification_Deadline_Exceeded__c, Plant_Delivery_Date__c, Plant_Shipping_Date__c FROM Order where Plant_Invoice_Number__c=:reqWrap.orderNumber AND AccountId=:existingCustomerId Limit 1];
                     //Checking modification Deadline
                     if(odr[0].Modification_Deadline_Exceeded__c !=true){
                       //Validating Date Format
@@ -3167,7 +3167,7 @@ public class Plant_Orders_BC {
                     List<Order> sfOrder_List=new List<Order>();
                     sfOrder_List = [SELECT id,Status, AccountId, OrderNumber,Modification_Deadline_Exceeded__c,Plant_Order_Properties__c,Plant_Shipping_Date__c, Plant_Delivery_Date__c,
                                     Plant_Order_Properties__r.Shipping_Address__c, Plant_Subscription__c, Plant_Order_Properties__r.Plant_Delivery_Date__c, Plant_Subscription__r.Plant_Next_Shipment_Date__c
-                                    FROM Order WHERE AccountId=:existingCustomerId AND OrderNumber=:updateShipReqBody.orderNumber Limit 1];
+                                    FROM Order WHERE AccountId=:existingCustomerId AND Plant_Invoice_Number__c=:updateShipReqBody.orderNumber Limit 1];
                     
                     // Customer Order iteration
                     if(!sfOrder_List.isEmpty()){

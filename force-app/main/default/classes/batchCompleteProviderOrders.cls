@@ -91,7 +91,7 @@ global class batchCompleteProviderOrders implements Database.Batchable<sObject>,
     }
     
     global void finish(Database.BatchableContext BC){
-        Database.executebatch(new batchUpdateInventory(NULL));
+        //Database.executebatch(new batchUpdateInventory(NULL));
     }     
     
 }

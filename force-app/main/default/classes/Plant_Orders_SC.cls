@@ -142,7 +142,7 @@ public class Plant_Orders_SC {
                 System.debug('param4:' + param4);
                 
                 if(method == 'reShipOrder') {
-                    Plant_Orders_BC.reshipOrder(param1);
+                    Plant_Orders_BC_Helper.reshipOrder(param1);
                 }
                 
             }
