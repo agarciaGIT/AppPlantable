@@ -21,7 +21,7 @@ public class RecordTypeHelper {
     //Method for getting RecordTypeId
     //========================================================================   
     public static Id GetRecordTypeId(String sobjectType, String name){
-        if (Rt_map.size() == 0){
+        /*if (Rt_map.size() == 0){
             FillRTMap();
         }
         RecordType rt = Rt_map.get(sobjectType+'|'+name);
@@ -30,7 +30,9 @@ public class RecordTypeHelper {
         }
         else{
             return null;
-        }
+        }*/
+        String recordTypeId = Schema.getGlobalDescribe().get(sobjectType).getDescribe().getRecordTypeInfosByName().get(name).getRecordTypeId();
+        return recordTypeId;
     }
     
     //========================================================================  
@@ -51,5 +53,10 @@ public class RecordTypeHelper {
             FillRTMap();
         }
         return Rt_map.get(recordTypeId).Name;
-    }   
+    } 
+    
+    public static String getRecordTypeIdFromSchema(String objAPIName, String name){
+        String recordTypeId = Schema.getGlobalDescribe().get(objAPIName).getDescribe().getRecordTypeInfosByDeveloperName().get(name).getRecordTypeId();
+        return recordTypeId;
+    } 
 }

@@ -1,0 +1,181 @@
+<aura:component controller="MemberManagementUnDeferralCls" access="global">
+    <aura:attribute name="currentExamGrp" type="List" default="[
+                                                               {'label': 'Yes', 'value': 'Yes'},
+                                                               {'label': 'No', 'value': 'No'}
+                                                               ]"/>
+    <aura:attribute name="SelectedcurrentExamGrp" type="String"/> 
+    <aura:attribute name="SelectedFreeDeferral" type="String" /> 
+    <aura:attribute name="SelectedChargeProcessing" type="String" />  
+    <aura:attribute name="FromExamDate" type="Date" /> 
+    <aura:attribute name="ToExamdate" type="Date" /> 
+    <aura:attribute name="SelectedDeferralFrom" type="String" />
+    <aura:attribute name="SelectedDeferralTo" type="String" />
+    <aura:attribute name="ErrorMessage" type="String" /> 
+    <aura:attribute name="ScreenSelection" type="String"/>
+    <aura:attribute name="GARPId" type="String"/>
+    <aura:attribute name="ExamGroupMap" type="Map"/> 
+    <aura:attribute name="TempExamGroupMap" type="Map"/> 
+    <aura:attribute name="selectedComponent" type="String"/> 
+    <aura:attribute name="data" type="Object"/>
+    <aura:attribute name="columns" type="List"/>
+    <aura:attribute name="selectedRowsCount" type="Integer" default="0"/>
+    <aura:attribute name="maxRowSelection" type="Integer" default="5"/>
+    <aura:attribute name="isButtonDisabled" type="Boolean" default="true" access="PRIVATE"/>
+    <aura:attribute name="selectedSite" type="String"/>
+    <aura:attribute name="contactId" type="String"/> 
+    <aura:attribute name="DeferredstatusList" type="List"/>
+    <aura:attribute name="isModalOpen" type="boolean" default="false"/>
+    
+    <div class="slds-card"> 
+        <div class="slds-page-header">
+            <div class="slds-align_absolute-center">
+                <div class="slds-text-heading_large">
+                    <div class="slds-m-top_xx-large">
+                        Un-Deferral
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slds-box slds-theme_shade">
+            <span class="slds-align_absolute-center" style="color:red;">{!v.ErrorMessage}</span> 
+			<aura:if isTrue="{!v.ScreenSelection == null}">
+            <div class="slds-grid"> 
+                <div class="slds-col slds-size_4-of-12"> 
+                </div>
+                <div class="slds-col slds-size_4-of-12">   
+                    <lightning:input type="text" name="garpID" value="{!v.GARPId}" label="GARP Member ID" />
+                    <div class="slds-p-top_large" style="float:right">
+                        <lightning:button  variant="Neutral" class="slds-button slds-button_neutral" label="Back"  onclick="{!c.BackButton}"/>
+                        <lightning:button variant="brand" label="Search" class="slds-button slds-button_brand" onclick="{!c.SearchButton}"/>
+                    </div>
+                </div>
+            </div>
+			</aura:if>
+			<aura:if isTrue="{!v.ScreenSelection == 'UnDeferral Selection'}">
+                <div class="slds-grid"> 
+                    <div class="slds-col slds-size_4-of-12"> 
+                    </div>
+                    <div class="slds-col slds-size_3-of-12">   
+                        <lightning:radioGroup name="radioGroup"
+                                              label="Do you want to move Registration from active group? :"
+                                              options="{! v.currentExamGrp }"
+                                              value="{! v.SelectedcurrentExamGrp }"
+                                              type="radio" onchange="{! c.handleChange }"/><br/>
+                        <lightning:radioGroup name="radioGroup1"
+                                              label="Free Deferral :"
+                                              options="{! v.currentExamGrp }"
+                                              value="{! v.SelectedFreeDeferral}"
+                                              type="radio" onchange="{! c.handleFreeDeferral}"/>
+                        <aura:if isTrue="{!v.SelectedFreeDeferral != 'Yes'}"><br/>
+                            <lightning:radioGroup name="radioGroup2"
+                                                  label="Charge Processing :"
+                                                  options="{! v.currentExamGrp }"
+                                                  value="{! v.SelectedChargeProcessing }"
+                                                  type="radio"/>
+                        </aura:if>
+                    </div>  
+                </div>
+            
+            <aura:if isTrue="{!v.SelectedcurrentExamGrp != null}"> 
+                <div class="slds-grid">  
+                    <div class="slds-col slds-size_2-of-12">
+                    </div>
+                    <div class="slds-col slds-size_3-of-12">
+                        <aura:if isTrue="{!v.SelectedcurrentExamGrp == 'Yes'}">
+                            <lightning:select aura:id="DeferralFromId" value="{!v.SelectedDeferralFrom}"  name="DeferralFrom" label="Deferral From">
+                                <option value="None">--None--</option>
+                                <aura:iteration items="{!v.ExamGroupMap}" var="ind" indexVar="key">
+                                    <aura:if isTrue="{!ind.value.Active__c == true}"> 
+                                        <option text="{!ind.value.Name}" value="{!ind.key}"/>
+                                    </aura:if>
+                                </aura:iteration>
+                            </lightning:select>
+                        </aura:if>
+                    </div>
+                    <div class="slds-col slds-size_2-of-12">
+                    </div>
+                    <div class="slds-col slds-size_3-of-12"> 
+                        <lightning:select aura:id="DeferralToId" value="{!v.SelectedDeferralTo}"  name="DeferralTo" label="Deferral To" >
+                            <option value="None">--None--</option>
+                            <aura:iteration items="{!v.ExamGroupMap}" var="ind" indexVar="key">
+                                <aura:if isTrue="{!or(and(ind.value.Active__c == true, v.SelectedcurrentExamGrp =='No'),v.SelectedcurrentExamGrp =='Yes')}"> 
+                                    <option text="{!ind.value.Name}" value="{!ind.key}"/>  
+                                </aura:if>
+                            </aura:iteration>
+                        </lightning:select>
+                        
+                    </div> 
+                </div> 
+            </aura:if>
+			<div class="slds-p-top_large" style="float:right">
+                    <lightning:button  variant="Neutral" class="slds-button slds-button_neutral" label="Back"  onclick="{!c.BackButtonUnDeferral}"/>
+                    <lightning:button  variant="brand" class="slds-button slds-button_neutral" label="Next"  onclick="{!c.SearchExamAttempt}"/>
+                </div>
+            </aura:if>
+			<aura:if isTrue="{!v.ScreenSelection == 'Site Selection'}">
+                Do you want to move Registration from active group? :{!v.SelectedcurrentExamGrp}<br/>
+                Free Deferral :{!v.SelectedFreeDeferral}<br/>
+                Charge Processing :{!v.SelectedChargeProcessing}<br/>
+			<aura:if isTrue="{!not(empty(v.data))}">
+                    <lightning:datatable
+                                         columns="{! v.columns }"
+                                         data="{! v.data }"
+                                         keyField="id"
+                                         maxRowSelection="{! v.maxRowSelection }"
+                                         onrowselection="{! c.OnclickselectedExamSite}"/>
+                    <aura:set attribute="else"><br/>
+                        No Resultes found
+                    </aura:set>
+                </aura:if><br/><br/>
+                <div class="slds-p-top_large" style="float:right">
+                    <lightning:button  variant="Neutral" class="slds-button slds-button_neutral" label="Back"  onclick="{!c.BackButtonUnDeferral}"/> 
+                    <aura:if isTrue="{!v.selectedSite != null}">
+                        <lightning:button  variant="brand" class="slds-button slds-button_neutral" label="Update Deferral"  onclick="{!c.updateDeferral}"/> 
+                    </aura:if>
+                </div>
+				 </aura:if>
+        </div>
+        <aura:if isTrue="{!v.isModalOpen}"> 
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container"> 
+                    <header class="slds-modal__header">
+                        <lightning:buttonIcon iconName="utility:close"
+                                              onclick="{! c.closepopup }"
+                                              alternativeText="close"
+                                              variant="bare-inverse"
+                                              class="slds-modal__close"/>
+                        <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Deferral Status</h2>
+                    </header>
+                    
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                        <p>Un-Deferred process has been initiated, customer needs to make a payment.Please contact account team.</p>
+                        
+                        <table class="slds-table slds-table--bordered slds-table--striped" style="margin-top:30px;">
+                            <tbody>
+                                <th>Type</th>
+                                <th> Invoice Number</th>
+                                <th> Amount</th>
+                                <th>Customer Secure Checkout</th>
+                                <th>Deferral Status</th>
+                                   <aura:iteration items="{!v.DeferredstatusList}" var="wrap" > 
+                                     <tr> <td>{!wrap.defType}</td> 
+                                        <td>{!wrap.InvoiceNumber}</td>
+                                        <td>{!wrap.amount}</td>
+                                          <td><a href="{!wrap.CustomerSecureCheck}" target="_blank">Payment Link</a></td>
+                                        <td>{!wrap.defStatus}</td> </tr>
+                                    </aura:iteration>  
+                            </tbody>
+                        </table>
+                    </div> 
+                    <footer class="slds-modal__footer"> 
+                        <lightning:button variant="brand"
+                                          label="OK"
+                                          title="OK"
+                                          onclick="{!c.closepopup}"/>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </aura:if>
+    </div>
+</aura:component>

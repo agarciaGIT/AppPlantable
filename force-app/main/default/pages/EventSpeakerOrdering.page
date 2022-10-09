@@ -1,0 +1,21 @@
+<apex:page standardController="Event__c" extensions="EventSpeakerOrderingController" >
+    <apex:form >
+        <apex:pageMessages />
+        <apex:pageBlock >
+            <apex:pageblockSection columns="1">
+                <apex:pageblocktable value="{!EvSpeakerOrderList}" var="evSpeaker">
+                    <apex:column headerValue="Event Speaker Name" value="{!evSpeaker.EvSpeakerName}"/>
+                    <apex:column headerValue="Order By" >
+                        <apex:inputtext value="{!evSpeaker.orderby}"/>
+                    </apex:column>
+                    <apex:column headerValue="Featured" >
+                        <apex:inputCheckbox value="{!evSpeaker.featured}"/>
+                    </apex:column>
+                </apex:pageblocktable>
+            </apex:pageblockSection>
+            <apex:pageBlockButtons location="bottom" >
+                <apex:commandButton value="Update Speaker Info" action="{!updateOrderByValues}"/>
+            </apex:pageBlockButtons>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

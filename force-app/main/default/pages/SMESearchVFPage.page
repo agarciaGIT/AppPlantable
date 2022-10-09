@@ -1,0 +1,17 @@
+<apex:page docType="html-5.0" sidebar="false">
+    <apex:includeLightning />
+    
+    <div id="lghtDiv" />
+    
+    <script>
+        // Use Lightning App
+        $Lightning.use("c:SMESearchLghtApp", function() {
+            // String type, Object attributes, String domLocator, function callback
+            $Lightning.createComponent("c:SMESearchComp", {}, "lghtDiv",
+                function(cmp) {
+                    console.log("Component was created.");
+                }
+            );
+        });
+    </script>
+</apex:page>

@@ -1,0 +1,6 @@
+<apex:page StandardController="Study_Contact__c" extensions="shareFileClass" Showchat="False" action="{!getStatus}">
+    <br/>
+    <Center><h3>ShareFile Access Status</h3>
+        <p>{!statusMessage}</p>
+    </Center>
+</apex:page>

@@ -1,0 +1,27 @@
+@import 'c/styles';
+
+.note-msg {
+    display: none;
+}
+
+h3 {
+    font-weight: 500;
+}
+
+a {
+    color: #00a2dd;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.bg-white {
+    background-color: white;
+}
+
+a:hover {
+    color: #006c99;
+}
+
+.details-toggle {
+    --slds-c-icon-color-foreground-default: rgb(0, 162, 221);
+}

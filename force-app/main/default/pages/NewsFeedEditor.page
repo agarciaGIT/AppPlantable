@@ -1,0 +1,122 @@
+<apex:page name="News Feed Publisher" controller="NewsFeedEditor">
+<!--<apex:page name="News Feed Publisher" controller="NewsFeedEditor">-->
+    <script>
+        function preview() {
+            var preview = document.getElementById('{!$Component.form1.previewWrapper.preview}').value;
+            //alert('link: ' + preview); //returns the string u put inside of input text field
+            
+            if(preview.length == 0) {
+                alert('Nothing to Preview, Hit Publish First!');
+            } else {
+                var x = window.open();
+                x.document.open();
+                x.document.write(preview);
+                x.document.close();
+                return false;
+            }
+        }
+    
+        function setPickList() {
+            var selObj = document.getElementById('selObj');
+        }
+    </script>
+    <script>
+    function focusAndSave() {
+        document.getElementById('focusMe').click();
+        saveFields();
+    }
+    </script>
+
+    <apex:messages />
+ 
+    <apex:form id="form1">
+        
+        <apex:pageblock >
+            Start Date:
+            <apex:inputfield value="{!startDate.Published_Date__c}" /> End Date:
+            <apex:inputfield value="{!endDate.Published_Date__c}" />
+
+            <apex:commandButton value="List Records" action="{!fetchRecords}" rerender="pbTable" />
+            <apex:commandButton value="Filter & Sort" action="{!filterRecords}" rerender="pbTable" />
+            <apex:commandButton value="Publish" action="{!Publish}" />
+            <apex:commandButton value="Preview" onclick="preview()" />
+            <apex:commandButton value="Save Records" action="{!saveRecords}" /> 
+            <apex:commandButton value="Load Records" action="{!pageLoad}" rerender="form1" /> 
+            
+            <apex:commandButton value="Clear" action="{!Clear}" onclick="this.form1.reset();return false;" />
+
+            <apex:commandButton value="Send Email" action="{!sendEmail }" />
+
+
+            <apex:pageblocktable value="{!lstCont}" var="a" id="pbTable">
+
+                <apex:column headerValue="Select">
+                    <apex:inputCheckbox value="{!a.content.Is_On_Demand__c}" />
+                </apex:column>
+
+                <apex:column headerValue="Title" value="{!a.content.Name}" />
+                <apex:column headerValue="New Title">
+                    <apex:inputField value="{!a.content.Name_Override__c}" />
+                </apex:column>
+                <apex:column headerValue="Order">
+                    <apex:inputField value="{! a.content.Sequence__c}" />
+                </apex:column>
+                <apex:column value="{!a.content.Description__c}" />
+                <apex:column value="{!a.content.Published_Date__c}" />                
+
+            </apex:pageblocktable>
+            
+            
+            <apex:panelGrid id="selectPanel1" columns="2">
+                Top Ads:
+                <apex:selectList value="{!selectedItem}" title="TopAds" size="1" multiselect="false">
+                    <apex:selectOptions value="{!topAds}" />
+                </apex:selectList>
+                Bottom Ads:
+                <apex:selectList value="{!selectedBottom}" title="BottomAds" size="1" multiselect="false">
+                    <apex:selectOptions value="{!bottomAds}" />
+                </apex:selectList>
+                Text Ads1:
+                <apex:selectList value="{!txtAdSelected1}" title="TextAds1" size="1" multiselect="false">
+                    <apex:selectOptions value="{!textads1}" />
+                </apex:selectList>
+                Text Ads2:
+                <apex:selectList value="{!txtAdSelected2}" title="TextAds2" size="1" multiselect="false">
+                    <apex:selectOptions value="{!textads2}" />
+                </apex:selectList>
+            </apex:panelGrid>
+                        
+            <apex:panelGrid id="sctPanel" columns="1">
+                4 Sidebar Ads:
+                <div style="border:1px solid gray;width:100%;float:left;">
+                    <div style="border:1px solid gray;width:50%;float:left;">
+                        <apex:panelGrid columns="3" id="multipicklistbox">
+                            <apex:selectList id="sel1" value="{!leftselected}" multiselect="true" style="width:300px" size="8">
+                                <apex:selectOptions value="{!leftBoxValues}" />
+                            </apex:selectList>
+                            <apex:panelGroup >
+                                <br/>
+                                <apex:commandButton value=">" action="{!addToRightBox}" reRender="sctPanel" title="Select Objects"/>
+                                <br/><br/>
+                                <apex:commandButton value="<" action="{!addToLeftBox}" reRender="sctPanel" title="Deselect Objects"/>
+                            </apex:panelGroup>
+                            <apex:selectList id="sel2" value="{!rightselected}" multiselect="true" style="width:300px" size="8">
+                                <apex:selectOptions value="{!rightBoxValues}" />
+                            </apex:selectList>
+                        </apex:panelGrid><br/>
+                    </div>
+                </div>
+            </apex:panelGrid>
+                        
+            <div align="center" draggable="false">
+                <apex:commandButton value="Publish" action="{!Publish}" />
+            </div>
+        </apex:pageblock>
+
+
+        <apex:pageblock id="previewWrapper">
+            <apex:inputTextarea id="preview" value="{!genHTML.Story__c}"></apex:inputTextarea>
+        </apex:pageblock>
+
+    </apex:form>
+</apex:page>

@@ -76,4 +76,16 @@ public class Plant_Subscriptions_sc{
         Plant_Utility.responseWrapper subsModification_Res= new Plant_Subscriptions_BC().confirmCancelSubscription(subscDetails);
         return subsModification_Res;
     }
+
+    // @ update Failed transaction Payment Method
+    public static Plant_Utility.responseWrapper paymentFailedCardUpdate_SC(Plant_Subscriptions_BC.subsption_PaymentUpdate_Wrap reqWrap){
+        Plant_Utility.responseWrapper subscriptionPayment_Result = new Plant_Subscriptions_BC().paymentFailedCardUpdate(reqWrap);
+        return subscriptionPayment_Result;
+    }
+
+    //@ To get Details Of a Subscription of an Account
+    public static Plant_Utility.responseWrapper paymentFailedCardAuthorization_SC(Plant_Subscriptions_BC.CardAuthorize_ReqWrap reqWrap){
+        Plant_Utility.responseWrapper subscriptionDetails_Result = new Plant_Subscriptions_BC().paymentFailedCardAuthorization(reqWrap);
+        return subscriptionDetails_Result;
+    }
 }

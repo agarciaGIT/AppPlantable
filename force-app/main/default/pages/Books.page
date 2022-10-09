@@ -1,0 +1,9 @@
+<apex:page sidebar="​true" standardController="opportunity">
+
+  <wave:dashboard dashboardId="0FK1W000000fxX1WAI" 
+                  showTitle="true" 
+                  height="1000px" 
+                  openLinksInNewWindow="true" 
+                  />
+
+</apex:page>

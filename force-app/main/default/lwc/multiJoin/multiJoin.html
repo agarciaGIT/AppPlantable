@@ -1,0 +1,106 @@
+<template>
+    <!-- Loading icon -->
+    <template if:true={loading}>
+        <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+    </template>
+
+    <!-- Error displayed to user -->
+    <template if:true={error}>
+        <div class="slds-box slds-text-color_error slds-m-bottom_small">
+            <!-- Apex error -->
+            <template if:true={error.body}>
+                <ul>
+                    <li>{error.body.exceptionType}: {error.body.message}</li>
+                    <li>{error.body.stackTrace}</li>
+                </ul>
+            </template>
+
+            <!-- Custom error -->
+            <template if:true={error.msg}>
+                {error.msg}
+            </template>
+        </div>
+    </template>
+
+    <!-- Query Builder block -->
+    <lightning-card title="Query Builder">
+        <lightning-button-icon icon-name={toggleIcon} alternative-text="Toggle" slot="actions" onclick={handleToggle}></lightning-button-icon>
+
+        <template if:true={isExpand}>
+            <div class="slds-m-around_small slds-p-horizontal_small">
+                <!-- <lightning-combobox name="mainObj" label="Main Object" value={mainObj} options={objOptions} onchange={handleMainObjChange}></lightning-combobox> -->
+
+                <lightning-combobox if:true={useSaveFeature} name="recentQry" label="Recent queries" value={selectedQuery} options={recentQueries} onchange={handleQueryChange}>
+                </lightning-combobox>
+                
+                <div onkeyup={handleKeyUp}>
+                    <lightning-input name="mainQry" label="Query for the main object" type="search" value={mainQry}></lightning-input>
+                </div>
+    
+                <template if:true={mainObject}>
+                    <lightning-layout>
+                        <!-- Left hand: inputs -->
+                        <lightning-layout-item padding="vertical-small" size="8">
+                            <div class="slds-box slds-m-top_small">
+                                <lightning-layout multiple-rows="true" vertical-align="end">
+                                    <template for:each={subQryList} for:item="subQry">
+                                        <lightning-layout-item padding="horizontal-small" size="7" key={subQry.index}>
+                                            <lightning-input name="subQry" label="Query for the related object" type="search" data-index={subQry.index} value={subQry.qry} onchange={setSubQuery}></lightning-input>
+                                        </lightning-layout-item>
+                                        <lightning-layout-item padding="horizontal-small" size="3" key={subQry.index}>
+                                            <lightning-input name="relateFld" label="Lookup field to main object" data-index={subQry.index} value={subQry.lookup} onchange={setLookup}></lightning-input>
+                                        </lightning-layout-item>
+                                        <lightning-layout-item padding="horizontal-small" size="2" key={subQry.index}>
+                                            <lightning-button-icon icon-name="action:remove" alternative-text="Remove this" data-index={subQry.index} onclick={removeSubQuery}></lightning-button-icon>
+                                        </lightning-layout-item>
+                                    </template>
+            
+                                    <lightning-layout-item padding="horizontal-small" size="12" class="slds-clearfix">
+                                        <div class="slds-float_left slds-m-top_small">
+                                            <lightning-button label="Add Related" title="Add Related Object" icon-name="action:new" onclick={addRelateObject}></lightning-button>
+                                            <lightning-button label="Load Objects" title="Load Related Objects" icon-name="action:approval" onclick={loadRelateObjects}
+                                                variant="brand" class="slds-m-left_small"></lightning-button>
+                                            <lightning-button label="Download CSV" title="Download Current List" icon-name="action:log_event" onclick={handleDownloadClick}
+                                                variant="brand" class="slds-m-left_small"></lightning-button>
+                                            <lightning-button if:true={useSaveFeature} label="Save Query" title="Save Queries" icon-name="utility:save" onclick={saveAllQueries} 
+                                                variant="success" class="slds-m-left_small"></lightning-button>
+                                        </div>
+                                    </lightning-layout-item>
+                                </lightning-layout>
+                            </div>
+                        </lightning-layout-item>
+                        
+                        <!-- Right hand: filters -->
+                        <lightning-layout-item padding="vertical-small" size="4">
+                            <div class="slds-box slds-m-top_small">
+                                <lightning-layout multiple-rows="true" vertical-align="end">
+                                    <template for:each={subQryList} for:item="subQry">
+                                        <lightning-layout-item padding="horizontal-small" size="12" key={subQry.index}>
+                                            <lightning-radio-group name={subQry.filterGrpName} label="Related Object Filter" type="button"
+                                                options={relFilterOpts} value={subQry.selRelFilter} disabled={subQry.disabled} onchange={handleFilterGroupChange}></lightning-radio-group>
+                                        </lightning-layout-item>
+                                    </template>
+                                </lightning-layout>
+                            </div>
+                        </lightning-layout-item>
+                    </lightning-layout>
+                </template>
+            </div>
+        </template>
+    </lightning-card>
+
+    <!-- Query result block -->
+    <div class="slds-m-top_small">
+        <lightning-card title="Results">
+            <div class="slds-m-around_small slds-p-horizontal_small">
+                <template if:true={mainObject}>
+                    <div class="slds-p-bottom_x-small">
+                        <span class="slds-badge">{mainObject.objectName} Record Count: {mainObject.records.length}</span>
+                    </div>
+                    
+                    <c-native-grid headers={mainObject.fieldLabels} fields={mainObject.fieldNames} rows={mainObject.records} ></c-native-grid>
+                </template>
+            </div>
+        </lightning-card>
+    </div>
+</template>

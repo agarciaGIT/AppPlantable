@@ -1,0 +1,54 @@
+<template>
+    <c-lwc_streaming_api 
+        channel="/event/MemberNotification__e" 
+        api-version="45.0" 
+        debug=true
+        onmessage={handleMessage} 
+        onerror={handleError} 
+        class="lwc_streaming_api-1">
+    </c-lwc_streaming_api>
+    <div class="slds-card__body slds-p-around_x-large bg-white">
+        <template iterator:it={sObjData} if:true={sObjData.length}>
+
+            <div key={it.value.Id} >
+                <div class="slds-p-around_xx-large">
+                    <p class="slds-m-bottom_medium"><lightning-formatted-date-time value={it.value.Sent_Date_Time__c} year="numeric" month="long" day="numeric" hour12="true"></lightning-formatted-date-time>
+                    </p>
+
+                    <h3 class="slds-m-bottom_medium">
+                        {it.value.Member_Notification__r.Subject__c}
+                    </h3>
+        
+                    <div class="slds-m-bottom_medium details-toggle">
+                            <a onclick={trackView} data-id={it.value.Id}>View Details</a>
+                            <span data-id={it.value.Id} class="side-chev">
+                                <a onclick={trackView} data-id={it.value.Id}><lightning-icon data-id={it.value.Id} icon-name="utility:chevrondown" class="slds-var-m-left_small" size="small"></lightning-icon></a>
+                            </span>
+                            <span data-id={it.value.Id} class="down-chev" style="display:none;">
+                                <a onclick={trackView} data-id={it.value.Id}><lightning-icon data-id={it.value.Id} icon-name="utility:chevronup" class="slds-var-m-left_small" size="small"></lightning-icon></a>
+                            </span>
+                    </div>
+
+                    <div class="slds-m-bottom_medium">
+                        <p data-id={it.value.Id} style="display: none">
+                            <lightning-formatted-rich-text value={it.value.Sent_Message__c}></lightning-formatted-rich-text>
+                        </p>
+                    </div>
+
+                </div>
+                <hr if:false={it.last} />
+            </div>
+ 
+        </template>
+
+        <template if:false={sObjData.length}>
+
+            <div class="slds-p-around_xx-large">
+                <p style="text-align: center;">You have no alerts at this time.</p>
+            </div>
+
+ 
+        </template>
+
+    </div>
+</template>

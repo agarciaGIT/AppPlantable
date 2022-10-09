@@ -26,7 +26,7 @@
                             <c-plant_lwc-lookup onrecordselection={handleRecordSelection}  object-api-name="Order" icon-name="standard:orders" account-id={customerAccount.Id} selected-value={selectedOrder.OrderNumber} place-holder-name="Select Order.." is-required=true> </c-plant_lwc-lookup>
                         </lightning-layout-item> -->
                         <lightning-layout-item size="4" >
-                            <lightning-combobox  data-field="OrdeDetailDropDown"  name="OrdeDetailDropDown"  options={orderList} value={selectedOrderObj.OrderNumber} onchange={handleChange} dropdown-alignment="auto"> </lightning-combobox>
+                            <lightning-combobox  data-field="OrderDetailDropDown" onchange={handleRecordSelection}  name="OrderDetailDropDown"  options={orderList} value={selectedOrderObj.OrderNumber}  dropdown-alignment="auto"> </lightning-combobox>
                         </lightning-layout-item>
                     </lightning-layout>
                 </lightning-layout-item>
@@ -116,7 +116,7 @@
         
                                 <lightning-layout-item size="12">
                                     <template for:each={selectedMealList} for:item="meal" for:index="index">
-                                        <div class="slds-card__body slds-card__body_inner mealBody" key={meal.mealId}>
+                                        <div class="slds-card__body slds-card__body_inner mealBody" key={meal.mealID}>
                                             <div class="slds-p-vertical_x-small slds-grid slds-grid_vertical-align-center ">
                                                 <span class="slds-p-right_small">
                                                 <lightning-icon icon-name="utility:user" alternative-text="Info!" variant="info"  title="info variant small" size="small"> </lightning-icon>

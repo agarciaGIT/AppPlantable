@@ -1,0 +1,78 @@
+<aura:component controller="ATAPSIIntegrationComponentClass"  access="global">
+    
+    <aura:attribute name="recordId" type="String" />
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:attribute name="selectedExamReg" type="Exam_Attempt__c" default="{'sObject':'Exam_Attempt__c'}"/>
+    <aura:attribute name="ATAPSIParserList" type="Object"/>
+    <aura:attribute name="ATAPSIcolumns" type="List"/>
+    <aura:attribute name="selectedExamres" type="String" default=""/>
+    <aura:attribute name="selectedExamType" type="String" default=""/>
+    <aura:attribute name="selectedIntegrationType" type="String" default=""/>
+    <aura:attribute name="UITheme" type="String"/> 
+    <aura:handler event="aura:doneWaiting" action="{!c.hideSpinner}"/>
+    <aura:attribute name="spinner" type="boolean" default="FALSE"/>
+    <aura:attribute name="ErrorMessage" type="String"/>
+    <!-- <aura:attribute name="selectedExamType" type="String" default=""/>
+    <aura:attribute name="selectedIntegrationType" type="String" default=""/>
+    <aura:attribute name="data" type="Object"/>
+    <aura:attribute name="columns" type="List"/>
+    <aura:attribute name="selectedRowsCount" type="Integer" default="0"/>  
+    <aura:attribute name="maxRowSelection" type="Integer" default="5"/>
+    <aura:attribute name="isButtonDisabled" type="Boolean" default="true" access="PRIVATE"/> 
+    <aura:attribute name="responseData" type="String" default=""/> -->
+    
+    <aura:attribute name="displayResults" type="Boolean" default="false" /> 
+    <div class="slds-card"> 
+        <div class="slds-col modal-header slds-modal__header">
+            <h1 class="slds-page-header__title">ATA/PSI</h1>
+            <p class="slds-text-body_small slds-line-height_reset">ATA PSI Integration</p>
+        </div>    
+         <span class="slds-align_absolute-center" style="color:red;">{!v.ErrorMessage}</span>
+        <aura:if isTrue="{!v.spinner}">
+            <div aura:id="spinnerId" class="slds-spinner_container">
+                <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="alert">
+                    <span class="slds-assistive-text">Loading...</span>
+                    <div class="slds-spinner__dot-a"></div>
+                    <div class="slds-spinner__dot-b"></div>
+                </div>
+            </div>
+        </aura:if>
+        
+        <div class="slds-box slds-theme_shade">
+            <div class="slds-grid"> 
+                <div class="slds-col slds-size_3-of-12">   
+                    <aura:if isTrue="{!v.selectedExamType == 'ATA'}">
+                        <lightning:select value="{!v.selectedIntegrationType}" label="ATA Integration Type">      
+                            <option value="">Choose one...</option>
+                            <option value="CheckReservation">Check Reservation</option>
+                            <option value="QueryExamCert">Query ExamCert</option>
+                            <option value="QueryExamRegistation">Query Exam Registation</option>
+                        </lightning:select> 
+                        <center> 
+                            <br/>
+                            <lightning:button  variant="brand" class="slds-button slds-button_neutral" label="GET ATA"  onclick="{!c.getATAIntegrationData}"/> 
+                        </center>
+                    </aura:if>
+                </div>
+            </div> 
+        </div>
+        <div class="scrollable" style="height:300px;">
+           
+            <aura:if isTrue="{!not(empty(v.ATAPSIParserList))}">
+                <lightning:datatable
+                                     keyField="id"
+                                     data="{! v.ATAPSIParserList }"
+                                     columns="{! v.ATAPSIcolumns }"
+                                     hideCheckboxColumn="true" wrapTextMaxLines="4"/>
+                <aura:set attribute="else">
+                   <span class="slds-align_absolute-center" style="color:red;">{!v.ErrorMessage}</span>
+                </aura:set>
+            </aura:if>
+        </div>
+        
+        <center>  
+            <lightning:button  variant="brand" class="slds-button slds-button_neutral" label="Back"  onclick="{!c.BackButton}"/> 
+            
+        </center> 
+    </div>
+</aura:component>

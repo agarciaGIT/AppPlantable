@@ -1,0 +1,41 @@
+<aura:component controller="MemberManagementScreenClass">
+    <aura:handler name = "init" value = "{!this}" action = "{!c.init}" />
+    <aura:attribute name="selectedComponent" type="String" />
+    <aura:attribute name = "garpId" type ="String"/>
+    <aura:attribute name="ErrorMessage" type="String" />
+    <aura:attribute name="isshow" type="boolean" default="false"/>
+    <aura:attribute name="retuenMessage" type="String"/>
+    <aura:attribute name="SelectedExamGroup" type="String" />
+    <aura:attribute name = "navigateNext" type ="Boolean" />
+    
+    <div class="slds-card"> 
+        <div class="slds-page-header">
+            <div class="slds-align_absolute-center">
+                <div class="slds-text-heading_large">
+                    <div class="slds-m-top_xx-large">
+                        Pearson Merge Request
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slds-box slds-theme_default">
+            <div class="slds-grid">
+                
+                
+                    <div class="slds-align_absolute-center">
+                        <span class="slds-align_absolute-center" style="color:red;">{!v.ErrorMessage}</span> 
+                        <span class="slds-align_absolute-center" style="color:red;">{!v.retuenMessage}</span>
+                        <aura:if isTrue="{!or(not(empty(v.ErrorMessage)),not(empty(v.retuenMessage)) )}">
+                            <div class="slds-col slds-size_6-of-12">
+                            <lightning:button  variant="brand" 
+                                              class="slds-button slds-button_brand" 
+                                              label="Back"  
+                                              onclick="{!c.BackButton}"/>
+                            
+                            </div>
+                        </aura:if>
+                    </div>
+                </div>
+        </div>
+    </div>
+</aura:component>

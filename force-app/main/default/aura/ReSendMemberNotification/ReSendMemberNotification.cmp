@@ -1,0 +1,10 @@
+<aura:component implements="force:lightningQuickActionWithoutHeader,force:hasRecordId" controller="MemberNotificationClass" access="global">
+
+<aura:attribute name="recordId" type="String"/> 
+<aura:attribute name="msg" type="String" default="Starting"/> 
+
+<lightning:overlayLibrary aura:id="overlayLib"/>
+
+<aura:handler name="init" value="{!this}" action="{!c.doinIt}"/>
+    <div>{!v.msg}</div>
+</aura:component>

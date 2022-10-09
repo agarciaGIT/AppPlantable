@@ -1,0 +1,261 @@
+<!--    Visualforce page fo generating admission ticket for member services
+        05/29/2019 Xiang - [US-22015] Adding Address overrides for approved RAD/ADA
+-->
+<apex:page showHeader="false" sidebar="false" showChat="false"  standardStylesheets="false" Controller="ExamTicketAsPDFController" applyhtmltag="false" applyBodyTag="false" action="{!fetchData}" renderAs="pdf">
+    <apex:variable var="envPath" value="{!URLFOR($Resource.sfdcApp)}" />
+
+<head>
+    <style type="text/css" media="print">
+        //
+        body {    
+            margin: 0 !important;
+            padding: 0 !important;
+            font-size:10px;
+        }        
+        .main-invoice-pdf { font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:14px; }
+        .panel-header-invoice-pdf { font-size:20px; }
+        .panel-header-exam-time-pdf { font-size:18px; }
+        .blue { color:#040609; }
+        .blue-divider-invoice-pdf { height:3px;background-color:#040609;margin:15px 15px; }
+        .section-box-invoice-pdf { overflow:hidden; }
+        .panel-left-invoice-pdf { float:left;width:80%; }
+        .panel-right-invoice-pdf { float:right;width:48%; }
+        .panel-table-invoice-pdf { padding:5px;width:100%; line-height: 12px; }
+        .panel-table-invoice-pdf th, .panel-table-invoice-pdf td { border-collapse:collapse;padding:3px; }
+        .border-lbr-invoice-pdf { border:1px solid #ddd;border-top:0px; }
+        .text-right-invoice-pdf { text-align:right; }
+        .label-invoice-pdf { font-weight:bold; }  
+        li { 
+            margin: 5px; 
+            font-family: "Gotham A","Gotham B","Gotham",Arial,Helvetica,sans-serif;
+        }     
+        @page{ 
+            @bottom-right { content:"Page " counter(page) " of " counter(pages);font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:14px; }
+            @bottom-left { content:"{!now}";font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:14px; } 
+        }
+        div {
+            font-family: "Gotham A","Gotham B","Gotham",Arial,Helvetica,sans-serif;
+        }
+        table { 
+            font-family: "Gotham A","Gotham B","Gotham",Arial,Helvetica,sans-serif;
+        }
+        .ticket-text {
+            font-family: "Gotham A","Gotham B","Gotham",Arial,Helvetica,sans-serif;
+        }
+        h1 {
+            margin: 0px;
+        }
+        
+    </style>
+</head>
+
+<table columns="4" border="" width="100%" style="border-collapse:collapse;">
+ <!--        <tr>
+           <td colspan="3" align="right"> <img src="{!envPath}/img/GARPIcon.png" alt="Mountain View" style="width:375px;height:75px;"></img></td>
+         </tr>  --->
+         
+          <tr>
+           <td colspan="3" align="right"> <img src="{!envPath}/img/GARPIcon.png" alt="Mountain View" style="height:40px;"></img></td>
+         </tr>
+         
+</table>
+
+<div class="main-invoice-pdf">
+
+  
+    <div style="text-align: left">    
+      <div style="font-size:22px;">
+        <b>{! examDateString }</b> 
+      </div>    
+        <apex:outputPanel rendered="{! ExamName = 'FRM Part 1'}">
+            <div style="min-height:32px">
+                <span style='font-size:20px;font-weight: bold;position:relative;top:10px'>FRM</span><span style='font-size:15px;font-weight: bold;margin-top:0px'>&#174;</span><span style='font-size:20px;font-weight: bold;position:relative;top:10px'> Exam Part I - Admission Ticket</span>
+             </div>
+        </apex:outputPanel>
+        
+        <apex:outputPanel rendered="{! ExamName = 'FRM Part 2'}">
+            <div style="min-height:32px">
+                <span style='font-size:20px;font-weight: bold;position:relative;top:10px'>FRM</span><span style='font-size:15px;font-weight: bold;margin-top:0px'>&#174;</span><span style='font-size:20px;font-weight: bold;position:relative;top:10px'> Exam Part II - Admission Ticket</span>
+             </div>
+        </apex:outputPanel>
+       
+       <apex:outputPanel rendered="{! ExamName = 'ERP Exam Part I'}">
+            <div style="min-height:32px">
+                <span style='font-size:20px;font-weight: bold;position:relative;top:10px'>ERP</span><span style='font-size:15px;font-weight: bold;margin-top:0px'>&#174;</span><span style='font-size:20px;font-weight: bold;position:relative;top:10px'> Exam Part I - Admission Ticket</span>
+             </div>
+        </apex:outputPanel>
+        
+        <apex:outputPanel rendered="{! ExamName = 'ERP Exam Part II'}">
+            <div style="min-height:32px">
+                <span style='font-size:20px;font-weight: bold;position:relative;top:10px'>ERP</span><span style='font-size:12px;font-weight: bold;margin-top:0px'>&#174;</span><span style='font-size:20px;font-weight: bold;position:relative;top:10px'> Exam Part II - Admission Ticket</span>
+             </div>
+        </apex:outputPanel>
+       
+ <!--       <div style="margin-bottom:15px; margin-top:10px">
+            Please <b>print</b> this admission ticket and bring it to the exam along with your original, unexpired driver's license or passport with a photo. You must be <b>checked in and seated by {!doorClosingTimes}</b>. Any candidate who arrives thereafter will not be allowed entry.
+        </div>
+      
+        <apex:image url="{!envPath}/img/dottedline.png" alt="logo" width="100%" style="margin-bottom:5px"/> 
+              
+        <table cellpadding="5" cellspacing="0" border="0" width="100%">
+            <tr style="background-color:#555553" height="50px">
+                <td colspan="4" style="color:white;" width="50%"> 
+                    
+                    <apex:image url="{!envPath}/img/logos/garp-full-png.png" alt="logo" />
+                    
+                </td>
+            </tr> -->
+            
+            <table cellpadding="5" cellspacing="0" border="0" width="100%">
+            <tr style="background-color:#D8D8D8">
+                <td colspan="3" width="75%" style="height:42px">
+                    <div style="background-color:white;height: 40px;padding: 10px;" class="ticket-text">
+                        <div style="margin-bottom:5px;font-size:13px;">
+                            Name
+                        </div>
+                        <div style="font-size:18px;">
+                            <b>{! candidateName }</b>
+                        </div>
+                    </div>
+                </td>
+                <td colspan="1" width="25%" style="height:42px">
+                    <div style="background-color:white;height: 40px;padding: 10px" class="ticket-text">
+                        <div style="margin-bottom:5px;font-size:13px;">
+                            GARP ID
+                        </div>
+                        <div style="font-size:18px;">
+                            <b>{! Contact.GarpId }</b>
+                        </div>                    
+                    </div>
+                </td>
+            </tr>
+            <tr style="background-color:#D8D8D8">
+                <td width="25%" style="height:42px;">
+                    <div style="background-color:white;height: 40px;padding: 10px;" class="ticket-text">
+                        <div style="margin-bottom:5px;font-size:13px;">
+                            Candidate No.
+                        </div>
+                        <div style="font-size:18px;">
+                            <b>{! eaObj.CandidateId }</b>
+                        </div>
+                    </div>
+                </td>
+                <td width="25%" style="height:42px;">
+                    <div style="background-color:white; height:40px; padding:10px;" class="ticket-text">
+                        <div style="margin-bottom:5px;font-size:13px;">
+                            Exam Site Code
+                        </div>
+                        <div style="font-size:18px;">
+                            <b>{! eaObj.Code }</b>
+                        </div>                    
+                    </div>
+                </td>
+                <td width="25%" style="height:42px;white-space: nowrap">
+                    <div style="background-color:white;height: 40px;padding: 10px;" class="ticket-text">
+                        <div style="margin-bottom:5px;font-size:13px;">
+                            {! examSiteRoomLabel }
+                        </div>
+                        <div style="font-size:18px;">
+                            <b>{! examSiteRoom }</b>
+                        </div>
+                    </div>
+                </td>
+                <td width="25%" style="height:42px">
+                    <div style="background-color:white;height: 40px;padding: 10px" class="ticket-text">
+                        <div style="margin-bottom:5px;font-size:13px;">
+                            Seat Number
+                        </div>
+                        <div style="font-size:18px;">
+                            <b>{! eaObj.seat }</b>
+                        </div>                    
+                    </div>
+                </td>
+            </tr>
+            <tr style="background-color:#D8D8D8">
+                <td width="75%" colspan="3" rowspan="2" style="height:102px">
+                    <div style="background-color:white;height: 100px;padding: 10px;" class="ticket-text">
+                        <div style="margin-bottom:5px;font-size:13px;">
+                            Exam Site Address 
+                        </div>
+                        <div style="font-size:16px;">
+                            <b>
+                                <apex:outputPanel rendered="{!useRadAdaAddres}">
+                                    <apex:outputText value="{! eaObj.radAdaAddress }" />
+                                </apex:outputPanel>
+                                
+                                <apex:outputPanel rendered="{!!useRadAdaAddres}">
+                                    <apex:outputText value="{! address1 }" />
+                                    <apex:outputText value="  " styleClass="label-invoice-pdf" rendered="{! address2 != '' }"/>
+                                    <apex:outputText value="{! address2 }" rendered="{! address2 != '' }" />
+                                    <apex:outputText value="  " styleClass="label-invoice-pdf" rendered="{! address3 != '' }"/>
+                                    <apex:outputText value="{! address3 }" rendered="{! address3 != '' }" />
+                                    <apex:outputText value="  " styleClass="label-invoice-pdf" rendered="{! address4 != '' }"/>
+                                    <apex:outputText value="{! address4 }" rendered="{! address4 != '' }" />
+                                    <apex:outputText value="  " styleClass="label-invoice-pdf" />
+                                    <apex:outputText value="{! Venue.City } {! Venue.State } {! Venue.Zipcode } {! Venue.Country }"/> 
+                                </apex:outputPanel>
+                            </b>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            
+            <tr style="background-color:#D8D8D8">
+                <td width="25%" >
+                    <div style="background-color:white;padding:10px;height:102px;" class="ticket-text">
+                        <div style="margin-bottom:5px;font-size:12px;">
+                            Exam Time
+                        </div>
+                        <div style="font-size:20px;">
+                            <b>{! examTime  }</b>
+                        </div>                    
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+          <h2 style="margin-top:10px;font-size:16px;">
+           Key Exam Day Policies:
+        </h2>
+        <ul>
+            <li>
+                The check-in line is promptly closed at {!doorClosingTimes}—no late candidates may get on line to check in. You must be on line no later than {!doorClosingTimes} in order to be permitted to test. Any candidate who attempts to get on line after {!doorClosingTimes} will not be allowed entry to the exam. Please arrive at the exam site at least one hour before the scheduled start time.<b>Arrival after the check in line closes at {!doorClosingTimes} is prohibited. Your exam will not be graded. No exceptions.</b> 
+            </li>
+            <li>You must bring a <b>PRINTED</b> {!examYear} Admission Ticket. No digital admission tickets via a smartphone will be allowed.
+            </li>
+            <li>
+            You are ONLY allowed to sit for the exam at the exam site address provided above.
+            </li>
+            <li>You must bring an original (not a photocopy) unexpired passport or driver's license with a photo as identification for entry. Your name as printed above must EXACTLY match the name on the identification you present for entry. Driver's licenses will only be accepted in the country of issue. 
+            </li>
+            <li>Use of an unauthorized calculator at any time during the exam is prohibited. Your exam will not be graded.
+            </li>
+            <li>GARP will provide you with two (2) pencils. Do not bring writing instruments.Use of an unauthorized writing utensil at any time during the exam is prohibited. 
+            </li>
+            <li>All cellular devices must be turned completely off and facedown under your seat. Airplane mode is not acceptable. If the cellular device makes any noise during the timed portion of the exam, your exam will not be graded and you will be asked to leave the exam site. 
+            </li>
+            <li>Any use of watches (including smart watches and Fitbits), digital technology, cufflinks, pens, or erasers during the exam will result in your exam not being graded.
+            </li>
+            <li>All examination materials - admission ticket, exam booklet, and answer sheet - are the sole property of GARP and are not permitted to leave the exam room.
+            </li>
+        </ul>
+        
+        <div>
+        Candidates are required to adhere to all published exam policies and all instructions announced on exam day. GARP Exam Violations may result in your exam not being graded. GARP and any testing facility will not be held responsible for stolen, lost, or damaged property.         
+        </div>
+        
+        <b><hr style="margin-top:20px;margin-bottom:10px;color:black"/></b>
+
+        <div style="text-align:center">
+            <div style="font-size:14px;">
+                <b>DO NOT WRITE ON THE FRONT OR BACK OF THIS ADMISSION TICKET</b>
+            </div>
+            <div style="font-size:10px;">
+                This will be considered a GARP Exam Violation and can result in your exam not being graded.
+            </div>
+        </div>        
+    </div>
+    
+</div>
+    
+</apex:page>

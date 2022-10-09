@@ -1,0 +1,24 @@
+<apex:page controller="ChangeExamRegs">
+<apex:form >
+     <apex:sectionHeader title="Select Site's"/>
+     <apex:pageblock >
+     <apex:pageBlocksection >
+     <apex:pageMessages />
+         <apex:inputText label="From Site Code" value="{!fromSite}"/>
+          <apex:inputText label="From Exam Date" value="{!fromExamDate}"/>
+           <apex:inputText label="To Site Code" value="{!toSite}"/>
+            <apex:inputText label="To Exam Date" value="{!toExamDate}"/>
+           
+            <apex:inputCheckbox value="{!isErp1}" label="ERP I"/>
+            <apex:inputCheckbox value="{!isErp2}" label="ERP II"/>
+            <apex:inputCheckbox value="{!isFRM1}" label="FRM I"/>
+            <apex:inputCheckbox value="{!isFRM2}" label="FRM II"/>
+            <apex:inputText value="{!noOfrecords}" label="Change Records #"/>
+            <apex:commandButton action="{!ChangeExamRegs}" title="Update Exam Regs" value="Update Exam Regs"/>
+     
+     
+    </apex:pageBlocksection>
+    </apex:pageblock>
+</apex:form>
+ 
+</apex:page>

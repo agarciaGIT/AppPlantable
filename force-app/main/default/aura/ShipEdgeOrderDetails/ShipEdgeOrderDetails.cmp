@@ -1,0 +1,109 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" controller="ShipEdgeOppController" access="global" >
+    
+    <aura:attribute name="data" type="Object[]"/>
+    <aura:attribute name="mycolumns" type="Object[]"/>
+    <aura:attribute name="showOrderDetails" type ="Boolean" default="false"/>
+    <aura:attribute name="showError" type ="Boolean" default="false"/>
+    <aura:attribute name="errorMsg" type ="String"/>
+    <aura:handler name="init" action="{!c.getOrderList}" value="{!this}" />
+    <div class="slds-align_absolute-center">
+        <aura:if isTrue="{!v.showError}">
+            <p style="color:#FF0000;">{!v.errorMsg}</p>
+        </aura:if>
+    </div>
+    <aura:if isTrue="{!v.showOrderDetails}">
+        <lightning:card title="Order Summary" iconName = "custom:custom24" class="slds-table_bordered">
+         <div class="slds-box slds-theme_default"> 
+            <table class="slds-table slds-table--bordered slds-table--striped">
+                
+                <thead>
+                    <tr class="slds-line-height_reset">
+                        
+                        <th class="" scope="col">
+                            <span >Name</span>
+                        </th>  
+                        
+                        <th class="" scope="col">
+                            <span >Value</span>
+                        </th>  
+                    </tr>
+                </thead>                     
+                          
+                
+                <tbody >
+                    
+                    <aura:iteration items="{!v.data}" var="dt">
+                        <tr>
+                        <td >
+                            <span >Status Description</span>
+                        </td>  
+                             <td>
+                                {!dt.status.description}
+                            </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <span class="slds-truncate" title="Pending Date">Pending Date</span>
+                        </td>
+                                                <td>
+                                {!dt.pending_date}
+                            </td>
+                     </tr>
+                    <tr>
+                        <td>
+                            <span class="slds-truncate" title="Shipping Date">Shipping Date</span>
+                        </td>
+                        <td>
+                                {!dt.shipping_date}
+                            </td>
+                        </tr>
+                    <tr>
+                        <td>
+                            <span class="slds-truncate" title="Last Update">Last Update</span>
+                        </td>
+                        <td>
+                                {!dt.last_update}
+                            </td>
+                        </tr>
+                    <tr>
+                        <td>
+                            <span class="slds-truncate" title="Order Comments">Order Comments</span>
+                        </td>
+                        <td>
+                                {!dt.order_comments}
+                            </td>
+                        </tr>
+                    <tr>
+                        <td>
+                            <span class="slds-truncate" title="Shipping Method">Shipping Method</span>
+                        </td>
+                        <td>
+                                {!dt.shipping.method}
+                            </td>
+                        </tr>
+                    <tr>
+                        <td>
+                            <span class="slds-truncate" title="Shipping Description">Shipping Description</span>
+                        </td>
+                        <td>
+                                {!dt.shipping.description}
+                            </td>
+                        </tr>
+                    <tr>
+                        <td>
+                            <span class="slds-truncate" title="Tracking Number">Tracking Number</span>
+                        </td>
+                        <td>
+                                {!dt.shipping.tracking_number}
+                            </td>
+                    </tr> 
+                    
+                    </aura:iteration>                
+                </tbody>
+            </table> 
+            
+        </div>
+         
+        </lightning:card>
+    </aura:if>
+</aura:component>

@@ -1,0 +1,123 @@
+<aura:component controller="MemberManagementExamSiteChange"> 
+    <aura:attribute name="ExamAttemptdata" type="Object"/>
+    <aura:attribute name="ExamAttemptcolumns" type="List"/>
+    <aura:attribute name="data" type="Object"/>
+    <aura:attribute name="columns" type="List"/>
+    <aura:attribute name="selectedRowsCount" type="Integer" default="0"/>
+    <aura:attribute name="maxRowSelection" type="Integer" default="5"/>
+    <aura:attribute name="isButtonDisabled" type="Boolean" default="true" access="PRIVATE"/>
+    <aura:attribute name="GARPId" type="String" />
+    <aura:attribute name="RegistredFRMProgram" type="String" /> 
+    <aura:attribute name="ErrorMessage" type="String" />
+    <aura:attribute name="selectedComponent" type="String" />
+    <aura:attribute name="selectedSite" type="String" />
+    <aura:attribute name="selectedExamAttempt" type="String" /> 
+    <aura:attribute name="contactId" type="String" />  
+    <aura:attribute name="examstatusList" type="List"/>
+    <aura:attribute name="isModalOpen" type="boolean" default="false"/>    
+    
+    <div class="slds-card"> 
+        <div class="slds-page-header">
+            <div class="slds-align_absolute-center">
+                <div class="slds-text-heading_large">
+                    <div class="slds-m-top_xx-large">
+                        Exam Site Change
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slds-box slds-theme_shade">
+            <span class="slds-align_absolute-center" style="color:red;">{!v.ErrorMessage}</span> 
+            <div class="slds-grid">
+                <div class="slds-col slds-size_4-of-12"> 
+                </div>
+                <div class="slds-col slds-size_4-of-12"> 
+                    <lightning:input type="text" name="garpID" value="{!v.GARPId}" label="GARP Member ID" />
+                    <div class="slds-p-top_large" style="float:right">
+                        <lightning:button  variant="Neutral" class="slds-button slds-button_neutral" label="Back"  onclick="{!c.BackButton}"/>
+                        <lightning:button variant="brand" label="Search" class="slds-button slds-button_brand" onclick="{!c.OnclickSearchButton}"/>
+                    </div>
+                </div>
+            </div>
+            <aura:if isTrue="{!v.RegistredFRMProgram == 'showGroup'}">   
+                <div class="slds-p-top_large"> 
+                    <span> Exam Attempt</span>
+                    <lightning:datatable 
+                                         columns="{! v.ExamAttemptcolumns }"
+                                         data="{! v.ExamAttemptdata }"
+                                         keyField="id"
+                                         maxRowSelection="{!v.maxRowSelection }"
+                                         onrowselection="{!c.OnclickExamAttemptdata}"/><br/>
+                </div>
+                    <aura:if isTrue="{!v.selectedExamAttempt != null}">
+                        <div style="width:30%">
+                            <ui:inputText placeholder="Search Site.." aura:id="searchInput" label="Exam Site" keyup="{!c.onchangeExamGroup}" updateOn="keyup" class="slds-input"/>
+                           </div> 
+                            <div class="slds-p-top_large" style="height:250px">  
+                                <lightning:datatable
+                                                     columns="{! v.columns }"
+                                                     data="{! v.data }"
+                                                     keyField="id"
+                                                     maxRowSelection="{! v.maxRowSelection }"
+                                                     onrowselection="{! c.OnclickselectedExamSite}"/> 
+                            
+                        </div>
+                </aura:if>  
+                <div class="slds-p-top_large" style="float:right"><br/>
+                    <lightning:button  variant="Neutral" class="slds-button slds-button_neutral" label="Back"  onclick="{!c.BackButton}"/>
+                    <aura:if isTrue="{!v.selectedSite != null}"> 
+                    <lightning:button variant="brand" label="Update Exam Site Change" class="slds-button slds-button_brand" onclick="{!c.UpdateExamSiteChange}"/>
+                    </aura:if>
+                    </div> 
+            </aura:if>
+        </div>
+        <aura:if isTrue="{!v.isModalOpen}"> 
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container"> 
+                    <header class="slds-modal__header">
+                        <lightning:buttonIcon iconName="utility:close"
+                                              onclick="{! c.closepopup }"
+                                              alternativeText="close"
+                                              variant="bare-inverse"
+                                              class="slds-modal__close"/>
+                        <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Exam Site Change</h2>
+                    </header> 
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">  
+                        <p>Exam Site Chage</p>
+                        <aura:if isTrue="{!not(empty(v.examstatusList))}">
+                        <table class="slds-table slds-table--bordered slds-table--striped" style="margin-top:30px;">
+                            <tbody>
+                                <th> Type</th>
+                                <th>Invoice Number</th>
+                                <th> Product Code</th>
+                                <th>Amount</th>
+                                <th>Customer Secure Checkout</th>
+                                <th> Status</th> 
+                                    <aura:iteration items="{!v.examstatusList}" var="wrap" > 
+                                     <tr>    <td>{!wrap.examType}</td> 
+                                        <td>{!wrap.InvoiceNumber}</td>
+                                         <td>{!wrap.exampcode}</td>
+                                        <td>{!wrap.amount}</td>
+                                          <td><a href="{!wrap.CustomerSecureCheck}" target="_blank">Payment Link</a></td>
+                                        <td>{!wrap.examStatus}</td> </tr> 
+                                    </aura:iteration>                            
+                                                   
+                            </tbody>
+                        </table> 
+                            <aura:set attribute="else"><br/>
+                               Exam Site has been Updated
+                            </aura:set>
+                        </aura:if>
+                    </div> 
+                    <footer class="slds-modal__footer"> 
+                        <lightning:button variant="brand"
+                                          label="OK"
+                                          title="OK"
+                                          onclick="{!c.closepopup}"/>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </aura:if>
+    </div>
+</aura:component>

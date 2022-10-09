@@ -1,0 +1,150 @@
+<apex:page controller="AccountingExportCtrl" docType="html-5.0" showHeader="false" sidebar="false" applyBodyTag="false" applyHtmlTag="false" lightningStylesheets="true" readOnly="true">
+    <html>
+        <head>
+            <title>GARP Accounting Export</title>
+            <style>
+                .inptTable {width:100%; padding:10px;}
+                .boldFont {font-weight: bold;}
+                .inptFld {display: inline-block; margin-left: 15px;}
+                .wideInpt {width: 75px;}
+                .marLeft {margin-left: 10px;}
+                .dateInpt {font-family: Arial,Helvetica,sans-serif;}
+            </style>
+        </head>
+        
+        <body>
+            <apex:form >
+                <apex:pageBlock title="GARP Accounting Export">
+                    <table class="inptTable">
+                        <col width="25%"/><col width="25%"/><col width="25%"/><col width="25%"/>
+                        <tr>
+                            <td>
+                                <span class="boldFont">Start Date</span>
+                                <div class="inptFld">
+                                    <apex:input type="date" id="inptStDt" styleClass="dateInpt" value="{!inptStDate}"></apex:input>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="boldFont">End Date</span>
+                                <div class="inptFld">
+                                    <apex:input type="date" id="inptEdDt" styleClass="dateInpt" value="{!inptEdDate}"></apex:input>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="boldFont">Company</span>
+                                <div class="inptFld">
+                                    <apex:selectList value="{!selectCompany}" size="1" styleClass="wideInpt">
+                                        <apex:selectOptions value="{!companies}"/>
+                                    </apex:selectList>
+                                </div>
+                            </td>
+                            <td>
+                                <apex:outputPanel id="totalPan">
+                                    <span class="boldFont">Credit Total: </span>
+                                    <apex:outputText value="{0, Number, Currency}">
+                                        <apex:param value="{!creditTotal}"/>
+                                    </apex:outputText>
+                                    <span class="boldFont marLeft">Debit Total: </span>
+                                    <apex:outputText value="{0, Number, Currency}">
+                                        <apex:param value="{!debitTotal}"/>
+                                    </apex:outputText>
+                                    <span class="boldFont marLeft">Net Total: </span>
+                                    <apex:outputText value="{0, Number, Currency}">
+                                        <apex:param value="{!netTotal}"/>
+                                    </apex:outputText>
+                                </apex:outputPanel>
+                            </td>
+                        </tr>
+                    </table>
+                    
+                    <apex:pageBlockButtons location="top">
+                        <apex:commandButton action="{!refreshPage}" value="Refresh" rerender="dataSec,msgs,totalPan" status="loadStatus">
+                        </apex:commandButton>
+                        <apex:commandButton action="{!exportCsv}" value="Export CSV" status="loadStatus" rerender="csvStrHidden,msgs,totalPan" oncomplete="exportCsvJs();">
+                        </apex:commandButton>
+                    </apex:pageBlockButtons>
+                    
+                    <div style="text-align:center;">
+                        <apex:actionStatus id="loadStatus">
+                            <apex:facet name="start">
+                                <div><img src="/img/loading.gif"></img><span style="font-size:14px;margin-left:10px">loading...</span></div>
+                            </apex:facet>
+                        </apex:actionStatus>
+                    </div>
+                    
+                    <div class="marLeft">
+                        <apex:pageMessages id="msgs"/>
+                    </div>
+                    
+                    <apex:pageBlockSection id="dataSec" columns="1">
+                        <apex:pageBlockTable value="{!dataRows}" var="row">
+                            <apex:column value="{!row.prodKey}" headerValue="Product Key" rendered="{!renderKey}"/>
+                            <apex:column value="{!row.sortCode}" headerValue="Sorting Order" rendered="{!renderKey}"/>
+                            <apex:column value="{!row.effectiveDate}" headerValue="Effective Date"/>
+                            <apex:column value="{!row.name}" headerValue="Name"/>
+                            <apex:column value="{!row.documentNumber}" headerValue="Document Number"/>
+                            <apex:column value="{!row.transactionDescription}" headerValue="Transaction Description"/>
+                            <apex:column value="{!row.companyCode}" headerValue="Company Code"/>
+                            <apex:column value="{!row.department}" headerValue="Department"/>
+                            <apex:column value="{!row.productCode}" headerValue="Product Code"/>
+                            <apex:column value="{!row.GLCode}" headerValue="GL Code"/>
+                            <apex:column value="{!row.GLTitle}" headerValue="GL Title"/>
+                            <apex:column value="{!row.amount}" headerValue="Amount"/>
+                            <apex:column value="{!row.amountType}" headerValue="D/C"/>
+                            <!-- <apex:column value="{!row.debit}" headerValue="Debit"/>
+                            <apex:column value="{!row.credit}" headerValue="Credit"/> -->
+                        </apex:pageBlockTable>
+                        
+                        <apex:outputPanel rendered="{!dataRows.size = 0}" layout="block" style="text-align:center;">
+                            <b>There's no data to display.</b>
+                        </apex:outputPanel>
+                    </apex:pageBlockSection>
+                </apex:pageBlock>
+                
+                <apex:inputHidden id="csvStrHidden" value="{!csvString}"/>
+                <apex:actionFunction name="refreshPageJs" action="{!refreshPage}" rerender="dataSec,msgs,totalPan" status="loadStatus" />
+                
+                <script>
+                    var formatDate = function(date) {
+                        var d = new Date(date), 
+                            month = '' + (d.getUTCMonth() + 1),
+                            day = '' + d.getUTCDate(),
+                            year = d.getUTCFullYear();
+                    
+                        if(month.length < 2) month = '0' + month;
+                        if(day.length < 2) day = '0' + day;
+                    
+                        return [year, month, day].join('-');
+                    }
+                    
+                    var exportCsvJs = function() {
+                        var rawCsv = document.querySelector('[id$=csvStrHidden]').value;
+                        
+                        var lb = navigator.appVersion.indexOf("Win")!=-1 ? '\r\n' : '\n';
+                        rawCsv = rawCsv.replace(/_LB_/g, lb);
+                        
+                        var encodedUri = encodeURI("data:text/csv;charset=utf-8," + rawCsv);
+                        
+                        var stDtStr = formatDate(document.querySelector('[id$=inptStDt]').value),
+                            edDtStr = formatDate(document.querySelector('[id$=inptEdDt]').value);
+                        var dtStr = stDtStr == edDtStr ? stDtStr : stDtStr + '_' + edDtStr;
+                        
+                        var link = document.createElement('a');
+                        document.body.appendChild(link);
+                        
+                        link.setAttribute('href', encodedUri);
+                        link.setAttribute('download', dtStr + '_GARP_Export.csv');
+                        link.setAttribute("type", "hidden");
+                        
+                        link.click();
+                        link.parentNode.removeChild(link);
+                    }
+                    
+                    window.onload = function() {
+                        refreshPageJs();
+                    };
+                </script>
+            </apex:form>
+        </body>
+    </html>
+</apex:page>

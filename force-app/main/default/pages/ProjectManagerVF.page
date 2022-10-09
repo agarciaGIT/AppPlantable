@@ -1,0 +1,167 @@
+<apex:page controller="ProjectManagerDashBoard" >
+    <Apex:form >
+        <Apex:pageBlock title="Project Manager Console" id="ThisPlace">
+            
+            <Apex:Pageblocksection title="Velocity" columns="1" id="section1">
+                <center>
+                    <apex:selectList value="{!neededIteration}" size="1" label="Iteration" onchange="{!Velocity}" >
+                        <apex:actionSupport event="onchange" action="{!velocity}" reRender="ThisPlace"/>
+                        <apex:selectOptions value="{!items}" />
+                    </apex:selectList>
+                </center>
+                <center> 
+                    <apex:outputText label="Current Points" value="{!currentPoints}"/>
+                    <apex:outputText label="Velocity" value="{!velocity}" />
+                    
+                    
+                </center>
+                
+            </Apex:Pageblocksection>
+            
+            <Apex:Pageblocksection title="Stories" columns="3" id="section2">
+                
+                <apex:pageBlockTable value="{!qaRelevantBlockedStories}" var="item">
+                    <apex:facet name="caption">
+                        <h1>
+                            <u>Blocked Stories</u>
+                        </h1>
+                    </apex:facet>
+                    <apex:column headerValue="Story Name">
+                    <a href="{!baseUrl}/{!item.id}">{!item.name}</a>
+                    </apex:column>
+                    <apex:column value="{!item.Blocked_Reason__c}"/>
+                    <apex:column value="{!item.Story_Leads__c}"/>
+                    
+                    
+                </apex:pageBlockTable>
+                
+                
+                <apex:pageBlockTable value="{!qaRelevantStories}" var="item">
+                    <apex:facet name="caption">
+                        <h1>
+                            <u>Completed: Missing info</u>
+                        </h1>
+                    </apex:facet> 
+                    <apex:column headerValue="Story Name">
+                    <a href="{!baseUrl}/{!item.id}">{!item.name}</a>
+                    </apex:column>
+                    <apex:column value="{!item.Points__c}"/>
+                    <apex:column value="{!item.Code_Reviews__c}"/>
+                    <apex:column value="{!item.Code_Review_Items__c}"/>
+                    <apex:column value="{!item.QA_Plan__c}"/>
+                    <apex:column value="{!item.QA_Results__c}"/>
+                    <apex:column value="{!item.Story_Leads__c}"/>
+                    
+                </apex:pageBlockTable>
+                
+                <apex:pageBlockTable value="{!storiesReadyForQa}" var="item">
+                    <apex:facet name="caption">
+                        <h1>
+                            <u>Ready For QA</u>
+                        </h1>
+                    </apex:facet>
+                    <apex:column headerValue="Story Name">
+                    <a href="{!baseUrl}/{!item.id}">{!item.name}</a>
+                    </apex:column>
+                    <apex:column value="{!item.Points__c}"/>
+                    <apex:column value="{!item.Code_Reviews__c}"/>
+                    <apex:column value="{!item.Code_Review_Items__c}"/>
+                    <apex:column value="{!item.QA_Plan__c}"/>
+                    <apex:column value="{!item.Story_Leads__c}"/>
+                    
+                </apex:pageBlockTable>
+                
+                
+                
+            </Apex:Pageblocksection>
+            
+            <Apex:Pageblocksection title="Cases" columns="3" id="section3">
+                <apex:pageBlockTable value="{!blockedCases}" var="item">
+                    <apex:facet name="caption">
+                        <h1>
+                            <u>Blocked Cases</u>
+                        </h1>
+                    </apex:facet> 
+                    <apex:column headerValue="Case Number">
+                    <a href="{!baseUrl}/{!item.id}">{!item.CaseNumber}</a>
+                    </apex:column>
+                    <apex:column value="{!item.subject}"/>
+                    <apex:column value="{!item.Age__c}"/>
+                    <apex:column value="{!item.Priority}"/>                                            
+                </apex:pageBlockTable>
+                
+                <apex:pageBlockTable value="{!urgentCases}" var="item">
+                    <apex:facet name="caption">
+                        <h1>
+                            <u>Urgent Cases</u>
+                        </h1>
+                    </apex:facet> 
+                    <apex:column headerValue="Case Number">
+                    <a href="{!baseUrl}/{!item.id}">{!item.CaseNumber}</a>
+                    </apex:column>
+                    <apex:column value="{!item.subject}"/>
+                    <apex:column value="{!item.Age__c}"/>
+                    <apex:column value="{!item.Status}"/>
+                    <apex:column value="{!item.Priority}"/>                                            
+                </apex:pageBlockTable>
+                
+                <apex:pageBlockTable value="{!oldestCases}" var="item">
+                    <apex:facet name="caption">
+                        <h1>
+                            <u>Oldest Cases</u>
+                        </h1>
+                    </apex:facet> 
+                    <apex:column headerValue="Case Number">
+                    <a href="{!baseUrl}/{!item.id}">{!item.CaseNumber}</a>
+                    </apex:column>
+                    <apex:column value="{!item.subject}"/>
+                    <apex:column value="{!item.Age__c}"/>
+                    <apex:column value="{!item.Status}"/>
+                    <apex:column value="{!item.Priority}"/>                                            
+                </apex:pageBlockTable>
+                
+                
+            </Apex:Pageblocksection>
+            
+            <Apex:Pageblocksection title="Missing Deployments" id="section4">
+                 
+                
+                <apex:pageBlockTable value="{!missingDeployments}" var="item">
+                    <apex:facet name="caption">
+                        <h1>
+                            <u>Cases Missing Deployments</u>
+                        </h1>
+                    </apex:facet> 
+                    <apex:column headerValue="Case Number">
+                    <a href="{!baseUrl}/{!item.id}">{!item.CaseNumber}</a>
+                    </apex:column>
+                    <apex:column value="{!item.subject}"/>
+                    <apex:column value="{!item.Status}"/>                                          
+                </apex:pageBlockTable>
+                
+                <apex:pageBlockTable value="{!missingStories}" var="item">
+                    <apex:facet name="caption">
+                        <h1>
+                            <u>Story Missing Deployment</u>
+                        </h1>
+                    </apex:facet> 
+                    <apex:column headerValue="Story Name">
+                    <a href="{!baseUrl}/{!item.id}">{!item.name}</a>
+                    </apex:column>
+                    <apex:column value="{!item.Points__c}"/>
+                    <apex:column value="{!item.Story_Leads__c}"/>
+                    
+                </apex:pageBlockTable>
+                
+            </Apex:Pageblocksection>
+            
+            <script>  
+            twistSection(document.getElementById('{!$Component.ThisPlace.section3}').getElementsByTagName('img')[0])
+            twistSection(document.getElementById('{!$Component.ThisPlace.section4}').getElementsByTagName('img')[0])
+            </script>
+        </Apex:pageBlock>
+        
+        
+    </Apex:form>
+  
+</apex:page>

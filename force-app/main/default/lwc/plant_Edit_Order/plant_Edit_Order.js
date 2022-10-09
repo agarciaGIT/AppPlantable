@@ -6,6 +6,7 @@ import updateCustomerMealList from "@salesforce/apex/plant_Edit_OrderController.
 import updatePaymentDetails from "@salesforce/apex/plant_Edit_OrderController.updatePaymentDetails";
 import updateShippingDetails from "@salesforce/apex/plant_Edit_OrderController.updateShippingDetails";
 import updateDeliveryDate from "@salesforce/apex/plant_Edit_OrderController.updateDeliveryDate";
+import getAvailableDeliveryDates from "@salesforce/apex/plant_Edit_OrderController.getAvailableDeliveryDates";
 import getOrderDetails from "@salesforce/apex/plant_Edit_OrderController.getOrderDetails";
 import getOrderList from "@salesforce/apex/plant_Edit_OrderController.getOrderList";
 import {ShowToastEvent} from 'lightning/platformShowToastEvent';
@@ -74,7 +75,7 @@ export default class plant_Edit_Order extends LightningElement {
 									console.log('orderList::',this.orderList)
 								}
 							}
-							console.log('OrderResponse::'+orderResponse);
+							console.log('OrderResponse::'+JSON.stringify(orderResponse));
 						})
 						console.log('Token Is Available');
 					}
@@ -98,12 +99,13 @@ export default class plant_Edit_Order extends LightningElement {
 	}
 
 	handleRecordSelection(event){
+		/*
 		let object = event.detail.object;
 		this.selectedOrder.Id = (event.detail.selectedRecordId ? event.detail.selectedRecordId : '');
 		this.selectedOrder.OrderNumber = (event.detail.selectedValue ? event.detail.selectedValue : '');
 		if(this.selectedOrder.Id && this.selectedOrder.Id !='' && this.selectedOrder.OrderNumber && this.selectedOrder.OrderNumber != '' ){
 			//this.showSpinner = true;
-			/* getOrderDetails({orderId : this.selectedOrder.Id , authorisationToken: (this.customerAccount.Token && this.customerAccount.Token != '' ? this.customerAccount.Token : '')})
+			 getOrderDetails({orderId : this.selectedOrder.Id , authorisationToken: (this.customerAccount.Token && this.customerAccount.Token != '' ? this.customerAccount.Token : '')})
 			.then(orderResponse =>{
 				console.log('orderResponse:::',orderResponse);
 				orderResponse = JSON.parse(orderResponse);
@@ -158,9 +160,75 @@ export default class plant_Edit_Order extends LightningElement {
 			}).catch(error =>{
 				this.showSpinner = false;
 				console.log('order Error::',error);
-			}) */
+			}) 
+		} */
+		this.selectedMealList = new Array();
+		console.log('order no:',event.target.value)
+		console.log('this.customerAccount.Token',this.customerAccount.Token)
+		if(event.target.value && event.target.value !=''){
+			this.showSpinner = true;
+			this.selectedOrderObj.OrderNumber = event.target.value;
+			getOrderDetails({authorisationToken :this.customerAccount.Token ,OrderNo : event.target.value})
+			.then(response =>{
+				console.log('getOrderDetails>>',response);
+				response = JSON.parse(response);
+				if(response.hasOwnProperty('statusCode') && response.statusCode == '200'){
+					if(response.hasOwnProperty('result') && response.result.hasOwnProperty('resultArr') && response.result.resultArr.length > 0){
+					let orderDetails = response.result.resultArr[0];
+						this.shippingDetails.deliveryDate = (orderDetails.hasOwnProperty('DeliveryDate') ? orderDetails.DeliveryDate : '');
+						this.shippingDetails.street1 =(orderDetails.hasOwnProperty('street1') ? orderDetails.street1 : '');
+						this.shippingDetails.street2 =(orderDetails.hasOwnProperty('street2') ? orderDetails.street2 : '');
+						this.shippingDetails.street3 =(orderDetails.hasOwnProperty('street3') ? orderDetails.street3 : '');
+						this.shippingDetails.city =(orderDetails.hasOwnProperty('city') ? orderDetails.city : '');
+						this.shippingDetails.state =(orderDetails.hasOwnProperty('state') ? orderDetails.state : '');
+						this.shippingDetails.zip =(orderDetails.hasOwnProperty('postalCode') ? orderDetails.postalCode : '');
+						this.shippingDetails.country =(orderDetails.hasOwnProperty('country') ? orderDetails.country : '');
+						this.shippingDetails.phone =(orderDetails.hasOwnProperty('Phone') ? orderDetails.Phone : '');
+						this.shippingDetails.firstName =(orderDetails.hasOwnProperty('firstName') ? orderDetails.firstName : '');
+						this.shippingDetails.lastName =(orderDetails.hasOwnProperty('lastName') ? orderDetails.lastName : '');
+						this.shippingDetails.canSMS =(orderDetails.hasOwnProperty('canSMS') ? orderDetails.canSMS : false);
+						this.shippingDetails.ShipmentDate =(orderDetails.hasOwnProperty('ShipmentDate') ? orderDetails.ShipmentDate : '');
+						this.shippingDetails.ShippingAddresId =(orderDetails.hasOwnProperty('ShippingAddresId') ? orderDetails.ShippingAddresId : '');
+
+						if(orderDetails.hasOwnProperty('OrderMeal') && orderDetails.OrderMeal.length > 0){
+							orderDetails.OrderMeal.forEach(element=>{
+								this.selectedMealList.push({mealID : (element.hasOwnProperty('Plant_Meal__r') && element.Plant_Meal__r.hasOwnProperty('Id') ? element.Plant_Meal__r.Id : '') , quantity:element.Plant_Quantity__c , Name : (element.hasOwnProperty('Plant_Meal__r') && element.Plant_Meal__r.hasOwnProperty('Name') ? element.Plant_Meal__r.Name : '') , mealSelectionMealId : element.hasOwnProperty('Plant_Meal_Selection__c') ? element.Plant_Meal_Selection__c : null })
+							})
+						}
+						let deliverDateWrapper = {
+							street1 : this.shippingDetails.street1,
+							street2 : this.shippingDetails.street2,
+							street3 : this.shippingDetails.street3,
+							city : this.shippingDetails.city,
+							state : this.shippingDetails.state,
+							zip : this.shippingDetails.zip,
+							country : this.shippingDetails.country,
+							phone : this.shippingDetails.phone,
+							canSMS : this.shippingDetails.canSMS,
+							shippingDate : this.shippingDetails.ShipmentDate,
+							shippingAddressId : this.shippingDetails.ShippingAddresId,
+						}
+						getAvailableDeliveryDates({addressJSON : JSON.stringify(deliverDateWrapper)})
+						.then(response =>{
+							console.log('Alailable Deliverdates::',response)
+						}).catch(error =>{
+							console.log('Available DeliveryDate error',error)
+						})
+						//this.shippingDetails.street1 =(orderDetails.hasOwnProperty('street1') ? orderDetails.street1 : '');
+					}
+					this.showCustomErrorMessage((response.hasOwnProperty('msg') ? response.msg : 'Order fetched successfully') , 'Success' ,'success' , 'dismissable');
+					this.showSpinner = false;
+				}
+				else{
+					this.showSpinner = false;
+					this.showCustomErrorMessage((response.hasOwnProperty('msg') ? response.msg : 'Something went wrong try again') , 'Error' ,'error' , 'sticky');
+				}
+			}).catch(error =>{
+				this.showSpinner = false;
+			})
 		}
 		else{
+			this.showSpinner = false;
 			this.shippingDetails = {}
 			this.availableDeliveryDatesList = new Array();
 			this.paymentDetailList = new Array();
@@ -168,6 +236,7 @@ export default class plant_Edit_Order extends LightningElement {
 			this.selectedMealSelectionId = '';
 			this.paymentMethodsList = new Array();
 			this.selectedOrder = {Id : '' , OrderNumber : ''};
+			this.selectedOrderObj = {Id : '' , OrderNumber : ''};
 			this.selectedPaymentCard = {Id : '' , Name : ''};
 		}
 	}
@@ -191,7 +260,7 @@ export default class plant_Edit_Order extends LightningElement {
 				})
 				console.log('selectedMealList::',this.selectedMealList);
 				console.log('update meal list:;',JSON.stringify( {authenticationToken : this.customerAccount.Token , OrderNumber : this.selectedOrder.OrderNumber, mealList : mealListToUpdate}));
-				updateCustomerMealList({mealList : JSON.stringify( {authenticationToken : this.customerAccount.Token , OrderNumber : this.selectedOrder.OrderNumber, mealList : mealListToUpdate})})
+				updateCustomerMealList({mealList : JSON.stringify( {authenticationToken : this.customerAccount.Token , OrderNumber : this.selectedOrderObj.OrderNumber, mealList : mealListToUpdate})})
 				.then(response =>{
 					response = JSON.parse(response);
 					if(response.hasOwnProperty('statusCode') && response.statusCode == '200'){
@@ -218,11 +287,13 @@ export default class plant_Edit_Order extends LightningElement {
 		else if(event.target.value == 'Update Shipping Address'){
 			this.showSpinner = true;
 			let shippingUpdateJSON = {
-				orderNumber : (this.selectedOrder.OrderNumber && this.selectedOrder.OrderNumber != '' ? this.selectedOrder.OrderNumber : '' ),
+				orderNumber : (this.selectedOrderObj.OrderNumber && this.selectedOrderObj.OrderNumber != '' ? this.selectedOrderObj.OrderNumber : '' ),
 				authenticationToken : (this.customerAccount.Token && this.customerAccount.Token != '' ? this.customerAccount.Token : ''),
 				shippingAddressId : ''/* (this.shippingDetails.shippingAddressId && this.shippingDetails.shippingAddressId != '' ? this.shippingDetails.shippingAddressId : '') */,
 				deliveryDate : (this.shippingDetails.deliveryDate && this.shippingDetails.deliveryDate != '' ? this.shippingDetails.deliveryDate : ''),
 				shippingAddress : {
+					firstName : (this.shippingDetails.firstName ? this.shippingDetails.firstName : ''),
+					LastName : (this.shippingDetails.LastName ? this.shippingDetails.LastName : ''),
 					street1 : (this.shippingDetails.street1 ? this.shippingDetails.street1 : ''),
 					street2 : (this.shippingDetails.street2 ? this.shippingDetails.street2 : ''),
 					street3 : (this.shippingDetails.street3 ? this.shippingDetails.street3 : ''),
@@ -231,7 +302,7 @@ export default class plant_Edit_Order extends LightningElement {
 					zip : (this.shippingDetails.zip ? this.shippingDetails.zip : ''),
 					country : (this.shippingDetails.country ? this.shippingDetails.country :''),
 					phone : (this.shippingDetails.phone ? this.shippingDetails.phone : ''),
-					canSMS : (this.shippingDetails.canSMS && this.shippingDetails.canSMS !='' ? String(true) == this.shippingDetails.canSMS : false)
+					canSMS : (this.shippingDetails.canSMS != null && this.shippingDetails.canSMS != undefined && this.shippingDetails.canSMS !='' ? String(true) == this.shippingDetails.canSMS : false)
 				}
 			}
 			console.log('shippingUpdateJSON::::',JSON.stringify(shippingUpdateJSON));
@@ -367,6 +438,7 @@ export default class plant_Edit_Order extends LightningElement {
 			if (this.selectedMealList.length < 12) {
 				let index = parseInt(event.target.dataset.index);
 				let selectedMeal = this.mealsVisibleList[index];
+				console.log('selected meal::',JSON.stringify(selectedMeal))
 				let mealAlreadySelected = this.selectedMealList.some(element => element.mealID === selectedMeal.Id);
 				console.log('mealAlreadySelected::', mealAlreadySelected);
 				if (!mealAlreadySelected) {
@@ -465,11 +537,11 @@ export default class plant_Edit_Order extends LightningElement {
 	}
 
 	get showUpdateCustomizeMealButton(){
-		return (this.selectedOrder.OrderNumber && this.selectedOrder.OrderNumber != '' && !this.authorisationTokenExpired ? true : false)
+		return (this.selectedOrderObj.OrderNumber && this.selectedOrderObj.OrderNumber != '' && !this.authorisationTokenExpired ? true : false)
 	}
 
 	get disableUpdateRecords(){
-		return (!this.authorisationTokenExpired && this.selectedOrder.OrderNumber && this.selectedOrder.OrderNumber != '' ? false : true)
+		return (!this.authorisationTokenExpired && this.selectedOrderObj.OrderNumber && this.selectedOrderObj.OrderNumber != '' ? false : true)
 	}
 
 	get updateDeliveryDateDisabled(){

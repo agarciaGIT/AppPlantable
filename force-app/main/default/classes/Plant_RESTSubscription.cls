@@ -224,7 +224,35 @@ global class Plant_RESTSubscription {
                 String jsonRespBody = JSON.serialize(respWrap); 
                 res.responseBody = Blob.valueOf(jsonRespBody); 
             }
-
+            else if(req.requestURI.substring(req.requestURI.lastIndexOf('/')+1).equalsIgnoreCase('paymentfailedcardupdate')){
+                Plant_Subscriptions_BC.subsption_PaymentUpdate_Wrap jsonWrapper = new Plant_Subscriptions_BC.subsption_PaymentUpdate_Wrap().parse(requestJson);
+                Plant_Utility.responseWrapper respWrap = Plant_Subscriptions_SC.paymentFailedCardUpdate_SC(jsonWrapper);
+                if(respWrap.statusCode=='200'){
+                    res.statusCode = Integer.valueOf(respWrap.statusCode);
+                    System.debug('@@@@## delivery add ');
+                }
+                else{
+                    res.statusCode = Integer.valueOf(respWrap.statusCode);
+                    System.debug('@@@@## dd error ');
+                }    
+                String jsonRespBody = JSON.serialize(respWrap); 
+                res.responseBody = Blob.valueOf(jsonRespBody); 
+            }
+            else if(req.requestURI.substring(req.requestURI.lastIndexOf('/')+1).equalsIgnoreCase('paymentfailedcardauthorization')){
+                
+                Plant_Subscriptions_BC.CardAuthorize_ReqWrap jsonWrapper = new Plant_Subscriptions_BC.CardAuthorize_ReqWrap().parse(requestJson);
+                Plant_Utility.responseWrapper resultToken = Plant_Subscriptions_SC.paymentFailedCardAuthorization_SC(jsonWrapper);
+                if(resultToken.statusCode=='200'){
+                    res.statusCode = Integer.valueOf(resultToken.statusCode);
+                    System.debug('@@@@## success dd');
+                }
+                else{
+                    res.statusCode = Integer.valueOf(resultToken.statusCode);
+                    System.debug('@@@@## error dd');
+                } 
+                String jsonRespBody = JSON.serialize(resultToken); 
+                res.responseBody = Blob.valueOf(jsonRespBody); 
+            }
             else{
                 // RETURN ERROR
                 String status='error';

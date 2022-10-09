@@ -1,0 +1,6 @@
+<!--<apex:page extensions="B2BOpportunityAttachment" standardcontroller="opportunity" action="{!getFile}" >-->
+<apex:page controller="B2BOpportunityAttachment" action="{!getFile}" >
+ <apex:outputLink value="/servlet/servlet.FileDownload?file={!doc.Id}">   
+ <br> Download Now!</br>    
+ </apex:outputLink> 
+</apex:page>

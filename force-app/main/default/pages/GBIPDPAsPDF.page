@@ -1,0 +1,32 @@
+<apex:page renderAs="pdf" controller="GBIDPAsPDF" showHeader="false" sidebar="false" standardStylesheets="false"  applyhtmltag="false" applyBodyTag="false" >
+    
+    <apex:variable var="envPath" value="{!URLFOR($Resource.sfdcApp)}" />
+  
+    <head>
+      <style type="text/css" media="print">
+      .main-pdf {font-family: sans-serif;font-size:14px; }
+      @page{ 
+        @bottom-right { content:"Page " counter(page) " of " counter(pages); font-family: sans-serif;font-size:14px;}
+      }
+      </style>
+    </head>
+
+    <div class="main-pdf">
+      <apex:image url="http://www.garp.org/www/newmedia/gbi-logo.png" alt="logo" height="75px" />
+    </div> 
+  
+    <div class="main-pdf" >
+        <apex:outputText value="{!dpSubmissionWrapper.dpHtml}" escape="false" />
+    </div>  
+
+    <apex:outputPanel rendered="{!dpSubmissionWrapper.signee != null}">
+      <div class="main-pdf" >
+          <br/>
+          Agreed to by: {!dpSubmissionWrapper.signee}
+          <br/>
+          Date/Time: <apex:outputText value=" {0,date,MM/dd/yyyy 'at' HH:mm:ss z}"> <apex:param value="{!dpSubmissionWrapper.signDateTime}" /></apex:outputText>
+      </div>  
+    </apex:outputPanel>
+    
+    
+</apex:page>

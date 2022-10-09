@@ -1,0 +1,422 @@
+<apex:page showHeader="false" sidebar="false" showChat="false"  standardStylesheets="false" Controller="ExamResultsLetterControllerNovember2015" applyhtmltag="false" applyBodyTag="false" renderAs="pdf">
+
+<apex:variable var="envPath" value="{!URLFOR($Resource.sfdcApp)}" />
+<head>
+    <style type="text/css" media="print">
+        .exam-results-email { font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:14px;margin-left:40px;margin-right:40px }
+        .email-body         { text-align:justify;text-align-last:right; }
+        .sub-heading        { font-weight:bold;display:block;margin-bottom:-15px; }
+        a {  margin-left : 4px;  }     
+        @page{ 
+            @bottom-right { content:"Page " counter(page) " of " counter(pages);font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:14px; }
+            @bottom-left { content:"{!now}";font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:14px; } 
+        }
+    </style>
+</head>
+
+<div class="exam-results-email">
+    <apex:image url="{!envPath}/img/logo.png" alt="logo" height="75px" />
+    
+    <hr style="margin-bottom:30px"/>
+    
+    <div class="body">
+        
+        GARP ID: {! sGARPID } <br/><br/> 
+        
+        Exam Date: {! fullExamDate } <br/><br/> 
+            
+        Dear {! candidateName }, <br/>
+        
+        <!-- Case 0. Error processing request, or Exam Violation detected -->
+        <apex:outputPanel rendered="{! isError }">
+        <p>
+        Sorry, there was an error processing your request. Please contact 
+        <apex:outputLink value="mailto:memberservices@garp.com">memberservices@garp.com</apex:outputLink> for more information.
+        </p>
+        </apex:outputPanel>
+        
+        <!-- Case 1. FRM Exam Passed -->
+        <apex:outputPanel rendered="{! sSection == 'FRM Part 1' && sResult == 'Pass' }">
+        
+        <p>
+        <strong> Congratulations - you passed the {! examDate } FRM&reg; Exam Part I! </strong>  <br/>
+        </p>
+        
+        <div class="email-body"> 
+        <p>        
+        On behalf of the Global Association of Risk Professional and GARP's Board of Trustees, congratulations on passing the FRM Exam Part I and demonstrating your 
+        commitment to excellence in financial risk management. Your performance on the FRM Exam indicates that you possess many of the valuable professional skills and 
+        analytical capabilities necessary to effectively perform the responsibilities of a financial risk manager. 
+        </p>
+       
+        
+        <p>
+        <strong>An important note</strong> - Now that you have passed the FRM Exam Part I, you have <strong>four years</strong> to pass the FRM Exam Part II (by {! Frm2Deadline}) without having to 
+        re-enroll in the program and retake the FRM Exam Part I. Therefore, we encourage you to register for the FRM Exam Part II and to continue on your path to becoming a 
+        Certified FRM. <apex:outputLink value="https://my.garp.org/sfdcApp#!/public_registration/frm">Registration for the {! nextExamDate } FRM Exam Part II is now open. </apex:outputLink> 
+        </p>
+                
+        <p>
+        In our continuing effort to provide useful feedback about the Exam, we invite you to login to your account to view an analysis of your exam results, 
+        including information about your individual performance relative to all other FRM candidates who sat for the {! examMonth } Exam. Simply go to 
+        <apex:outputLink value="https://my.garp.org/Login?start=myprograms" target="_blank">“My Programs”</apex:outputLink> to view 
+        an analysis of your <apex:outputLink value="https://my.garp.org/Login?start=exam_results">exam performance</apex:outputLink> based on quartile rankings for each section of the FRM curriculum evaluated on the exam. 
+        </p>
+                
+        <p>
+        We also encourage you to take advantage of the many ways that GARP promotes and fosters engagement with the broader risk management community through 
+        attendance at GARP chapter meetings, participation in GARP's webcast series, timely news alerts and risk publications. Information about these avenues of 
+        engagement is available on our website, <apex:outputLink value="http://www.garp.org" target="_blank">www.garp.org</apex:outputLink>.  
+        </p>
+                
+        <p>
+        You have our best wishes for continued success in the risk management profession. GARP considers you to be a valuable member of the risk community and we 
+        look forward to your continued support and involvement in the Association. If you have any questions, please feel free to contact us directly at 
+        <apex:outputLink value="mailto:memberservices@garp.com">memberservices@garp.com</apex:outputLink>. 
+        </p>
+                
+        </div>
+        
+        </apex:outputPanel>
+        <!-- End Case 1 FRM Exam passed -->
+                
+        <!-- Case 2. FRM Exam 1 Failed 
+             We have 2 cases:
+             a. User only sat for FRM1 and failed
+             b. User sat for both FRM1 and FRM2, and failed FRM1, hence FRM2 is not graded
+             
+             The verbiage below is for the former case. The latter case is handled as Case 7 
+        -->
+        <apex:outputPanel rendered="{! (sSection == 'FRM Part 1' && sResult == 'Fail') && (!frm1FailFrm2NotGraded)  }">
+        
+        <div class="email-body"> 
+        <p>        
+        Thank you for participating in the <strong>{! examDate } FRM® Exam Part I</strong>. After a thorough review of your individual performance, we regret to inform you that your 
+        FRM Exam Part I score did not meet the necessary requirements for passing.
+        </p>
+           
+        <p>
+        The FRM Exam is a challenging test covering a wide variety of risk management topics and is designed to evaluate whether candidates have the knowledge, skills and 
+        abilities needed to function effectively in the field of risk management. As with many things of value, the necessary knowledge, skills and abilities take a patient, 
+        concerted effort to obtain and many serious individuals require more than one attempt to succeed.
+        </p>
+                
+        <p>
+        In our continuing effort to provide useful feedback about the Exam, we invite you to view an analysis of your test results, including information about your individual 
+        performance relative to all other FRM candidates who sat for the November Exam. Please login to <apex:outputLink value="https://my.garp.org/Login?start=myprograms">your account</apex:outputLink> and go to 
+        “My Programs” to view an analysis of your <apex:outputLink value="https://my.garp.org/Login?start=exam_results">exam performance</apex:outputLink> based on quartile rankings for each section of the FRM curriculum evaluated on the exam.
+        </p>
+                
+        <p>
+        While your results may be disappointing, we encourage you to try again and take the FRM Exam Part I in the future. 
+        <apex:outputLink value="https://my.garp.org/sfdcApp#!/public_registration/frm">Registration for the {! nextExamDate } FRM Exam is now open</apex:outputLink>.
+        </p>
+                
+        <p>
+        We also encourage you to take advantage of the many ways that GARP promotes and fosters engagement with the broader risk management community through attendance at GARP 
+        chapter meetings, participation in GARP's webcast series, timely news alerts and risk publications. Information about these avenues of engagement is available on our website, 
+        <apex:outputLink value="http://www.garp.org">www.garp.org</apex:outputLink>.
+        </p>
+        
+        <p>
+        The Global Association of Risk Professionals considers you to be a valuable member of the risk community and hopes you remain interested in risk management education and training. 
+        We look forward to your continued support and involvement in the Association. If you have any questions, please feel free to contact us directly at 
+        <apex:outputLink value="mailto:memberservices@garp.com">memberservices@garp.com</apex:outputLink>.
+        </p>
+                        
+        </div>
+        
+        </apex:outputPanel>
+        <!-- End Case 2 FRM Exam 1 failed -->
+        
+        <!-- Case 3 FRM Exam 2 Passed -->
+        <apex:outputPanel rendered="{! sSection == 'FRM Part 2' && sResult == 'Pass' }">
+        
+        <p>
+        <strong> Congratulations - you passed the {! examDate } FRM&reg; Exam Part II! </strong>  <br/>
+        </p>
+        
+        <div class="body" style="text-align:justify;text-align-last:right;"> 
+        <p>        
+        On behalf of the Global Association of Risk Professional and GARP's Board of Trustees, congratulations on passing the FRM Exam Part II and demonstrating your 
+        commitment to excellence in financial risk management. Your performance on the FRM Exam indicates that you possess many of the valuable professional skills and 
+        analytical capabilities necessary to effectively perform the responsibilities of a financial risk manager. 
+        </p>
+        
+        <span style="font-weight:bold;display:block;margin-bottom:-15px;">The Next Step - FRM Certification</span>
+        <p>
+        Your next step is the FRM Certification Process. You will need to demonstrate two years of professional work experience in order to become certified. 
+        We require at least 4 sentences on how you use Financial Risk in your day-to-day job responsibilities. If you submit this information via 
+        <apex:outputLink value="https://my.garp.org/Login?start=myprograms">“My Programs”</apex:outputLink> by {! workExperienceSubmissionDate }, your certificate will be 
+        included in the {! nextCertificateDistributionDate  } distribution. FRM certificates are distributed at the end of each quarter (March, June, September, and December) 
+        to all qualified candidates.
+        </p>
+        
+        <p>
+        If you do not meet the two year professional work experience requirement within five years (by {! workExperienceSubmissionDeadline }), you will be required to re-enroll in the Program and retake the FRM Exam as a new candidate.
+        </p>
+        
+        <p>
+        In our continuing effort to provide useful feedback about the Exam, we invite you to login to your account to view an analysis of your exam results, 
+        including information about your individual performance relative to all other FRM candidates who sat for the {! examMonth } Exam. Simply go to 
+        <apex:outputLink value="https://my.garp.org/Login?start=myprograms" target="_blank">“My Programs”</apex:outputLink> to view 
+        an analysis of your <apex:outputLink value="https://my.garp.org/Login?start=exam_results">exam performance</apex:outputLink> based on quartile rankings for each section of the FRM curriculum evaluated on the exam. 
+        </p>
+                
+        <p>
+        Once you have become a Certified FRM, we strongly encourage you to use the FRM designation on all professional correspondence to set yourself apart and 
+        to help build awareness of the FRM Program. Don’t forget to opt-in to the Certified FRM Directory as well as displaying the digital FRM badge on social 
+        networking pages like LinkedIn, Twitter, a blog or website.
+        </p>
+        
+        <span style="font-weight:bold;display:block;margin-bottom:-15px;">Staying Engaged</span>        
+        <p>
+        We encourage you to take advantage of the many ways that GARP promotes and fosters engagement with the broader risk management community through participation in GARP's 
+        exclusive Continuing Professional Education Program, attendance at GARP chapter meetings, participation in GARP's webcast series, timely new alerts and risk publications. 
+        Information about these avenues of engagement is available on our website, <apex:outputLink value="http://www.garp.org">www.garp.org</apex:outputLink>.
+        </p>
+        
+        <span style="font-weight:bold;display:block;margin-bottom:-15px;">Continuing Professional Development (CPD) Requirements</span>
+        <p>
+        Shortly after you receive your FRM Certificate, we will send details about participation in GARP's Continuing Professional Development (CPD) Program. To learn more, 
+        <apex:outputLink value="http://www.garp.org/#!/cpd/" target="_blank">click here</apex:outputLink>. 
+        The CPD Program is voluntary for Certified FRMs and requires you to complete 40 credit hours of approved continuing education activities within a two year time frame. 
+        Participation in the CPD Program demonstrates your desire to stay abreast of industry trends and your continued commitment to enhancing your financial knowledge and 
+        risk management skills. Should you have any immediate questions regarding the CPD Program please feel free to contact us at 
+        <apex:outputLink value="mailto:cpd@garp.com">cpd@garp.com</apex:outputLink>.
+        </p>
+        
+        <p>
+        You have our best wishes for continued success in the risk management profession. GARP considers you to be a valuable member of the risk community and we 
+        look forward to your continued support and involvement in the Association. If you have any questions, please feel free to contact us directly at 
+        <apex:outputLink value="mailto:memberservices@garp.com">memberservices@garp.com</apex:outputLink>. 
+        </p>
+                
+        </div>
+        
+        </apex:outputPanel>
+        <!-- End Case 3 FRM Exam II passed -->
+        
+        
+        <!-- Case 4. FRM Exam 2 Failed -->
+        <apex:outputPanel rendered="{! (sSection == 'FRM Part 2' && sResult == 'Fail')  }">
+        
+        <div class="body" style="text-align:justify;text-align-last:right;"> 
+        <p>        
+        Thank you for your continuing interest and dedication to the FRM® process. After a thorough review of your individual performance, we regret to inform you that your 
+        score on the <strong>{! examDate } Financial Risk Manager (FRM) Exam Part II</strong> did not meet the necessary requirements for passing.
+        </p>
+           
+        <p>
+        As you know, the FRM Exam is a challenging test covering a wide variety of risk management topics and is designed to evaluate whether candidates have the knowledge, 
+        skills and abilities needed to function effectively in the field of risk management. Part II of the FRM Exam, in particular, can be challenging as it is designed 
+        to move beyond the basics and test candidates' knowledge at a deeper level. As such, many candidates require more than one attempt at the FRM Exam Part II to be successful. 
+        </p>
+               
+        <p>
+        In our continuing effort to provide useful feedback about the Exam, we invite you to view an analysis of your test results, including information about your individual 
+        performance relative to all other FRM candidates who sat for the {! examMonth } Exam. Please login to <apex:outputLink value="https://my.garp.org/Login?start=myprograms">your account</apex:outputLink> and go to 
+        “My Programs” to view an analysis of your <apex:outputLink value="https://my.garp.org/Login?start=exam_results">exam performance</apex:outputLink> based on quartile rankings for each section of the FRM curriculum evaluated on the exam.
+        </p>
+                
+        <p>
+        While your results may be disappointing, we encourage you to try again and take the FRM Exam Part II in the future. 
+        <apex:outputLink value="https://my.garp.org/sfdcApp#!/public_registration/frm">Registration for the {! nextExamDate } FRM Exam Part II is now open</apex:outputLink>.
+        </p>
+                
+        <p>
+        We also encourage you to take advantage of the many ways that GARP promotes and fosters engagement with the broader risk management community through attendance at GARP 
+        chapter meetings, participation in GARP's webcast series, timely news alerts and risk publications. Information about these avenues of engagement is available on our website, 
+        <apex:outputLink value="http://www.garp.org">www.garp.org</apex:outputLink>.
+        </p>
+        
+        <p>
+        The Global Association of Risk Professionals considers you to be a valuable member of the risk community and hopes you remain interested in risk management education and training. 
+        We look forward to your continued support and involvement in the Association. If you have any questions, please feel free to contact us directly at 
+        <apex:outputLink value="mailto:memberservices@garp.com">memberservices@garp.com</apex:outputLink>.
+        </p>
+                        
+        </div>
+        
+        </apex:outputPanel>
+        <!-- End Case 4 FRM Exam 2 failed -->
+        
+        
+        
+        <!-- Case 5 ERP Exam Passed -->
+        <apex:outputPanel rendered="{! sSection == 'ERP' && sResult == 'Pass' }">
+            <div class="body" style="text-align:justify;text-align-last:right;"> 
+            
+            <p>
+            <strong>Congratulations, you passed the {! examDate } Energy Risk Professional (ERP®) Exam! </strong> 
+            </p>
+            
+            <p>
+            On behalf of the Global Association of Risk Professionals, GARP's Board of Trustees, and the Energy Oversight Committee, congratulations on passing the {! examMonthAndYear } ERP Exam. 
+            By passing the ERP Exam you join a select group of ERPs from around the world. This accomplishment indicates your commitment to excellence in energy risk management and demonstrates 
+            you possess the technical skills, analytic aptitude, and professional judgment necessary to effectively perform the responsibilities of an energy risk professional.
+            </p>
+
+            <p>
+            To gain perspective on your exam performance we invite you to view an analysis of your individual results, relative to all other ERP candidates who sat for the {! examMonth } exam. 
+            Simply login to <apex:outputLink value="https://my.garp.org/Login?start=myprograms">your account</apex:outputLink> and go to “My Programs” to view an analysis of your 
+            <apex:outputLink value="https://my.garp.org/Login?start=exam_results">exam performance</apex:outputLink> based on quartile rankings for each section of the ERP curriculum evaluated on the exam.
+            </p>
+            
+            <span class="sub-heading">The Next Step - ERP Certification</span>
+
+            <p>
+            Your next step is the ERP Certification Process. You will need to demonstrate two years of professional work experience in order to become certified. We require at least 4 sentences 
+            on how you use Energy Financial Risk in your day-to-day job responsibilities. If you submit this information via “My Programs” by {! workExperienceSubmissionDate  } your certificate will be included 
+            in the {! nextCertificateDistributionDate } distribution. ERP Certificates are distributed at the end of each quarter (March, June, September, and December) to all qualified candidates.
+            </p>
+
+            <p>
+            After completing your certification, we strongly encourage you to use the ERP designation on all professional correspondence to highlight your accomplishment and to help build 
+            awareness of the ERP Program. Don’t forget to opt-in to the Certified ERP Directory as well as displaying the digital ERP badge on social networking pages like LinkedIn, Twitter, a blog or website.
+            </p>
+            
+            <p>
+            Please keep in mind that if you fail to meet the two year professional work experience requirement within five years (by {! workExperienceSubmissionDeadline }), you will be required to re-enroll in the Program and retake the ERP Exam as a new candidate.
+            </p>
+            
+            <span class="sub-heading">Continuing Professional Development (CPD) Requirements</span>
+            
+            <p>
+            Shortly after receiving your ERP Certificate we will send details about participation in GARP's Continuing Professional Development (CPD) Program. The CPD Program is mandatory for Certified ERPs 
+            and requires you to complete 40 credit hours of approved continuing education activities within a two-year time frame. Please click here to learn more. Participation in the CPD Program demonstrates 
+            your desire to stay abreast of industry trends and your continued commitment to enhancing your energy knowledge and risk management skills. Should you have any immediate questions regarding the CPD Program 
+            please feel free to contact us at <apex:outputLink value="mailto:cpd@garp.com">cpd@garp.com</apex:outputLink>.
+            </p>
+            
+            <p>
+            You are a valuable member of our Association and we hope that you continue to take advantage of the many ways that GARP promotes and fosters engagement with the broader risk management community through 
+            attendance at GARP chapter meetings, participation in GARP's webcast series, timely news alerts and risk publications. Information about these avenues of engagement is available on our website, www.garp.org. 
+            If you have any specific questions or suggestions about the ERP Program please feel free to contact us at <apex:outputLink value="mailto:memberservices@garp.com">memberservices@garp.com</apex:outputLink>.
+            </p>
+            
+            <p>
+            We wish you all the best in your energy risk career.
+            </p>
+            
+            </div>
+        
+        </apex:outputPanel><!-- end Case 5 ERP Exam passed -->
+        
+        
+        <!-- Case 6. ERP Exam Failed -->
+        <apex:outputPanel rendered="{! (sSection == 'ERP' && sResult == 'Fail') }">
+        
+        <div class="body" style="text-align:justify;text-align-last:right;"> 
+        <p>        
+        Thank you for participating in the <strong>{! examDate } Energy Risk Professional (ERP®) </strong> Exam. We have completed a thorough review of your individual performance and regret 
+        to inform you that your score did not meet the necessary requirements for passing.
+        </p>
+           
+        <p>
+        The ERP Exam is a challenging assessment that covers a broad variety of topics. It is designed to evaluate whether candidates possess the knowledge and skills necessary to 
+        function effectively in an energy risk management role. To gain perspective on your exam performance we invite you to view an analysis of your individual results, 
+        relative to all other ERP candidates who sat for the {! examMonth } exam. Simply 
+        <apex:outputLink value="https://my.garp.org/Login?start=myprograms">login to your account</apex:outputLink> and go to “My Programs” in order to view an analysis of your 
+        <apex:outputLink value="https://my.garp.org/Login?start=exam_results">exam performance</apex:outputLink> 
+        based on quartile rankings for each section of the ERP curriculum evaluated on the exam.
+        </p>
+               
+        <p>
+        As with many things of value, successfully completing the ERP Exam requires a patient, concerted effort. A number of serious individuals have attempted the exam more than once before earning the 
+        ERP designation. Like them, we also encourage you to participate in the ERP Exam again in the future. 
+        <apex:outputLink value="https://my.garp.org/sfdcApp#!/public_registration/erp">Registration for the {! nextExamDate } ERP Exam is now open</apex:outputLink>.
+        </p>
+                
+        <p>
+        You are a valuable member of our Association and we hope that you continue to take advantage of the many ways that GARP promotes and fosters engagement with the broader risk 
+        management community through attendance at GARP chapter meetings, participation in GARP's webcast series, timely news alerts and risk publications. Information about these 
+        avenues of engagement is available on our website, 
+        <apex:outputLink value="http://www.garp.org">www.garp.org</apex:outputLink>.
+        </p>
+        
+        <p>
+        If you have any specific questions or suggestions about the ERP Program please feel free to contact us at 
+        <apex:outputLink value="mailto:memberservices@garp.com">memberservices@garp.com</apex:outputLink>.
+        </p>
+                        
+        </div>
+        
+        </apex:outputPanel>
+        <!-- End Case 6 ERP Exam failed -->
+        
+        
+        <!-- Case 7. FRM Exam 1 Failed, 2 Not graded -->
+        <apex:outputPanel rendered="{! frm1FailFrm2NotGraded  }">
+        
+        <div class="body" style="text-align:justify;text-align-last:right;"> 
+        <p>        
+        Thank you for participating in the <strong>{! examDate } FRM® Exam Part I and the FRM® Exam Part II</strong>. After a thorough review of your individual performance, we regret to inform you that your 
+        FRM Exam Part I score did not meet the necessary requirements for passing. As a consequence of not passing the FRM Exam Part I, we did not score your FRM Exam Part II.
+        </p>
+           
+        <p>
+        The FRM Exam is a challenging test covering a wide variety of risk management topics and is designed to evaluate whether candidates have the knowledge, skills and 
+        abilities needed to function effectively in the field of risk management. As with many things of value, the necessary knowledge, skills and abilities take a patient, 
+        concerted effort to obtain and many serious individuals require more than one attempt to succeed.
+        </p>
+                
+        <p>
+        In our continuing effort to provide useful feedback about the Exam, we invite you to view an analysis of your test results, including information about your individual 
+        performance relative to all other FRM candidates who sat for the {! examMonth } Exam. Please login to <apex:outputLink value="https://my.garp.org/Login?start=myprograms">your account</apex:outputLink> and go to 
+        “My Programs” to view an analysis of your <apex:outputLink value="https://my.garp.org/Login?start=exam_results">exam performance</apex:outputLink> based on quartile rankings for each section of the FRM curriculum evaluated on the exam.
+        </p>
+                
+        <p>
+        While your results may be disappointing, we encourage you to try again and take the FRM Exam Part I in the future. 
+        <apex:outputLink value="https://my.garp.org/sfdcApp#!/public_registration/frm">Registration for the {! nextExamDate } FRM Exam is now open</apex:outputLink>.
+        </p>
+                
+        <p>
+        The Global Association of Risk Professionals considers you to be a valuable member of the risk community and hopes you remain interested in risk management education and training. 
+        We look forward to your continued support and involvement in the Association. If you have any questions, please feel free to contact us directly at 
+        <apex:outputLink value="mailto:memberservices@garp.com">memberservices@garp.com</apex:outputLink>.
+        </p>
+                        
+        </div>
+        
+        </apex:outputPanel>
+        <!-- End Case 7 FRM Exam 1 failed 2 not graded -->
+                
+        
+        <apex:outputPanel rendered="{! isError == null || (!isError) }">
+        Sincerely yours,
+        
+        <div id="signaturePanel" style="margin-top:30px">
+            
+            <apex:outputPanel rendered="{! sSection == 'ERP'}">
+              <div id="sig1" style="float:left;">
+                <apex:image url="{!envPath}/img/Michael_Sell_signature.jpg" alt="Sig1" /><br/>
+                Michael Sell<br/>
+                Senior Vice President<br/>
+                ERP Program Manager<br/>
+              </div>
+            </apex:outputPanel>            
+            
+            <apex:outputPanel rendered="{! sSection != 'ERP'}">
+              <div id="sig1" style="float:left;">
+                <apex:image url="{!envPath}/img/Bill_May_signature.jpg" alt="Sig1" /><br/>
+                William May<br/>
+                Senior Vice President<br/>
+                FRM Program Manager<br/>
+              </div>
+            </apex:outputPanel>
+            
+            <div id="sig2" style="float:right;">
+              <apex:image url="{!envPath}/img/Chris_Donohue_signature.jpg" alt="Sig2" /><br/>
+              Christopher Donohue, Ph.D.<br/>
+              Managing Director<br/>
+              Research and Educational Programs<br/>    
+            </div>
+        
+        </div>
+        </apex:outputPanel>
+        
+    </div>
+</div>
+</apex:page>

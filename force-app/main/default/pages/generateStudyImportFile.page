@@ -1,0 +1,5 @@
+<apex:page controller="GenerateStudyImportFile" showHeader="false" sidebar="false" standardStylesheets="false" readOnly="false" contentType="text/csv#importUsers.csv" action="{!loadAccounts}">"LoginID","PasswordEncryptMode","PasswordUTF8","RequirePasswordChange","Password","FullName","EmailAddress","HomeDir","WebClientStartupMode","DirAccess","Type","ExpiresOn"
+<apex:repeat value="{!userWrapperList}" var="studyAccount">
+"{!studyAccount.LoginID}","{!studyAccount.PasswordEncryptMode }","{!studyAccount.PasswordUTF8}","{!studyAccount.RequirePasswordChange}","{!studyAccount.Password }","{!studyAccount.FullName}","{!studyAccount.EmailAddress}","{!studyAccount.HomeDir}","{!studyAccount.WebClientStartupMode}","{!studyAccount.DirAccess}","1","{!studyAccount.ExpiresOn}"
+</apex:repeat>
+</apex:page>

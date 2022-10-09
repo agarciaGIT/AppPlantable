@@ -1,0 +1,21 @@
+<apex:page tabStyle="Case" controller="ConventionBadgeSelectionController">
+    <apex:pageMessages />
+    <apex:form >
+        <apex:pageBlock title="Convention Badge" id="out">
+            <apex:pageBlockButtons >
+                <apex:commandButton value="Select" action="{!Print}" rerender="out" status="actStatusId"/>
+                <apex:commandButton action="{!PrintBadgeMethod}" value="Download" id="ExportPDF" />
+            </apex:pageBlockButtons>
+            <apex:pageBlockSection >
+                <apex:selectList value="{!selectedCountry}" multiselect="false" size="1" label="Select a country: ">
+                    <apex:selectOptions value="{!countriesOptions}"/>
+                </apex:selectList>
+                <apex:outputText id="country" value="{!selectedCountry}" label="You have selected:"/>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection >
+                <apex:inputText value="{!ContactIdBadge}" label="Enter the contact Id : "/>
+                <apex:outputText id="country" value="{!ContactIdError}" label="You have selected:"/>
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

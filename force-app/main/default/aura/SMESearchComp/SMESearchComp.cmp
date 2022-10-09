@@ -1,0 +1,295 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes" access="global" controller="SMESearchCompCtrl">
+    <aura:attribute name="searchTypeOpts" type="List" 
+                    default="[{label:'Search SME by Category / Subcategory',value:'criteria'},{label:'Free form text on Category / Subcategory',value:'category'},{label:'Search by SME Name',value:'name'}]"/>
+    <aura:attribute name="searchType" type="String" default="criteria"/>
+    
+    <aura:attribute name="searchWord" type="String"/>
+    
+    <aura:attribute name="searchFields" type="List"/>
+    <aura:attribute name="searchFieldValues" type="List"/>
+    <aura:attribute name="selectedSubcates" type="List"/>
+    
+    <aura:attribute name="filters" type="List" default="[]"/>
+    <aura:attribute name="filterErrMsg" type="String" default="Please add at least one filter or put in Contact name."/>
+    <aura:attribute name="filterIndex" type="Integer" default="1"/>
+    
+    <aura:attribute name="countries" type="List"/>
+    <aura:attribute name="selectedCountry" type="String" default="Worldwide"/>
+    <aura:attribute name="identifyOpts" type="List" default="[{'label': 'GARP', 'value': 'garp'}, {'label': 'System', 'value': 'system'}, {'label': 'Self', 'value': 'self'}]"/>
+    <aura:attribute name="identifyValue" type="List" default="['garp','system']"/>
+    
+    <aura:attribute name="columns" type="List"/>
+    <aura:attribute name="allSMEProfiles" type="SME_Registration__c[]"/>
+    <aura:attribute name="profilesInTable" type="Object"/>
+    <aura:attribute name="smeDetail" type="SME_Registration__c" default="{sobjectType:'SME_Registration__c'}"/>
+    
+    <aura:attribute name="showSpinner" type="Boolean" default="false"/>
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    <div>
+        <div class="slds-text-heading_medium slds-p-around_small"><b>SME Profile Search</b></div>
+        
+        <aura:if isTrue="{!v.showSpinner}">
+            <lightning:spinner alternativeText="Loading" size="medium"/>
+        </aura:if>
+        
+        <!-- <lightning:layout multipleRows="true" class="slds-m-bottom_medium">
+            <lightning:layoutItem size="12" smallDeviceSize="12" mediumDeviceSize="6" largeDeviceSize="3" >
+                <lightning:combobox name="searchType" label="" variant="label-hidden" value="{!v.searchType}" options="{!v.searchTypeOpts}" onchange="{!c.handleSearchTypeChange}"/>
+            </lightning:layoutItem>
+        </lightning:layout> -->
+        
+        <!-- Category search and Name search section. Not in use for now -->
+        <!-- <lightning:card title="{!v.searchType == 'category' ? v.searchTypeOpts[0].label : v.searchTypeOpts[2].label}" 
+                        class="{!(v.searchType == 'category' || v.searchType == 'name') ? '' : 'slds-hide'}">
+            <lightning:layout multipleRows="true">
+                <lightning:layoutItem padding="horizontal-small" size="12" smallDeviceSize="12" mediumDeviceSize="6" largeDeviceSize="4">
+                    <div onkeyup="{!c.handleKeyUp}">
+                        <lightning:input type="search" required="true"
+                                         aura:id="search" name="searchInpt" 
+                                         messageWhenValueMissing="Please enter search word."
+                                         label="" variant="label-hidden" />
+                    </div>
+                </lightning:layoutItem>
+                <lightning:layoutItem padding="horizontal-small" smallDeviceSize="12" mediumDeviceSize="6" largeDeviceSize="4" size="12">
+                    <lightning:button label="Search" iconName="standard:search" iconPosition="left" onclick="{!c.handleKeywordSearch}" />
+                </lightning:layoutItem>
+            </lightning:layout>
+            
+            <div class="slds-m-top_medium borderTop">
+                <div class="slds-p-horizontal_small slds-p-top_small slds-text-title">Filters:</div>
+                <lightning:layout multipleRows="true" verticalAlign="start">
+                    <lightning:layoutItem padding="horizontal-small" size="12" smallDeviceSize="12" mediumDeviceSize="6" largeDeviceSize="3">
+                        <lightning:select name="countrySel" label="Country/Region" value="{!v.selectedCountry}">
+                            <aura:iteration items="{!v.countries}" var="country">
+                                <option value="{!country}" selected="{!country=='United States'}">{!country}</option>
+                            </aura:iteration>
+                        </lightning:select>
+                    </lightning:layoutItem>
+                    
+                    <lightning:layoutItem class="{!v.searchType == 'name' ? 'slds-hide' : ''}" padding="horizontal-small" size="12" smallDeviceSize="12" mediumDeviceSize="6" largeDeviceSize="3" >
+                        <div class="inlineChk">
+                            <lightning:checkboxGroup name="identifyType" label="Identification Type"
+                                                     options="{!v.identifyOpts}" value="{!v.identifyValue}" onchange="{!c.handleIdentifyTypeChange}"/>
+                        </div>
+                    </lightning:layoutItem>
+                </lightning:layout>
+            </div>
+        </lightning:card> -->
+
+        <lightning:card title="{!v.searchTypeOpts[0].label}" class="{!v.searchType == 'criteria' ? '' : 'slds-hide'}">
+            <lightning:layout multipleRows="true" verticalAlign="end">
+                <lightning:layoutItem padding="horizontal-small" smallDeviceSize="12" mediumDeviceSize="2" largeDeviceSize="2" size="12">
+                    <lightning:select aura:id="categoryField" name="fldFilter" label="Category" onchange="{!c.handleSearchFieldChange}">
+                        <aura:iteration items="{!v.searchFields}" var="srchFld">
+                            <option value="{!srchFld.field}">{!srchFld.label}</option>
+                        </aura:iteration>
+                    </lightning:select>
+                </lightning:layoutItem>
+                <lightning:layoutItem padding="horizontal-small" smallDeviceSize="12" mediumDeviceSize="2" largeDeviceSize="2" size="12">
+                    <lightning:select aura:id="txtFilter" name="txtFilter" label="Option">
+                        <option value="Includes">Includes</option>
+                        <option value="Excludes">Excludes</option>
+                    </lightning:select>
+                </lightning:layoutItem>
+                <lightning:layoutItem padding="horizontal-small" smallDeviceSize="12" mediumDeviceSize="2" largeDeviceSize="2" size="12">
+                    <c:MultiSelect aura:id="categoryValue" label="Subcategory" infoText="Select a Subcategory (Optional)" width="100%"
+                                   options="{!v.searchFieldValues}" selectChange="{!c.handleSubcateChange}" />
+                    <!-- <lightning:select aura:id="fldValue" label="Subcategory">
+                        <aura:iteration items="{!v.searchFieldValues}" var="pickVal">
+                            <option value="{!pickVal}">{!pickVal}</option>
+                        </aura:iteration>
+                    </lightning:select> -->
+                </lightning:layoutItem>
+                <lightning:layoutItem padding="horizontal-small" smallDeviceSize="12" mediumDeviceSize="12" largeDeviceSize="4" size="12">
+                    <lightning:button label="Add Filter" iconName="utility:add" iconPosition="left" onclick="{!c.handleAddFilter}"/>
+                </lightning:layoutItem>
+                
+                <lightning:layoutItem padding="around-small" smallDeviceSize="12" mediumDeviceSize="12" largeDeviceSize="12" size="12">
+                    <div class="slds-box slds-theme_shade">
+                        
+                        <aura:iteration items="{!v.filters}" var="oneFilter">
+                            <span class="slds-pill slds-p-around_x-small">
+                                <span class="slds-pill__label">
+                                    <b>{!oneFilter.fieldLabel}: {!oneFilter.filter} {!oneFilter.valueDisplay}</b>
+                                </span>
+								<lightning:buttonIcon class="slds-pill__remove" iconName="utility:close" variant="bare" name="{!oneFilter.index}"
+                                                      onclick="{!c.handleFilterRemove}" alternativeText="Remove" />
+                            </span>
+                        </aura:iteration>
+                        
+                    </div>
+                </lightning:layoutItem>
+            </lightning:layout>
+            
+            <!-- Filter Block for Criteria Search -->
+            <div class="slds-p-bottom_small slds-m-bottom_small borderTop borderBottom">
+                <div class="slds-p-horizontal_small slds-p-top_small slds-text-title">Filters:</div>
+                <lightning:layout multipleRows="true" verticalAlign="start">
+                    <lightning:layoutItem padding="horizontal-small" size="12" smallDeviceSize="12" mediumDeviceSize="6" largeDeviceSize="3">
+                        <lightning:input aura:id="contactName" label="Contact Name" />
+                    </lightning:layoutItem>
+                    <lightning:layoutItem padding="horizontal-small" size="12" smallDeviceSize="12" mediumDeviceSize="6" largeDeviceSize="3">
+                        <lightning:select name="countrySel" label="Country/Region" value="{!v.selectedCountry}">
+                            <aura:iteration items="{!v.countries}" var="country">
+                                <option value="{!country}" selected="{!country==v.selectedCountry}">{!country}</option>
+                            </aura:iteration>
+                        </lightning:select>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem class="{!v.searchType == 'name' ? 'slds-hide' : ''}" padding="horizontal-small" size="12" smallDeviceSize="12" mediumDeviceSize="6" largeDeviceSize="3" >
+                        <div class="inlineChk">
+                            <lightning:checkboxGroup name="identifyType" label="Identification Type"
+                                                     options="{!v.identifyOpts}" value="{!v.identifyValue}" onchange="{!c.handleIdentifyTypeChange}"/>
+                        </div>
+                    </lightning:layoutItem>
+                </lightning:layout>
+            </div>
+            
+            <lightning:layout multipleRows="true" verticalAlign="end">
+                <lightning:layoutItem padding="horizontal-small" smallDeviceSize="12" mediumDeviceSize="12" largeDeviceSize="12" size="12">
+                    <lightning:button label="Search" iconName="standard:search" iconPosition="left" onclick="{!c.handleFilterSearch}" />
+                    <span aura:id="filterErrDiv" class="slds-m-left_small slds-hide">{!v.filterErrMsg}</span>
+                </lightning:layoutItem>
+            </lightning:layout>
+        </lightning:card>
+        
+        <lightning:card title="Results" aura:id="resultCard" class="slds-hidden resultBox">
+            <div class="slds-p-horizontal_large slds-text-heading_small">
+                <b>{!v.profilesInTable.length} records found with {!v.searchWord}</b>
+            </div>
+            
+            <!-- the container element determine the height of the datatable -->
+            <lightning:layout>
+                <lightning:layoutItem smallDeviceSize="12" mediumDeviceSize="12" largeDeviceSize="12" size="12">
+                    <div aura:id="tableDiv" class="slds-p-around_small resultTable slds-hide">
+                        <lightning:datatable keyField="id"
+                                             data="{!v.profilesInTable}"
+                                             columns="{!v.columns}"
+                                             onrowaction="{!c.handleRowAction}"
+                                             hideCheckboxColumn="true"/>
+                    </div>
+                </lightning:layoutItem>
+            </lightning:layout>
+        </lightning:card>
+        
+        <!-- View SME Modal -->
+        <aura:if isTrue="{!v.smeDetail.Id != null}">
+            <section aura:id="smeModal" role="dialog" tabindex="-1" aria-labelledby="smeHeading" aria-modal="true" aria-describedby="smeContent" class="slds-modal">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <button class="slds-button slds-button_icon slds-modal__close" title="Close" onclick="{!c.handleModalClose}">
+                            <lightning:icon iconName="utility:close" variant="inverse" alternativeText="Close"/>
+                        </button>
+                        <h2 id="smeHeading" class="slds-text-heading_medium slds-hyphenate">SME Profile: {!v.smeDetail.Contact__r.Name}</h2>
+                    </header>
+                    
+                    <div class="slds-modal__content slds-p-around_medium" id="smeContent">
+                        <lightning:recordViewForm recordId="{!v.smeDetail.Id}" objectApiName="SME_Registration__c">
+                            <lightning:tabset>
+                                <lightning:tab label="GARP Identification">
+                                    <div class="slds-box">
+                                        <lightning:layout multipleRows="true">
+                                            <lightning:layoutItem padding="horizontal-small" size="12" class="slds-text-heading_small">
+                                                GARP Identification
+                                            </lightning:layoutItem>
+                                            <lightning:layoutItem padding="around-small" size="6" smallDeviceSize="12" mediumDeviceSize="6" largeDeviceSize="6"> 
+                                                <lightning:outputField fieldName="Culture_Governance_GARP__c" />
+                                                <lightning:outputField fieldName="Expert_Participation_GARP__c" />
+                                                <lightning:outputField fieldName="Operational_GARP__c" />
+                                                <lightning:outputField fieldName="Technology_GARP__c" />
+                                                <lightning:outputField fieldName="Credit_Risk_GARP__c" />
+                                                <lightning:outputField fieldName="Liquidity_and_Treasury_GARP__c" />
+                                                <lightning:outputField fieldName="Sales_and_Trading_GARP__c" />
+                                            </lightning:layoutItem>
+                                            <lightning:layoutItem padding="around-small" size="6" smallDeviceSize="12" mediumDeviceSize="6" largeDeviceSize="6">
+                                                <lightning:outputField fieldName="Energy_GARP__c" />
+                                                <lightning:outputField fieldName="Market_Risk_GARP__c" />
+                                                <lightning:outputField fieldName="Publishing_Experience_GARP__c" />
+                                                <lightning:outputField fieldName="Teaching_Experience_GARP__c" />
+                                                <lightning:outputField fieldName="Regulation_and_Compliance_GARP__c" />
+                                                <lightning:outputField fieldName="Non_Financial_Risk_GARP__c" />
+                                            </lightning:layoutItem>
+                                        </lightning:layout>
+                                    </div>
+                                </lightning:tab>
+                                
+                                <lightning:tab label="System Identification">
+                                    <div class="slds-box">
+                                        <lightning:layout multipleRows="true">
+                                            <lightning:layoutItem padding="horizontal-small" size="12" class="slds-text-heading_small">
+                                                System Identification
+                                            </lightning:layoutItem>
+                                            
+                                            <lightning:layoutItem padding="around-small" size="6" smallDeviceSize="12" mediumDeviceSize="6" largeDeviceSize="6">
+                                                <lightning:outputField fieldName="Culture_Governance_Sys__c" />
+                                                <lightning:outputField fieldName="Expert_Participation_Sys__c" />
+                                                <lightning:outputField fieldName="Operational_Sys__c" />
+                                                <lightning:outputField fieldName="Technology_Sys__c" />
+                                                <lightning:outputField fieldName="Credit_Risk_Sys__c" />
+                                            </lightning:layoutItem>
+                                            <lightning:layoutItem padding="around-small" size="6" smallDeviceSize="12" mediumDeviceSize="6" largeDeviceSize="6">
+                                                <lightning:outputField fieldName="Energy_Sys__c" />
+                                                <lightning:outputField fieldName="Market_Risk_Sys__c" />
+                                                <lightning:outputField fieldName="Publishing_Experience_Sys__c" />
+                                                <lightning:outputField fieldName="Teaching_Experience_Sys__c" />
+                                            </lightning:layoutItem>
+                                        </lightning:layout>
+                                    </div>
+                                </lightning:tab>
+                                
+                                <lightning:tab label="Self Identification">
+                                    <div class="slds-box">
+                                        <lightning:layout multipleRows="true">
+                                            <lightning:layoutItem padding="horizontal-small" size="12" class="slds-text-heading_small">
+                                                Self Identification
+                                            </lightning:layoutItem>
+                                            <lightning:layoutItem padding="around-small" size="6" smallDeviceSize="12" mediumDeviceSize="6" largeDeviceSize="6">
+                                                <lightning:outputField fieldName="Culture_Governance__c" />
+                                                <lightning:outputField fieldName="Expert_Participation__c" />
+                                                <lightning:outputField fieldName="Operational__c" />
+                                                <lightning:outputField fieldName="Technology__c" />
+                                                <lightning:outputField fieldName="Credit_Risk__c" />
+                                            </lightning:layoutItem>
+                                            <lightning:layoutItem padding="around-small" size="6" smallDeviceSize="12" mediumDeviceSize="6" largeDeviceSize="6">
+                                                <lightning:outputField fieldName="Energy__c" />
+                                                <lightning:outputField fieldName="Market_Risk__c" />
+                                                <lightning:outputField fieldName="Publishing_Experience__c" />
+                                                <lightning:outputField fieldName="Teaching_Experience__c" />
+                                            </lightning:layoutItem>
+                                        </lightning:layout>
+                                    </div>
+                                </lightning:tab>
+                            </lightning:tabset>
+
+                            <div class="slds-box slds-m-top_small">
+                                <lightning:layout multipleRows="true">
+                                    <lightning:layoutItem padding="horizontal-small" size="12" class="slds-text-heading_small">
+                                        Engagement KPIs
+                                    </lightning:layoutItem>
+                                    
+                                    <lightning:layoutItem padding="around-small" size="6" smallDeviceSize="12" mediumDeviceSize="6" largeDeviceSize="6">
+                                        <lightning:outputField fieldName="Event_Speaker_Count__c" />
+                                        <lightning:outputField fieldName="Chapter_Speaker_Count__c" />
+                                        <lightning:outputField fieldName="Webcast_Presenter_Count__c" />
+                                        <lightning:outputField fieldName="Podcast_Presenter_Count__c" />
+                                        <lightning:outputField fieldName="Article_Author_Count__c" />
+                                    </lightning:layoutItem>
+                                    <lightning:layoutItem padding="around-small" size="6" smallDeviceSize="12" mediumDeviceSize="6" largeDeviceSize="6">
+                                        <lightning:outputField fieldName="Last_Event_Speaker_Date__c" />
+                                        <lightning:outputField fieldName="Last_Chapter_Speaker_Date__c" />
+                                        <lightning:outputField fieldName="Last_Webcast_Presenter_Date__c" />
+                                        <lightning:outputField fieldName="Last_Podcast_Presenter_Date__c" />
+                                        <lightning:outputField fieldName="Last_Article_Author_Date__c" />
+                                    </lightning:layoutItem>
+                                </lightning:layout>
+                            </div>
+                        </lightning:recordViewForm>
+                    </div>
+                </div>
+            </section>
+        </aura:if>
+        
+        <div aura:id="smeBack" class="slds-backdrop"></div>
+    </div>
+</aura:component>

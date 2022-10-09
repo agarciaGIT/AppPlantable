@@ -1,0 +1,16 @@
+<apex:page standardController="Study__c" 
+    extensions="cloneStudyDetails">
+    <apex:form >
+        <apex:pageMessages />
+        <apex:pageblock >
+            <apex:pageblockSection title="Input study Details" collapsible="false">
+                <apex:inputField value="{!Study__c.Name}" required="true"/>
+                
+            </apex:pageblockSection>
+            <apex:pageBlockButtons >
+                <apex:commandbutton value="Save" action="{!cloneStudyDetails}"/>
+               
+            </apex:pageBlockButtons>
+        </apex:pageblock>
+    </apex:form>
+</apex:page>

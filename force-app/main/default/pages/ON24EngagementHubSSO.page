@@ -1,0 +1,2 @@
+<apex:page controller="ON24EngagementHubSSO" action="{!redirect}">
+</apex:page>

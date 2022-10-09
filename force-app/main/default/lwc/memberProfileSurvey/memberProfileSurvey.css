@@ -1,0 +1,6 @@
+@import 'c/styles';
+
+.garp-slds {
+    --slds-c-card-header-spacing-block-end: 0;
+    --slds-c-card-header-spacing-block-start: 0;
+}

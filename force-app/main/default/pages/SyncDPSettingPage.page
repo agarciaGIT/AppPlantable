@@ -1,0 +1,15 @@
+<apex:page standardController="Account" extensions="SyncDPSettingExt" lightningStylesheets="true" showHeader="false" sidebar="false">
+    <apex:form >
+        
+        <apex:pageBlock >
+            <apex:pageBlockSection title="Set 'DP Not Required' for all active Study Accounts under {!acct.Name}" columns="1">
+                <apex:selectList value="{!dp_select_val}">
+                    <apex:selectOptions value="{!opts}" />
+                </apex:selectList>
+
+                <apex:commandButton action="{!syncDPSettings}" oncomplete="alert('DP Not Required settings updated.');" value="Confirm"/>
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+        
+    </apex:form>
+</apex:page>

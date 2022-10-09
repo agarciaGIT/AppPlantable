@@ -1,0 +1,310 @@
+<apex:page standardStylesheets="false" sidebar="false" showHeader="false" id="reportsGARPServices" controller="reportsGARP">
+    <script type="text/javascript">
+    
+    var reportsGARPServices = {
+        currentAccount: null
+    };
+    
+    Visualforce.remoting.timeout = 120000;
+
+    reportsGARPServices.setInitiativesRank = function(rankOrder, callback) {
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.reportsGARP.setInitiativesRank}',
+            rankOrder,
+            function(result, event){
+                var returnObj = {
+                    result: result,
+                    event: event
+                }
+                callback(null, returnObj);
+                return returnObj;                
+            }, 
+            {escape: true}
+        );            
+    }        
+
+    reportsGARPServices.setInitiatives = function(initiativeId, endDate, callback) {
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.reportsGARP.setInitiatives}',
+            initiativeId, endDate,
+            function(result, event){
+                var returnObj = {
+                    result: result,
+                    event: event
+                }
+                callback(null, returnObj);
+                return returnObj;                
+            }, 
+            {escape: true}
+        );            
+    }        
+
+    reportsGARPServices.getInitiativesResources = function(callback) {
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.reportsGARP.getInitiativesResources }',
+            function(result, event){
+                var returnObj = {
+                    result: result,
+                    event: event
+                }
+                callback(null, returnObj);
+                return returnObj;                
+            }, 
+            {escape: true}
+        );            
+    }        
+
+
+    reportsGARPServices.getInitiatives = function(callback) {
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.reportsGARP.getInitiatives}',
+            function(result, event){
+                var returnObj = {
+                    result: result,
+                    event: event
+                }
+                callback(null, returnObj);
+                return returnObj;                
+            }, 
+            {escape: true}
+        );            
+    }        
+
+    reportsGARPServices.updateStats= function(callback) {
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.reportsGARP.updateStats}',
+            function(result, event){
+                var returnObj = {
+                    result: result,
+                    event: event
+                }
+                callback(null, returnObj);
+                return returnObj;                
+            }, 
+            {escape: true}
+        );            
+    }        
+
+    reportsGARPServices.deleteSettings= function(settingId, callback) {
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.reportsGARP.deleteSettings}',
+            settingId,
+            function(result, event){
+                var returnObj = {
+                    result: result,
+                    event: event
+                }
+                callback(null, returnObj);
+                return returnObj;                
+            }, 
+            {escape: true}
+        );            
+    }        
+
+    reportsGARPServices.getSettings= function(callback) {
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.reportsGARP.getSettings}',
+            function(result, event){
+                var returnObj = {
+                    result: result,
+                    event: event
+                }
+                callback(null, returnObj);
+                return returnObj;                
+            }, 
+            {escape: true}
+        );            
+    }        
+
+    reportsGARPServices.setSettings= function(userId, setingsId, Name, ReportId, displayOptions, colorOptions, chartOptions, callback) {
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.reportsGARP.setSettings}',
+            userId, setingsId, Name, ReportId, displayOptions, colorOptions, chartOptions,
+            function(result, event){
+                var returnObj = {
+                    result: result,
+                    event: event
+                }
+                callback(null, returnObj);
+                return returnObj;                
+            }, 
+            {escape: true}
+        );            
+    }        
+    
+    reportsGARPServices.getExamSites= function(callback) {
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.reportsGARP.getExamSites}',
+            function(result, event){
+                var returnObj = {
+                    result: result,
+                    event: event
+                }
+                callback(null, returnObj);
+                return returnObj;                
+            }, 
+            {escape: true}
+        );            
+    }        
+    
+    reportsGARPServices.getDeploymentData = function(month, year, callback) {
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.reportsGARP.getDeploymentData}',
+            month, year,
+            function(result, event){
+                var returnObj = {
+                    result: result,
+                    event: event
+                }
+                callback(null, returnObj);
+                return returnObj;                
+            }, 
+            {escape: true}
+        );            
+    }    
+
+    reportsGARPServices.getRefunds = function(startDate, EndDate, callback) {
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.reportsGARP.getRefunds}',
+            startDate, EndDate,
+            function(result, event){
+                var returnObj = {
+                    result: result,
+                    event: event
+                }
+                callback(null, returnObj);
+                return returnObj;                
+            }, 
+            {escape: true}
+        );            
+    }
+    
+   reportsGARPServices.getReportData= function(startDate, EndDate, GARP, GRA, NJ, callback) {
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.reportsGARP.getReportData}',
+            startDate, EndDate, GARP, GRA, NJ,
+            function(result, event){
+                var returnObj = {
+                    result: result,
+                    event: event
+                }
+                callback(null, returnObj);
+                return returnObj;                
+            }, 
+            {escape: true}
+        );            
+    }
+
+   reportsGARPServices.getReportDataTrans= function(startDate, EndDate, GARP, GRA, NJ, callback) {
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.reportsGARP.getReportDataTrans}',
+            startDate, EndDate, GARP, GRA, NJ,
+            function(result, event){
+                var returnObj = {
+                    result: result,
+                    event: event
+                }
+                callback(null, returnObj);
+                return returnObj;                
+            }, 
+            {escape: true}
+        );            
+    }
+
+   reportsGARPServices.getReportDataOpp= function(startDate, EndDate, GARP, GRA, NJ, callback) {
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.reportsGARP.getReportDataOpp}',
+            startDate, EndDate, GARP, GRA, NJ,
+            function(result, event){
+                var returnObj = {
+                    result: result,
+                    event: event
+                }
+                callback(null, returnObj);
+                return returnObj;                
+            }, 
+            {escape: true}
+        );            
+    }
+
+   reportsGARPServices.getReportDataRefunds= function(startDate, EndDate, GARP, GRA, NJ, callback) {
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.reportsGARP.getReportDataRefunds}',
+            startDate, EndDate, GARP, GRA, NJ,
+            function(result, event){
+                var returnObj = {
+                    result: result,
+                    event: event
+                }
+                callback(null, returnObj);
+                return returnObj;                
+            }, 
+            {escape: true}
+        );            
+    }
+   
+   reportsGARPServices.getReportDataTransFilters= function(startDate, EndDate, GARP, GRA, NJ, filterProdIds, teamReg, callback) {
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.reportsGARP.getReportDataTransFilters}',
+            startDate, EndDate, GARP, GRA, NJ, filterProdIds, teamReg,
+            function(result, event){
+                var returnObj = {
+                    result: result,
+                    event: event
+                }
+                callback(null, returnObj);
+                return returnObj;                
+            }, 
+            {escape: true}
+        );            
+    }
+
+   reportsGARPServices.getReportDataOppFilters= function(startDate, EndDate, GARP, GRA, NJ, filterProdIds, teamReg, callback) {
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.reportsGARP.getReportDataOppFilters}',
+            startDate, EndDate, GARP, GRA, NJ, filterProdIds, teamReg,
+            function(result, event){
+                var returnObj = {
+                    result: result,
+                    event: event
+                }
+                callback(null, returnObj);
+                return returnObj;                
+            }, 
+            {escape: true}
+        );            
+    }
+
+   reportsGARPServices.getReportDataRefundsFilters= function(startDate, EndDate, GARP, GRA, NJ, filterProdIds, teamReg, callback) {
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.reportsGARP.getReportDataRefundsFilters}',
+            startDate, EndDate, GARP, GRA, NJ, filterProdIds, teamReg,
+            function(result, event){
+                var returnObj = {
+                    result: result,
+                    event: event
+                }
+                callback(null, returnObj);
+                return returnObj;                
+            }, 
+            {escape: true}
+        );            
+    }
+   
+    reportsGARPServices.getProducts = function(priceBookId, callback) {
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.reportsGARP.getProducts}',
+            priceBookId,
+            function(result, event){
+                var returnObj = {
+                    result: result,
+                    event: event
+                }
+                callback(null, returnObj);
+                return returnObj;                
+            }, 
+            {escape: true}
+        );            
+    }    
+    </script>
+</apex:page>

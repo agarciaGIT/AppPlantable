@@ -1,0 +1,271 @@
+<!-- Main Component for GBI Request Handler -->
+<aura:component controller="GBIRequestHandlerCtrl" implements="force:appHostable,flexipage:availableForAllPageTypes" access="global" >
+    <!-- Component Attributes -->
+    <aura:attribute name="isLoading" type="Boolean" default="true" />
+    <aura:attribute name="appParameterDisplay" type="Boolean[]" access="private"
+                    description="Display conditions for Database, Study Part, Study Tabels and Study Participants by array index." />
+    <aura:attribute name="isParameterExpand" type="Boolean" default="true" />
+    <aura:attribute name="isAddiParameterExpand" type="Boolean" default="true" />
+    <aura:attribute name="showAdditionalParas" type="Boolean" default="false" />
+    
+    <aura:attribute name="currentUser" type="User" />
+    <aura:attribute name="studyPartRequiredProcess" type="List" default="['write-database', 'load-template', 'load-ratios', 'load-data', 'generate-qualitative', 'load-ratio-exclusions', 'run-analysis']"
+                    description="The Processes that requires Study Part." />
+    <aura:attribute name="studyPartRequired" type="Boolean" description="Used to mark Study Part field required dynamically." />
+    
+    <!-- Picklist values and selected value for generic parameters -->
+    <aura:attribute name="appOpts" type="List" />
+    <aura:attribute name="processOpts" type="List" />
+    <aura:attribute name="databaseOpts" type="List" />
+    <aura:attribute name="studyPartOpts" type="List" />
+    <aura:attribute name="studyParticipantsOpts" type="List" />
+    
+    <aura:attribute name="selectedApp" type="String" />
+    <aura:attribute name="selectedProcess" type="String" />
+    <aura:attribute name="selectedDatabase" type="String" />
+    <aura:attribute name="selectedStudyPart" type="String" />
+    <aura:attribute name="selectedStudyParticipants" type="List" />
+    
+    <aura:attribute name="inputStudyTables" type="String" />
+
+    <!-- Client Attribute -->
+    <aura:attribute name="clientAttr" type="List" default="[]"/>
+    <aura:attribute name="clientAttrIndex" type="Integer" default="0"/>
+    
+    <aura:attribute name="selectedClientAttrKey" type="String" />
+    <aura:attribute name="selectedClientAttrValue" type="String" />
+    
+    <aura:attribute name="clientAttrKeyOpts" type="List" 
+                    default="[{label: 'GBI_Region__c', value: 'GBI_Region__c'}, 
+                             {label: 'GBI_Country_Code__c', value: 'GBI_Country_Code__c'}]" />
+    <aura:attribute name="allClientAttrValueOpts" type="Object" />
+    <aura:attribute name="clientAttrValueOpts" type="List" />
+    
+    <!-- Client Metadata -->
+    <aura:attribute name="clientMeta" type="List" default="[]" />
+    <aura:attribute name="clientMetaIndex" type="Integer" default="0"/>
+    
+    <aura:attribute name="selectedClientMetadataAttr" type="String" />
+    <aura:attribute name="selectedClientMetadataKey" type="String" />
+    <aura:attribute name="selectedClientMetadataKeyValue" type="String" />
+    <aura:attribute name="selectedClientMetadataValue" type="String" />
+    
+    <aura:attribute name="clientMetadataAttrOpts" type="List" default="[{label: 'G_SIB__c', value: 'G_SIB__c'}]" />
+    <aura:attribute name="clientMetadataKeyOpts" type="List" default="[{label: 'Year__c', value: 'Year__c'}]" />
+    <aura:attribute name="clientMetadataKeyValueOpts" type="List" />
+    <aura:attribute name="allClientMetadataValueOpts" type="Object" />
+    <aura:attribute name="clientMetadataValueOpts" type="List" />
+    
+    <!-- Ratio Set -->
+    <aura:attribute name="inputRatioSetComposition" type="String" />
+    <aura:attribute name="inputAssociatedRatioSetXID" type="String" />
+    <aura:attribute name="inputRatioSetDescription" type="String" />
+    
+    <!-- Displaying enqueued GBI Requests -->
+    <aura:attribute name="enqueuedRequests" type="List" default="[]" />
+    <aura:attribute name="enqueuedRequestsCols" type="List" default="[
+		{label: 'Time', fieldName: 'time', type: 'date', typeAttributes: {year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'}},
+		{label: 'Status', fieldName: 'status', type: 'text'},
+        {label: 'Application', fieldName: 'app', type: 'text'},
+		{label: 'Process', fieldName: 'process', type: 'text'},
+		{label: 'Database', fieldName: 'database', type: 'text'}]" />
+    
+    <!-- Event Handlers -->
+    <aura:handler name="init" value="{!this}" action="{!c.onInit}" />
+    
+    <!-- Loading Icon -->
+    <aura:if isTrue="{!v.isLoading}">
+        <lightning:spinner alternativeText="Loading" size="medium" />
+    </aura:if>
+    
+    <!-- Main Body -->
+    <!-- General Parameters Section -->
+    <lightning:card class="shadowBox">
+        <aura:set attribute="title"><span class="boldText">General Parameters</span></aura:set>
+        <aura:set attribute="actions">
+            <lightning:buttonIcon name="paraSec" iconName="{!v.isParameterExpand ? 'utility:chevronup' : 'utility:chevrondown'}"
+                                  alternativeText="Toggle this section" onclick="{!c.handleSectionToggle}"/>
+        </aura:set>
+        
+        <aura:if isTrue="{!v.isParameterExpand}">
+            <div class="slds-p-horizontal_small">
+                <div class="slds-box">
+                    <div class="slds-p-horizontal_small slds-text-heading_small">Application Details</div>
+                    <lightning:layout>
+                        <lightning:layoutItem size="2" largeDeviceSize="2" mediumDeviceSize="4" smallDeviceSize="4" padding="horizontal-small">
+                            <lightning:input label="User" value="{!v.currentUser.Name}" readonly="true" />
+                        </lightning:layoutItem>
+                        <lightning:layoutItem size="2" largeDeviceSize="2" mediumDeviceSize="4" smallDeviceSize="4" padding="horizontal-small">
+                            <lightning:combobox name="app_select" label="Application" 
+                                                value="{!v.selectedApp}" options="{!v.appOpts}" onchange="{!c.handleAppChange}" />
+                        </lightning:layoutItem>
+                        <lightning:layoutItem size="2" largeDeviceSize="2" mediumDeviceSize="4" smallDeviceSize="4" padding="horizontal-small">
+                            <lightning:combobox name="process_select" label="Process" 
+                                                value="{!v.selectedProcess}" options="{!v.processOpts}" onchange="{!c.handleProcessChange}" />
+                        </lightning:layoutItem>
+                    </lightning:layout>
+                </div>
+                
+                <div class="slds-box slds-m-top_small">
+                    <div class="slds-p-horizontal_small slds-text-heading_small">Parameters for Application</div>
+                    <lightning:layout>
+                        <aura:if isTrue="{!v.appParameterDisplay[0]}">
+                            <lightning:layoutItem size="4" padding="horizontal-small">
+                                <lightning:combobox aura:id="database_select" name="database_select" label="Database" 
+                                                    required="{!v.selectedProcess != 'run-listener'}" messageWhenValueMissing="Database is required"
+                                                    value="{!v.selectedDatabase}" options="{!v.databaseOpts}" onchange="{!c.handleDatabaseChange}" />
+                            </lightning:layoutItem>
+                        </aura:if>
+                        <aura:if isTrue="{!v.appParameterDisplay[1]}">
+                            <lightning:layoutItem size="2" padding="horizontal-small">
+                                <lightning:combobox aura:id="studyPart_select" disabled="{!empty(v.selectedDatabase)}" name="studyPart_select" label="Study Part" 
+                                                    required="{!v.studyPartRequired}" messageWhenValueMissing="Study Part is required for this Process"
+                                                    value="{!v.selectedStudyPart}" options="{!v.studyPartOpts}" />
+                            </lightning:layoutItem>
+                        </aura:if>
+                        <aura:if isTrue="{!v.appParameterDisplay[2]}">
+                            <lightning:layoutItem size="3" padding="horizontal-small">
+                                <lightning:textarea name="studyTables" label="Study Tables" value="{!v.inputStudyTables}" placeholder="Enter Comma Separated List for Study Tables" />
+                            </lightning:layoutItem>
+                        </aura:if>
+                        <aura:if isTrue="{!v.appParameterDisplay[3]}">
+                            <lightning:layoutItem size="{!v.selectedProcess == 'run-analysis' ? 6 : 3}" padding="horizontal-small" flexibility="auto">
+                                <lightning:dualListbox disabled="{!empty(v.selectedDatabase)}" name="studyParticipants" label="Study Participants" 
+                                                       sourceLabel="Available" selectedLabel="Selected" size="5" disableReordering="true" 
+                                                       value="{!v.selectedStudyParticipants}" options="{!v.studyParticipantsOpts}" onchange="{!c.handleStudyParticipantsChange}" />
+                            </lightning:layoutItem>
+                        </aura:if>
+                    </lightning:layout>
+                </div>
+            </div>
+        </aura:if>
+    </lightning:card>
+    
+    <!-- Additional Parameters Section -->
+    <aura:if isTrue="{!v.showAdditionalParas}">
+        <lightning:card class="shadowBox">
+            <aura:set attribute="title"><span class="boldText">Additional Parameters</span></aura:set>
+            <aura:set attribute="actions">
+                <lightning:buttonIcon name="addiParaSec" iconName="{!v.isAddiParameterExpand ? 'utility:chevronup' : 'utility:chevrondown'}"
+                                      alternativeText="Toggle this section" onclick="{!c.handleSectionToggle}"/>
+            </aura:set>
+            
+            <aura:if isTrue="{!v.isAddiParameterExpand}">
+                <div class="slds-p-horizontal_small">
+                    <!-- Client Attribute and Client Metadata Panel -->
+                    <div class="slds-box">
+                        <lightning:layout>
+                            <!-- Client Attribute -->
+                            <lightning:layoutItem size="4" padding="horizontal-small">
+                                <div class="slds-text-heading_small">Client Attribute</div>
+                                <lightning:layout verticalAlign="end" multipleRows="true">
+                                    <lightning:layoutItem size="6">
+                                        <lightning:combobox disabled="{!empty(v.selectedDatabase)}" label="Key" 
+                                                            value="{!v.selectedClientAttrKey}" options="{!v.clientAttrKeyOpts}" onchange="{!c.handleClientAttrKeyChange}" />
+                                    </lightning:layoutItem>
+                                    <lightning:layoutItem size="6">
+                                        <lightning:combobox disabled="{!empty(v.selectedDatabase)}" label="Value" 
+                                                            value="{!v.selectedClientAttrValue}" options="{!v.clientAttrValueOpts}" />
+                                    </lightning:layoutItem>
+                                    <lightning:layoutItem size="6" largeDeviceSize="6" mediumDeviceSize="8" smallDeviceSize="12" class="slds-m-top_xx-small">
+                                        <lightning:button label="Add Attribute" iconName="utility:add" onclick="{!c.handleAddClientAttr}" />
+                                    </lightning:layoutItem>
+                                </lightning:layout>
+                                
+                                <div class="slds-m-top_small">Configured Client Attribute</div>
+                                <div class="slds-box">
+                                    <ol class="slds-list_ordered">
+                                        <aura:iteration items="{!v.clientAttr}" var="oneClientAttr">
+                                            <li><lightning:pill name="{!oneClientAttr.index}" onremove="{!c.handleRemoveClientAttr}"
+                                                                label="{!oneClientAttr.key + ' = ' + oneClientAttr.value}"/></li>
+                                        </aura:iteration>
+                                    </ol>
+                                </div>
+                            </lightning:layoutItem>
+                            
+                            <!-- Client Metadata -->
+                            <lightning:layoutItem size="8" padding="horizontal-small">
+                                <div class="slds-text-heading_small">Client Metadata</div>
+                                <lightning:layout verticalAlign="end" multipleRows="true">
+                                    <lightning:layoutItem size="3">
+                                        <lightning:combobox disabled="{!empty(v.selectedDatabase)}" label="Attribute" 
+                                                            value="{!v.selectedClientMetadataAttr}" options="{!v.clientMetadataAttrOpts}" />
+                                    </lightning:layoutItem>
+                                    <lightning:layoutItem size="3">
+                                        <lightning:combobox disabled="{!empty(v.selectedDatabase)}" label="Key" 
+                                                            value="{!v.selectedClientMetadataKey}" options="{!v.clientMetadataKeyOpts}" />
+                                    </lightning:layoutItem>
+                                    <lightning:layoutItem size="3">
+                                        <lightning:combobox disabled="{!empty(v.selectedDatabase)}" label="KeyValue" 
+                                                            value="{!v.selectedClientMetadataKeyValue}" options="{!v.clientMetadataKeyValueOpts}" onchange="{!c.handleMetadataKeyValueChange}" />
+                                    </lightning:layoutItem>
+                                    <lightning:layoutItem size="3">
+                                        <lightning:combobox disabled="{!empty(v.selectedDatabase)}" label="Value"
+                                                            value="{!v.selectedClientMetadataValue}" options="{!v.clientMetadataValueOpts}" />
+                                    </lightning:layoutItem>
+                                    <lightning:layoutItem size="3" largeDeviceSize="3" mediumDeviceSize="4" smallDeviceSize="6" class="slds-m-top_xx-small">
+                                        <lightning:button label="Add Metadata" iconName="utility:add" onclick="{!c.handleAddClientMeta}" />
+                                    </lightning:layoutItem>
+                                </lightning:layout>
+                                
+                                <div class="slds-m-top_small">Configured Client Metadata</div>
+                                <div class="slds-box">
+                                    <ol class="slds-list_ordered">
+                                        <aura:iteration items="{!v.clientMeta}" var="oneClientMeta">
+                                            <li><lightning:pill name="{!oneClientMeta.index}" onremove="{!c.handleRemoveClientMeta}"
+                                                                label="{!oneClientMeta.attr + ' - ' + oneClientMeta.key + ' - ' + oneClientMeta.keyValue + ' - ' + oneClientMeta.value}"/></li>
+                                        </aura:iteration>
+                                    </ol>
+                                </div>
+                            </lightning:layoutItem>
+                        </lightning:layout>
+                    </div>
+                    
+                    <!-- Ratio Set Panel -->
+                    <div class="slds-box slds-m-top_small">
+                        <div class="slds-p-horizontal_small slds-text-heading_small">Ratio Set</div>
+                        <lightning:layout>
+                            <lightning:layoutItem size="4" padding="horizontal-small">
+                                <lightning:textarea name="ratioSetComposition" label="Ratio Set Composition" value="{!v.inputRatioSetComposition}" placeholder="Enter Comma Separated List for Ratio Set Composition" />
+                            </lightning:layoutItem>
+                            <lightning:layoutItem size="2" padding="horizontal-small">
+                                <lightning:input name="associatedRatioSetXID" label="Associated Ratio Set Number" value="{!v.inputAssociatedRatioSetXID}" />
+                            </lightning:layoutItem>
+                            <lightning:layoutItem size="4" padding="horizontal-small">
+                                <lightning:input name="ratioSetDescription" label="Ratio Set Description" value="{!v.inputRatioSetDescription}" />
+                            </lightning:layoutItem>
+                        </lightning:layout>
+                    </div>
+                </div>
+            </aura:if>
+        </lightning:card>
+    </aura:if>
+    
+    <!-- Buttons Section -->
+    <div class="slds-m-top_medium slds-box shadowBox cardPaddingForBox">
+        <aura:if isTrue="{!!empty(v.selectedDatabase)}">
+            <div class="slds-m-bottom_x-small">
+                <lightning:badge label="{!'Database: ' + v.selectedDatabase}"/>
+            </div>
+        </aura:if>
+        <aura:if isTrue="{!!empty(v.selectedStudyParticipants)}">
+            <div class="slds-m-bottom_x-small">
+                <lightning:textarea readonly="true" label="Study Participants" value="{!v.selectedStudyParticipants}"/>
+            </div>
+        </aura:if>
+        
+        <lightning:button variant="brand" label="Submit Job" title="Submit Job" onclick="{!c.handleSubmitJob}" />
+        <lightning:button label="Clear Parameters" title="Clear Parameters" onclick="{!c.handleClearParameters}" />
+        <lightning:button variant="destructive" label="Delete Jobs" title="Delete Jobs" onclick="{!c.handleDeleteJobs}" />
+    </div>
+    
+    <aura:if isTrue="{!!empty(v.enqueuedRequests)}">
+        <div class="slds-m-top_medium slds-box shadowBox cardPaddingForBox">
+            <div class="slds-text-heading_small">Enqueued Requests</div>
+            <div style="height: 200px">
+                <lightning:datatable keyField="index" hideCheckboxColumn="true"
+                                     data="{!v.enqueuedRequests}" columns="{!v.enqueuedRequestsCols}" />
+            </div>
+        </div>
+    </aura:if>
+</aura:component>

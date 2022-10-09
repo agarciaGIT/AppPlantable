@@ -1,0 +1,59 @@
+<apex:page standardStylesheets="false" sidebar="false" showHeader="false" applyBodyTag="false" cache="false" applyHtmlTag="false" docType="html-5.0" controller="DigitalBadgeSCR" action="{!urlRedirection}">
+
+    <meta name="viewport" content="user-scalable=yes, target-densityDpi=device-dpi, initial-scale=1.2" />
+    <apex:variable var="envPath" value="{!URLFOR($Resource.sfdcApp)}" />
+    <apex:variable var="envPathFonts" value="{!URLFOR($Resource.sfdcAppFonts)}" />
+    <link href="{!envPath}/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="{!envPathFonts}/css/global_variables.css" rel="stylesheet" />
+    <link href="{!envPathFonts}/css/sfdcApp.css" rel="stylesheet" />
+    <link href="{!envPathFonts}/css/login.css" rel="stylesheet" />
+        
+    
+    
+    <head id="ContentPlaceHolderDefault_Head1"><meta http-equiv="content-type" content="text/html; charset=utf-8" /><meta name="google-site-verification" content="e9x5rdrmpdV4Cxsz9T6-oE3gwuPygsGKnFci9y8NZXw" />
+        <title>
+        Sustainability and Climate Risk (SCR™) 
+        </title>
+        <meta name="robots" content="all" /><meta name="keywords" />
+        <meta name="description" content="As the leading professional association for risk managers, GARP developed the SCR program to prepare candidates for sustainability and climate risk challenges. " />
+        <link href="{!envPath}/img/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+
+        <meta property="og:title" content="Sustainability and Climate Risk Designation" />
+        <meta property="og:description" content="As the leading professional association for risk managers, GARP developed the SCR program to prepare candidates for sustainability and climate risk challenges." />
+        <meta property="og:image" content="http://www.garp.org/newmedia/badges/certifiedSCR.png" />
+
+        
+    </head>
+    <body style="padding-top:0; margin:0;">
+        <div class="digital-badge-page">
+            <div class="header">
+                <a href="https://www.garp.org" target="_blank">
+                    <img src="https://www.garp.org/newmedia/annual_report/short_GARP_web.png" alt="GARP" height="36px" width="140px" target="_blank"/>
+                </a>
+            </div>
+            <div class="content">
+                <div class="badge-content">
+                     <div class="badge-name">Sustainability and Climate Risk (SCR<sup>&reg;</sup>)</div>
+                     <p class="badge-desc">
+                         This badge recognizes achievement of the SCR Certificate. Administered by the Global Association of Risk Professionals (GARP), the Certificate signifies demonstration of the essential knowledge and tools needed to manage and mitigate an organization's climate risks.
+                     </p>
+                     <div class="badge">
+                         <div class="image">
+                             <apex:image url="https://www.garp.org/hubfs/Website/SCR/Images/SCR%20Digital%20Badge.png" height="176px" width="176px"/>
+                         </div>
+                         <div class="badge-user">
+                             <span><apex:outputText value="{!Name}"/></span> <br />
+                             <span><apex:outputText value="Certificate Awarded in {!SCRYearCertified}"/></span>                     
+                         </div>
+                     </div>                     
+                </div>
+            </div>
+            <div class="badge-footer">
+                 <apex:outputText >
+                     <a href="https://www.garp.org/scr" target="_blank">Learn More About the SCR Certificate</a>
+                 </apex:outputText>
+            </div>
+        </div>
+    </body>
+    
+</apex:page>

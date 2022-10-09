@@ -1,0 +1,21 @@
+<template>
+    <lightning-card class="no-border body-border normal-center-footer">
+        <h3 slot="title">
+            <lightning-icon icon-name="utility:notification" size="medium"></lightning-icon>
+            <span style="margin-left:.5rem">Exam Alerts</span>
+        </h3>
+        <div slot="footer" class="slds-align_absolute-center">
+                <a onclick={clickViewNotification}>More Notifications</a>
+        </div>
+        <template for:each={sObjData} for:item="sobKey" class="garp-group">
+            <div key={sobKey.Id} class="garp-group-item">
+                <div class="garp-group-item-heading slds-m-bottom_medium slds-text-heading_large">
+                    <a onclick={clickViewNotificationId} data-id={sobKey.Id} key={sobKey.Id}>{sobKey.Member_Notification__r.Subject__c}</a>
+                </div> 
+                <p class="slds-text-body--small">
+                    <lightning-formatted-date-time value={sobKey.Sent_Date_Time__c} year="numeric" month="long" day="numeric" hour12="true"></lightning-formatted-date-time>
+                </p>
+            </div>
+        </template>
+    </lightning-card>
+</template>

@@ -1,0 +1,750 @@
+<template>
+
+    <lightning-card class="garp-slds">
+        <div slot="footer" class="slds-align_absolute-center">
+            <template if:true={readOnly}>
+                <lightning-button variant="brand" label={buttonText} title="Edit Properties" onclick={handleEditClick} class=""></lightning-button>
+            </template>
+            <template if:false={readOnly}>
+                <lightning-button variant="brand" label="Cancel" title="Cancel" onclick={handleCancelClick} class="inverse" disabled={isSaving}></lightning-button>
+                <lightning-button variant="brand" label="Save Changes" title="Update Properties" onclick={handleUpdateClick} class="slds-m-left_small" disabled={isSaving}></lightning-button>
+            </template>
+        </div>
+
+        <template if:true={showProfileParts.NameEmail}>
+            <h3 slot="title">
+                <span>Name and Email</span>
+            </h3>
+    
+            <template if:true={readOnly}>
+                <div class="slds-m-bottom_x-small"><b>First Name</b></div>
+                <div class="slds-m-bottom_large">{contact.FirstName}</div>
+        
+                <div class="slds-m-bottom_x-small"><b>Last Name</b></div>
+                <div class="slds-m-bottom_large">{contact.LastName}</div>
+        
+                <div class="slds-m-bottom_x-small"><b>Email</b></div>
+                <div class="slds-m-bottom_large">{contact.Email}</div>
+        
+            </template>
+            <template if:false={readOnly}>
+    
+                <lightning-input 
+                    type="text" 
+                    data-id="FirstName" 
+                    label="First Name" 
+                    value={contact.FirstName} 
+                    onchange={handleFormInputChange} 
+                    data-customvalidation="WesternOnly" 
+                    data-customvalidationmsg="Your entry must only use western characters." 
+                    minlength="2" 
+                    message-when-too-short="Your entry must be at least 2 characters."
+                    maxlength="80"
+                    required
+                    data-customrequiredmsg="First Name is a required field." 
+                    disabled={isSaving}
+                    >
+                </lightning-input>
+    
+                <lightning-input 
+                    type="text" 
+                    data-id="LastName" 
+                    label="Last Name" 
+                    value={contact.LastName} 
+                    onchange={handleFormInputChange} 
+                    data-customvalidation="WesternOnly" 
+                    data-customvalidationmsg="Your entry must only use western characters." 
+                    minlength="2" 
+                    message-when-too-short="Your entry must be at least 2 characters."
+                    maxlength="80"
+                    required
+                    data-customrequiredmsg="Last Name is a required field." 
+                    disabled={isSaving}
+                    class="slds-m-top--large"
+                    >
+                </lightning-input>
+    
+                <lightning-input 
+                    type="text" 
+                    data-id="Email" 
+                    label="Email" 
+                    value={contact.Email} 
+                    onchange={handleFormInputChange} 
+                    data-customvalidation="Email" 
+                    data-customvalidationmsg="Please enter a valid email address." 
+                    minlength="2" 
+                    message-when-too-short="Your entry must be at least 2 characters."
+                    maxlength="80"
+                    required
+                    data-customrequiredmsg="Last Name is a required field." 
+                    disabled={isSaving}
+                    class="slds-m-top--large"
+                    >
+                </lightning-input>
+            </template>                
+        </template>
+
+        <template if:true={showProfileParts.PhoneNumbers}>
+            <h3 slot="title">
+                <span>Phone Numbers</span>
+            </h3>
+    
+            <template if:true={readOnly}>
+                <div class="slds-m-bottom_x-small"><b>Home Phone</b></div>
+                <div class="slds-m-bottom_large">{contact.HomePhone}</div>
+        
+                <div class="slds-m-bottom_x-small"><b>Other Phone</b></div>
+                <div class="slds-m-bottom_large">{contact.OtherPhone}</div>
+        
+                <div class="slds-m-bottom_x-small"><b>Fax</b></div>
+                <div class="slds-m-bottom_large">{contact.Fax}</div>
+
+                <div class="slds-m-bottom_x-small"><b>LinkedIn URL</b></div>
+                <div class="slds-m-bottom_large">{contact.LinkedIn_URL__c}</div>
+                
+            </template>
+            <template if:false={readOnly}>
+    
+                <lightning-input 
+                    type="text" 
+                    data-id="HomePhone" 
+                    label="Contact Phone Number" 
+                    value={contact.HomePhone} 
+                    onchange={handleFormInputChange} 
+                    data-customvalidation="Phone" 
+                    data-customvalidationmsg="Please enter a valid phone number (only include numbers)." 
+                    minlength="10" 
+                    message-when-too-short="Your entry must be at least 8 characters."
+                    maxlength="15"
+                    required
+                    data-customrequiredmsg="Phone Number is a required field." 
+                    disabled={isSaving}
+                    >
+                </lightning-input>
+    
+                <lightning-input 
+                    type="text" 
+                    data-id="OtherPhone" 
+                    label="Other Phone" 
+                    value={contact.OtherPhone} 
+                    onchange={handleFormInputChange} 
+                    data-customvalidation="Phone" 
+                    data-customvalidationmsg="Please enter a valid phone number (only include numbers)." 
+                    minlength="10" 
+                    message-when-too-short="Your entry must be at least 10 characters."
+                    maxlength="15"
+                    disabled={isSaving}
+                    class="slds-m-top--large"
+                    >
+                </lightning-input>
+    
+                <lightning-input 
+                    type="text" 
+                    data-id="Fax" 
+                    label="Fax" 
+                    value={contact.Fax} 
+                    onchange={handleFormInputChange} 
+                    data-customvalidation="Phone" 
+                    data-customvalidationmsg="Please enter a valid fax number (only include numbers)." 
+                    minlength="10" 
+                    message-when-too-short="Your entry must be at least 2 characters."
+                    maxlength="15"
+                    disabled={isSaving}
+                    class="slds-m-top--large"
+                    >
+                </lightning-input>
+
+                <lightning-input 
+                    type="text" 
+                    data-id="LinkedIn_URL__c" 
+                    label="LinkedIn URL" 
+                    value={contact.LinkedIn_URL__c} 
+                    onchange={handleFormInputChange} 
+                    data-customvalidation="URL" 
+                    data-customvalidationmsg="Please enter a valid URL (please include http:// or https://)." 
+                    minlength="10" 
+                    message-when-too-short="Your entry must be at least 2 characters."
+                    maxlength="255"
+                    data-customrequiredmsg="Last Name is a required field." 
+                    disabled={isSaving}
+                    class="slds-m-top--large"
+                    >
+                </lightning-input>
+
+            </template>                
+        </template>
+
+        <template if:true={showProfileParts.MailingAddress}>
+            <h3 slot="title">
+                <span>Mailing Address</span>
+            </h3>
+    
+            <template if:true={readOnly}>
+                <div class="slds-m-bottom_large">
+                    <div>{contact.Mailing_Address_Company__c}</div>
+                    <div>{contact.MailingStreet}</div>
+                    <div>{contact.MailingCity}</div>
+                    <div>{contact.MailingState}</div>
+                    <div>{contact.MailingPostalCode}</div>
+                    <div>{contact.MailingCountry}</div>
+                </div>
+            </template>
+            <template if:false={readOnly}>
+    
+                <lightning-input 
+                    type="text" 
+                    data-id="MailingAddressCompany" 
+                    label="Company" 
+                    value={contact.Mailing_Address_Company__c} 
+                    onchange={handleFormInputChange} 
+                    data-customvalidation="WesternOnly" 
+                    data-customvalidationmsg="Your entry must only use western characters." 
+                    minlength="2" 
+                    message-when-too-short="Your entry must be at least 2 characters."
+                    maxlength="80"
+                    data-customrequiredmsg="Company is a required field." 
+                    disabled={isSaving}
+                    >
+                </lightning-input>
+    
+                <lightning-textarea 
+                    name="MailingStreet" 
+                    data-id="MailingStreet" 
+                    label="Street" 
+                    value={contact.MailingStreet} 
+                    onchange={handleFormInputChange} 
+                    data-customvalidation="WesternOnly" 
+                    data-customvalidationmsg="Your entry must only use western characters." 
+                    minlength="2" 
+                    message-when-too-short="Your entry must be at least 2 characters."
+                    maxlength="80"
+                    required
+                    data-customrequiredmsg="Mailing Street is a required field." 
+                    disabled={isSaving}
+                    class="slds-m-top--large"
+                >
+                </lightning-textarea>
+                <!-- lightning-input 
+                    type="textarea" 
+                    data-id="MailingStreet" 
+                    label="Street" 
+                    value={contact.MailingStreet} 
+                    onchange={handleFormInputChange} 
+                    data-customvalidation="WesternOnly" 
+                    data-customvalidationmsg="Your entry must only use western characters." 
+                    minlength="2" 
+                    message-when-too-short="Your entry must be at least 2 characters."
+                    maxlength="80"
+                    required
+                    data-customrequiredmsg="Last Name is a required field." 
+                    disabled={isSaving}
+                    class="slds-m-top--large"
+                    >
+                </lightning-input -->
+    
+                <lightning-input 
+                    type="text" 
+                    data-id="MailingCity" 
+                    label="City" 
+                    value={contact.MailingCity} 
+                    onchange={handleFormInputChange} 
+                    data-customvalidation="WesternOnly" 
+                    data-customvalidationmsg="Your entry must only use western characters." 
+                    minlength="2" 
+                    message-when-too-short="Your entry must be at least 2 characters."
+                    maxlength="80"
+                    required
+                    data-customrequiredmsg="Last Name is a required field." 
+                    disabled={isSaving}
+                    class="slds-m-top--large"
+                    >
+                </lightning-input>
+
+                <template if:false={provinceOptions.length}>
+                    <lightning-input 
+                        type="text" 
+                        data-id="MailingState" 
+                        label="State" 
+                        value={contact.MailingState} 
+                        onchange={handleFormInputChange} 
+                        data-customvalidation="WesternOnly" 
+                        data-customvalidationmsg="Your entry must only use western characters." 
+                        minlength="2" 
+                        message-when-too-short="Your entry must be at least 2 characters."
+                        maxlength="80"
+                        required
+                        data-customrequiredmsg="Last Name is a required field." 
+                        disabled={isSaving}
+                        class="slds-m-top--large"
+                        >
+                    </lightning-input>
+                </template>
+                <template if:true={provinceOptions.length}>
+                    <lightning-combobox
+                        name="MailingState"
+                        data-id="MailingState" 
+                        label="State / Province"
+                        value={contact.MailingState} 
+                        onchange={handleFormInputChange}
+                        placeholder="Select State / Province"
+                        options={provinceOptions}
+                        disabled={isSaving}
+                        required
+                        class="slds-m-top--large"
+                    >
+                    </lightning-combobox>
+                </template>
+
+                <lightning-input 
+                    type="text" 
+                    data-id="MailingPostalCode" 
+                    label="Zip Code" 
+                    value={contact.MailingPostalCode} 
+                    onchange={handleFormInputChange} 
+                    data-customvalidation="WesternOnly" 
+                    data-customvalidationmsg="Your entry must only use western characters." 
+                    minlength="5" 
+                    message-when-too-short="Your entry must be at least 5 characters."
+                    maxlength="11"
+                    required
+                    data-customrequiredmsg="Last Name is a required field." 
+                    disabled={isSaving}
+                    class="slds-m-top--large"
+                    >
+                </lightning-input>
+
+                <lightning-combobox
+                    name="MailingCountry"
+                    data-id="MailingCountry" 
+                    label="Country"
+                    value={contact.MailingCountry} 
+                    onchange={handleFormInputChange}
+                    placeholder="Select Country"
+                    options={countryOptions}
+                    disabled={isSaving}
+                    required
+                    class="slds-m-top--large"
+                >
+                </lightning-combobox>
+            </template>                
+        </template>
+
+        <template if:true={showProfileParts.BillingAddress}>
+            <h3 slot="title">Billing Address</h3>
+            <template if:true={contact.Account}>
+                <template if:true={readOnly}>
+                    <div class="slds-m-bottom_large">
+                        <div>{contact.Account.Billing_Address_Company__c}</div>
+                        <div>{contact.Account.BillingStreet}</div>
+                        <div>{contact.Account.BillingCity}</div>
+                        <div>{contact.Account.BillingState}</div>
+                        <div>{contact.Account.BillingPostalCode}</div>
+                        <div>{contact.Account.BillingCountry}</div>
+                    </div>
+                </template>
+
+                <template if:false={readOnly}>
+    
+                    <lightning-input 
+                        type="text" 
+                        data-id="BillingAddressCompany" 
+                        label="Company" 
+                        value={contact.Account.Billing_Address_Company__c} 
+                        onchange={handleFormInputChange} 
+                        data-customvalidation="WesternOnly" 
+                        data-customvalidationmsg="Your entry must only use western characters." 
+                        minlength="2" 
+                        message-when-too-short="Your entry must be at least 2 characters."
+                        maxlength="80"
+                        data-customrequiredmsg="Company is a required field." 
+                        disabled={isSaving}
+                        >
+                    </lightning-input>
+        
+                    <lightning-textarea
+                        data-id="BillingStreet" 
+                        label="Street" 
+                        value={contact.Account.BillingStreet} 
+                        onchange={handleFormInputChange} 
+                        data-customvalidation="WesternOnly" 
+                        data-customvalidationmsg="Your entry must only use western characters." 
+                        minlength="10" 
+                        message-when-too-short="Your entry must be at least 10 characters."
+                        maxlength="80"
+                        required
+                        data-customrequiredmsg="Billing Street is a required field." 
+                        disabled={isSaving}
+                        class="slds-m-top--large">
+                    </lightning-textarea>
+                    <!-- lightning-input 
+                        type="text" 
+                        data-id="BillingStreet" 
+                        label="Street" 
+                        value={contact.Account.BillingStreet} 
+                        onchange={handleFormInputChange} 
+                        data-customvalidation="WesternOnly" 
+                        data-customvalidationmsg="Your entry must only use western characters." 
+                        minlength="10" 
+                        message-when-too-short="Your entry must be at least 10 characters."
+                        maxlength="80"
+                        required
+                        data-customrequiredmsg="Last Name is a required field." 
+                        disabled={isSaving}
+                        class="slds-m-top--large"
+                        >
+                    </lightning-input -->
+        
+                    <lightning-input 
+                        type="text" 
+                        data-id="BillingCity" 
+                        label="City" 
+                        value={contact.Account.BillingCity} 
+                        onchange={handleFormInputChange} 
+                        data-customvalidation="WesternOnly" 
+                        data-customvalidationmsg="Your entry must only use western characters." 
+                        minlength="2" 
+                        message-when-too-short="Your entry must be at least 2 characters."
+                        maxlength="80"
+                        required
+                        data-customrequiredmsg="Last Name is a required field." 
+                        disabled={isSaving}
+                        class="slds-m-top--large"
+                        >
+                    </lightning-input>
+    
+                    <template if:false={provinceOptions.length}>
+                        <lightning-input 
+                            type="text" 
+                            data-id="BillingState" 
+                            label="State" 
+                            value={contact.Account.BillingState} 
+                            onchange={handleFormInputChange} 
+                            data-customvalidation="WesternOnly" 
+                            data-customvalidationmsg="Your entry must only use western characters." 
+                            minlength="2" 
+                            message-when-too-short="Your entry must be at least 2 characters."
+                            maxlength="80"
+                            required
+                            data-customrequiredmsg="Last Name is a required field." 
+                            disabled={isSaving}
+                            class="slds-m-top--large"
+                            >
+                        </lightning-input>
+                    </template>
+                    <template if:true={provinceOptions.length}>
+                        <lightning-combobox
+                            name="BillingState"
+                            data-id="BillingState" 
+                            label="State / Province"
+                            value={contact.Account.BillingState} 
+                            onchange={handleFormInputChange}
+                            placeholder="Select State / Province"
+                            options={provinceOptions}
+                            disabled={isSaving}
+                            required
+                            class="slds-m-top--large"
+                        >
+                        </lightning-combobox>
+                    </template>
+    
+                    <lightning-input 
+                        type="text" 
+                        data-id="BillingPostalCode" 
+                        label="Zip Code" 
+                        value={contact.Account.BillingPostalCode} 
+                        onchange={handleFormInputChange} 
+                        data-customvalidation="WesternOnly" 
+                        data-customvalidationmsg="Your entry must only use western characters." 
+                        minlength="5" 
+                        message-when-too-short="Your entry must be at least 5 characters."
+                        maxlength="11"
+                        required
+                        data-customrequiredmsg="Last Name is a required field." 
+                        disabled={isSaving}
+                        class="slds-m-top--large"
+                        >
+                    </lightning-input>
+    
+                    <lightning-combobox
+                        name="BillingCountry"
+                        data-id="BillingCountry" 
+                        label="Country"
+                        value={contact.Account.BillingCountry} 
+                        onchange={handleFormInputChange}
+                        placeholder="Select Country"
+                        options={countryOptions}
+                        disabled={isSaving}
+                        required
+                        class="slds-m-top--large"
+                    >
+                    </lightning-combobox>
+                </template>                
+    
+
+            </template>
+        </template>
+
+        
+        <template if:true={showProfileParts.EmploymentInformation}>
+            <h3 slot="title">
+                <span>Employment Information</span>
+            </h3>
+    
+            <template if:true={readOnly}>
+                <div class="slds-m-bottom_x-small"><b>Working Status</b></div>
+                <div class="slds-m-bottom_large">{contact.Currently_Working_Status__c}</div>
+
+                <div class="slds-m-bottom_x-small"><b>Industry</b></div>
+                <div class="slds-m-bottom_large">{contact.Area_of_Concentration__c}</div>
+                
+                <div class="slds-m-bottom_x-small"><b>Year you started working in the industry</b></div>
+                <div class="slds-m-bottom_large">{contact.Industry_Working_Year__c}</div>
+        
+                <div class="slds-m-bottom_x-small"><b>Current/Last Company</b></div>
+                <div class="slds-m-bottom_large">{contact.Company__c}</div>
+
+                <div class="slds-m-bottom_x-small"><b>Professional Level</b></div>
+                <div class="slds-m-bottom_large">{contact.Corporate_Title__c}</div>
+
+                <div class="slds-m-bottom_x-small"><b>Job Function</b></div>
+                <div class="slds-m-bottom_large">{contact.Job_Function__c}</div>
+        
+                <template if:true={isJobFunctionRisk}>
+                    <div class="slds-m-bottom_x-small"><b>Risk Specialty</b></div>
+                    <div class="slds-m-bottom_large">{contact.Risk_Specialty__c}</div>    
+                </template>
+        
+                <div class="slds-m-bottom_x-small"><b>Year you started working in the Risk Industry</b></div>
+                <div class="slds-m-bottom_large">{contact.Risk_Management_Working_Year__c}</div>
+        
+                <div class="slds-m-bottom_x-small"><b>Professional Designations</b></div>
+                <div class="slds-m-bottom_large">{professionalDesignations}</div>
+                
+            </template>
+            <template if:false={readOnly}>
+    
+
+                <lightning-radio-group name="radioGroup"
+                    data-id="Currently_Working_Status__c" 
+                    label="Working Status"
+                    options={workingOptions}
+                    value={contact.Currently_Working_Status__c}
+                    type="radio"
+                    required
+                >
+                </lightning-radio-group>
+                
+                <lightning-combobox
+                    name="Area_of_Concentration__c"
+                    data-id="Area_of_Concentration__c" 
+                    label="Industry"
+                    value={contact.Area_of_Concentration__c} 
+                    onchange={handleFormInputChange}
+                    placeholder="Select Industry"
+                    options={industryOptions}
+                    disabled={isSaving}
+                    required
+                    class="slds-m-top--large"
+                >
+                </lightning-combobox>
+                
+
+                <lightning-combobox
+                    name="Industry_Working_Year__c"
+                    data-id="Industry_Working_Year__c" 
+                    label="Year you started working in the industry"
+                    value={contact.Industry_Working_Year__c} 
+                    onchange={handleFormInputChange}
+                    placeholder="Select Year"
+                    options={workingYearOptions}
+                    disabled={isSaving}
+                    required
+                    class="slds-m-top--large"
+                >
+                </lightning-combobox>
+
+                <c-lwc-custom-lookup
+                    -label="Current/Last Company"
+                    institution-type="Organization"
+                    select-record-id={selectedInstitutionId}
+                    select-record-name={contact.Company__c}
+                    onselected={selectInstitution}
+                    onsearch={searchInstitution}
+                    required="true"
+                    field-error="Company is a required field"
+                    class="slds-m-top--large"
+                    style="display: block;"
+                >
+                </c-lwc-custom-lookup>
+
+
+                <lightning-combobox
+                    name="Corporate_Title__c"
+                    data-id="Corporate_Title__c" 
+                    label="Professional Level"
+                    value={contact.Corporate_Title__c} 
+                    onchange={handleFormInputChange}
+                    placeholder="Select Professional Level"
+                    options={professionalLevelOptions}
+                    disabled={isSaving}
+                    required
+                    class="slds-m-top--large"
+                >
+                </lightning-combobox>
+
+                <lightning-combobox
+                    name="Job_Function__c"
+                    data-id="Job_Function__c" 
+                    label="Job Function"
+                    value={contact.Job_Function__c} 
+                    onchange={handleFormInputChange}
+                    placeholder="Select Job Function"
+                    options={jobFunctionOptions}
+                    disabled={isSaving}
+                    required
+                    class="slds-m-top--large"
+                >
+                </lightning-combobox>
+
+                <template if:true={isJobFunctionRisk}>
+                    <lightning-combobox
+                    name="Risk_Specialty__c"
+                    data-id="Risk_Specialty__c" 
+                    label="Risk Specialty"
+                    value={contact.Risk_Specialty__c} 
+                    onchange={handleFormInputChange}
+                    placeholder="Select Risk Specialty"
+                    options={riskSpecialtyOptions}
+                    disabled={isSaving}
+                    required
+                    class="slds-m-top--large"
+                    >
+                    </lightning-combobox>
+                </template>
+                
+                <lightning-combobox
+                    name="Risk_Management_Working_Year__c"
+                    data-id="Risk_Management_Working_Year__c" 
+                    label="Year you started working in the Risk Industry"
+                    value={contact.Risk_Management_Working_Year__c} 
+                    onchange={handleFormInputChange}
+                    placeholder="Select Year"
+                    options={workingYearOptions}
+                    disabled={isSaving}
+                    required
+                    class="slds-m-top--large"
+                >
+                </lightning-combobox>
+
+                <lightning-checkbox-group name="Checkbox Group"
+                    label="Do you hold any other professional designations?"
+                    data-id="ProfessionalDesignations" 
+                    options={professionalDesignationOptions}
+                    value={professionalDesignationSelections}
+                    onchange={handleFormInputChange}
+                    class="slds-m-top--large"
+                ></lightning-checkbox-group>
+
+                <template if:true={isDesignationOther}>
+                    <lightning-input 
+                    type="text" 
+                    data-id="Other_Qualifications__c" 
+                    label="Other Qualifications" 
+                    value={contact.Other_Qualifications__c} 
+                    onchange={handleFormInputChange} 
+                    data-customvalidation="WesternOnly" 
+                    data-customvalidationmsg="Your entry must only use western characters." 
+                    minlength="2" 
+                    message-when-too-short="Your entry must be at least 2 characters."
+                    maxlength="255"
+                    disabled={isSaving}
+                    required
+                    class="slds-m-top--large"
+                    >
+                    </lightning-input>
+                </template>
+
+            </template>                
+        </template>
+
+        <template if:true={showProfileParts.AcademicInformation}>
+            <h3 slot="title">
+                <span>Academic Information</span>
+            </h3>
+    
+            <template if:true={readOnly}>
+                <div class="slds-m-bottom_x-small"><b>Current or most recent school attended</b></div>
+                <div class="slds-m-bottom_large">{contact.School_Name__c}</div>
+
+                <div class="slds-m-bottom_x-small"><b>Degree / Program</b></div>
+                <div class="slds-m-bottom_large">{contact.Highest_Degree__c}</div>
+                
+                <div class="slds-m-bottom_x-small"><b>Year of Graduation</b></div>
+                <div class="slds-m-bottom_large">{contact.Expected_Graduation_Date__c}</div>
+        
+                <div class="slds-m-bottom_x-small"><b>Month of Graduation</b></div>
+                <div class="slds-m-bottom_large">{contact.Expected_Graduation_Month__c}</div>
+                
+            </template>
+            <template if:false={readOnly}>
+                
+
+                <c-lwc-custom-lookup
+                    -label="Current or most recent school attended"
+                    institution-type="Academic"
+                    select-record-id={selectedInstitutionId}
+                    select-record-name={contact.School_Name__c}
+                    onselected={selectInstitution}
+                    onsearch={searchInstitution}
+                    required="true"
+                    field-error="School is a required field"
+                >
+                </c-lwc-custom-lookup>
+
+                <lightning-combobox
+                    name="Highest_Degree__c"
+                    data-id="Highest_Degree__c" 
+                    label="Degree Program"
+                    value={contact.Highest_Degree__c} 
+                    onchange={handleFormInputChange}
+                    placeholder="Select Degree"
+                    options={degreeOptions}
+                    disabled={isSaving}
+                    class="slds-m-top--large"
+                    required
+                >
+                </lightning-combobox>
+
+                <lightning-combobox
+                    name="Expected_Graduation_Date__c"
+                    data-id="Expected_Graduation_Date__c" 
+                    label="Year of Graduation"
+                    value={contact.Expected_Graduation_Date__c} 
+                    onchange={handleFormInputChange}
+                    placeholder="Select Year"
+                    options={graduationYearOptions}
+                    disabled={isSaving}
+                    required
+                    class="slds-m-top--large"
+                >
+                </lightning-combobox>
+                
+                <lightning-combobox
+                    name="Expected_Graduation_Month__c"
+                    data-id="Expected_Graduation_Month__c" 
+                    label="Month of Graduation"
+                    value={contact.Expected_Graduation_Month__c} 
+                    onchange={handleFormInputChange}
+                    placeholder="Select Month"
+                    options={graduationMonthOptions}
+                    disabled={isSaving}
+                    required
+                    class="slds-m-top--large"
+                >
+                </lightning-combobox>                
+
+            </template>                
+        </template>
+
+    </lightning-card>
+</template>

@@ -1,0 +1,22 @@
+<apex:page sidebar="false" showHeader="false" standardController="Case">
+    <apex:includeLightning />
+    <!--Lightning Container-->
+    <div style="width:100%;height:100px;" id="LightningContainer"/>
+    
+    <script type="text/javascript">
+    //get Contact Id from URL
+    var contactId = "{!$CurrentPage.parameters.contactId}";
+    var caseId = "{!$CurrentPage.parameters.Id}";
+    var UITheme = "{!$User.UIThemeDisplayed}"; 
+    //Create Lightning Component
+    $Lightning.use("c:CaseDeferralRequestLTCmpApp", function() {
+        $Lightning.createComponent("c:CaseDeferralRequestLTCmp",
+                                   { "contactId" : contactId,
+                                   "caseId":caseId,
+                                   "UITheme":UITheme}, //Pass Parameter
+                                   "LightningContainer", function(component) {
+                                       console.log('Component created');
+                                   });
+    });
+    </script>
+</apex:page>

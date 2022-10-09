@@ -1,0 +1,2 @@
+<apex:page standardcontroller="Study_Disclose_Protocol_Submission__c" extensions="GBIPaymentRcptRdrctCntrlr" action="{!doRedirect}">
+</apex:page>

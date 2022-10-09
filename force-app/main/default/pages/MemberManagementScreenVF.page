@@ -1,0 +1,32 @@
+<apex:page lightningStylesheets="true">
+    <apex:includeLightning /> 
+    <apex:slds />
+    <div class="slds-scope">
+        <apex:form id="form" >
+            <div id="LoadingvfDIV" class="slds-spinner_container" style="display:block;">
+                <div class="slds-spinner slds-spinner--large" aria-hidden="false" role="alert">
+                    <div class="slds-spinner__dot-a"></div>
+                    <div class="slds-spinner__dot-b"></div>
+                </div>
+            </div>    
+            <div id="lightning" />      
+        </apex:form>
+    </div>
+    
+    
+    <script>
+    $Lightning.use("c:MemberManagementScreenApp", function() {
+        $Lightning.createComponent("c:MemberServicesTool_Parent",
+                                   { 
+                                       
+                                   },
+                                   "lightning",
+                                   function(cmp) {
+                                       var loadingDivElt = document.getElementById("LoadingvfDIV");
+                                       loadingDivElt.style.display = 'none' ;
+                                       console.log('Component created, do something cool here');
+                                   });
+    });
+    </script>
+    
+</apex:page>

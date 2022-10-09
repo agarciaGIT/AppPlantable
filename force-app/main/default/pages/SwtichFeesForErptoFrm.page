@@ -1,0 +1,5 @@
+<apex:page extensions="SwtichFeesForErptoFrm" standardController="contact" showHeader="false" sidebar="false" action="{!CreateOpp}">
+ <apex:form >
+  </apex:form>
+     <apex:pageMessages />
+    </apex:page>

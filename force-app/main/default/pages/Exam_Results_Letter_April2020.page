@@ -1,0 +1,91 @@
+<apex:page showHeader="false" sidebar="false" showChat="false"  standardStylesheets="false" Controller="ExamResultsLetterControllerSCR" applyhtmltag="false" applyBodyTag="false" renderAs="pdf">
+
+    <apex:variable var="envPath" value="{!URLFOR($Resource.sfdcApp)}" />
+    <head>
+        <style type="text/css" media="print">
+            .exam-results-email { font-family: Helvetica Neue,Helvetica,Arial,sans-serif;font-size:14px;margin-left:40px;margin-right:40px }
+            .email-body         { text-align:justify;text-align-last:right; }
+            .sub-heading        { font-weight:bold;display:block;margin-bottom:-15px; }
+            a {  margin-left : 1px;  }
+            @page{
+            @bottom-right { content:"Page " counter(page) " of " counter(pages);font-family: Helvetica Neue,Helvetica,Arial,sans-serif;font-size:14px; }
+            @bottom-left { content:"{!now}";font-family: Helvetica Neue,Helvetica,Arial,sans-serif;font-size:14px; }
+            }
+        </style>
+    </head>
+
+    <div class="exam-results-email">
+        <apex:image url="{!envPath}/img/logo.png" alt="logo" height="75px" />
+
+        <hr style="margin-bottom:30px"/>
+
+        <div class="body">
+             <div>
+                <span>GARP ID: {! memberGARPId }</span>
+            </div>
+
+            <br/><br/>
+            <div>
+                Dear {! candidateName }, <br/>
+            </div>
+            
+            <apex:outputPanel rendered="{! isError }">
+                <p>
+                    There has been an Error, Please contact Member Services.
+                </p>
+            </apex:outputPanel>
+            <apex:outputPanel rendered="{! isError == null || (!isError) }">
+            
+                <!-- Candidate passed -->
+                <apex:outputPanel rendered="{! pass }">
+                    <p><b>Congratulations! You passed the Sustainability and Climate Risk (SCR™) Exam!</b></p>
+                    <p>
+                        On behalf of GARP and the GARP Board of Trustees, we congratulate you on the special achievement of earning your SCR Certificate. Because climate risk is still an emerging area of risk management, the SCR distinction makes you one of the area’s first subject matter experts, joining you with an elite network of thought leaders.  
+                    </p>
+                    <p>
+                        For a detailed analysis of your results, please log in to garp.com and go to “My Programs.”
+                        SCR Certificate holders are also strongly advised to participate in GARP’s Continuing Professional Development (CPD) program, which offers access to a broad range of accessible learning opportunities as well as the tools you need to track and document your activities. While participation in CPD is voluntary, the program is a great opportunity to stay up to date with industry trends and demonstrate commitment to the profession. 
+                    </p>
+                    <p>
+                        We wish you success in your risk management career.
+                    </p>
+                </apex:outputPanel>
+                
+                <!-- Candidate Failed -->
+                <apex:outputPanel rendered="{! pass == false}">
+                    <p>
+                        After a thorough review of your performance on the SCR Exam, we regret to inform you that your score did not meet the necessary requirements for passing.
+                    </p>
+                    <p>
+                        We commend you for your effort on this difficult Exam and encourage you to try again. We also urge you to take advantage of the resources GARP offers to assist in your exam preparation, including books, practice exams, and more. For more feedback about your performance on the Exam, including information about your performance relative to other candidates, log in to garp.org and go to “My Programs.”
+                    </p>
+                    <p>
+                        We wish you the best of luck in your pursuit of the SCR Certificate.
+                    </p>
+                </apex:outputPanel>
+                
+                
+                <apex:outputPanel rendered="{! isError == null || (!isError) }">
+                    <p>
+                        Sincerely yours,
+                    </p>
+    
+                    <div id="signaturePanel" style="margin-top:30px">
+    
+                        <apex:outputPanel >
+                            <div id="sig1" style="float:left;">
+                                <apex:image style="height:80px; width:auto;" url="{!envPath}/img/Bill_May_signature.jpg" alt="Sig1" /><br/>
+                                William May<br/>
+                                Senior Vice President<br/>
+                                Global Head of Certifications and Educational Programs<br/>
+                            </div>
+                        </apex:outputPanel>
+                        
+                    </div>
+                </apex:outputPanel>                
+                
+            </apex:outputPanel>
+            
+        </div>
+    </div>
+</apex:page>

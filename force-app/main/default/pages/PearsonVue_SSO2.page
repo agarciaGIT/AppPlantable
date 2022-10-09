@@ -1,0 +1,28 @@
+<apex:page controller="PearsonVue_SSO_Controller" showHeader="false" sidebar="false" showChat="false"  standardStylesheets="false" docType="html-5.0">
+
+    <script>
+        function OnLoad() {
+            <apex:outputText value="{!callfunc}" escape="false"></apex:outputText>
+        }
+        window.onload = OnLoad;
+    </script>
+
+    <div style="padding:20px">
+        {!msg}
+    </div>
+    <form name="autoForm" action="https://wsr.pearsonvue.com/testtaker/sso/Integration.htm" method="POST">
+     <input type="hidden" name="CLIENT_CODE" value="{!Client_Code}" /> 
+        <input type="hidden" name="CLIENT_CANDIDATE_ID" value="{!Garpid}" />
+        <input type="hidden" name="EXTERNAL_PAGE_TIMESTAMP" value="{!EpochTimeStamp}" />
+        <input type="hidden" name="EXTERNAL_ERROR_URL" value="{!External_Error_URL}" />
+        <input type="hidden" name="EXTERNAL_LOGOUT_URL" value="{!External_TimeOut_URL }" /> 
+        <input type="hidden" name="EXTERNAL_RETURN_URL" value="{!External_Return_URL}" />
+        <input type="hidden" name="EXTERNAL_TIMEOUT_URL" value="{!External_TimeOut_URL}" /> 
+        <input type="hidden" name="EXTERNAL_SESSION_TIMEOUT" value="{!External_Session_TimeOut}" /> 
+        <input type="hidden" name="EXAM_SERIES_CODE" value="{!Exam_Series_Code}" /> 
+        <input type="hidden" name="ACTION" value="{!PortalAction}" />
+        <input type="hidden" name="EXTERNAL_AUTH_HASH" value="{!External_Auth_Hash}" />
+        <input type="hidden" name="REGISTRATION_ID" value="{!RegID}" />
+        <!-- input type="submit" value="Submit" / -->
+    </form>
+</apex:page>

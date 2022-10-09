@@ -1,0 +1,24 @@
+<aura:component description="ErrorHandler">
+    <aura:method name="handleResponse" action="{!c.handleResponse}">
+        <aura:attribute name="response" type="Object" />
+        <aura:attribute name="successHandler" type="Object" />
+        <aura:attribute name="errorHandler" type="Object" />
+    </aura:method>
+
+    <aura:method name="showToast" action="{!c.showToast}">
+        <aura:attribute name="title" type="String" />
+        <aura:attribute name="type" type="String" description="can be error, warning, success, or info."/>
+        <aura:attribute name="message" type="String" />
+    </aura:method>
+
+    <aura:method name="showToast_error" action="{!c.showToast_error}">
+        <aura:attribute name="title" type="String" />
+        <aura:attribute name="message" type="String" />
+    </aura:method>
+
+    <aura:method name="showToast_success" action="{!c.showToast_success}">
+        <aura:attribute name="title" type="String" />
+        <aura:attribute name="message" type="String" />
+    </aura:method>
+
+</aura:component>

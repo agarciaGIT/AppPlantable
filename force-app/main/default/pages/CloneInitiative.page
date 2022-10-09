@@ -1,0 +1,15 @@
+<apex:page standardController="Initiative__c" 
+    extensions="cloneInitiative">
+    <apex:form >
+        <apex:pageMessages />
+        <apex:pageblock >
+            <apex:pageblockSection title="Input Initiative Details" collapsible="false">
+                <apex:inputField value="{!Initiative__c.Name}" required="true"/>
+            </apex:pageblockSection>
+            <apex:pageBlockButtons >
+                <apex:commandbutton value="Save" action="{!cloneInitiative}"/>
+               
+            </apex:pageBlockButtons>
+        </apex:pageblock>
+    </apex:form>
+    </apex:page>

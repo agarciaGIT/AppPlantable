@@ -1,0 +1,39 @@
+<apex:page standardController="Opportunity" extensions="UpsEditCtrl" sidebar="false">
+    <apex:sectionHeader title="Edit Opportunity" subtitle="{!opportunity.name}"/>
+    <apex:form >
+        <apex:pageBlock title="Edit Opportunity" mode="edit">
+            <apex:pageMessages />
+            <apex:pageBlockButtons >
+                <apex:commandButton value="Save" action="{!doSave}"/>
+                <apex:commandButton value="Cancel" action="{!cancel}"/>                
+            </apex:pageBlockButtons>
+            <apex:actionRegion >                
+                <apex:pageBlockSection title="Basic Information" columns="2">
+                    
+                    <apex:pageBlockSection columns="1">
+                        <apex:selectList size="1" value="{!viewModel.upsStage}" label="UPS Stage">
+                            <apex:selectOptions value="{!selectOptions}" />
+                        </apex:selectList>
+                        <apex:inputText label="UPS Service Code For XML" value="{!viewModel.upsServiceCodeForXml}"/>
+                        <apex:inputText label="Tracking Number" value="{!viewModel.TrackingNumber}"/>
+                        <apex:inputText label="Additional Invoice Information" value="{!viewModel.Additionalinformation}"/>
+                    </apex:pageBlockSection>
+                    
+                    <apex:pageBlockSection columns="1">
+                        <apex:inputText label="Shipping First Name" value="{!viewModel.shippingFirstName}"/>
+                        <apex:inputText label="Shipping Last Name" value="{!viewModel.shippingLastName}"/>
+                        <apex:inputTextarea label="Shipping Street" value="{!viewModel.shippingStreet}"/>                       
+                        <apex:inputText label="Shipping City" value="{!viewModel.shippingCity}"/>
+                        <apex:inputText label="Shipping State" value="{!viewModel.shippingState}"/>
+                        <apex:inputText label="Shipping Postal Code" value="{!viewModel.shippingPostalCode}"/>
+                        <apex:inputText label="Shipping Country" value="{!viewModel.shippingCountry}"/>
+                        <apex:inputText label="Shipping Country" value="{!viewModel.countrycode}"/>
+                         
+                        
+                    </apex:pageBlockSection>
+                    
+                </apex:pageBlockSection>
+            </apex:actionRegion>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

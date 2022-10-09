@@ -1,0 +1,60 @@
+<apex:page controller="EPPListDownload" action="{!getExamAttempts}" readOnly="false" contentType="application/vnd.ms-excel#EPPList.xls" >
+    <apex:form >
+        <table width="100%">
+            <tr>
+                <td><b>GARP Exam Registrations</b></td>
+            </tr>
+            <tr>
+                <td><b>Exam Region: {!EPPRegion}</b> </td>
+            </tr>          
+            
+        </table>
+        <table width="100%" border="1" title="GARP Exam Registrations">     
+          <thead>          
+                <tr > 
+                    <th align="center">GARP ID</th>
+                    <th align="center">FIRST NAME</th>
+                    <th align="center">Last Name</th>
+                    <th align="center">Email</th> 
+                    <th align="center">Phone</th>
+                    <th align="center">Exam Name</th>
+                    <th align="center">Exam Date</th>
+                    <th align="center">Date Registered</th>
+                    <th align="center">Exam Region</th> 
+                    <th align="center">Member Country</th>
+                    <th align="center">Member MailingStreet</th>
+                     <th align="center">Member MailingCity</th>
+                      <th align="center">Member MailingState</th>
+                       <th align="center">Member MailingPostalCode</th>
+                        <th align="center">Member MailingCountry</th>    
+               </tr>            
+            </thead>  
+            <tbody>
+         <apex:repeat value="{!finalRegistrations}" var="registration1"> 
+            <apex:repeat value="{!registration1}" var="x">  
+                    <tr>                  
+                        <td align="center">{!x.garpId}</td>
+                        <td align="center">{!x.fName}</td>
+                        <td align="center">{!x.lName}</td>
+                        <td align="center">{!x.email}</td>
+                        <td align="center">{!x.phone}</td>
+                        <td align="center">{!x.examName}</td>
+                        <td align="center">{!x.examDate}</td>
+                        <td align ="center">
+                        <apex:outputText value="{0,date,MM/dd/yyyy}">
+                        <apex:param value="{!x.dateRegistered}" /> 
+                        </apex:outputText></td>
+                        <td align="center">{!x.region}</td> 
+                        <td align="center">{!x.memberCountry}</td> 
+                        <td align="center">{!x.mailingStreet}</td>  
+                        <td align="center">{!x.MailingCity}</td>  
+                        <td align="center">{!x.MailingState}</td>  
+                        <td align="center">{!x.MailingPostalCode}</td>  
+                        <td align="center">{!x.MailingCountry}</td>                     
+                    </tr>
+                </apex:repeat>
+                 </apex:repeat>
+              </tbody>
+        </table>
+    </apex:form>
+</apex:page>

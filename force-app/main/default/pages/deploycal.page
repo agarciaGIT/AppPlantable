@@ -1,0 +1,12 @@
+<apex:page >
+    <script>
+    debugger;
+        var url = '/apex/reportsGARP#!/deployCal';
+        //window.open(url, '_blank');
+        //document.location.href='https://garp.my.salesforce.com';
+        window.open(url);
+//        document.location.href=url;        
+    </script>
+    If the Deployment Calendar is not showing <a href="javascript:window.open(url);">Click Here</a>!
+    ** Note: You need to allow Pop-ups for this Deployment Calendar to open in a new tab.
+</apex:page>

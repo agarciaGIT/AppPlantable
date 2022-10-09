@@ -1,0 +1,23 @@
+<apex:page standardController="case" extensions="ContactCases">
+     <apex:form > 
+     
+        <apex:pageblock id="CustomList"  mode="maindetail" >   
+         <apex:pageMessages />
+
+            <apex:pageBlockTable value="{!Cas}" var="cs"  > 
+                <apex:column >
+                 <apex:outputLink value="{!cs.CaseNumber}"  onclick="window.open('/{!cs.Id}','width=810,height=310,toolbar=0,status=1,scrollbars=1,resizable=yes',!1);" target="_blank">{!cs.CaseNumber} </apex:outputLink>
+                </apex:column>                
+                <apex:column value="{!cs.Subject}"/>        
+                <apex:column value="{!cs.Status}"/>        
+                <apex:column value="{!cs.Priority}"/>     
+                <apex:column value="{!cs.Owner.Name}"/>   
+                <apex:column value="{!cs.CreatedDate}"/>
+                <apex:column value="{!cs.ClosedDate}"/>   
+            </apex:pageBlockTable> 
+             <apex:outputLabel value="No records to display" rendered="{!(ISNULL(Cas))}" styleClass="noRowsHeader">
+        </apex:outputLabel>   
+        </apex:pageblock>
+        
+    </apex:form>
+</apex:page>

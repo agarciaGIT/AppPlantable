@@ -1,0 +1,100 @@
+<apex:page standardcontroller="GARP_Profile__c"  extensions="cloudFilesRelatedListGARP" tabstyle="case">
+    
+    <script src="/resource/1473791809000/cdrive__clouddrive/clouddrive/js/amazon-sdk.js" type="text/javascript"></script>
+    <script>
+            
+        function delFile(delId) {
+            //alert('hello: {!Record} ' + delId);
+            setMyParam(delId);
+        debugger;
+
+            var jsonData = JSON.parse('{"accessKeyId":"AKIAJPHF3F7WPTV33NNQ","secretAccessKey":"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","region":"us-west-2","fileNames": {!jsonFileList} }');
+            var fileNamesList = jsonData.fileNames;
+            var awsAccessKeyId = jsonData.accessKeyId;
+            var awsSecretAccessKey = jsonData.secretAccessKey;
+            var awsRegion = jsonData.region;
+            var awsBucket = 'garpsalesforcepublic';
+            var fileNameToDel = '';
+            
+            for(var i=0; i<jsonData.fileNames.length; i++) {
+                var f = jsonData.fileNames[i];
+                if(f.cfId == delId) {
+                    fileNameToDel = f.url.replace('https://s3-us-west-2.amazonaws.com/garpsalesforcepublic/','');
+                }
+            }
+            //alert('fileNameToDel :' + fileNameToDel);
+
+        
+            var confirm = window.confirm("Do you want to delete " + fileNameToDel + "?");
+            if (confirm) {
+
+        
+                AWS.config.update({
+                    accessKeyId: awsAccessKeyId, 
+                    secretAccessKey: awsSecretAccessKey,
+                });    
+                
+                AWS.config.region = awsRegion;
+                
+                var s3 = new AWS.S3();
+                var params = {
+                    Bucket: awsBucket,
+                    Key: fileNameToDel
+                };
+                
+                //alert('params:' + params);
+
+                s3.deleteObject(params, function(err, data) {
+                    if (err) {
+                        console.log(err, err.stack); // an error occurred
+                        alert('There was an error: ' + err.stack);
+                    } else {
+                        console.log(data);           // successful response
+                        
+                        //alert('OK:' + data);
+                        
+                        CallApexMethod();
+                    }
+                });
+                
+            }
+        }
+    </script>
+    <base target="_parent"/>
+    
+    <apex:variable var="classType" value="GARP_Profile__c"/>
+    
+    <apex:pageBlock title="Cloud Files" mode="new" >    
+     
+        <apex:form >
+            
+            <apex:actionfunction name="setMyParam" ReRender="">
+                <apex:param name="delId" value="" assignto="{!delId}"/>
+            </apex:actionfunction>
+            
+        <apex:actionFunction name="CallApexMethod" action="{!deleteCloudFile}" onComplete="alert('Deleted'); location.reload();"/>
+            
+        <apex:commandlink action="{!uploadFile}" target="_blank">
+            <apex:commandButton value="Upload"/>
+        </apex:commandLink>            
+
+        <apex:commandlink action="{!refresh}" rerender="fileList">
+            <apex:commandButton value="Refresh"/>
+        </apex:commandLink>            
+            
+            
+                <apex:pageBlockTable value="{!cfRecords}" var="index" id="fileList">   
+                    <apex:column value="{!index.fileName}" HeaderValue="Name"/>
+                    <apex:column value="{!index.url}" HeaderValue="URL"/>
+                    
+                    <apex:column HeaderValue="Action">
+                        <apex:commandButton value="Delete" 
+                    onclick="delFile('{!index.cfId}'); return false;" />
+                    </apex:column>  
+                    
+                    
+                    
+            </apex:pageBlockTable>
+        </apex:form>
+    </apex:pageBlock>
+</apex:page>

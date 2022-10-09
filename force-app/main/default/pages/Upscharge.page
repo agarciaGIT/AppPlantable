@@ -1,0 +1,21 @@
+<apex:page standardController="Contact" extensions="OpptyfromAccountContactExtension" >
+    <apex:form >
+        <apex:pageMessages />
+        <apex:pageblock >
+            <apex:pageblockSection title="Shipping Details" >
+                <apex:inputtext value="{!shippingFirstName}" label="First Name"/>
+                <apex:inputtext value="{!shippingLastName}" label="Last Name"/>
+                <apex:inputtext value="{!shippingEmail}" label="Email"/>
+                <apex:inputtext value="{!shippingPhone}" label="Phone"/>
+                <apex:inputtext value="{!shippingCity}" label="City"/>
+                <apex:inputtext value="{!shippingCountry}" label="Country"/>
+                <apex:inputtext value="{!shippingState}" label="State"/>
+                <apex:inputtext value="{!shippingAddress1}" label="Address1"/>
+                <apex:inputtext value="{!shippingPostalCode}" label="Postal Code"/>
+            </apex:pageblockSection>
+            <apex:pageBlockButtons >
+                <apex:commandButton value="Create Opportunity" action="{!createOpportunity}"/>
+            </apex:pageBlockButtons>
+        </apex:pageblock>
+    </apex:form>
+</apex:page>

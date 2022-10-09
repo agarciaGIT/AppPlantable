@@ -1,0 +1,334 @@
+<aura:component implements = "flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" access="global"
+                controller = "technicalglitchClass">
+    <aura:handler name = "init" value = "{!this}" action = "{!c.init}" />
+    <aura:attribute name = "navigateNext" type ="Boolean" />
+    <aura:attribute name = "garpId" type ="String"/>
+    <aura:attribute name = "navigateToSites" type = "Boolean" />
+    <aura:attribute name = "error" type="String" default=""/>
+    <aura:attribute name = "fieldsError" type="String" default=""/>
+    <aura:attribute name = "frm1SiteMessage" type="String" default=""/>
+    <aura:attribute name = "frm2SiteMessage" type="String" default=""/>
+    <aura:attribute name = "scrSiteMessage" type="String" default=""/>
+    <aura:attribute name = "options" type = "List"/>
+    <aura:attribute name = "dropdownSelected" type = "String"/>
+    
+    <aura:attribute name = "frm1Exists" type = "Boolean" default = 'false' />
+    <aura:attribute name = "frm2Exists" type = "Boolean" default = 'false' />
+    <aura:attribute name = "scrExists" type = "Boolean"  default = 'false'/>
+    
+    <aura:attribute name = "mapExamRegistrations" type = "Map"/>
+    <aura:attribute name = "examRegistrations" type = "List" />
+    <aura:attribute name = "selectedExamReg" type = "List"/>
+    
+    <aura:attribute name = "mapFrm1ExamRegs" type = "Map"/>
+    <aura:attribute name = "mapFrm2ExamRegs" type = "Map"/>
+    <aura:attribute name = "mapScrExamRegs" type = "Map"/>
+    
+    <aura:attribute name = "frm1MapExamAdmins" type = "Map"/>
+    <aura:attribute name = "frm2MapExamAdmins" type = "Map"/>
+    <aura:attribute name = "scrMapExamAdmins" type = "Map"/>
+    
+    <aura:attribute name = "examAdmins" type = "List" />
+    <aura:attribute name = "mapExamAdmins" type = "Map"/>
+    <aura:attribute name = "selectedExamAdmin" type = "String"/>
+    
+    <aura:attribute name = "selectedFrm1ExamAdmin" type = "String"/>
+    <aura:attribute name = "selectedFrm2ExamAdmin" type = "String"/>
+    <aura:attribute name = "selectedScrExamAdmin" type = "String"/>
+    
+    <aura:attribute name = "frm1ExamAdmins" type = "List" />
+    <aura:attribute name = "frm2ExamAdmins" type = "List" />
+    <aura:attribute name = "scrExamAdmins" type = "List" />
+    
+    <aura:attribute name = "mapExamSites" type = "Map"/>
+    <aura:attribute name = "examSites" type = "List" />
+    
+    <aura:attribute name = "selectedExamSite" type = "String"/>
+    <aura:attribute name = "selectedFrm1ExamSite" type = "String"/>
+    <aura:attribute name = "selectedFrm2ExamSite" type = "String"/>
+    <aura:attribute name = "selectedScrExamSite" type = "String"/>
+    
+    <aura:attribute name = "mapFrm1ExamSites" type = "Map"/>
+    <aura:attribute name = "mapFrm2ExamSites" type = "Map"/>
+    <aura:attribute name = "mapScrExamSites" type = "Map"/>
+    
+    <aura:attribute name = "examFrm1Sites" type = "List" />
+    <aura:attribute name = "examFrm2Sites" type = "List" />
+    <aura:attribute name = "examScrSites" type = "List" />
+    <aura:attribute name = "showExamRegAdmin" type = "Boolean" default = "true"/>
+    <aura:attribute name = "showExamSites" type = "Boolean" default = "false"/>
+    
+    <aura:attribute name="freeDefferalOptions" type="List" default="[
+                                                                    {'label': 'Yes', 'value': 'Yes'},
+                                                                    {'label': 'No', 'value': 'No'}
+                                                                    ]"/>
+    <aura:attribute name="freeDeferralValue" type="String" default=""/>
+    <!-- <aura:attribute name="oneTimeDeferralValue" type="String" default=""/> -->
+    
+    <div class="slds-card">
+        
+        <div class="slds-page-header">
+            <div class="slds-align_absolute-center">
+                <div class="slds-text-heading_large">
+                    <div class="slds-m-top_xx-large">
+                        Technical Glitch
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slds-box slds-theme_default">
+            <div class="slds-align_absolute-center">
+                <aura:if isTrue="{!v.fieldsError}">
+                    <p class="redColor">{!v.fieldsError}</p>
+                </aura:if>
+            </div>
+            <aura:if isTrue = "{!v.showExamRegAdmin}">
+                <div class="slds-grid">
+                    <div class="slds-col slds-size_3-of-12"> 
+                    </div>
+                    <div class="slds-size_6-of-12">
+                        <lightning:select name = "dropdown" 
+                                          label = "Selectdropdown"
+                                          aura:id = "dropdownID"
+                                          value = "{!v.dropdownSelected}"
+                                          onchange="{!c.onChangePicklist}"
+                                          required="true">
+                            <option text = "--None--" value = "--None--"/>
+                            <aura:iteration items = "{!v.options}"
+                                            var = "opt">
+                                <option text = "{!opt}"
+                                        value = "{!opt}"/>
+                            </aura:iteration>
+                        </lightning:select>
+                    </div>
+                </div>
+                <div class="slds-grid">
+                    <div class="slds-col slds-size_3-of-12"> 
+                    </div>
+                    <div class="slds-size_6-of-12">
+                        <aura:if isTrue="{!not(empty(v.examRegistrations))}">
+                            <lightning:checkboxGroup name="Checkbox Group Required"
+                                                     label="Select Exam Registration" 
+                                                     options="{!v.examRegistrations}"
+                                                     value="{!v.selectedExamReg}"
+                                                     onchange = "{!c.onExamReg}"
+                                                     required="true"/>
+                            <aura:if isTrue="{! !empty(v.error)}">
+                                <lightning:formattedText class="redColor" name="errorMessage" 
+                                                         value="{!v.error}"
+                                                         label="Error: "/>
+                            </aura:if>
+                        </aura:if>
+                    </div>
+                </div>
+                <aura:if isTrue="{!and(not(empty(v.frm1ExamAdmins)),v.frm1Exists == true)}">
+                    <div class="slds-grid">
+                        <div class="slds-col slds-size_3-of-12"> 
+                        </div>
+                        <div class="slds-size_6-of-12">
+                            <lightning:select name = "frm1ExamAdmin" 
+                                              label = "Select Exam Adminstration for FRM 1" 
+                                              aura:id = "examAdminID"
+                                              value = "{!v.selectedFrm1ExamAdmin}"
+                                              onchange = "{!c.onExamAdmin}"
+                                              required="true"
+                                              >
+                                <option text = "--None--" value = "--None--"/>
+                                <aura:iteration items = "{!v.frm1ExamAdmins}"
+                                                var = "examAdmin">
+                                    <option text = "{!examAdmin}"
+                                            value = "{!examAdmin}"/>
+                                </aura:iteration>
+                            </lightning:select>
+                            
+                        </div>
+                    </div>
+                </aura:if>
+                
+                <aura:if isTrue="{!and(not(empty(v.frm2ExamAdmins)),v.frm2Exists == true)}">
+                    <div class="slds-grid">
+                        <div class="slds-col slds-size_3-of-12"> 
+                        </div>
+                        <div class="slds-size_6-of-12">
+                            <lightning:select name = "frm2ExamAdmin" 
+                                              label = "Select Exam Adminstration for FRM 2" 
+                                              aura:id = "examAdminID"
+                                              value = "{!v.selectedFrm2ExamAdmin}"
+                                              onchange = "{!c.onExamAdmin}"
+                                              required="true"
+                                              >
+                                <option text = "--None--" value = "--None--"/>
+                                <aura:iteration items = "{!v.frm2ExamAdmins}"
+                                                var = "examAdmin">
+                                    <option text = "{!examAdmin}"
+                                            value = "{!examAdmin}"/>
+                                </aura:iteration>
+                            </lightning:select>
+                            
+                        </div>
+                    </div>
+                </aura:if>
+                
+                <aura:if isTrue="{!and(not(empty(v.scrExamAdmins)),v.scrExists == true)}">
+                    <div class="slds-grid">
+                        <div class="slds-col slds-size_3-of-12"> 
+                        </div>
+                        <div class="slds-size_6-of-12">
+                            <lightning:select name = "scrExamAdmin" 
+                                              label = "Select Exam Adminstration for SCR" 
+                                              aura:id = "examAdminID"
+                                              value = "{!v.selectedScrExamAdmin}"
+                                              onchange = "{!c.onExamAdmin}"
+                                              required="true"
+                                              >
+                                <option text = "--None--" value = "--None--"/>
+                                <aura:iteration items = "{!v.scrExamAdmins}"
+                                                var = "examAdmin">
+                                    <option text = "{!examAdmin}"
+                                            value = "{!examAdmin}"/>
+                                </aura:iteration>
+                            </lightning:select>
+                            
+                        </div>
+                    </div>
+                </aura:if>
+                <div class="slds-grid">
+                    <div class="slds-col slds-size_6-of-12">  
+                        <div class="slds-p-top_large" style="float:right">
+                            <lightning:button variant="brand" 
+                                              label="Next" 
+                                              class="slds-button slds-button_brand" 
+                                              onclick="{!c.OnclickNextButton}" />
+                            <lightning:button  variant="brand" 
+                                              class="slds-button slds-button_brand" 
+                                              label="Back"  
+                                              onclick="{!c.BackButton}"/>
+                        </div>
+                    </div>
+                </div>
+            </aura:if>  
+        </div>
+        <aura:if isTrue="{!v.navigateToSites}" >
+            <div class="slds-align_absolute-center">
+                <aura:if isTrue="{! !empty(v.frm1SiteMessage)}">
+                    
+                    <lightning:formattedText class="redColor" name="errorMessage" 
+                                             value="{!v.frm1SiteMessage}"
+                                             label="Error: "/>
+                </aura:if>
+            </div>
+            <div class="slds-align_absolute-center">
+                <aura:if isTrue="{! !empty(v.frm2SiteMessage)}">
+                    <lightning:formattedText class="redColor" name="errorMessage" 
+                                             value="{!v.frm2SiteMessage}"
+                                             label="Error: "/>
+                </aura:if>
+            </div>
+            <div class="slds-align_absolute-center">
+                <aura:if isTrue="{! !empty(v.scrSiteMessage)}">
+                    <lightning:formattedText class="redColor" name="errorMessage" 
+                                             value="{!v.scrSiteMessage}"
+                                             label="Error: "/>
+                </aura:if>
+            </div>
+            <aura:if isTrue="{!and(v.frm1Exists,not(empty(v.examFrm1Sites)))}">
+                <div class="slds-grid">
+                    <div class="slds-col slds-size_3-of-12"> 
+                    </div>
+                    <div class="slds-size_6-of-12">
+                        <lightning:select name = "examFrm1Site" 
+                                          label = "Select Exam Site for FRM part 1"
+                                          value = "{!v.selectedFrm1ExamSite}"
+                                          required="true"
+                                          >
+                            <option text = "--None--" value = "--None--"/>
+                            <aura:iteration items = "{!v.examFrm1Sites}"
+                                            var = "examSite">
+                                <option text = "{!examSite}"
+                                        value = "{!examSite}"/>
+                            </aura:iteration>
+                        </lightning:select>
+                    </div>
+                </div>
+            </aura:if>
+            
+            
+            <aura:if isTrue="{!and(v.frm2Exists,not(empty(v.examFrm2Sites)))}">
+                <div class="slds-grid">
+                    <div class="slds-col slds-size_3-of-12"> 
+                    </div>
+                    <div class="slds-size_6-of-12">
+                        <lightning:select name = "examFrm2Site"
+                                          label = "Select Exam Site for FRM part 2"
+                                          value = "{!v.selectedFrm2ExamSite}"
+                                          required="true"
+                                          >
+                            <option text = "--None--" value = "--None--"/>
+                            <aura:iteration items = "{!v.examFrm2Sites}"
+                                            var = "examSite">
+                                <option text = "{!examSite}"
+                                        value = "{!examSite}"/>
+                            </aura:iteration>
+                        </lightning:select>
+                    </div>
+                </div>
+            </aura:if>
+            <aura:if isTrue="{!and(v.scrExists,not(empty(v.examScrSites)))}">
+                <div class="slds-grid">
+                    <div class="slds-col slds-size_3-of-12"> 
+                    </div>
+                    <div class="slds-size_6-of-12">
+                        <lightning:select name = "examScrSite"
+                                          label = "Select Exam Site for SCR"
+                                          value = "{!v.selectedScrExamSite}"
+                                          required="true"
+                                          >
+                            <option text = "--None--" value = "--None--"/>
+                            <aura:iteration items = "{!v.examScrSites}"
+                                            var = "examSite">
+                                <option text = "{!examSite}"
+                                        value = "{!examSite}"/>
+                            </aura:iteration>
+                        </lightning:select>
+                    </div>
+                </div>
+            </aura:if>
+            
+            <div class="slds-grid">
+                <div class="slds-col slds-size_3-of-12"> 
+                </div>
+                <div class="slds-size_6-of-12">
+                    <lightning:radioGroup name="freeDefferalCheck"
+                                          aura:id="radioGroup"
+                                          label="Free Defferal?"
+                                          options="{! v.freeDefferalOptions }"
+                                          value="{! v.freeDeferralValue}"
+                                          type="radio"
+                                          required="true"/>
+                   <!-- <lightning:radioGroup name="oneTimeDefferalCheck"
+                                          aura:id="radioGroup"
+                                          label="Count Against One Time Defferal Option?"
+                                          options="{! v.freeDefferalOptions }"
+                                          value="{! v.oneTimeDeferralValue }"
+                                          type="radio"
+                                          required="true"/> -->
+                </div>
+            </div> 
+            <div class="slds-grid">
+                <div class="slds-col slds-size_6-of-12">  
+                    <div class="slds-p-top_large" style="float:right">
+                        <lightning:button variant="brand" 
+                                          label="Save" 
+                                          class="slds-button slds-button_brand" 
+                                          onclick="{!c.OnClickSave}" />
+                        <lightning:button  variant="brand" 
+                                          class="slds-button slds-button_brand" 
+                                          label="Back"  
+                                          onclick="{!c.BackButtonOnExamSite}"/>
+                    </div>
+                </div>
+            </div>
+            
+        </aura:if>
+    </div>
+</aura:component>

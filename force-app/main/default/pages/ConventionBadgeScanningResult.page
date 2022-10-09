@@ -1,0 +1,62 @@
+<apex:page controller="ConventionBadgeScanning" showHeader="false" sidebar="false" showChat="false"  standardStylesheets="false" >
+<meta http-equiv='cache-control' content='no-cache'></meta>
+<meta http-equiv='expires' content='0'></meta>
+<meta http-equiv='pragma' content='no-cache'></meta>
+
+    
+    <apex:slds />
+   <html>
+      <head>
+         <meta name="viewport" content="width=device-width, initial-scale=1"  />
+      </head>
+      <body>
+         <section class="slds-grid slds-p_xx-large slds-gutters">
+            <div class="slds-container_small slds-container_center">
+               <apex:form >
+                  <apex:pageBlock >
+                     <div style ="padding:30px;">
+                        <div><b>Attendee:</b> {!EventRegs.Contact__r.name}</div>
+                        <div><b>Check-In Code:</b> {!EventRegs.Registration_ID__c}</div>
+                        <div><b>Registered For:</b> {!EventRegs.Event__r.name}</div>
+                        <div>{!strDateTime}</div>
+                        <apex:outputText value=" "/>
+                        <apex:outputPanel id="convention-card">
+                           <table>
+                                 <tr>
+                                    <td>
+                                       <apex:outputPanel layout="block" style="font-family:Arial Unicode MS;width:300px;height:100px;font-size:20px;margin-left:5px;margin-right:20px;margin-top:50px;border:1px solid black;margin-bottom:10px;">
+                                          <div style ="padding:10px">
+                                             {!selectedEventName}
+                                          </div>
+                                       </apex:outputPanel>
+                                    </td>
+                                </tr>    
+                                <tr>
+                                    <td style="maring:20px;text-align:center">
+                                        <div style="margin:20px">
+                                            <apex:image url="{!$Resource.ConventionBadgeRegistered}" width="85px" height="85px" rendered="{!SessionExists}" />  
+                                            <apex:image url="{!$Resource.ConventionBadgeNotRegistered}" width="85px" height="85px" rendered="{!SessionExists == false}"/>
+                                        </div>
+                                    </td>
+                                 </tr>
+                           </table>
+                        </apex:outputPanel>
+                         <div style="width:300px">
+                             <div style="float:left;font-size:20px">
+                                 <apex:commandButton action="{!setCookies}" value="Remember" id="RemeberButton"/>
+                             </div>
+                             <div style="float:right;font-size:20px">
+                                 <apex:commandButton action="{!clearCookies}" value="Forget" id="ForgetButton"/>
+                             </div>
+                         </div>
+                         <div style="margin-top:80px;font-size:20px">
+                            <apex:commandButton action="{!backtoMainPageNavigation}" value="Back" id="theButton"/>
+                        </div>
+                     </div>
+                  </apex:pageBlock>
+               </apex:form>
+            </div>
+         </section>
+      </body>
+   </html>
+</apex:page>

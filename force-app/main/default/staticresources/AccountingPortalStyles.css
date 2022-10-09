@@ -1,0 +1,65 @@
+.faux-sfdc-pageBlockTable{
+    width: 100%; 
+    border-collapse: collapse; 
+    table-layout: fixed; 
+    border: 1px solid #ececec;
+}
+.faux-sfdc-pageBlockTable thead{
+    border-bottom: 2px solid #ccc; 
+    background: #f2f3f3;
+}
+.faux-sfdc-pageBlockTable thead th{
+    padding: 5px 0px 5px 5px;
+    font-size: .9em;
+    border-right: 1px solid #e0e3e5  !important;
+}
+.faux-sfdc-pageBlockTable thead th:last{
+    border-right: none;
+}
+.faux-sfdc-pageBlockTable tbody{
+    background: #fff;
+}
+.faux-sfdc-pageBlockTable tbody tr{
+    border-bottom: 1px solid #ececec;
+}
+.faux-sfdc-pageBlockTable tbody tr:last{
+    border-bottom: none;
+}
+.faux-sfdc-pageBlockTable tbody tr td{
+    border: 1px solid #ececec;
+    padding: 5px 0px 3px 5px;
+}
+.faux-sfdc-pageBlockTable input, .faux-sfdc-pageBlockTable textarea{
+    width: calc(100% - 10px);
+}
+.align-header-right{
+    text-align: right;
+    padding-right: 5px !important;
+}
+.align-footer-right{
+    text-align: right;
+    padding-right: 5px !important;
+}
+.align-cell-contents-right{
+    text-align: right;    	
+    float:right;
+    margin-right: 5px;
+}
+.align-cell-contents-right input{
+    border: none;
+    outline: none;
+}
+.align-header-center{
+    text-align: center;
+}
+.align-cell-contents-center{
+    text-align: center;   	
+}
+.approval-list{
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    padding: 5px;
+}
+.short-width{
+    max-width: 150px;
+}

@@ -1,0 +1,72 @@
+<template>
+    <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-box shadowBox">
+        <!-- Table header -->
+        <thead>
+            <tr class="slds-line-height_reset">
+                <template for:each={headerRows} for:item="header">
+                    <th key={header.index} class="slds-truncate" scope="col">{header.value}</th>
+                </template>
+            </tr>
+        </thead>
+
+        <tbody>
+            <!-- Rows display -->
+            <template if:true={hasRows}>
+                <template for:each={displayRows} for:item="row">
+                    <!-- Main rows -->
+                    <tr key={row.index} class="slds-hint-parent">
+                        <template iterator:it={row.fields}>
+                            <th if:true={it.first} key={it.value.name} class="slds-truncate boldTxt" scope="row">
+                                {it.value.value}
+                            </th>
+                            <td if:false={it.first} key={it.value.name} class="slds-truncate">
+                                {it.value.value}
+                            </td>
+                        </template>
+                    </tr>
+                    <!-- Child rows -->
+                    <tr if:true={row.child} key={row.child_index}>
+                        <th colspan={columnCnt}>
+                            <template for:each={row.child} for:item="childList">
+                                <div key={childList.list_index} class={childList.colorClass}>
+                                    <div class="slds-grid slds-gutters slds-grid_vertical-align-center">
+                                        <div class="slds-col slds-size_1-of-6">
+                                            <div class="slds-p-left_medium">
+                                                &#8627; <span class="boldTxt">{childList.objName}</span>
+                                            </div>
+                                        </div>
+                                        <div class="slds-col slds-size_5-of-6">
+                                            <ul class="slds-list_ordered">
+                                                <template for:each={childList} for:item="childRow">
+                                                    <li key={childRow.id}>{childRow.obj} - {childRow.data}</li>
+                                                </template>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </th>
+                    </tr>
+                </template>
+            </template>
+
+            <!-- No row message -->
+            <template if:false={hasRows}>
+                <tr class="slds-hint-parent">
+                    <td colspan={columnCnt} class="textCenter">
+                        <div class="slds-p-around_small boldTxt">No records found.</div>
+                    </td>
+                </tr>
+            </template>
+        </tbody>
+
+        <!-- Custom table footer with slot -->
+        <template if:true={hasFooter}>
+            <tfoot>
+                <tr>
+                    <td colspan={columnCnt}><slot name="tbl_footer"></slot></td>
+                </tr>
+            </tfoot>
+        </template>
+    </table>
+</template>

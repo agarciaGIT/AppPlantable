@@ -1,0 +1,1 @@
+<apex:page standardController="Event_Speaker__c"><cdrive:CloudFileComponent objId="{!ID}" ></cdrive:CloudFileComponent></apex:page>

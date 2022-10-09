@@ -1,0 +1,21 @@
+<template>
+    <c-lwc_streaming_api 
+        channel="/event/MemberNotification__e" 
+        api-version="45.0" 
+        debug=true
+        onmessage={handleMessage} 
+        onerror={handleError} 
+        class="lwc_streaming_api-1">
+    </c-lwc_streaming_api>
+    <div class="notification-container">
+        <div style="position:relative">
+            <template if:true={haveUnread}>
+                <lightning-icon icon-name="utility:notification" size="medium"></lightning-icon>
+                <span class="notification-marker">!</span>
+            </template>
+            <template if:false={haveUnread}>
+                <lightning-icon icon-name="utility:notification" size="medium"></lightning-icon>
+            </template>
+        </div>
+    </div>
+</template>

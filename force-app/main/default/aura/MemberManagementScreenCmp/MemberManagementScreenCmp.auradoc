@@ -1,0 +1,15 @@
+<aura:documentation>
+	<aura:description>Documentation</aura:description>
+	<aura:example name="ExampleName" ref="exampleComponentName" label="Label">
+
+    
+    This is the main component and from here all the other componenets are getting called from
+    
+    
+    
+    
+    
+    
+    
+    </aura:example>
+</aura:documentation>

@@ -1,0 +1,27 @@
+<apex:page standardController="Opportunity" extensions="CancelBooks" sidebar="false">
+    <apex:sectionHeader title="Edit Opportunity" subtitle="{!opportunity.name}"/>
+    <apex:form >
+        <apex:pageBlock title="Edit Opportunity" mode="edit">
+            <apex:pageMessages />
+            <apex:pageBlockButtons >
+                <apex:commandButton value="Save" action="{!doSave}"/>
+                <apex:commandButton value="Cancel" action="{!cancel}"/>                
+            </apex:pageBlockButtons>
+            <apex:actionRegion >                
+                <apex:pageBlockSection title="Basic Information" columns="2">
+                    
+                    <apex:pageBlockSection columns="1">
+                        <apex:selectList size="1" value="{!viewModel.upsStage}" label="UPS Stage">
+                            <apex:selectOptions value="{!selectOptions}" />
+                        </apex:selectList>
+                        <apex:inputCheckbox label="cancelBooks" value="{!viewModel.CancelBooks}"/>
+                        <apex:inputCheckbox label="HasBooks" value="{!viewModel.HasBooks}"/>
+                    </apex:pageBlockSection>
+                    
+                   
+                    
+                </apex:pageBlockSection>
+            </apex:actionRegion>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

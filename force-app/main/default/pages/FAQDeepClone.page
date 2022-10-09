@@ -1,0 +1,18 @@
+<apex:page standardController="FAQ_Category__c" extensions="FAQDeepCloneCtrl">
+    <apex:form >
+        <apex:pageMessages />
+        <apex:pageblock >
+            <apex:pageblockSection title="Deep Clone" collapsible="false">
+                <apex:outputText value="{!FAQ_Category__c.Name}"/>
+                <apex:pageBlockSectionItem >
+                    <p>
+                        The deep clone functionality will clone the FAQ Category and all associated related list records.
+                    </p>
+                </apex:pageBlockSectionItem>
+            </apex:pageblockSection>
+            <apex:pageBlockButtons >
+                <apex:commandbutton value="Deep Clone" action="{!doDeepClone}"/>
+            </apex:pageBlockButtons>
+        </apex:pageblock>
+    </apex:form>
+</apex:page>

@@ -1,0 +1,84 @@
+<apex:page controller="manualEventRegistration"> 
+    <h1>
+        Create Event Registration
+    </h1>
+    <apex:form >
+        <apex:pageMessages />
+        <apex:pageBlock title="Contact" mode="edit">
+            <apex:pageBlockButtons >
+                <apex:commandButton action="{!manualEventRegistration}" value="Create Event Registration"/>  
+            </apex:pageBlockButtons>
+            
+            <apex:pageBlockSection title="Contact" columns="2">
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="First Name" for="account__name"/>
+                    <apex:inputText value="{!firstName}" id="firstName"/> 
+                </apex:pageBlockSectionItem>
+                
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Last Name" for="lastName"/>
+                    <apex:inputText value="{!lastName}" id="lastName"/> 
+                </apex:pageBlockSectionItem>
+                
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Email" for="email"/>
+                    <apex:inputText value="{!email}" id="email"/> 
+                </apex:pageBlockSectionItem>
+                
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Invoice CC:Email" for="ccemail"/>
+                    <apex:inputText value="{!ccemail}" id="ccemail"/> 
+                </apex:pageBlockSectionItem>
+                
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Nick Name" for="nickName"/>
+                    <apex:inputText value="{!nickName}" id="nickName"/> 
+                </apex:pageBlockSectionItem>
+                
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Job Title" for="jobTitle"/>
+                    <apex:inputText value="{!jobTitle}" id="jobTitle"/> 
+                </apex:pageBlockSectionItem>
+                
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Company" for="Company"/>
+                    <apex:inputText value="{!company}" id="Company"/> 
+                </apex:pageBlockSectionItem>
+                
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Event" for="event"/>
+                    <apex:inputField value="{!eventObject.Event__c}"/> 
+                </apex:pageBlockSectionItem> 
+                
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Membership" for="membership"/>
+                    <apex:inputCheckbox value="{!membership}"/> 
+                </apex:pageBlockSectionItem> 
+            </apex:pageBlockSection> 
+            
+            <apex:pageBlockSection title="Discounting" columns="2" id="pbDiscounting"> 
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Promo Code" for="promocode"/>
+                    <apex:inputText value="{!promocode}" id="promocode" disabled="{!discount != null}" >
+                        <apex:actionsupport event="onchange" rerender="pbDiscounting"/>
+                    </apex:inputText> 
+                </apex:pageBlockSectionItem>
+                
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Discount Percentage" for="discount"/>
+                    <apex:inputText value="{!discount}" id="Discount" disabled="{!promocode != null}" maxlength="2">
+                        <apex:actionsupport event="onchange" rerender="pbDiscounting"/>
+                    </apex:inputText> 
+                </apex:pageBlockSectionItem>
+                
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Discount Description" for="discountdescription"/>
+                    <apex:inputTextarea value="{!description}" id="DiscountDescription" disabled="{!promocode != null}">
+                    </apex:inputTextarea> 
+                </apex:pageBlockSectionItem>
+                
+            </apex:pageBlockSection> 
+            
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

@@ -1,0 +1,80 @@
+<aura:component controller="CaseDeferralRequestLTClass">
+    <aura:handler name="init" value="this" action="{!c.doInit}"/>
+    <aura:attribute name="data" type="Object"/>
+    <aura:attribute name="FromDateList" type="List"/>
+    <aura:attribute name="ToDateList" type="List"/>
+    <aura:attribute name="columns" type="List"/>
+    <aura:attribute name="ErrorMessage" type="String"/>
+    <aura:attribute name="contactId" type="String"/>
+    <aura:attribute name="caseId" type="String"/>
+    <aura:attribute name="selectedFromDate" type="String" default =""/>
+    <aura:attribute name="selectedToDate" type="String" default =""/>
+    <aura:attribute name="SelectedExamAtt" type="String"/>
+    <aura:attribute name="isSelectedPart2" type="boolean"/>
+    <aura:attribute name="UITheme" type="String"/> 
+    <aura:handler event="aura:doneWaiting" action="{!c.hideSpinner}"/>
+    <aura:attribute name="spinner" type="boolean" default="FALSE"/>
+    
+    <div class="slds-card"> 
+        <div class="slds-page-header">
+            <div class="slds-align_absolute-center">
+                <div class="slds-text-heading_large">
+                    <div class="slds-m-top_xx-large">
+                        Case Special Deferral
+                    </div>
+                </div>
+            </div>
+        </div>
+         
+        <div class="slds-box slds-theme_shade">
+            <aura:if isTrue="{!v.spinner}">
+                <div aura:id="spinnerId" class="slds-spinner_container">
+                    <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="alert">
+                        <span class="slds-assistive-text">Loading...</span>
+                        <div class="slds-spinner__dot-a"></div>
+                        <div class="slds-spinner__dot-b"></div>
+                    </div>
+                </div>
+            </aura:if>
+            <span class="slds-align_absolute-center" style="color:red;">{!v.ErrorMessage}</span> 
+            <aura:if isTrue="{!not(empty(v.data))}"><br/>
+                <lightning:datatable columns="{! v.columns }"
+                                     data="{! v.data }"
+                                     keyField="id"
+                                     maxRowSelection="1"
+                                     onrowselection="{! c.onchangeExamAtt}" />
+                <aura:set attribute="else"><br/>
+                    No Resultes found
+                </aura:set>
+            </aura:if><br/>
+            <div class="slds-grid"> 
+                <div class="slds-col slds-size_1-of-12"/>
+                <div class="slds-col slds-size_3-of-12">   
+                    <lightning:select label="From Date" value="{!v.selectedFromDate}">
+                        <option value="">-- None --</option>
+                        <aura:iteration items="{!v.FromDateList}" var="frdate">
+                            <option value="{!frdate}">{!frdate}</option>
+                        </aura:iteration>
+                    </lightning:select>
+                </div>
+                <div class="slds-col slds-size_1-of-12"/>  
+                <div class="slds-col slds-size_3-of-12">  
+                    <lightning:select label="To Date" value= "{!v.selectedToDate}">
+                        <option value="">-- None --</option>
+                        <aura:iteration items="{!v.ToDateList}" var="todate">
+                            <option value="{!todate}">{!todate}</option>
+                        </aura:iteration>
+                    </lightning:select>
+                </div>
+            </div> <br/> <br/>
+            <div class="slds-clearfix">
+                <div class="slds-align_absolute-center">
+                <lightning:button  variant="Neutral" class="slds-button slds-button_neutral" label="Close"  onclick="{!c.closeButton}"/>
+                <aura:if isTrue="{!v.SelectedExamAtt != null}">
+                    <lightning:button  variant="brand" class="slds-button slds-button_neutral" label="Update Deferral"  onclick="{!c.updateDeferral}"/> 
+                </aura:if> 
+            </div>
+            </div>
+        </div>
+    </div>
+</aura:component>

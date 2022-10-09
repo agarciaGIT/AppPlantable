@@ -1,0 +1,72 @@
+* {
+    box-sizing: border-box;
+}
+ul#progress{
+    padding: 0;
+    list-style-type: none;
+    font-family: arial;
+    font-size: 12px;
+    clear: both;
+    line-height: 1em;
+    margin: 0 -10px;
+    text-align: center;
+    width: 100%;
+    display: table;
+    table-layout: fixed;
+}
+
+ul#progress li {
+    padding: 10px 15px 10px 20px;
+    background: #E6E6E6;
+    color: #fff;
+    position: relative;
+    border-top: 1px solid #E6E6E6;
+    border-bottom: 1px solid #E6E6E6;
+    display: table-cell;
+}
+
+ul#progress li:before {
+    content: '';
+    border-left: 16px solid #E6E6E6;
+    border-top: 16px solid transparent;
+    border-bottom: 16px solid transparent;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    left: 0;
+    
+}
+ul#progress li:after {
+    content: '';
+    border-left: 16px solid #E6E6E6;
+    border-top: 16px solid transparent;
+    border-bottom: 16px solid transparent;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    left: 100%;
+    z-index: 20;
+}
+
+ul#progress li.active {
+    background: orange;
+}
+
+ul#progress li.active:after {
+    border-left-color: orange;
+}
+
+ul#progress li.done {
+    background: green;
+}
+
+ul#progress li.done:after {
+    border-left-color: green;
+}
+ul#progress li.rejected {
+    background: red;
+}
+
+ul#progress li.rejected:after {
+    border-left-color: red;
+}

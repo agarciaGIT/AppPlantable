@@ -91,7 +91,7 @@ public  class Plant_TransactionTiggerHelper {
             for(Order oddr : [SELECT Id, Status,TotalAmount,OrderNumber,AccountId,Plant_Order_Properties__c,Plant_Shipping_Date__c,Plant_Shipping_Date__r.Plant_Shipping_Date__c, (Select id, OrderId, Product2Id, UnitPrice, PricebookEntryId, Quantity from OrderItems Limit 1), pricebook2id, comty_Chargent_Order__c,Plant_Subscription__c,
                               Plant_Subscription__r.Plant_Shipping_Address__c,Plant_Subscription__r.Plant_Shipping_Date__c,Plant_Subscription__r.Plant_Meal_Selection__c,Plant_Subscription__r.Plant_Payment_Method__c, Plant_Subscription__r.Order_Count__c,Plant_Subscription__r.RecordType.Name,Plant_Subscription__r.Plant_Account__c,
                               Plant_Subscription__r.Plant_Status__c,Plant_Subscription__r.Plant_Cadence__c,Plant_Subscription__r.Plant_Start_Date__c,Plant_Subscription__r.Plant_Charge_Day__c,Plant_Subscription__r.Plant_Next_Delivery_Date__c,Plant_Subscription__r.Plant_Next_Shipment_Date__c,Plant_Subscription__r.Plant_Next_Charge_Date__c, 
-                              Plant_Subscription__r.Plant_Shipping_Address__r.Plant_Postal_Code__c, Plant_Subscription__r.Plant_Shipping_Address__r.Plant_Province_State__c,Plant_Subscription__r.Plant_Chargent_Order__c,
+                              Plant_Subscription__r.Plant_Shipping_Address__r.Plant_Postal_Code__c, Plant_Subscription__r.Plant_Shipping_Address__r.Plant_Province_State__c,Plant_Subscription__r.Plant_Chargent_Order__c,Plant_Subscription__r.Plant_Temp_Chargent_Failed_Payment__c,
                               Plant_Subscription__r.Ghost_Next_Shipment_Date__c, Plant_Subscription__r.Ghost_Shipment_Day__c,Plant_Subscription__r.Plant_Delivery_Schedule__c, Plant_Subscription__r.Plant_Delivery_Schedule__r.Plant_Shipping_Duration__c,
                               (SELECT Id, IsDeleted, Name, SystemModstamp, LastViewedDate, LastReferencedDate, Plant_Order__c, Plant_Status__c,  Plant_Tracking_Number__c, Plant_Flagged_Details__c, Chargent_Transaction__c FROM Shipments__r Limit 1), 
                               Plant_Order_Properties__r.Shipping_Address__r.Plant_Province_State__c ,Plant_Order_Properties__r.Shipping_Address__r.Plant_Postal_Code__c ,Plant_Order_Properties__r.RecordTypeId,Plant_Order_Properties__r.RecordType.Name,
@@ -261,6 +261,10 @@ public  class Plant_TransactionTiggerHelper {
                             new_sfOrder.EffectiveDate = System.today();
                             new_sfOrder.comty_Chargent_Order__c= oddr.Plant_Subscription__r.Plant_Chargent_Order__c;
                             new_sfOrder.status='Draft';
+                            if(!String.isBlank(oddr.Plant_Subscription__r.Plant_Temp_Chargent_Failed_Payment__c)){
+                                System.debug('@@@@ fixed Order');
+                                new_sfOrder.Is_Transaction_Failed_And_Fixed__c=true;
+                            }
                             new_sfOrder.Plant_Transaction_Id__c=cOrder_Vs_transactionId_Map.get(oddr.Plant_Subscription__r.Plant_Chargent_Order__c);
                                 insertOrder_Map.put(oddr.Id,new_sfOrder);
 
@@ -275,7 +279,7 @@ public  class Plant_TransactionTiggerHelper {
                             subscpt.Id = oddr.Plant_Subscription__c;
                             subscpt.Plant_Next_Charge_Date__c=oddr.Plant_Subscription__r.Plant_Next_Charge_Date__c.addDays(7);
                             subscpt.Order_Count__c =oddr.Plant_Subscription__r.Order_Count__c+1; 
-                            
+                            subscpt.Plant_Temp_Chargent_Failed_Payment__c = null;
                             // subscpt.Plant_Next_Shipment_Date__c = Plant_Shipping_BC.getClosestShipmentDate(oddr.Plant_Subscription__r.Plant_Next_Shipment_Date__c.addDays(7), oddr.Plant_Subscription__r.Plant_Shipping_Address__c,NULL,NULL,NULL);
                             Map<String, Plant_Shipping_Address__c> temp_mapShipAddr = new Map<String,Plant_Shipping_Address__c>();
                             temp_mapShipAddr.put(oddr.Plant_Subscription__r.Plant_Shipping_Address__c, mapShipAddr.get(oddr.Plant_Subscription__r.Plant_Shipping_Address__c));

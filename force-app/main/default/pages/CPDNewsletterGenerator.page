@@ -1,0 +1,364 @@
+<apex:page controller="CPDNewsletterGeneratorCtrl" sidebar="false">
+    
+    <html>
+        <title>CPD Newsletter Email Generator</title>
+        <head>
+            <style>
+                td.dataCol.first.last{
+                padding-right: 10px;
+                }
+                td.dataCell{
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                height: 24px;
+                
+                }
+                table.list{
+                table-layout: fixed;
+                }
+                h1{
+                line-height: 44px;
+                font-size: 20px;
+                }
+                h2{
+                line-height: 24px;
+                font-size: 12px;
+                }
+                .column{
+                width: calc(50% - 12px); 
+                float: left; 
+                }
+                .gutter{
+                width: 24px;
+                height: 1px;
+                background: transparent;
+                float: left;
+                }
+                .row{
+                width: 100%;
+                display: inline-block;
+                padding-bottom: 12px;
+                }
+                .pointer{
+                cursor: pointer;
+                }
+                .arrow-up {
+                width: 0; 
+                height: 0; 
+                border-left: 5px solid transparent;
+                border-right: 5px solid transparent;                  
+                border-bottom: 5px solid #000;
+                }
+                
+                .arrow-down {
+                width: 0; 
+                height: 0; 
+                border-left: 5px solid transparent;
+                border-right: 5px solid transparent;               
+                border-top: 5px solid #000;
+                }
+                
+                .arrow-right {
+                width: 0; 
+                height: 0; 
+                border-top: 5px solid transparent;
+                border-bottom: 5px solid transparent;              
+                border-left: 5px solid #000;
+                }
+                
+                .arrow-right-big {
+                width: 0; 
+                height: 0; 
+                border-top: 10px solid transparent;
+                border-bottom: 10px solid transparent;              
+                border-left: 10px solid #000;
+                }
+                
+                .arrow-left {
+                width: 0; 
+                height: 0; 
+                border-top: 5px solid transparent;
+                border-bottom: 5px solid transparent;                   
+                border-right:5px solid #000; 
+                }
+                .arrow-left-big {
+                width: 0; 
+                height: 0; 
+                border-top: 10px solid transparent;
+                border-bottom: 10px solid transparent;                   
+                border-right:10px solid #000; 
+                }
+            </style>
+            
+            <script>
+            var doPreview = function() {
+                
+                var preview = document.getElementById('{!$Component.CPDNewsletterGeneratorForm.htmlTemplatePreview}').value
+                
+                var x = window.open()
+                
+                x.document.open()
+                x.document.write(preview)
+                x.document.close()
+                
+                return false
+                
+            }
+            </script> 
+            
+        </head>
+        <body>         
+            <apex:form id="CPDNewsletterGeneratorForm"> 
+                
+                <apex:inputTextarea style="display: none;" id="htmlTemplatePreview" value="{!htmlTemplate}"></apex:inputTextarea>
+                
+                <apex:actionFunction name="doSelect" action="{!doSelect}" reRender="pbCpdActivityTable, pbSelectionTable, pbPageNumber">
+                    <apex:param name="cpeActivityId" value="" assignTo="{!cpeActivityId}" />
+                </apex:actionFunction> 
+                
+                <apex:actionFunction name="doRemove" action="{!doRemove}" reRender="pbCpdActivityTable, pbSelectionTable, pbPageNumber">
+                    <apex:param name="cpeActivityId" value="" assignTo="{!cpeActivityId}" />
+                </apex:actionFunction> 
+                
+                <apex:actionFunction name="moveItemUp" action="{!moveItemUp}" reRender="pbSelectionTable">
+                    <apex:param name="cpeActivityId" value="" assignTo="{!cpeActivityId}" />
+                </apex:actionFunction> 
+                
+                <apex:actionFunction name="moveItemDn" action="{!moveItemDn}" reRender="pbSelectionTable">
+                    <apex:param name="cpeActivityId" value="" assignTo="{!cpeActivityId}" />
+                </apex:actionFunction>
+                
+                <apex:actionFunction name="moveGroupUp" action="{!moveGroupUp}" reRender="pbSelectionTable">
+                    <apex:param name="selectedGroupIndex" value="" assignTo="{!selectedGroupIndex}" />
+                </apex:actionFunction> 
+                
+                <apex:actionFunction name="moveGroupDn" action="{!moveGroupDn}" reRender="pbSelectionTable">
+                    <apex:param name="selectedGroupIndex" value="" assignTo="{!selectedGroupIndex}" />
+                </apex:actionFunction> 
+                
+                <apex:actionFunction name="saveContentSelector" action="{!saveContentSelector}" reRender="pbCustomCopy">
+                    <apex:param name="saveContentSelector" value="" />
+                </apex:actionFunction> 
+                
+                <apex:pageBlock > 
+                    <apex:pageMessages />
+                    
+                    <!-- CREATE NEW OR OPEN TEMPLATE -->
+                    <div style="display:{!IF(metadataListId = null, 'block', 'none')}; width: 100%;">
+                        
+                        <h1>
+                            CPD Activity Newsletter
+                        </h1>
+                        
+                        <br />
+                        
+                        <h2>
+                            Create or open an existing CPD Activity list
+                        </h2>
+                        
+                        <br />
+                        
+                        <apex:pageBlockSection >                            
+                            <apex:selectList size="1" value="{!metadataListId}" label="Existing Lists">
+                                <apex:selectOptions value="{!metadataLists}" />
+                            </apex:selectList>
+                            <apex:commandButton value="Open List" action="{!doOpen}"/> 
+                            
+                            <apex:inputText label="Enter List Name" value="{!metadataListName}" />
+                            <apex:commandButton value="Create List" action="{!doSaveAs}"/>  
+                        </apex:pageBlockSection>
+                        
+                    </div>
+                    <!-- CREATE NEW OR OPEN TEMPLATE -->
+                    
+                    <!-- ROW ONE -->
+                    <div class="row" style="display:{!IF(metadataListId = null, 'none', 'inline-block')};">
+                        <div class="column"> 
+                            <h1>
+                                Filter CPD Activities
+                            </h1>
+                        </div>
+                        <span class="gutter"></span>
+                        <div class="column"> 
+                            <h1>
+                                Create List or Edit An Existing One
+                            </h1>
+                            <br />
+                            <h2>
+                                How it works
+                            </h2>
+                            <span>
+                                <p>
+                                    1. Select and deselect CPD Activities by using the left/right arrows.
+                                </p>
+                                <p>
+                                    2. Sort CPD Activities using the up/down arrows within a given grouping of Activity Type. 
+                                </p>
+                                <p>
+                                    3. You can see additional CPD Activities information by hovering over the title.
+                                </p>
+                            </span>
+                        </div>
+                    </div>
+                    <!-- ROW ONE -->    
+                    
+                    <!-- ROW TWO -->
+                    <div class="row" style="display:{!IF(metadataListId = null, 'none', 'inline-block')};">
+                        <div class="column" style="margin-top: 25px;"> 
+                            <h2>
+                                Add filters
+                            </h2>
+                            <apex:pageBlockSection columns="2">
+                                <apex:inputField label="Start Date" value="{!SObjectStartDate.Outreach_Start_Date__c}" showDatePicker="true" />
+                                <apex:selectList size="1" value="{!activityType}" label="Activity Type">
+                                    <apex:selectOptions value="{!activityTypes}" />
+                                </apex:selectList>
+                                <apex:selectList size="1" value="{!areaOfStudy}" label="Area of Study">
+                                    <apex:selectOptions value="{!areasOfStudy}" />
+                                </apex:selectList>
+                                <apex:commandButton style="width: 100%;" action="{!doFilter}" value="Filter" reRender="pbCpdActivityTable, pbPageNumber" />
+                            </apex:pageBlockSection>
+                        </div>
+                        <span class="gutter"></span>
+                        <div class="column"> 
+                            <apex:pageBlockSection columns="3">
+                                <apex:commandButton style="width: 100%;" action="{!doNew}" value="Create New List"/>
+                                <apex:commandButton style="width: 100%;" action="{!doNew}" value="Open Existing List"/>
+                                <apex:commandButton style="width: 100%;" action="{!doDelete}" value="Delete List"/>
+                            </apex:pageBlockSection> 
+                            <div>
+                                <h1>
+                                    {!contentSelector.Name}
+                                </h1>
+                            </div>
+                            <apex:pageBlockSection columns="2" id="pbControls">
+                                <apex:commandButton style="width: 100%;" action="{!doGenerateHTML}" value="Generate HTML" reRender="htmlTemplatePreview, htmlTemplateSection, htmlTemplatePageBlock, htmlTemplate, pbControls"/>
+                                <apex:commandButton style="width: 100%;" disabled="{!IF(htmlTemplate <> null, false, true)}" onclick="doPreview()" value="Preview"/>
+                            </apex:pageBlockSection>
+                        </div>
+                    </div>
+                    <!-- ROW TWO -->  
+                    
+                    <!-- ROW THR -->
+                    <div class="row" style="display:{!IF(metadataListId = null, 'none', 'inline-block')};">
+                        <div class="column">                  
+                            <apex:pageBlockTable value="{!cpeActivities}" var="cpeActivity" id="pbCpdActivityTable" rows="10" rules="rows">
+                                
+                                <apex:column headerValue="Name">
+                                    <a
+                                       class="truncate"
+                                       href="/{!cpeActivity.Id}"
+                                       target="_blank"
+                                       id="{!cpeActivity.Id}"
+                                       onmouseover="LookupHoverDetail.getHover('{!cpeActivity.Id}', '/{!cpeActivity.Id}/m?retURL={!cpeActivity.Id}&isAjaxRequest=1').show();"
+                                       onmouseout="LookupHoverDetail.getHover('{!cpeActivity.Id}').hide();"
+                                       onfocus="LookupHoverDetail.getHover('{!cpeActivity.Id}', '/{!cpeActivity.Id}/m?retURL={!cpeActivity.Id}&isAjaxRequest=1').show();"
+                                       onblur="LookupHoverDetail.getHover('{!cpeActivity.Id}').hide();"
+                                       >
+                                        {!cpeActivity.Name}
+                                    </a>
+                                </apex:column>
+                                
+                                <apex:column headerValue="Activity Type" value="{!cpeActivity.CPE_Activity_Type__r.Name}"/>
+                                <apex:column headerValue="Area of Study" value="{!cpeActivity.Area_of_Study__c}"/>                                
+                                <apex:column headerValue="Date Description" value="{!cpeActivity.Date_Description__c}"/>     
+                                <apex:column headerValue="Credit" value="{!cpeActivity.Credit__c}"/>
+                                
+                                <apex:column headerValue="Select">
+                                    <center>
+                                        <div onclick="doSelect('{!cpeActivity.Id}')" class="arrow-right pointer"></div>
+                                    </center>
+                                </apex:column>
+                                
+                            </apex:pageBlockTable>
+                            <apex:pageBlockSection columns="3" id="pbPageNumber">
+                                
+                                <apex:commandButton style="float:left; display: block; width: 100%;" action="{!prev}" value="Previous" reRender="pbCpdActivityTable, pbPageNumber" />
+                                
+                                <div style="text-align:center;">
+                                    {!pageNumber}/{!pages}
+                                </div>
+                                
+                                <apex:commandButton style="float:right; display: block; width: 100%;" action="{!next}" value="Next" reRender="pbCpdActivityTable, pbPageNumber"/>
+                                
+                            </apex:pageBlockSection>
+                        </div>
+                        <span class="gutter"></span>
+                        <div class="column">
+                            <apex:pageBlock title="Custom Copy" id="pbCustomCopy">
+                                <apex:inputTextarea value="{!contentSelector.Custom_Copy__c}" style="width: 100%;" rows="5"/>
+                                <apex:commandButton onclick="saveContentSelector(); return false;" value="Save Custom Copy"/>
+                            </apex:pageBlock>
+                            <apex:outputPanel id="pbSelectionTable">
+                                <apex:variable value="0" var="groupIndex"/>
+                                <apex:repeat value="{!groupedByActivityTypeList}" var="group">                           
+                                    <apex:pageBlock title="{!group[0].CPE_Activity_Type__r.Name}">
+                                        <span style="float: left;">Sort Group</span>
+                                        <span style="float: left; padding-bottom: 7px; padding-left: 7px;">                                            
+                                            <div onclick="moveGroupUp('{!groupIndex}')" class="arrow-up pointer"></div> 
+                                            <div style="height: 6px;"></div>
+                                            <div onclick="moveGroupDn('{!groupIndex}')" class="arrow-down pointer"></div>   
+                                        </span>
+                                        
+                                        <apex:variable var="groupIndex" value="{!VALUE(groupIndex) + 1}"/>
+                                        <apex:pageBlockTable value="{!group}" var="cpeActivity">
+                                            
+                                            <apex:column headerValue="Remove">
+                                                <center>
+                                                    <div onclick="doRemove('{!cpeActivity.Id}')" class="arrow-left pointer"></div>
+                                                </center>
+                                            </apex:column>
+                                            
+                                            <apex:column headerValue="Name">
+                                                <a
+                                                   class="truncate"
+                                                   href="/{!cpeActivity.Id}"
+                                                   target="_blank"
+                                                   id="{!cpeActivity.Id}"
+                                                   onmouseover="LookupHoverDetail.getHover('{!cpeActivity.Id}', '/{!cpeActivity.Id}/m?retURL={!cpeActivity.Id}&isAjaxRequest=1').show();"
+                                                   onmouseout="LookupHoverDetail.getHover('{!cpeActivity.Id}').hide();"
+                                                   onfocus="LookupHoverDetail.getHover('{!cpeActivity.Id}', '/{!cpeActivity.Id}/m?retURL={!cpeActivity.Id}&isAjaxRequest=1').show();"
+                                                   onblur="LookupHoverDetail.getHover('{!cpeActivity.Id}').hide();"
+                                                   >
+                                                    {!cpeActivity.Name}
+                                                </a>
+                                            </apex:column>
+                                            
+                                            <apex:column headerValue="Activity Type" value="{!cpeActivity.CPE_Activity_Type__r.Name}"/>
+                                            <apex:column headerValue="Area of Study" value="{!cpeActivity.Area_of_Study__c}"/>                                
+                                            <apex:column headerValue="Date Description" value="{!cpeActivity.Date_Description__c}"/>     
+                                            <apex:column headerValue="Credit" value="{!cpeActivity.Credit__c}"/>
+                                            
+                                            <apex:column headerValue="Sort">
+                                                <center>
+                                                    <div onclick="moveItemUp('{!cpeActivity.Id}')" class="arrow-up pointer"></div> 
+                                                </center>
+                                                <div style="height: 6px;"></div>
+                                                <center>                                        
+                                                    <div onclick="moveItemDn('{!cpeActivity.Id}')" class="arrow-down pointer"></div>
+                                                </center>              
+                                            </apex:column> 
+                                            
+                                        </apex:pageBlockTable>   
+                                    </apex:pageBlock>
+                                </apex:repeat>
+                            </apex:outputPanel>
+                        </div>                            
+                    </div>
+                    <!-- ROW THR -->
+                    
+                </apex:pageBlock>
+                
+                <apex:outputPanel id="htmlTemplateSection" style="width: 100%; display: {!IF(htmlTemplate = null, 'none', 'block')}">                    
+                    <apex:pageBlock id="htmlTemplatePageBlock" title="Copy the below HTML">
+                        <apex:inputTextarea style="width: 100%; min-height: 200px; visibility: {!IF(htmlTemplate = null, 'hidden', 'visible')}" readonly="true" id="htmlTemplate" value="{!htmlTemplate}"></apex:inputTextarea>
+                    </apex:pageBlock>               
+                </apex:outputPanel>
+                
+            </apex:form>
+            
+        </body>
+    </html>
+    
+</apex:page>

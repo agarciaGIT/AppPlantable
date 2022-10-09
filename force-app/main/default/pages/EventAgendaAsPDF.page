@@ -1,0 +1,226 @@
+<apex:page controller="EventAgendaAsPDF" showHeader="false" sidebar="false" standardStylesheets="false"  applyhtmltag="false" applyBodyTag="false" renderAs="pdf" >
+    <!-- renderAs="pdf" -->
+    <head>
+        <style>
+            .event-heading {
+                font-size: 29px;
+                font-weight: 700;
+                color: #081A31;
+            }
+            
+            .main-heading {
+                font-size: 24px;
+                font-weight: 700;
+                color: #081A31;
+            }
+
+            .main-date {
+                font-size: 20px;
+                font-family: SansSerif;
+                font-weight: 500;   
+                color: #081A31;
+            }
+
+            .sub-heading {
+                font-size: 24px;
+                font-family: SansSerif;
+                font-weight: 500;    
+                color:  #9DA7AE;
+            }
+
+            .start-time {
+                font-size: 16px;
+                font-weight: 700;  
+                font-family: SansSerif;
+            
+                vertical-align: top;
+                padding-top: 18px;
+            
+                height: 100px;
+                text-align:center;
+                border-top: 1px solid  #9DA7AE;
+                border-bottom: 1px solid  #9DA7AE;
+            
+            }
+            
+            .session-body {
+                font-family: SansSerif;
+                vertical-align: top;
+                padding-top:15px;
+                padding-right:5px;
+                height: 100px;
+                border-top: 1px solid  #9DA7AE;
+                border-right: 1px solid  #9DA7AE;
+                border-bottom: 1px solid  #9DA7AE;
+            }
+            
+            .session-title {
+                font-size: 14px;
+                font-weight: 700;
+                font-family: SansSerif;
+                color: #081A31;
+            }
+            
+            .session-subtitle {
+                font-size: 14px;
+                font-weight: 700;
+                font-family: SansSerif;
+                color: #00A2DD;
+            }
+
+            .speaker-name {
+                font-size: 14px;
+                font-weight: 700;
+                font-family: SansSerif;
+                color:  #081A31;
+            }
+
+            .speaker-byline {
+                font-size: 14px;
+                font-weight: 500;
+                font-family: SansSerif;
+                color:  #081A31;
+            }
+            
+            .footnote {
+                font-size: 16px;
+                font-weight: 500;
+                font-family: SansSerif;
+                color:  #081A31;            
+            }
+
+            .footnote-link {
+                font-size: 16px;
+                font-weight: 700;
+                font-family: SansSerif;
+                color: #00A2DD;    
+                text-decoration: none;
+            }
+            
+            table {
+                border-collapse: collapse;
+            }
+            
+
+            .session-cell {
+                height: 100px;
+                border-top: 1px solid #081A31;
+                border-bottom: 1px solid #081A31;
+            }
+
+            .town-cell {
+                height: 100px;
+                border-top: 1px solid #FDB515;
+                border-bottom: 1px solid #FDB515;
+            }
+            
+            .page-numbers {
+                font-size: 10px;
+                font-family: SansSerif;
+                color:  #081A31;
+            }
+
+            .hide-item {
+                display: none;
+            }
+            
+        </style>
+    </head> 
+    <div class="main-pdf" style="margin-left: 15px;">
+
+        <apex:repeat value="{!AgendaDays}" var="day" > 
+            <div style="margin-top:30px">
+                
+                <div style="margin-bottom: 5px; text-align: right;margin-right:10px;">
+                    <span class="page-numbers" style="font-family: SansSerif;">Page {!day.agendaItems[0].pageCount} / {!day.agendaItems[0].totalPages}</span>
+                </div>                
+                
+                <div style="margin-bottom: 5px">
+                    <span class="event-heading" style="font-family: SansSerif;">{!eventName}</span>
+                </div>
+                <div style="margin-bottom: 20px">
+                    <span class="main-heading" style="font-family: SansSerif;">{!day.dayTitle}</span> <span class="main-date">| {!day.dayFormatted}</span>
+                </div>
+                <div style="margin-bottom: 10px">
+                    <span class="sub-heading">Sessions</span>
+                </div>
+                <div>
+                    <apex:repeat value="{!day.agendaItems}" var="ai" > 
+                        <!-- ** {!ai} -->
+                        
+                        <div class="{!IF(ai.sessionType != 'pages' || ai.itemCount == 1,'hide-item','')}">
+                            <div style="margin-bottom: 5px; text-align: right;margin-right:10px;">
+                                <span class="page-numbers" style="font-family: SansSerif;">Page {!ai.pageCount} / {!ai.totalPages}</span>
+                            </div>
+                        </div>
+                        
+                        <table width="600px" class="{!IF(ai.sessionType == 'break' || ai.sessionType == 'pages','hide-item','')}">
+                            <tr>
+                                <td width="20px" bgcolor="#081A31" class="session-cell">
+                                </td>
+                                <td width="100px" class="start-time">
+                                    {!ai.sessionTime}
+                                </td>
+                                <td class="session-body">
+                                    <div>
+                                        <span class="session-title">{!ai.title}</span>
+                                    </div>
+                                    <div class="session-subtitle">
+                                        <span class="{!IF(ai.track == NULL,'hide-item','')}">{!ai.track} | </span> {!ai.duration} min
+                                    </div>
+                                    <div style="margin-top:10px">
+                                        <apex:repeat value="{!ai.speakers}" var="speaker" > 
+                                            <div>
+                                                <span class="speaker-name">{!speaker.name}</span> <span class="speaker-byline">- {!speaker.byLine}</span>    
+                                            </div>
+                                        </apex:repeat>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                        <div style="{!IF(ai.sessionType == 'break','page-break-after:always;','')}"></div> 
+                    </apex:repeat>
+                    <div class="{!IF(day.townItems == NULL,'hide-item','')}">
+                        <div class="{!IF(day.townItems[0].sessionType != 'pages','hide-item','')}">
+                            <div style="margin-bottom: 5px; text-align: right;margin-right:10px;">
+                                <span class="page-numbers" style="font-family: SansSerif;">Page {!day.townItems[0].pageCount} / {!day.townItems[0].totalPages}</span>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 10px; margin-top:20px">
+                            <span class="sub-heading">Town Square Happenings</span>
+                        </div>
+                        <div>
+                            <apex:repeat value="{!day.townItems}" var="ti" > 
+                                <div class="{!IF(ti.sessionType == 'pages','hide-item','')}">
+                                    <table width="600px">
+                                        <tr>
+                                            <td width="20px" bgcolor="#FDB515"  class="town-cell">
+                                            </td>
+                                            <td width="100px" class="start-time">
+                                                {!ti.sessionTime}
+                                            </td>
+                                            <td class="session-body">
+                                                <div>
+                                                    <span class="session-title">{!ti.title}</span>
+                                                </div>
+                                                <div class="session-subtitle">
+                                                    <span>{!ti.startTime} - {!ti.endTime}</span>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </table>          
+                                </div>                          
+                            </apex:repeat>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- {!day.dayCount} - {!totalDays} -->
+            <div style="{!IF(day.dayCount < totalDays,'page-break-after:always;','')}"></div>            
+        </apex:repeat>
+        <div class="footnote" style="margin-top:35px;width:600px">
+            For any additional information, please visit our website at <a href="http://garp.org/riskconvention" class="footnote-link">garp.org/riskconvention</a>, or contact our Events team at <a href="mailto:events@garp.com" class="footnote-link">events@garp.com</a>            
+        </div>
+    </div>
+</apex:page>

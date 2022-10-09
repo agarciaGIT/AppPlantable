@@ -1,0 +1,506 @@
+<apex:page showHeader="false" sidebar="false" showChat="false"  standardStylesheets="false" Controller="ExamResultsLetterControllerNovember2016" applyhtmltag="false" applyBodyTag="false" renderAs="pdf">
+
+    <apex:variable var="envPath" value="{!URLFOR($Resource.sfdcApp)}" />
+    <head>
+        <style type="text/css" media="print">
+            .exam-results-email { font-family: Helvetica Neue,Helvetica,Arial,sans-serif;font-size:14px;margin-left:40px;margin-right:40px }
+            .email-body         { text-align:justify;text-align-last:right; }
+            .sub-heading        { font-weight:bold;display:block;margin-bottom:-15px; }
+            a {  margin-left : 1px;  }
+            @page{
+            @bottom-right { content:"Page " counter(page) " of " counter(pages);font-family: Helvetica Neue,Helvetica,Arial,sans-serif;font-size:14px; }
+            @bottom-left { content:"{!now}";font-family: Helvetica Neue,Helvetica,Arial,sans-serif;font-size:14px; }
+            }
+        </style>
+    </head>
+
+    <div class="exam-results-email">
+        <apex:image url="{!envPath}/img/logo.png" alt="logo" height="75px" />
+
+        <hr style="margin-bottom:30px"/>
+
+        <div class="body">
+
+            <div>
+                <span style="display: inline-block; float:left;">GARP ID: {! memberGARPId }</span>
+                <span style="display: inline-block; float:right;">Exam Date: {! fullExamDate }</span>
+            </div>
+
+            <br/><br/>
+            <div>
+                Dear {! candidateName }, <br/>
+            </div>
+
+            <!-- Case 0. Error processing request, or Exam Violation detected -->
+            <!-- Put the error clause. -->
+            <apex:outputPanel rendered="{! isError }">
+                <p>
+                    There has been an Error, Please contact Member Services.
+                </p>
+            </apex:outputPanel>
+            <apex:outputPanel rendered="{! isError == null || (!isError) }">
+                <!-- FRM -->
+                <apex:outputPanel rendered="{! isFRM }">
+
+                    <!-- Exam 1 -->
+                    <apex:outputPanel rendered="{! isPartI }">
+
+                        <!-- PART 4 -->
+                        <!-- Candidate passed part I -->
+                        <apex:outputPanel rendered="{! passPartI }">
+                            <p><b>Congratulations! You passed the {! fullExamDate } Financial Risk Manager (FRM<sup>®</sup>) Exam Part I.</b></p>
+                            <p>
+                                On behalf of the Global Association of Risk Professionals (GARP), GARP’s Board of Trustees, and the FRM Committee, we congratulate you on passing the FRM Exam Part I. This accomplishment is an indication of your commitment to excellence in financial risk management and demonstrates that you have many of the valuable skills and abilities required of a financial risk manager.
+                            </p>
+                        </apex:outputPanel>
+
+                        <!-- Candidate Failed part I and NOT DUAL-->
+                        <apex:outputPanel rendered="{! passPartI == false && isDual == false}">
+                            <p>
+                                Thank you for your continuing interest and support of the Financial Risk Manager (FRM<sup>®</sup>) Program. After a thorough review of your individual performance on the {! fullExamDate } FRM Exam Part I, we regret to inform you that your score did not meet the necessary requirements for passing.
+                            </p>
+                            <p>
+                                The FRM Exam Part I is a challenging exam covering a wide variety of risk management topics and is designed to evaluate whether candidates have the knowledge, skills and abilities needed to function effectively in the field of risk management. As such, many candidates require more than one attempt to be successful.
+                            </p>
+                        </apex:outputPanel>
+
+                        <!-- Candidate Failed part I and DUAL-->
+                        <apex:outputPanel rendered="{! passPartI == false && isDual }">
+                            <p>
+                                Thank you for your continuing interest and support of the Financial Risk Manager (FRM<sup>®</sup>) Program. After a thorough review of your individual performance, we regret to inform you that your {! fullExamDate } FRM Exam Part I score did not meet the necessary requirements for passing. As such, your FRM Exam Part II was not scored.
+                            </p>
+                            <p>
+                                The FRM Exam Part I is a challenging exam covering a wide variety of risk management topics and is designed to evaluate whether candidates have the knowledge, skills and abilities needed to function effectively in the field of risk management. As such, many candidates require more than one attempt to be successful.
+                            </p>
+                        </apex:outputPanel>
+                        <!-- END OF PART 4 -->
+
+                        <!-- PART 5 --><!-- Candidate passed part I -->
+                        <apex:outputPanel rendered="{! passPartI }">
+                            In our continuing effort to provide useful feedback about the Exam, we invite you to review an analysis of your exam results, including information about your individual performance relative to all other candidates who sat for the {! fullExamDate } {! examName }. Please go to “My Programs” for your quartile rankings.
+                        </apex:outputPanel>
+
+                        <!-- Candidate Failed part I -->
+                        <apex:outputPanel rendered="{! passPartI == false}">
+                            In our continuing effort to provide useful feedback about the Exam, we invite you to review an analysis of your exam results, including information about your individual performance relative to all other candidates who sat for the {! fullExamDate } {! examName }. Please go to “My Programs” for your quartile rankings.
+                        </apex:outputPanel>
+                        <!-- END OF PART 5 -->
+
+                        <!-- PART 6 -->
+                        <!-- Candidate passed part I and NOT DUAL-->
+                        <apex:outputPanel rendered="{! passPartI && isDual == false }">
+                            <p>
+                                <b>An important note—</b>now that you have passed the FRM Exam Part I, we strongly encourage you to register for the FRM Exam Part II and continue on the path to becoming a Certified FRM. You have four years to pass the FRM Exam Part II (by {! lastExamMonthName } {! lastExamYear }) without having to re-enroll in the program and retake the FRM Exam Part I. <a href="https://my.garp.org/Login?start=registration/frm/false">Registration for the May 20, 2017 FRM Exam Part II is now open</a>.
+                            </p>
+                            <p>
+                                We also encourage you to take advantage of the many ways that GARP promotes and fosters engagement with the broader risk community. Information about GARP’s Chapter Meetings, webcast series, news alerts, risk publications and more can be found on our website at <a href="www.garp.org">www.garp.org</a>.
+                            </p>
+                        </apex:outputPanel>
+
+                        <!-- Candidate Passed part I and DUAL-->
+                        <apex:outputPanel rendered="{! passPartI && isDual }">
+                            <p>
+                                <b>An important note—</b>in order to become a Certified FRM, you have four years to pass the FRM Exam Part II (by {! lastExamMonthName } {! lastExamYear }) without having to re-enroll in the program and retake the FRM Exam Part I.
+                            </p>
+                            <p>
+                                We also encourage you to take advantage of the many ways that GARP promotes and fosters engagement with the broader risk community. Information about GARP’s Chapter Meetings, webcast series, news alerts, risk publications and more can be found on our website at <a href="www.garp.org">www.garp.org</a>.
+                            </p>
+                        </apex:outputPanel>
+
+                        <!-- Candidate Failed part I and NOT DUAL-->
+                        <apex:outputPanel rendered="{! passPartI == false && isDual == false}">
+                            <p>
+                                While your results may be disappointing, we encourage you to try again. We also urge you to take advantage of the resources GARP offers to assist in your exam preparation, including FRM Exam Books, practice exams, learning objectives, weekly study plans, a study app, and more. <a href="https://my.garp.org/Login?start=registration/frm/false">Registration for the May 20, 2017 FRM Exam is now open</a>.
+                            </p>
+                        </apex:outputPanel>
+
+                        <!-- Candidate Failed part I and DUAL-->
+                        <apex:outputPanel rendered="{! passPartI == false && isDual }">
+                            <p>
+                                While your results may be disappointing, we encourage you to try again. We also urge you to take advantage of the resources GARP offers to assist in your exam preparation, including FRM Exam Books, practice exams, learning objectives, weekly study plans, a study app, and more. <a href="https://my.garp.org/Login?start=registration/frm/false">Registration for the May 20, 2017 FRM Exam is now open</a>.
+                            </p>
+                        </apex:outputPanel>
+                        <!-- END OF PART 6 -->
+
+                        <!-- PART 7 -->
+                        <!-- Candidate Passed Part 1 -->
+                        <apex:outputPanel rendered="{! passPartI }">
+
+                            GARP considers you to be a valuable member of the risk community and we offer our best wishes as you begin the next steps in your journey toward becoming a Certified FRM. We look forward to supporting you throughout your career.
+
+                        </apex:outputPanel>
+
+                        <!-- Candidate Failed Part 1 -->
+                        <apex:outputPanel rendered="{! passPartI == false }">
+                            You are a valuable member of our Association and we hope that you continue to take advantage of the many ways that GARP promotes and fosters engagement with the broader risk community. Information about these opportunities is available on our website at <a href="www.garp.org">www.garp.org</a>.
+                        </apex:outputPanel>
+                    </apex:outputPanel>
+
+                    <!-- Exam 2 -->
+                    <apex:outputPanel rendered="{! isPartI == false }">
+
+                        <!-- PART 4 -->
+                        <!-- Candidate passed part 2 -->
+                        <apex:outputPanel rendered="{! passPartII }">
+                            <p>
+                                <b>Congratulations! You passed the {! fullExamDate } Financial Risk Manager (FRM<sup>®</sup>) Exam Part II.</b>
+                            </p>
+                            <p>
+                                On behalf of the Global Association of Risk Professionals (GARP), GARP’s Board of Trustees, and the FRM Committee, we congratulate you on passing the FRM Exam Part II. This accomplishment is an indication of your commitment to excellence in financial risk management and demonstrates that you have the valuable knowledge, skills and abilities required of a financial risk manager.
+                            </p>
+                        </apex:outputPanel>
+
+                        <!-- Candidate Failed part 2 -->
+                        <apex:outputPanel rendered="{! passPartII == false }">
+                            <p>
+                                Thank you for your continuing interest and support of the Financial Risk Manager (FRM<sup>®</sup>) Program. After a thorough review of your individual performance, we regret to inform you that your score on the {! fullExamDate } FRM Exam Part II did not meet the necessary requirements for passing.
+                            </p>
+                            <p>
+                                The FRM Exam Part II is a challenging exam covering a wide variety of risk management topics and is designed to evaluate whether candidates have the knowledge, skills and abilities needed to function effectively in the field of risk management. As such, many candidates require more than one attempt to be successful.
+                            </p>
+                        </apex:outputPanel>
+
+                        <!-- Candidate Failed part 2 Window Close-->
+                        <apex:outputPanel rendered="{! passPartII == false && isWindowClosed }">
+
+                              Unfortunately, your four-year window to pass the FRM Exam Part II is now closed. In order to achieve certification, you must now re-enroll in the FRM Program and retake the FRM Exam Part I.
+
+                        </apex:outputPanel>
+                        <!-- END OF PART 4 -->
+
+                        <!-- PART 5 -->
+                        <!-- Candidate passed part II -->
+                        <apex:outputPanel rendered="{! passPartII }">
+                            In our continuing effort to provide useful feedback about the Exam, we invite you to review an analysis of your exam results, including information about your individual performance relative to all other candidates who sat for the {! fullExamDate } {! examName }. Please go to “My Programs” for your quartile rankings. We hope you will find this feedback useful in your career as you take the final steps towards certification.
+                        </apex:outputPanel>
+
+                        <!-- Candidate Failed part I -->
+                        <apex:outputPanel rendered="{! passPartII == false}">
+                            In our continuing effort to provide useful feedback about the Exam, we invite you to review an analysis of your exam results, including information about your individual performance relative to all other candidates who sat for the {! fullExamDate } {! examName }. Please go to “My Programs” for your quartile rankings.
+                        </apex:outputPanel>
+
+                        <!-- END OF PART 5 -->
+
+                        <!-- PART 6 -->
+                        <!-- Candidate passed part II -->
+                        <apex:outputPanel rendered="{! passPartII }">
+                            <p>
+                                <b>The Next Step—FRM Certification</b>
+                            </p>
+                            <p>
+                                To complete the FRM Certification process, you will need to demonstrate two years of professional work experience. This can be done by submitting a brief description (at least four sentences) of how you use financial risk in your day-to-day job responsibilities under “My Programs.” If you submit this information by March 17, 2017, your certificate will be included in the March 31, 2017 distribution. FRM Certificates are distributed at the end of each quarter (March, June, September, and December) to all qualified candidates.
+                            </p>
+                            <p>
+                                Please keep in mind that if you fail to submit your work experience within five years (by November 2021), you will be required to re-enroll in the Program and retake the FRM Exam as a new candidate.
+                            </p>
+                            <p>
+                                Once you become a Certified FRM, we strongly encourage you to use the FRM designation on all professional correspondence to highlight your accomplishment and help build awareness of the FRM Program. Please don’t forget to opt-in to the Certified FRM Directory and display your digital FRM badge on your social networks to inform your colleagues of your accomplishment.
+                            </p>
+                            <b>Staying Engaged</b>
+                            <p>
+                                We also encourage you to take advantage of the many ways that GARP promotes and fosters engagement with the broader risk community. Information about GARP’s Chapter Meetings, webcast series, news alerts, risk publications and more can be found on our website at <a href="www.garp.org">www.garp.org</a>.
+                            </p>
+                            <b>Continuing Professional Development (CPD) Requirements</b><br/><br/>
+                            
+                                Shortly after receiving your FRM Certificate, we will send details about participation in GARP’s CPD Program. The CPD Program is voluntary for Certified FRMs. Participation demonstrates your desire to stay up-to-date with industry trends as well as your continued commitment to developing your risk management skills.
+                            
+                        </apex:outputPanel>
+
+                        <!-- Candidate Failed part I and NOT DUAL-->
+                        <apex:outputPanel rendered="{! passPartII == false }">
+                            <p>
+                                While your results may be disappointing, we encourage you to try again. We also urge you to take advantage of the resources GARP offers to assist in your exam preparation, including FRM Exam Books, practice exams, learning objectives, weekly study plans, a study app, and more. <a href="https://my.garp.org/Login?start=registration/frm/false">Registration for the May 20, 2017 FRM Exam is now open</a>.
+                            </p>
+                        </apex:outputPanel>
+
+                        <!-- END OF PART 6 -->
+
+                        <!-- PART 7 -->
+                        <!-- Candidate Passed Part 1 -->
+                        <apex:outputPanel rendered="{! passPartII }">
+                            <p>
+                                You are a valuable member of our Association and you have our best wishes for continued success in the risk management profession. We look forward to supporting you throughout your career.
+                            </p>
+                        </apex:outputPanel>
+
+                        <!-- Candidate Failed Part 2 -->
+                        <apex:outputPanel rendered="{! passPartII == false }">
+                            You are a valuable member of our Association and we hope that you continue to take advantage of the many ways that GARP promotes and fosters engagement with the broader risk community. Information about these opportunities is available on our website at <a href="www.garp.org">www.garp.org</a>.
+                        </apex:outputPanel>
+
+                    </apex:outputPanel>
+                    <!-- END OF EXAM 2 -->
+
+                </apex:outputPanel>
+                <!-- END OF ERP -->
+
+                <!-- ERP -->
+                <apex:outputPanel rendered="{! isFRM == false }">
+                    <!-- Exam 1 -->
+                    <apex:outputPanel rendered="{! isPartI }">
+
+                        <!-- PART 4 -->
+                        <!-- Candidate passed part I -->
+                        <apex:outputPanel rendered="{! passPartI }">
+                            <p>
+                                <b>Congratulations! You passed the {! fullExamDate } Energy Risk Professional (ERP<sup>®</sup>) Exam Part I.</b>
+                            </p>
+                            <p>
+                                On behalf of the Global Association of Risk Professionals (GARP), GARP’s Board of Trustees, and the Energy Oversight Committee, we congratulate you on passing the ERP Exam Part I. This accomplishment demonstrates that you have the valuable skills and abilities necessary to understand and assess the risk associated with the physical energy commodities and electricity markets.
+                            </p>
+                        </apex:outputPanel>
+
+                        <!-- Candidate Failed part I and NOT DUAL-->
+                        <apex:outputPanel rendered="{! passPartI == false && isDual == false}">
+                            <p>
+                                Thank you for your continuing interest and support of the Energy Risk Professional (ERP<sup>®</sup>) Program. After a thorough review of your individual performance on the {! fullExamDate } ERP Exam Part I, we regret to inform you that your score did not meet the necessary requirements for passing.
+                            </p>
+                            <p>
+                                The ERP Exam Part I is a challenging exam covering a wide variety of topics. It is designed to evaluate whether candidates have the knowledge, skills and abilities required to function effectively in the field of energy risk management. As such, many candidates require more than one attempt to be successful.
+                            </p>
+                        </apex:outputPanel>
+
+                        <!-- Candidate Failed part I and DUAL-->
+                        <apex:outputPanel rendered="{! passPartI == false && isDual }">
+                            <p>
+                                Thank you for your continuing interest and support of the Energy Risk Professional (ERP<sup>®</sup>) Program. After a thorough review of your individual performance, we regret to inform you that your {! fullExamDate } ERP Exam Part I score did not meet the necessary requirements for passing. As such, your ERP Exam Part II was not scored.
+                            </p>
+
+                            <p>
+                                The ERP Exam Part I is a challenging exam covering a wide variety of topics. It is designed to evaluate whether candidates have the knowledge, skills and abilities required to function effectively in the field of physical energy commodities and electricity markets. As such, many candidates require more than one attempt to be successful.
+                            </p>
+                        </apex:outputPanel>
+                        <!-- END OF PART 4 -->
+
+                        <!-- PART 5 -->
+                        <!-- Candidate passed part I -->
+                        <apex:outputPanel rendered="{! passPartI }">
+                            In our continuing effort to provide useful feedback about the ERP Exam, we invite you to review an analysis of your exam results, including information about your individual performance relative to all other candidates who sat for the {! fullExamDate } {! examName }. Please go to “My Programs” for your quartile rankings.
+                        </apex:outputPanel>
+
+                        <!-- Candidate Failed part I -->
+                        <apex:outputPanel rendered="{! passPartI == false}">
+                            In our continuing effort to provide useful feedback about the ERP Exam, we invite you to review an analysis of your exam results, including information about your individual performance relative to all other candidates who sat for the {! fullExamDate } {! examName }. Please go to “My Programs” for your quartile rankings.
+                        </apex:outputPanel>
+                        <!-- END OF PART 5 -->
+
+                        <!-- PART 6 -->
+                        <!-- Candidate passed part I and NOT DUAL-->
+                        <apex:outputPanel rendered="{! passPartI && isDual == false }">
+                            <p>
+                                <b>An important note—</b>now that you have passed the ERP Exam Part I, we strongly encourage you to register for the ERP Exam Part II and continue on the path to becoming a Certified ERP. You have four years to pass the ERP Exam Part II (by {! lastExamMonthName } {! lastExamYear }) without having to re-enroll in the program and retake the ERP Exam Part I. <a href="https://my.garp.org/Login?start=registration/erp/false">Registration for the May 20, 2017 ERP Exam Part II is now open</a>.
+                            </p>
+
+                            <p>
+                                We also encourage you to take advantage of the many ways that GARP promotes and fosters engagement with the broader risk community. Information about GARP’s Chapter Meetings, webcast series, news alerts, risk publications and more can be found on our website at <a href="www.garp.org">www.garp.org</a>.
+                            </p>
+                        </apex:outputPanel>
+
+                        <!-- Candidate Passed part I and DUAL-->
+                        <apex:outputPanel rendered="{! passPartI && isDual }">
+                            <p>
+                                <b>An important note—</b>in order to become a Certified ERP, you have four years to pass the ERP Exam Part II (by {! lastExamMonthName } {! lastExamYear }) without having to re-enroll in the program and retake the ERP Exam Part I.
+                            </p>
+                            <p>
+                                We also encourage you to take advantage of the many ways that GARP promotes and fosters engagement with the broader risk community. Information about GARP’s Chapter Meetings, webcast series, news alerts, risk publications and more can be found on our website at <a href="www.garp.org">www.garp.org</a>.
+                            </p>
+                        </apex:outputPanel>
+
+                        <!-- Candidate Failed part I and NOT DUAL-->
+                        <apex:outputPanel rendered="{! passPartI == false && isDual == false}">
+                            <p>
+                                While your results may be disappointing, we encourage you to try again. We also urge you to take advantage of the resources GARP offers to assist in your exam preparation, including ERP Exam Books, practice exams, learning objectives, weekly study plans, and more. <a href="https://my.garp.org/Login?start=registration/erp/false">Registration for the May 20, 2017 ERP Exam is now open</a>.
+                            </p>
+                        </apex:outputPanel>
+
+                        <!-- Candidate Failed part I and DUAL-->
+                        <apex:outputPanel rendered="{! passPartI == false && isDual }">
+                            <p>
+                                While your results may be disappointing, we encourage you to try again. We also urge you to take advantage of the resources GARP offers to assist in your exam preparation, including ERP Exam Books, practice exams, learning objectives, weekly study plans, and more. <a href="https://my.garp.org/Login?start=registration/erp/false">Registration for the May 20, 2017 ERP Exam is now open</a>.
+                            </p>
+                        </apex:outputPanel>
+                        <!-- END OF PART 6 -->
+
+                        <!-- PART 7 -->
+                        <!-- Candidate Passed Part 1 -->
+                        <apex:outputPanel rendered="{! passPartI }">
+
+                            GARP considers you to be a valuable member of the risk community and we offer our best wishes as you begin the next steps in your journey toward becoming a Certified ERP. We look forward to supporting you throughout your career.
+
+                        </apex:outputPanel>
+
+                        <!-- Candidate Failed Part 2 -->
+                        <apex:outputPanel rendered="{! passPartI == false }">
+                            You are a valuable member of our Association and we hope that you continue to take advantage of the many ways that GARP promotes and fosters engagement with the broader risk community. Information about these opportunities is available on our website at <a href="www.garp.org">www.garp.org</a>.
+                        </apex:outputPanel>
+                    </apex:outputPanel>
+                    <!-- END OF EXAM 1 -->
+
+                    <!-- Exam 2 -->
+                    <apex:outputPanel rendered="{! isPartI == false }">
+
+                        <!-- PART 4 -->
+                        <!-- Candidate passed part 2 -->
+                        <apex:outputPanel rendered="{! passPartII }">
+                            <p>
+                                <b>Congratulations! You passed the {! fullExamDate } Energy Risk Professional (ERP<sup>®</sup>) Exam Part II.</b>
+                            </p>
+
+                            <p>
+                                On behalf of the Global Association of Risk Professionals (GARP), GARP’s Board of Trustees, and the Energy Oversight Committee, we congratulate you on passing the ERP Exam Part II. Your performance on the Exam indicates that you possess the technical knowledge, skills, and abilities to function effectively as an energy risk professional.
+                            </p>
+                        </apex:outputPanel>
+
+                        <!-- Candidate Failed part 2 -->
+                        <apex:outputPanel rendered="{! passPartII == false }">
+                            <p>
+                                Thank you for your continuing interest and support of the Energy Risk Professional (ERP<sup>®</sup>) Program. After a thorough review of your individual performance, we regret to inform you that your score on the {! fullExamDate } ERP Exam Part II did not meet the necessary requirements for passing.
+                            </p>
+                            <p>
+                                The ERP Exam Part II is a challenging exam covering a wide variety of topics. It is designed to evaluate whether candidates have the knowledge, skills and abilities required to function effectively in the field of energy risk management. As such, many candidates require more than one attempt to be successful.
+                            </p>
+                        </apex:outputPanel>
+
+                        <!-- Candidate Failed part 2 Window Close-->
+                        <apex:outputPanel rendered="{! passPartII == false && isWindowClosed }">
+                            <p>
+                                Thank you for your continuing interest and support of the Energy Risk Professional (ERP<sup>®</sup>) Program. After a thorough review of your individual performance, we regret to inform you that your score on the {! fullExamDate } ERP Exam Part II did not meet the necessary requirements for passing. Unfortunately, your four-year window to pass the ERP Exam Part II is now closed. In order to achieve certification, you must now re-enroll in the ERP Program and retake the ERP Exam Part I.
+                            </p>
+
+                            <p>
+                                The ERP is a challenging exam covering a wide variety of topics. It is designed to evaluate whether candidates have the knowledge, skills and abilities required to function effectively in the field of energy risk management. As such, many candidates require more than one attempt to be successful.
+                            </p>
+                        </apex:outputPanel>
+                        <!-- END OF PART 4 -->
+
+                        <!-- PART 5 -->
+                        <!-- Candidate passed part II -->
+                        <apex:outputPanel rendered="{! passPartII }">
+                            In our continuing effort to provide useful feedback about the ERP Exam, we invite you to review an analysis of your exam results, including information about your individual performance relative to all other candidates who sat for the {! fullExamDate } {! examName }. Please go to “My Programs” for your quartile rankings. We hope you will find this feedback useful in your career as you take the final steps towards certification.
+                        </apex:outputPanel>
+
+                        <!-- Candidate Failed part I -->
+                        <apex:outputPanel rendered="{! passPartII == false}">
+                            In our continuing effort to provide useful feedback about the ERP Exam, we invite you to review an analysis of your exam results, including information about your individual performance relative to all other candidates who sat for the {! fullExamDate } {! examName }. Please go to “My Programs” for your quartile rankings.
+                        </apex:outputPanel>
+
+                        <!-- Candidate Failed part I -->
+                        <!--  <apex:outputPanel rendered="{! }">
+<p>Need to look if the candidate failed Part I, if did, Part 2 NOT GRADED</p>
+
+</apex:outputPanel> -->
+
+                        <!-- Candidate Failed part 2 Window Close-->
+                        <apex:outputPanel rendered="{! passPartII == false && isWindowClosed }">
+
+                            In our continuing effort to provide useful feedback about the ERP Exam, we invite you to review an analysis of your exam results, including information about your individual performance relative to all other candidates who sat for the {! fullExamDate } {! examName }. Please go to “My Programs” for your quartile rankings.
+
+                        </apex:outputPanel>
+                        <!-- END OF PART 5 -->
+
+                        <!-- PART 6 -->
+                        <!-- Candidate passed part II -->
+                        <apex:outputPanel rendered="{! passPartII }">
+                            <p>
+                                <b>The Next Step—ERP Certification</b>
+                            </p>
+                            <p>
+                                To complete the ERP Certification process, you will need to demonstrate two years of professional work experience. This can be done by submitting a brief description (at least four sentences) of how you use physical or financial energy risk knowledge in your day-to-day job responsibilities under “My Programs.” If you submit this information by March 17, 2017, your certificate will be included in the March 31, 2017 distribution. ERP Certificates are distributed at the end of each quarter (March, June, September, and December) to all qualified candidates.
+                            </p>
+                            <p>
+                                Please keep in mind that if you fail to submit your work experience within five years (by November 2021), you will be required to re-enroll in the Program and retake the ERP Exam as a new candidate.
+                            </p>
+                            <p>Once you become a Certified ERP, we strongly encourage you to use the ERP designation on all professional correspondence to highlight your accomplishment and help build awareness of the ERP Program. Please don’t forget to opt-in to the Certified ERP Directory and display your digital ERP badge on your social networks to inform your colleagues of your accomplishment.
+                            </p>
+
+                            <p>
+                                <b>Staying Engaged</b>
+                            </p>
+                            <p>
+                                We also encourage you to take advantage of the many ways that GARP promotes and fosters engagement with the broader risk community. Information about GARP’s Chapter Meetings, webcast series, news alerts, risk publications and more can be found on our website at <a href="www.garp.org">www.garp.org</a>.
+                            </p>
+                            <p>
+                                <b>Continuing Professional Development (CPD) Requirements</b>
+                            </p>
+                            
+                                Shortly after receiving your ERP Certificate, we will send details about participation in GARP’s CPD Program. The CPD Program is mandatory for Certified ERPs. Ongoing participation demonstrates your desire to stay up-to-date with industry trends as well as your continued commitment to developing your risk management skills.
+                            
+                        </apex:outputPanel>
+
+                        <!-- Candidate Passed part II and Exam Window closed-->
+                        <apex:outputPanel rendered="{! passPartII && isWindowClosed }">
+                            <p>
+                                While your results may be disappointing, we encourage you to try again. To continue your journey towards certification, re-enroll in the Program and re-take the ERP Exam Part I. We also urge you to take advantage of the resources GARP offers to assist in your exam preparation, including ERP Exam Books, practice exams, learning objectives, weekly study plans, and more. <a href="https://my.garp.org/Login?start=registration/erp/false">Registration for the May 20, 2017 ERP Exam is now open</a>.
+                            </p>
+                        </apex:outputPanel>
+
+                        <!-- Candidate Failed part I and NOT DUAL-->
+                        <apex:outputPanel rendered="{! passPartII == false }">
+                            <p>
+                                While your results may be disappointing, we encourage you to try again. We also urge you to take advantage of the resources GARP offers to assist in your exam preparation, including ERP Exam Books, practice exams, learning objectives, weekly study plans, and more. <a href="https://my.garp.org/Login?start=registration/erp/false">Registration for the May 20, 2017 ERP Exam is now open</a>.
+                            </p>
+                        </apex:outputPanel>
+
+                        <!-- END OF PART 6 -->
+
+                        <!-- PART 7 -->
+                        <!-- Candidate Passed Part 1 -->
+                        <apex:outputPanel rendered="{! passPartII }">
+                            <p>
+                                You are a valuable member of our Association and you have our best wishes for continued success in the risk management profession. We look forward to supporting you throughout your career.
+                            </p>
+                        </apex:outputPanel>
+
+                        <!-- Candidate Failed Part 2 -->
+                        <apex:outputPanel rendered="{! passPartII == false }">
+                            You are a valuable member of our Association and we hope that you continue to take advantage of the many ways that GARP promotes and fosters engagement with the broader risk community. Information about these opportunities is available on our website at <a href="www.garp.org">www.garp.org</a>.
+                        </apex:outputPanel>
+
+                        <!-- Candidate Failed Part 1, Part 2 NOT GRADED -->
+                        <apex:outputPanel rendered="{! passPartII == false && isWindowClosed }">
+                            You are a valuable member of our Association and we hope that you continue to take advantage of the many ways that GARP promotes and fosters engagement with the broader risk community. Information about these opportunities is available on our website at <a href="www.garp.org">www.garp.org</a>.
+                        </apex:outputPanel>
+                    </apex:outputPanel>
+                    <!-- END OF EXAM 2 -->
+                </apex:outputPanel>
+                <!-- end of FRM -->
+            </apex:outputPanel>
+
+            <apex:outputPanel rendered="{! isError == null || (!isError) }">
+                <p>
+                    Sincerely yours,
+                </p>
+
+                <div id="signaturePanel" style="margin-top:30px">
+
+                    <apex:outputPanel rendered="{! isFRM == false}">
+                        <div id="sig1" style="float:left;">
+                            <apex:image style="height:80px; width:auto;" url="{!envPath}/img/michael_sell.jpg" alt="Sig1" /><br/>
+                            Michael Sell<br/>
+                            Senior Vice President<br/>
+                            ERP Program Manager<br/>
+                        </div>
+                    </apex:outputPanel>
+
+                    <apex:outputPanel rendered="{! isFRM }">
+                        <div id="sig1" style="float:left;">
+                            <apex:image style="height:80px; width:auto;" url="{!envPath}/img/Bill_May_signature.jpg" alt="Sig1" /><br/>
+                            William May<br/>
+                            Senior Vice President<br/>
+                            FRM Program Manager<br/>
+                        </div>
+                    </apex:outputPanel>
+
+                    <div id="sig2" style="float:right;">
+                        <apex:image style="height:80px; width:auto;" url="{!envPath}/img/chris_Donohue.jpg" alt="Sig2" /><br/>
+                        Christopher Donohue, Ph.D.<br/>
+                        Managing Director<br/>
+                        Research and Educational Programs<br/>
+                    </div>
+
+                </div>
+            </apex:outputPanel>
+
+        </div>
+    </div>
+</apex:page>

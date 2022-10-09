@@ -9,9 +9,13 @@ public class plant_Edit_OrderController {
         }
     }
 
-    @AuraEnabled(cacheable=true)
-    public static string getOrderDetails(string orderId , String authorisationToken){
-        return 'test';
+    @AuraEnabled
+    public static string getOrderDetails(String authorisationToken , String OrderNo){
+        System.debug('authorisationToken>>'+authorisationToken + ' OrderNo>' + OrderNo);
+        Plant_Orders_BC Plant_Orders_BC = new Plant_Orders_BC();
+        Plant_Utility.responseWrapper response = Plant_Orders_BC.getOrderDetails(authorisationToken , OrderNo);
+        System.debug('response::'+JSON.serialize(response));
+        return JSON.serialize(response);
     /*
         try {
             paymentDetailWrapper paymentDetailWrapperDetails = new paymentDetailWrapper(null,null,null,null);
@@ -147,7 +151,11 @@ public class plant_Edit_OrderController {
 
     @AuraEnabled
     public static string updateShippingDetails(string shippingJSON){
-        return 'test';
+        Plant_Orders_BC Plant_Orders_BC = new Plant_Orders_BC();
+        Plant_Orders_BC.manageShipAddress shippingWrapper = (Plant_Orders_BC.manageShipAddress) JSON.deserializeStrict(shippingJSON, Plant_Orders_BC.manageShipAddress.class);
+        System.debug('shippingWrapper:::'+JSON.serializePretty(shippingWrapper));
+        Plant_Utility.responseWrapper responseWrapper = Plant_Orders_BC.update_CustomerOdr_ShipAddress(shippingWrapper);
+        return JSON.serialize(responseWrapper);
         /*try {
             Plant_Customer_BC.manageShipAddress  shippingWrapper = (Plant_Customer_BC.manageShipAddress) JSON.deserializeStrict(shippingJSON, Plant_Customer_BC.manageShipAddress.class);
             System.debug('shippingWrapper:::'+JSON.serializePretty(shippingWrapper));
@@ -171,6 +179,20 @@ public class plant_Edit_OrderController {
             throw new AuraHandledException(e.getMessage());
         }
     }
+
+    @AuraEnabled
+    public static string getAvailableDeliveryDates(string addressJSON){
+        try {
+            Plant_Shipping_BC Plant_Shipping_BC = new Plant_Shipping_BC();
+            Plant_Shipping_BC.deliveryDateWrapper deliveryDateWrapper = (Plant_Shipping_BC.deliveryDateWrapper) JSON.deserializeStrict(addressJSON, Plant_Shipping_BC.deliveryDateWrapper.class);
+            System.debug('deliveryDateWrapper::'+JSON.serializePretty(deliveryDateWrapper));
+            Plant_Utility.responseWrapper responseWrapper = Plant_Shipping_BC.getAvailableDeliveryDates(deliveryDateWrapper);
+            return JSON.serialize(responseWrapper);
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
     public class responseWrapper{
         shippingWrapper shippingDetails{get;set;}
         availableDeliveryDateWrapper availableDeliveryDatesList{get;set;}

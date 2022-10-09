@@ -1,0 +1,115 @@
+<apex:page showHeader="false" sidebar="false" showChat="false"  standardStylesheets="false" Controller="PerformanceAnalysisPDFController" applyhtmltag="false" applyBodyTag="false" action="{!fetchData}" renderAs="pdf">
+   <apex:variable var="envPath" value="{!URLFOR($Resource.sfdcApp)}" />
+   <head>
+      <style type="text/css" media="print">
+         img.resize{
+         width:250px; 
+         height: auto;
+         }
+         .header { font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:30px;padding:0px;margin:0px }
+         .boldtext { font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:20px;font-weight: bold; }
+         .boldtextsmall { font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:15px;font-weight: bold; }
+         .normaltext { font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:16px; }
+         .blue { color:#4F81BD; }
+         .blue-divider-pdf { height:3px;background-color:#6699FF;margin:15px 15px; }
+         .section-box-invoice-pdf { overflow:hidden; }
+         @page{ 
+         @bottom-right { content:"Page " counter(page) " of " counter(pages);font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:14px; }
+         @bottom-left { content:"{!now}";font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:14px; } 
+         }
+      </style>
+   </head>
+   <div class="performance-analysis-pdf">
+      <apex:image url="{!envPath}/img/logo.png" alt="logo" height="60px" style="margin-bottom:10px;"/>
+      <h1 class="header">
+         <apex:outputText value="FRM Exam Part I Results" rendered="{! isFRM1 }" />
+         <apex:outputText value="FRM Exam Part II Results" rendered="{! isFRM2 }" />
+         <apex:outputText value="ERP Exam Results" rendered="{! isERP }" />
+         <apex:outputText value="ERP Exam Part I Results" rendered="{! isERP1 }" />
+         <apex:outputText value="ERP Exam Part II Results" rendered="{! isERP2 }" />
+      </h1>
+      <div class="container page-container">
+         <div id="spin"></div>
+         <div class="panel" style="margin-top:20px;">
+            <div class="panel-body">
+               <div style="margin-bottom:20px;">
+                  <span class="boldtextsmall">{! sName} </span><br/>
+                  <span class="boldtextsmall">GARP ID: {! sGARPID} </span><br/>
+                  <span class="boldtextsmall">Exam Date: {! examDate} </span>
+               </div>
+               <div>
+                   <!-- Initialize Counter Variable -->
+                   <apex:variable value="{!0}" var="index"/>
+                   
+                  <a id="results"></a>                    
+                  <apex:repeat value="{! results }" var="result">
+                     <div>
+                        <p class="boldtext" style="margin:0px;padding:0px;margin-bottom:5px;">{! result.Category }</p>
+                        <apex:variable var="foo" value="bar" rendered="{! result.Quartile == 4 }" >
+                           <p class="normaltext" style="margin:0px;padding:0px;">
+                              You scored in the 76<sup>th</sup> - 100<sup>th</sup> percentile range in this category. Candidates scoring in this quartile demonstrated an excellent understanding of the subject area. 
+                           </p>
+                           <div style="margin-bottom:15px;margin-top:25px;">
+                               <p class="normaltext">
+                                  <apex:outputText value="FRM Part 1" rendered="{! isFRM1 }" />
+                                  <apex:outputText value="FRM Part II" rendered="{! isFRM2 }" />
+                                  <apex:outputText value="ERP" rendered="{! isERP || isERP1 || isERP2 }" />
+                               </p>
+                              <apex:image value="{!envPath}/img/Quartiles/FRM/1stQuartile.png" styleClass="resize" rendered="{! isFRM1 || isFRM2 }" />
+                              <apex:image value="{!envPath}/img/Quartiles/ERP/1stQuartile.png" styleClass="resize" rendered="{! isERP || isERP1 || isERP2 }" />
+                           </div>
+                        </apex:variable>
+                        <apex:variable var="foo" value="bar" rendered="{! result.Quartile == 3 }" >
+                           <p class="normaltext" style="margin:0px;padding:0px;">
+                              You scored in the 51<sup>st</sup> - 75<sup>th</sup> percentile range in this category. Candidates scoring in this quartile demonstrated a good understanding of the subject area. 
+                           </p>
+                           <div style="margin-bottom:15px;margin-top:25px;">
+                               <p class="normaltext">
+                                  <apex:outputText value="FRM Part 1" rendered="{! isFRM1 }" />
+                                  <apex:outputText value="FRM Part II" rendered="{! isFRM2 }" />
+                                  <apex:outputText value="ERP" rendered="{! isERP || isERP1 || isERP2 }" />
+                               </p>
+                              <apex:image value="{!envPath}/img/Quartiles/FRM/2ndQuartile.png" styleClass="resize" rendered="{! isFRM1 || isFRM2 }" />
+                              <apex:image value="{!envPath}/img/Quartiles/ERP/2ndQuartile.png" styleClass="resize" rendered="{! isERP || isERP1 || isERP2 }" />
+                           </div>
+                        </apex:variable>
+                        <apex:variable var="foo" value="bar" rendered="{! result.Quartile == 2 }" >
+                           <p class="normaltext" style="margin:0px;padding:0px;">
+                              You scored in the 26<sup>th</sup> - 50<sup>th</sup> percentile range in this category. Candidates scoring in this quartile demonstrated a fair understanding of the subject area. 
+                           </p>
+                           <div style="margin-bottom:15px;margin-top:25px;">
+                              <p class="normaltext">
+                                  <apex:outputText value="FRM Part 1" rendered="{! isFRM1 }" />
+                                  <apex:outputText value="FRM Part II" rendered="{! isFRM2 }" />
+                                  <apex:outputText value="ERP" rendered="{! isERP || isERP1 || isERP2 }" />
+                              </p>
+                              <apex:image value="{!envPath}/img/Quartiles/FRM/3rdQuartile.png" styleClass="resize" rendered="{! isFRM1 || isFRM2 }" />
+                              <apex:image value="{!envPath}/img/Quartiles/ERP/3rdQuartile.png" styleClass="resize" rendered="{! isERP || isERP1 || isERP2 }" />
+                           </div>
+                        </apex:variable>
+                        <apex:variable var="foo" value="bar" rendered="{! result.Quartile == 1 }" >
+                           <p class="normaltext" style="margin:0px;padding:0px;">
+                              You scored in the 1<sup>st</sup> - 25<sup>th</sup> percentile in this category. Candidates scoring in this quartile demonstrated a poor understanding of the subject area. 
+                           </p>
+                           <div style="margin-bottom:15px;margin-top:25px;">
+                               <p class="normaltext">
+                                  <apex:outputText value="FRM Part 1" rendered="{! isFRM1 }" />
+                                  <apex:outputText value="FRM Part II" rendered="{! isFRM2 }" />
+                                  <apex:outputText value="ERP" rendered="{! isERP || isERP1 || isERP2 }" />
+                               </p>
+                              <apex:image value="{!envPath}/img/Quartiles/FRM/4thQuartile.png" styleClass="resize" rendered="{! isFRM1 || isFRM2 }" />
+                              <apex:image value="{!envPath}/img/Quartiles/ERP/4thQuartile.png" styleClass="resize" rendered="{! isERP || isERP1 || isERP2 }" />
+                           </div>
+                        </apex:variable>
+                     </div>
+                     <div style="page-break-before: {!IF(index == 1, 'always' , 'auto')}">&nbsp;</div>
+                     
+                     <!-- Increment Counter Variable -->
+                     <apex:variable var="index" value="{!index + 1}" />
+                  </apex:repeat>
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>
+</apex:page>

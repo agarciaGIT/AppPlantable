@@ -1,0 +1,78 @@
+<apex:page standardStylesheets="false" sidebar="false" showHeader="false" applyBodyTag="false" cache="false" applyHtmlTag="false"
+    docType="html-5.0" controller="DigitalBadge" action="{!urlRedirection}">
+
+    <meta name="viewport" content="user-scalable=yes, target-densityDpi=device-dpi, initial-scale=1.2" />
+    <apex:variable var="envPath" value="{!URLFOR($Resource.sfdcApp)}" />
+    <apex:variable var="envPathFonts" value="{!URLFOR($Resource.sfdcAppFonts)}" />
+    <link href="{!envPath}/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="{!envPathFonts}/css/global_variables.css" rel="stylesheet" />
+    <link href="{!envPathFonts}/css/sfdcApp.css" rel="stylesheet" />
+    <link href="{!envPathFonts}/css/login.css" rel="stylesheet" />
+
+
+
+    <head id="ContentPlaceHolderDefault_Head1">
+        <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+        <meta name="google-site-verification" content="e9x5rdrmpdV4Cxsz9T6-oE3gwuPygsGKnFci9y8NZXw" />
+        <title>
+            Financial Risk Manager (FRM®)
+        </title>
+        <meta name="robots" content="all" />
+        <meta name="keywords" />
+        <meta name="description" content="The Financial Risk Manager (FRM®) Designation is awarded by the Global Association of Risk Professionals (GARP), and is the leading certification for financial risk managers throughout the world. Certified FRMs have mastered the critical competencies necessary to manage risk in the global financial markets."
+        />
+        <link href="{!envPath}/img/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+
+        <meta property="og:title" content="The Financial Risk Manager (FRM®) Designation" />
+        <meta property="og:description" content="The Financial Risk Manager (FRM®) Designation is awarded by the Global Association of Risk Professionals (GARP), and is the leading certification for financial risk managers throughout the world. Certified FRMs have mastered the critical competencies necessary to manage risk in the global financial markets."
+        />
+        <meta property="og:image" content="http://media.garp.org/newmedia/badges/certifiedFRM.png" />
+
+
+    </head>
+
+    <body style="padding-top:0; margin:0;">
+        <div class="digital-badge-page">
+            <div class="header">
+                <a href="https://www.garp.org" target="_blank">
+                    <img src="https://media.garp.org/newmedia/annual_report/short_GARP_web.png" alt="GARP" height="36px" width="140px" target="_blank"/>
+                </a>
+            </div>
+
+            <div class="content">
+                <div class="badge-content">
+                        <div class="badge-name">Financial Risk Manager (FRM<sup>&reg;</sup>)</div>
+                    <p class="badge-desc">
+                        The FRM designation, awarded by the Global Association of Risk Professionals (GARP), is the world’s most highly respected
+                        certification for financial risk management professionals. Achieving the FRM, after passing a rigorous
+                        exam and demonstrating relevant work experience, signifies a mastery of the essential knowledge and
+                        skills needed to manage risk in the global financial markets.
+                    </p>
+                    <div class="badge">
+                        <div class="image">
+                            <apex:image url="http://media.garp.org/newmedia/badges/certifiedFRM.png" height="176px" width="176px" />
+                        </div>
+                        <div class="badge-user">
+                            <span>
+                                <apex:outputText value="{!Name}" />
+                            </span>
+                            <br />
+                            <span>
+                                <apex:outputText value="Certified in {!FRMYearCertified}" />
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="badge-footer">
+                        <apex:outputText >
+                            <a href="https://www.garp.org/frm" target="_blank">Learn More About the FRM Program</a>
+                        </apex:outputText>
+                        <apex:outputText >
+                            <a href="https://my.garp.org/sfdcApp#!/public_directory" target="_blank">View the Full GARP Directory of Certified FRMs and ERPs</a>
+                        </apex:outputText>
+            </div>
+        </div>
+    </body>
+
+</apex:page>

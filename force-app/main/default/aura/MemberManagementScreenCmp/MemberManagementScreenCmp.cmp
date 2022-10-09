@@ -1,0 +1,105 @@
+<aura:component controller="MemberManagementScreenClass" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId" access="global">
+    <aura:attribute name="selectedValue" type="String" />
+    <aura:attribute name="selectedComponent" type="String" default="Member Services"/>
+    <aura:attribute name="ErrorMessage" type="String" /> 
+    <aura:attribute name="InvoiceNumber" type="String" /> 
+    <aura:handler event="aura:waiting" action="{!c.showSpinner}"/>
+    <aura:handler event="aura:doneWaiting" action="{!c.hideSpinner}"/>
+    <aura:attribute name="spinner" type="boolean" default="FALSE"/> 
+    
+     <aura:if isTrue="{!v.spinner}">
+        <div aura:id="spinnerId" class="slds-spinner_container">
+            <div role="status" class="slds-spinner slds-spinner_medium">
+                <span class="slds-assistive-text">Loading</span>
+                <div class="slds-spinner__dot-a"></div>
+                <div class="slds-spinner__dot-b"></div>
+            </div>
+        </div>
+    </aura:if>
+    <div class="slds-card"> 
+        <aura:if isTrue="{!v.selectedComponent == 'Member Services'}">
+        <div class="slds-page-header">
+            <div class="slds-align_absolute-center">
+                <div class="slds-text-heading_large">
+                    <div class="slds-m-top_xx-large">
+                        Member Services Administration Fields
+                    </div>
+                </div>
+            </div>
+        </div>
+	 <div class="slds-box slds-theme_shade">
+        <div class="slds-grid">
+            <div class="slds-col slds-size_4-of-12"> 
+            </div>
+            <div class="slds-col slds-size_4-of-12">   
+                <span class="slds-text-body–regular">
+                    <span style="color:red;">{!v.ErrorMessage}</span>
+                </span>
+                <lightning:select value="{!v.selectedValue}" name="select1" label="Please select the action">
+                    <option value="None">--None--</option>
+                    <option value="Exam Registration">Exam Registration</option>
+                    <option value="Deferral">Deferral</option>
+                    <option value="Exam Site Change">Exam Site Change</option>
+                    <option value="Un-Deferral">Un-Deferral</option>
+                    <option value="Switch Exam">Switch Exam</option>
+                    <option value="Create Switch Exam Fee">Create Switch Exam Fee</option>
+                    <option value="Update Opportunity Billing Info">Update Opportunity Billing Info</option>
+                    <option value="Update Opportunity Price">Update Opportunity Price</option>
+                    <option value="Scholarship refund">Scholarship refund</option>
+                    <option value="Ups Edit">Ups Edit</option>
+                    <option value="Pearson Merge Request">Pearson Merge Request</option>
+                </lightning:select> 
+                <div class="slds-p-top_large" style="float:right">
+                    <lightning:button  variant="Neutral" class="slds-button slds-button_neutral" label="cancel"/>
+                    <lightning:button variant="brand" label="Next" class="slds-button slds-button_brand" onclick="{!c.OnclickNextButton}"/>
+                </div>
+            </div> 
+            <div class="slds-col slds-size_4-of-12"> 
+                </div>
+        </div> 
+         </div>
+    </aura:if>
+        
+        <aura:if isTrue="{!v.selectedComponent == 'NavigateUrl'}">
+            <div class="slds-page-header">
+                <div class="slds-align_absolute-center">
+                    <div class="slds-text-heading_large">
+                        <div class="slds-m-top_xx-large">
+                            Opportunity Invoice Number
+                        </div>
+                    </div>
+                </div>
+            </div>
+             <div class="slds-box slds-theme_shade">
+             <div class="slds-grid">
+                <div class="slds-col slds-size_4-of-12"> 
+                </div>
+                <div class="slds-col slds-size_4-of-12">  
+                    <span class="slds-text-body–regular" style="color:red;">{!v.ErrorMessage}</span> 
+                    <lightning:input type="text" name="text" value="{!v.InvoiceNumber}" label="Invoice Number" />
+                    <div class="slds-p-top_large" style="float:right">
+                        <lightning:button  variant="Neutral" class="slds-button slds-button_neutral" label="Back"  onclick="{!c.BackButton}"/>
+                        <lightning:button variant="brand" label="Next" class="slds-button slds-button_brand" onclick="{!c.NextButtonNavigateUrl}"/>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </aura:if>
+        
+        <aura:if isTrue="{!v.selectedComponent == 'Exam Registration'}">
+            <c:ExamRegistrationCmp selectedComponent="{!v.selectedComponent}"/>
+        </aura:if>
+         <aura:if isTrue="{!v.selectedComponent == 'Deferral'}">
+             <c:DeferralCmp selectedComponent="{!v.selectedComponent}"/>
+        </aura:if>
+         <aura:if isTrue="{!v.selectedComponent == 'Un-Deferral'}">
+             <c:UnDeferralCmp selectedComponent="{!v.selectedComponent}"/>
+        </aura:if>
+         <aura:if isTrue="{!v.selectedComponent == 'Exam Site Change'}">
+             <c:ExamSiteChangeCmp selectedComponent="{!v.selectedComponent}"/>
+        </aura:if> 
+        <aura:if isTrue="{!v.selectedComponent == 'Pearson Merge Request'}">
+           <c:PearsonMergeRequestCmp selectedComponent="{!v.selectedComponent}"/>
+        </aura:if> 
+    </div>
+</aura:component>

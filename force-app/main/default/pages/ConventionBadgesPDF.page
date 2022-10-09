@@ -1,0 +1,106 @@
+<apex:page controller="ConventionBadgeSelectionController" renderAs="PDF" showHeader="false" sidebar="false" standardStylesheets="false"  applyhtmltag="false" applyBodyTag="false">
+      <head>
+         <style>
+             @page{
+				margin-left:.25in;
+             	margin-right:.25in;
+			}
+         </style>
+      </head>
+      <body>
+         <apex:variable value="{!1}" var="index" />
+         <apex:pageBlock id="page">
+            <apex:pageBlockSection >
+                <apex:pageBlockSectionItem >
+                    <div style="margin-top:5px">
+                        &nbsp;
+                    </div>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <div style="margin-top:5px">
+                        &nbsp;
+                    </div>
+                </apex:pageBlockSectionItem>
+               <apex:repeat value="{!lstWrapperList}" var="WrapV" >
+                  <apex:pageBlockSectionItem >
+                     <apex:outputPanel layout="block" style="font-family:Arial Unicode MS;width:330px;height:250px;font-size:20px;margin-left:17px;margin-right:34px;margin-top:30px;border:1px solid white;margin-bottom:10px;">
+                        <div>
+                            <div style="height:135px"> 
+                               <div style = "font-size:40px;margin-top:5px;text-align:center;font-weight: bold; font-family: sans-serif;">
+                                  {!WrapV.fname}
+                               </div>
+                               <div style = "font-size:25px;margin-top:5px;text-align:center;font-weight: bold; font-family: sans-serif;">
+                               	  <b>{!WrapV.name}</b><span><apex:outputText rendered="{!WrapV.Certifications!=''}">
+                                  <b>, {!WrapV.Certifications}</b></apex:outputText></span>
+                               </div>
+                               <div style ="text-align:center;margin-top:5px;font-size:18px;">
+                                  {!WrapV.company}
+                               </div>
+                            </div>
+
+                           <div style ="text-align:center;margin-top:6px;font-size:18px;">
+                              <apex:outputText value="{!WrapV.EventRegData.QR_Code__c}" escape="false"/>
+                           </div>
+                        </div>
+                     </apex:outputPanel>
+                  </apex:pageBlockSectionItem>
+                   <apex:pageBlockSectionItem rendered="{!WrapV.PageBreak}">
+                   </apex:pageBlockSectionItem>
+                   <apex:pageBlockSectionItem rendered="{!WrapV.PageBreak}">
+                       <table style="page-break-after: always;"></table>
+                   </apex:pageBlockSectionItem>
+                   <apex:pageBlockSectionItem rendered="{!WrapV.PageBreak}">
+                       <div style="height:35px">
+                       </div>
+                   </apex:pageBlockSectionItem>
+                   <apex:pageBlockSectionItem rendered="{!WrapV.PageBreak}">
+                       <div style="height:35px">
+                       </div>
+                   </apex:pageBlockSectionItem>
+               </apex:repeat>
+                <apex:repeat value="{!lstWrapperList2}" var="WrapV" rendered="{!lstWrapperList2.size > 0}" >
+                  <apex:pageBlockSectionItem >
+                     <apex:outputPanel layout="block" style="font-family:Arial Unicode MS;width:330px;height:250px;font-size:20px;margin-left:17px;margin-right:34px;margin-top:30px;border:1px solid white;margin-bottom:10px;">
+                        <div>
+                            <div style="height:135px"> 
+                               <div style = "font-size:30px;margin-top:5px;text-align:center;font-weight: bold; font-family: sans-serif;">
+                                  {!WrapV.fname}
+                               </div>
+                               <div style = "font-size:20px;margin-top:5px;text-align:center;font-weight: bold; font-family: sans-serif;">
+                               	  <b>{!WrapV.name}</b><span><apex:outputText rendered="{!WrapV.Certifications!=''}">
+                                  <b>, {!WrapV.Certifications}</b></apex:outputText></span>
+                               </div>
+                               <div style ="text-align:center;margin-top:5px;font-size:18px;">
+                                  {!WrapV.company}
+                               </div>
+                            </div>
+                           <div style ="text-align:center;margin-top:6px;font-size:18px;">
+                              <apex:outputText value="{!WrapV.EventRegData.QR_Code__c}" escape="false"/>
+                           </div>
+                        </div>
+                     </apex:outputPanel>
+                  </apex:pageBlockSectionItem>
+                   <apex:pageBlockSectionItem rendered="{!WrapV.PageBreak}">
+                   </apex:pageBlockSectionItem>
+                   <apex:pageBlockSectionItem rendered="{!WrapV.PageBreak}">
+                       <table style="page-break-after: always;"></table>
+                   </apex:pageBlockSectionItem>
+
+                   <apex:pageBlockSectionItem rendered="{!WrapV.PageBreak}">
+                       <div style="height:35px">
+                       </div>
+                   </apex:pageBlockSectionItem>
+                   <apex:pageBlockSectionItem rendered="{!WrapV.PageBreak}">
+                       <div style="height:35px">
+                       </div>
+                   </apex:pageBlockSectionItem>
+                   
+                   
+               </apex:repeat>
+                
+
+                
+            </apex:pageBlockSection>
+         </apex:pageBlock>
+      </body>
+</apex:page>

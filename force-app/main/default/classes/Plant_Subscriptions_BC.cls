@@ -1872,6 +1872,462 @@ public class Plant_Subscriptions_BC {
             return responseWrap;
         }
     }
+
+    // Method 8.1: 
+    // @ desc: update Subscription Payment Method if Payment Failed 
+    public Plant_Utility.responseWrapper paymentFailedCardUpdate(subsption_PaymentUpdate_Wrap reqWrp){
+        String statusCode='';
+        String status='';
+        String msg='';
+        String existingCustomerId = '';        
+        String paymentMethod_Id ='';
+        Plant_Payment_Method__c newPaymentMethod = new Plant_Payment_Method__c();
+        plantable_Constants__c custSettin = plantable_Constants__c.getValues('DevConstant'); // custom setting : constants
+        List<cardUpdateResp> cardUpdate_List=new List<cardUpdateResp>();
+        
+        // SET: Savepoint for rollback if bad data
+        Savepoint initial_SavePointState = Database.setSavepoint();
+        try{
+            if(reqWrp!=null){
+                
+                // VALIDATION 1: valid authorization token
+                if(!String.isBlank(reqWrp.authenticationToken)){
+                    // check Authorize token
+                    String validationResult = plant_AuthorizeController.validate_ByAccessToken(reqWrp.authenticationToken);
+                    System.debug('### auth result=> '+validationResult);
+                    if(validationResult.startsWith('Success')){
+                        existingCustomerId =  validationResult.split(',')[1];
+                    }
+                    else{
+                        statusCode='503';
+                        status='error';
+                        msg+=', Service Unavailable! Account : '+validationResult;
+                    }
+                    
+                    
+                    // get subscription
+                    if(status!='error' && !String.isBlank(reqWrp.subscriptionId)){ 
+                        List<Plant_Subscription__c> subscriptionList = [SELECT id,Plant_Chargent_Order__c , Plant_Account__c, Plant_Status__c, RecordType.Name, Plant_Shipping_Address__c, Plant_Payment_Method__c, Plant_Next_Shipment_Date__c, Plant_Temp_Chargent_Failed_Payment__c,
+                        Plant_Next_Charge_Date__c,Plant_Next_Delivery_Date__c FROM Plant_Subscription__c WHERE Id=:reqWrp.subscriptionId  AND Plant_Account__c=:existingCustomerId];
+                        
+                        if(!subscriptionList.isEmpty() && subscriptionList[0].Plant_Chargent_Order__c!=null){
+                            // subscription avaialble
+                            if(subscriptionList[0].Plant_Status__c!='Canceled' || 
+                               subscriptionList[0].Plant_Status__c!='Expired'){
+                                List<ChargentOrders__Transaction__c> transtion = [Select id, Name, createddate from ChargentOrders__Transaction__c where ChargentOrders__Order__c=:subscriptionList[0].Plant_Chargent_Order__c order by createddate DESC limit 1];
+                                Decimal lastTrnxtnTimeDiff;
+                                if(!transtion.isEmpty()){
+                                    lastTrnxtnTimeDiff = ((System.Now().getTime()/1000/60/60))-(transtion[0].createdDate.getTime()/1000/60/60);
+                                }else{
+                                    lastTrnxtnTimeDiff = 100;
+                                }
+                                   if(lastTrnxtnTimeDiff<24){
+                                       
+                                    // CHECK CARD INFORMATION
+                                        if(String.isBlank(reqWrp.paymentMethodId) && reqWrp.cardInformation!=null){
+
+                                            System.debug('NEW PAYMENT METHOD:' + reqWrp.cardInformation +'~'+ subscriptionList[0].Plant_Payment_Method__c);
+                                            
+                                            // create new Payment method
+                                            newPaymentMethod.Plant_Customer_Name__c=reqWrp.cardInformation.name;
+                                            if(!String.isBlank(reqWrp.cardInformation.expDate)){
+                                                if(Plant_Utility.checkDateFormat(reqWrp.cardInformation.expDate)){
+                                                    newPaymentMethod.Plant_Expiration_Date__c = Date.valueOf(reqWrp.cardInformation.expDate );
+                                                }
+                                                else {
+                                                    statusCode='503';
+                                                    status='error';
+                                                    msg += ', expDate format incorrect';
+                                                }
+                                            }
+                                            if(!String.isBlank(reqWrp.cardInformation.card_Last_4_Digits)){
+                                                if (Plant_Utility.CheckValidInteger(reqWrp.cardInformation.card_Last_4_Digits)) {
+                                                    newPaymentMethod.Plant_Card_Last_4_Digits__c = reqWrp.cardInformation.card_Last_4_Digits ;
+                                                }else{
+                                                    statusCode='503';
+                                                    status='error';
+                                                    msg += ', card_Last_4_Digits format incorrect';
+                                                }
+                                            }
+                                            if(!String.isBlank(reqWrp.cardInformation.cardnumber)){
+                                                if (Plant_Utility.CheckValidInteger(reqWrp.cardInformation.cardnumber)) {
+                                                    newPaymentMethod.Plant_Card_Number__c = reqWrp.cardInformation.cardnumber ;
+                                                }else{
+                                                    statusCode='503';
+                                                    status='error';
+                                                    msg += ', cardnumber format incorrect';
+                                                }
+                                            }
+                                            if(!String.isBlank(reqWrp.cardInformation.card_Type)){
+                                                newPaymentMethod.Plant_Card_Type__c = reqWrp.cardInformation.card_Type ;
+                                            }
+                                            if(!String.isBlank(reqWrp.cardInformation.cvv)){
+                                                if (Plant_Utility.CheckValidInteger(reqWrp.cardInformation.cvv)) {
+                                                    newPaymentMethod.CCV__c = reqWrp.cardInformation.cvv ;
+                                                }else{
+                                                    statusCode='503';
+                                                    status='error';
+                                                    msg += ', cvv format incorrect';
+                                                }
+                                            }
+                                            
+                                            boolean addressFlag = false;
+                                            //  only update billing address 
+                                            if(!String.isBlank(reqWrp.cardInformation.billingAddress.street1)){ 
+                                                newPaymentMethod.Plant_street1__c = reqWrp.cardInformation.billingAddress.street1 ;
+                                            }
+                                            else{
+                                                addressFlag = true;
+                                            }
+                                            if(!String.isBlank(reqWrp.cardInformation.billingAddress.street2)){
+                                                newPaymentMethod.Plant_street2__c = reqWrp.cardInformation.billingAddress.street2 ;
+                                            }
+                                            
+                                            
+                                            if(!String.isBlank(reqWrp.cardInformation.billingAddress.street3)){
+                                                newPaymentMethod.Plant_street3__c = reqWrp.cardInformation.billingAddress.street3 ;
+                                            }
+                                            
+                                            
+                                            if(!String.isBlank(reqWrp.cardInformation.billingAddress.city)){
+                                                newPaymentMethod.Plant_City__c = reqWrp.cardInformation.billingAddress.city ;
+                                            }
+                                            else {
+                                                addressFlag = true;
+                                            }
+                                            if(!String.isBlank(reqWrp.cardInformation.billingAddress.state)){
+                                                newPaymentMethod.Plant_Province_State__c = reqWrp.cardInformation.billingAddress.state ;
+                                            }
+                                            else{
+                                                addressFlag = true;
+                                            }
+                                            
+                                            if(!String.isBlank(reqWrp.cardInformation.billingAddress.zip)){
+                                                newPaymentMethod.Plant_Postal_Code__c = reqWrp.cardInformation.billingAddress.zip ;
+                                            }else {
+                                                addressFlag = true;
+                                            }
+                                            if(!String.isBlank(reqWrp.cardInformation.billingAddress.country)){
+                                                newPaymentMethod.Plant_Country__c = reqWrp.cardInformation.billingAddress.country ;
+                                            }
+                                            else {
+                                                addressFlag = true;
+                                            }
+                                            if(!String.isBlank(reqWrp.cardInformation.billingAddress.phone) && Plant_Utility.CheckValidInteger(reqWrp.cardInformation.billingAddress.phone)){
+                                                newPaymentMethod.Plant_Phone__c = reqWrp.cardInformation.billingAddress.phone ;
+                                            }
+                                            else{
+                                                addressFlag = true;
+                                            }
+                                            newPaymentMethod.Plant_Account__c = subscriptionList[0].Plant_Account__c;
+                                            
+                                            // billing address check:
+                                            if(addressFlag){
+                                                statusCode='503';
+                                                status='error';
+                                                msg += ' ,Incomplete Billing address.';
+                                            }
+                                            
+                                            if(statusCode!='503'){
+                                                // AG - Update Payment Method Info on Subscription
+                                                Plant_Payment_Method__c paymentRec = Plant_Orders_BC_Helper.clonePaymentMethod(newPaymentMethod, subscriptionList[0].Plant_Payment_Method__c, False);
+                                                System.debug('clone paymentRec:' + paymentRec);
+                                                update paymentRec;
+                                                paymentMethod_Id = paymentRec.Id;
+                                            }                                      
+                                        }
+                                        else if(!String.isBlank(reqWrp.paymentMethodId)){
+                                            
+                                            System.debug('EXISTING PAYMENT ID:' + reqWrp.paymentMethodId);
+                                            
+                                            // EXISTING PAYMENT ID
+                                            List<Plant_Payment_Method__c> existPaymentMethodList = [SELECT id,Plant_Account__c,Plant_Customer_Name__c, Plant_Card_Type__c, Plant_Card_Number__c,CCV__c, Plant_Card_Last_4_Digits__c,
+                                                                                                    Plant_Expiration_Date__c, Plant_Street1__c, Plant_Street2__c, Plant_Street3__c, Plant_City__c, Plant_Country__c, Plant_Province_State__c, Plant_Postal_Code__c, Plant_Can_SMS__c, Plant_Phone__c FROM Plant_Payment_Method__c WHERE Plant_Is_Account_Record__c = true AND id=:reqWrp.paymentMethodId AND Plant_Account__c=:existingCustomerId];
+                                            if(existPaymentMethodList.isEmpty()){
+                                                statusCode='503';
+                                                status='error';
+                                                msg += ', Service Unavailable! Invalid PaymentMethod Id';
+                                            }
+                                            else{
+                                                // AG - Clone "account" payment record
+                                                Plant_Payment_Method__c paymentRec = Plant_Orders_BC_Helper.clonePaymentMethod(existPaymentMethodList[0], subscriptionList[0].Plant_Payment_Method__c, False);
+                                                update paymentRec;
+                                                //insert paymentRec;
+                                                paymentMethod_Id = paymentRec.Id;
+                                            }
+                                            
+                                        }
+                                        else{
+                                            statusCode='503';
+                                            status='error';
+                                            msg += 'Payment information not found : ';
+                                        }
+                                       
+                                       if(!String.isBlank(paymentMethod_Id)){
+                                           
+                                           System.debug('CLONE EXISTING cORDER:' + paymentMethod_Id);
+                                           
+                                           // CLONE EXISTING cORDER 
+                                           List<ChargentOrders__ChargentOrder__c> toClone_Chargent = [SELECT id,ChargentOrders__Account__c,ChargentOrders__Transaction_Count_Recurring__c, ChargentOrders__Payment_Method__c, ChargentOrders__Card_Type__c, 
+                                                                                                      ChargentOrders__Charge_Amount__c, ChargentOrders__Subtotal__c, ChargentOrders__Payment_Status__c, 
+                                                                                                      ChargentOrders__Payment_Start_Date__c, ChargentOrders__Payment_Frequency__c, ChargentOrders__Payment_Stop__c, 
+                                                                                                      ChargentOrders__Payment_Count__c, ChargentOrders__Gateway__c  FROM ChargentOrders__ChargentOrder__c 
+                                                                                                    WHERE id=:subscriptionList[0].Plant_Chargent_Order__c Limit 1];
+                                         
+                                            
+                                           System.debug('toClone_Chargent:' + toClone_Chargent);
+                                           
+                                           if(toClone_Chargent.isEmpty()){
+                                                statusCode='503';
+                                                status='error';
+                                                msg += 'Service Unavailable! Bad Record cOrder, Contact System Admin!';
+                                            }
+                                            else{
+                                                
+                                                //Update chargent with new Card
+                                                toClone_Chargent[0].ChargentOrders__Card_Type__c = newPaymentMethod.Plant_Card_Type__c;
+                                                update toClone_Chargent;
+
+                                                // UPDATE SUBSCRIPTION with new PaymentMethod Id
+                                                subscriptionList[0].Plant_Payment_Method__c = paymentMethod_Id;
+                                                subscriptionList[0].Plant_Temp_Chargent_Failed_Payment__c = 'Fixed';
+                                                update subscriptionList[0];
+
+                                                cardUpdateResp cResp=new cardUpdateResp();
+                                                cResp.cOrderId = toClone_Chargent[0].id;
+                                                cResp.subscriptionId = subscriptionList[0].id;
+                                                cResp.paymentId = paymentMethod_Id;
+                                                
+                                                cardUpdate_List.add(cResp);
+                                                
+                                                statusCode='200';
+                                                status='Success';
+                                                msg+='Payment Information Saved! Please Authorize your card';
+                                                
+                                            }
+                                        }
+                                       
+                                   }
+                                   else{
+                                       statusCode='503';
+                                       status='error';
+                                       msg+=', Service Unavailable! 24 hours are over you can not change the Payment Method Now.';
+                                   }
+                                   
+                               }
+                            else{
+                                statusCode='503';
+                                status='error';
+                                msg+=', Service Unavailable! No Active Subscription Found';
+                            }
+                            
+                        }
+                        else{
+                            // IncorrectId
+                            statusCode='503';
+                            status='error';
+                            msg+=', Service Unavailable! No Subscription Found';
+                        }
+                    }   
+                    else{
+                        statusCode='503';
+                        status='error';
+                        msg+=', Service Unavailable! Invalid Subscription Id';
+                    }                       
+                    
+                }
+                else{
+                    statusCode='503';
+                    status='error';
+                    msg+=', Service Unavailable! Unknown Token';
+                }
+            }
+            else{
+                statusCode='503';
+                status='error';
+                msg+='Service Unavailable! Request Incorrect';
+            }
+            
+        }
+        catch(Exception ex){
+            System.debug('@@@@@@@@@ EXCEPTION ENCOUNTERD payment update step 1: '+ex.getLineNumber()+' msg: '+ex.getCause()+' '+ex.getMessage());
+            statusCode='500';
+            status='error';
+            msg+=' Internal Server Error: '+ex.getMessage();
+            // ROLLBACK TO PREVIOUS STATE
+            Database.rollback(initial_SavePointState);
+        }
+        
+        //List<String> responseList = new List<String>();
+        Plant_Utility.responseWrapper responseWrap = new Plant_Utility.responseWrapper(status,statusCode,msg,new Plant_Utility.responseListWrapper(cardUpdate_List));
+        return responseWrap;
+        
+    }
+
+    // Method 8.2: 
+    // @ desc: update Subscription Payment Method (Authorize card) Setp 2
+    public Plant_Utility.responseWrapper paymentFailedCardAuthorization(CardAuthorize_ReqWrap reqWrap){
+        String statusCode='';
+        String status='';
+        String msg='';
+        String existingCustomerId = '';
+        String sfOrder_Var = '';
+        //Savepoint initial_SavePointState1 = Database.setSavepoint();
+         try{   
+                // VALIDATE: AuthenticationToken
+            if(!String.isBlank(reqWrap.authenticationToken)){
+                System.debug('### cancel order: auth token => '+reqWrap.authenticationToken);
+                // check Authorize token
+                String validationResult = plant_AuthorizeController.validate_ByAccessToken(reqWrap.authenticationToken);
+                System.debug('### auth result=> '+validationResult);
+                if(validationResult.startsWith('Success')){
+                    existingCustomerId =  validationResult.split(',')[1];
+                }
+                else{
+                    statusCode='503';
+                    status='error';
+                    msg+='Service Unavailable! Account : '+validationResult;
+                }
+            }
+
+            // Validation If Values are empty
+            if(!String.isBlank(existingCustomerId)){
+                if(String.isBlank(reqWrap.cOrderId) || String.isBlank(reqWrap.paymentId)){
+                        statusCode='503';
+                        status='error';
+                        msg='Service Unavailable! Required value missing';
+                        List<String> respList = new List<String>();
+                        Plant_Utility.responseWrapper responseWrap = new Plant_Utility.responseWrapper(status,statusCode,msg,new Plant_Utility.responseListWrapper(respList));
+                        return responseWrap;
+                }
+                else{
+
+                    // Creating Variables for the Objects:::
+                    ChargentOrders__ChargentOrder__c cOrder_Var = new ChargentOrders__ChargentOrder__c();
+                    Plant_Payment_Method__c payment_Var = new Plant_Payment_Method__c();
+                    plantable_Constants__c custSettin = plantable_Constants__c.getValues('DevConstant'); // custom setting : constants
+                    ChargentOrders__ChargentOrder__c old_cOdr = new ChargentOrders__ChargentOrder__c();
+                    Plant_Order_Properties__c orderProp_Var = new Plant_Order_Properties__c();
+                    Order odr=new Order();
+                    // Validation if Record Ids are working Id is Wrong
+                    
+                    List<ChargentOrders__ChargentOrder__c> cOrder_List = [SELECT id, ChargentOrders__Charge_Amount__c, ChargentOrders__Billing_Address__c, ChargentOrders__Payment_Count__c, ChargentOrders__Billing_City__c, ChargentOrders__Billing_State__c, ChargentOrders__Transaction_Count_Recurring__c, 
+                                                                        ChargentOrders__Billing_Zip_Postal__c,ChargentOrders__Payment_Stop__c,ChargentOrders__Subtotal__c, ChargentOrders__Billing_Country__c  FROM ChargentOrders__ChargentOrder__c WHERE id=:reqWrap.cOrderId AND ChargentOrders__Account__c=:existingCustomerId LIMIT 1 ];
+                    
+                    List<Plant_Payment_Method__c> paymentMethodList = [SELECT Id,Plant_Expiration_Date__c, Plant_Card_Type__c, Plant_Card_Number__c, Plant_Customer_Name__c, CCV__c,Plant_Card_Last_4_Digits__c,
+                                                                        Plant_Account__c FROM Plant_Payment_Method__c WHERE Id=: reqWrap.paymentId AND Plant_Account__c=:existingCustomerId AND (Plant_Expiration_Date__c!=null AND Plant_Card_Type__c!=null AND  Plant_Card_Number__c!=null AND  Plant_Customer_Name__c!=null AND  CCV__c!=null AND Plant_Card_Last_4_Digits__c!=null AND Plant_Account__c!=null) LIMIT 1];
+                    
+                    List<Plant_Subscription__c> subscription = [SELECT Id, Plant_Start_Date__c, Plant_Status__c, Plant_Cadence__c, Plant_Charge_Day__c, Plant_Shipping_Address__c, Plant_Payment_Method__c, Plant_Account__c, 
+                                                                     Plant_Chargent_Order__c, Order_Count__c,Plant_New_Chargent_Order_Id__c, Plant_Next_Charge_Date__c, (Select id, name, comty_Chargent_Order__c from Orders__r Order by createdDate DESC Limit 1),
+                                                                    Plant_New_Payment_Method_Id__c FROM Plant_Subscription__c where id=:reqWrap.subscriptionID AND Plant_Account__c=:existingCustomerId Limit 1];
+                    
+
+                    if(cOrder_List.isEmpty() || paymentMethodList.isEmpty() || subscription.isEmpty()){
+                        statusCode='503';
+                        status='error';
+                        msg='Service Unavailable! Invalid RecordIDs';
+                        List<String> respList = new List<String>();
+                        Plant_Utility.responseWrapper responseWrap = new Plant_Utility.responseWrapper(status,statusCode,msg,new Plant_Utility.responseListWrapper(respList));
+                        return responseWrap;
+                    } else if(subscription[0].Plant_Status__c == 'Canceled' || subscription[0].Plant_Status__c == 'Expired'){
+                        statusCode='503';
+                        status='error';
+                        msg='Subscription is not Active! can not update payment method';
+                        List<String> respList = new List<String>();
+                        Plant_Utility.responseWrapper responseWrap = new Plant_Utility.responseWrapper(status,statusCode,msg,new Plant_Utility.responseListWrapper(respList));
+                        return responseWrap;
+                    }
+                    else{
+                        payment_Var = paymentMethodList[0];
+                        cOrder_Var  = cOrder_List[0];
+                        odr.id = subscription[0].Orders__r[0].id;
+                        String  charg_jsonBody =  JSON.serialize(new Plant_Orders_BC.chargentAuthorizeReq_class(cOrder_Var.id,''+payment_Var.Plant_Expiration_Date__c.Month(),''+payment_Var.Plant_Expiration_Date__c.Year(),custSettin.chargentOrderPaymentMethod__c,payment_Var.Plant_Card_Type__c, payment_Var.CCV__c,payment_Var.Plant_Card_Number__c,cOrder_Var.ChargentOrders__Subtotal__c,false, payment_Var.Plant_Customer_Name__c!=null?payment_Var.Plant_Customer_Name__c:'',payment_Var.Plant_Customer_Name__c!=null?payment_Var.Plant_Customer_Name__c:'',cOrder_Var.ChargentOrders__Billing_Address__c,cOrder_Var.ChargentOrders__Billing_City__c,cOrder_Var.ChargentOrders__Billing_State__c,cOrder_Var.ChargentOrders__Billing_Zip_Postal__c,cOrder_Var.ChargentOrders__Billing_Country__c));// BS**
+                        ChargentBase__Gateway__c cgateway = [SELECT id,name FROM ChargentBase__Gateway__c WHERE id IN (SELECT ChargentOrders__Gateway__c FROM ChargentOrders__ChargentOrder__c WHERE id =: cOrder_Var.id)]; // BS**
+                        System.debug('### gateway => '+cgateway);
+
+                        System.debug('@@@@@ Transaction body ==> '+charg_jsonBody);
+                        // call chargent : authorize order 
+                        ChargentOrders.TChargentOperations.TChargentResult auth_result = ChargentOrders.TChargentOperations.AuthorizeOrder_ClickJSON(charg_jsonBody);
+
+                        System.debug('@@@@## transction Status=> '+auth_result.Status);
+                        System.debug('@@@@## transction Message=> '+auth_result.Message);
+                        System.debug('@@@@## transction TransactID=> '+auth_result.TransactID);
+                        System.debug('@@@@## transction responseData=> '+auth_result.responseData);
+
+                        if(auth_result.responseData!=null){
+                            // SUCCESSFULL CALLOUT
+                            Map<String,Object> responseDta = (Map<String,Object>)JSON.deserializeUntyped(auth_result.responseData);
+                            System.debug('#### key set==> '+responseDta.keySet());
+                            // complete transaction
+                            if(auth_result.Status=='OK' && auth_result.TransactID!=null && String.valueOf(responseDta.get('responseCode'))=='200' && String.valueOf(responseDta.get('isApproved'))=='true'){
+                                List<ChargentOrders__Transaction__c> transtion = [Select id, Name, ChargentOrders__Amount__c, createddate from ChargentOrders__Transaction__c where id=:auth_result.TransactID order by createddate DESC limit 1];
+                                if(!transtion.isEmpty()){
+                                    
+                                    System.debug('@@@@## transction TransactID=> '+auth_result.TransactID);
+                                    Plant_Orders_BC.hitChargentPayment jsonhitChargent = new Plant_Orders_BC.hitChargentPayment();
+                                    jsonhitChargent.ObjectId=transtion[0].id;
+                                    jsonhitChargent.ChargeAmount=transtion[0].ChargentOrders__Amount__c;
+                                    jsonhitChargent.authenticationToken=reqWrap.authenticationToken;
+                                    String jsonBody = JSON.serialize(jsonhitChargent);
+                                    Plant_Subscriptions_BC.paidChargent(jsonBody);
+                                     //Plant_Subscription_BC().call();
+                                    statusCode='200';
+                                    status='successful!';
+                                    msg='Card updated, Transaction authorize successfully';
+                                }
+                            }
+                            else {
+                                System.debug('Tag 8 : ');
+                                
+                                System.debug('Tag 9 : ');
+                                statusCode='501';
+                                status='error!';
+                                msg='Transaction Authorize error!'+auth_result.Message;
+
+                            }
+                        }
+                        else{   
+                                
+                            // NO SUCCESS CALLOUT
+                            statusCode='501';
+                            status='error!';
+                            msg='Transaction Authorize error!\n'+auth_result.Message;
+                        }
+                    }
+                }
+            }
+        }
+         catch(Exception ex){
+            System.debug('@@@@@@@@@ EXCEPTION ENCOUNTERD Authorizing new card : '+ex.getLineNumber()+' msg: '+ex.getCause()+' '+ex.getMessage());
+            statusCode='500';
+            status='error';
+            msg+=' Internal Server Error: '+ex.getMessage();
+            // ROLLBACK TO PREVIOUS STATE
+            //Database.rollback(initial_SavePointState1);
+        }
+        List<String> responseList = new List<String>();
+        Plant_Utility.responseWrapper responseWrap = new Plant_Utility.responseWrapper(status,statusCode,msg,new Plant_Utility.responseListWrapper(responseList));
+        return responseWrap;
+    }
+
+    //Method to hit chargent for Paid
+    @future (callout=true)
+    public static void paidChargent(String jsonWrap){
+        
+        System.debug('@@@@ future method ID   '+jsonWrap);
+        system.debug('@@@@@ System user  '+userinfo.getProfileId());
+        ChargentOrders.TChargentOperations.TChargentResult final_response = ChargentOrders.tChargentOperations.ChargeAuthorizedTransaction_ClickJSON(jsonWrap);
+        System.debug('#####@ final response==> '+final_response);
+        if(final_response.Status=='OK'){
+            System.debug('###### FINAL OK');
+            
+        }
+        else {
+            System.debug('###### FINAL ERROR');
+            
+        }
+    }
+
     // AG - Internal Methods
     
     // Post Transaction Handler - After an Order Payment or Change is made this method will handle any remaining non-criitical work

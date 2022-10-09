@@ -1,0 +1,10 @@
+<apex:page >
+    <script>
+        var url = 'https://garp--c.na87.visual.force.com/apex/reportsGARP#!/kanbanBoard';
+        //window.open(url, '_blank');
+        //document.location.href='https://garp.my.salesforce.com';
+        document.location.href=url;        
+    </script>
+    If the Kanban is not showing <a href="javascript:openWin()">Click Here</a>!
+    ** Note: You need to allow Pop-ups for this Kanban Board to open in a new tab.
+</apex:page>

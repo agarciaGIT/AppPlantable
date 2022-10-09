@@ -1,0 +1,285 @@
+<apex:page renderAs="PDF"  standardController="Webcast__c" extensions="WebcastPDFController">
+    <head >
+        <style type="text/css">
+            .info-text{
+            font-family:arial;
+            }
+        </style>   
+    </head>
+    <h1>
+        On24
+    </h1>
+    <h2>
+        Webcast Request Form
+    </h2>
+    
+    <table border="1px solid black">
+        <tr>
+            <th style="width:50%;background-color:black;color:White">Contact Info</th>
+            <th style="width:50%;background-color:black"></th>
+        </tr>
+        <tr>
+            <td>Requestor's Name:</td>
+            <td>DeLisa White</td>
+        </tr>
+        <tr>
+            <td>Requestor's Phone Number (include country and area code):</td>
+            <td>201-719-7211</td>
+        </tr>
+        <tr>
+            <td>Requestor's E-mail:</td>
+            <td>delisa.white@garp.com</td>
+        </tr>
+        <tr>
+            <td>Requestor's Company Name:</td>
+            <td>GARP</td>
+        </tr>
+        <tr>
+            <td>Is the webcast on behalf of another company:</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td>Will there be any other contacts ON24 will need to work with other than yourself:</td>
+            <td><!---This will be empty ---></td>
+        </tr>
+        <tr>
+            <td>Project Number/Reference (if applicable):</td>
+            <td><!---This will be empty ---></td>
+        </tr>
+        <tr>
+            <th style="background-color:black;color:White" >Webcast Details:</th>
+            <th style="background-color:black"><!---This will be blank ---></th>
+        </tr>
+        <tr>
+            <td>Webcast Event Title:</td>
+            <td><apex:outputField value="{!Webcast__c.Title__c}"/></td>
+        </tr>
+        <tr>
+            <td>Webcast Event Type: </td>
+            <td><apex:outputField value="{!Webcast__c.Event_Type__c}"/></td> 
+        </tr>
+        <tr>
+            <td>Webcast Format:</td>
+            <td><apex:outputField value="{!Webcast__c.Format__c}"/></td> 
+        </tr>
+        <tr>
+            <td>Moderators (name, title, company):</td>
+            <td>{!Moderator}</td>
+        </tr>
+        <tr>
+            <td>Speakers (name, title, company):</td>
+            <td>{!Speaker}</td>
+        </tr>
+        <tr>
+            <td>Will the speakers and moderators be presenting from the same office/room or different locations?</td>
+            <td>Different Locations</td>
+        </tr>
+        <tr>
+            <td>"Registration page info:(Webcast description / Are speaker details to be included on registration page or just on the webcast player console / Other detail to be included):"</td>
+            <td><apex:outputField value="{!Webcast__c.Description__c}"/></td>
+        </tr>
+        <tr>
+            <td>"Lobby page info:(Webcast description / Are speaker details to be included on registration page or just on the webcast player console / Other detail to be included):"</td>
+            <td>Description / Speakers Name and title / Time, Date, Multiple Time Zones</td>
+        </tr>
+        <tr>
+            <td>Event Date:</td>
+            <td><apex:outputField value="{!Webcast__c.Start_Date__c}"/></td>
+        </tr>
+        <tr>
+            <td>Duration:</td>
+             <td><apex:outputField value="{!Webcast__c.Duration__c}"/></td>
+        </tr>
+        <tr>
+            <td>Start Time:</td>
+            <td><apex:outputField value="{!Webcast__c.Start_Time__c}"/></td>
+        </tr>
+        <tr>
+            <td>End Time:</td>
+             <td><apex:outputField value="{!Webcast__c.End_Time__c}"/></td>
+        </tr>
+        <tr>
+            <td>Time Zone:</td>
+            <td>Eastern</td>
+        </tr>
+        <tr>
+            <td>Other time zones to be detailed on webcast pages, e.g. - "16:00 AEST / 14:00 SGT / 07:00 GMT":</td>
+            <td><!-- This is empty --></td>
+        </tr>
+        <tr>
+            <td>If the webcast will be a video webcast, do you require a lower rate 'audio only' webcast stream for potential webcast attendees who may be using a slower Internet connection? *</td>
+            <td><!-- This is empty --></td>
+        </tr>
+        <tr>
+            <td>If the webcast will be a video webcast, do you require, do you require a 2nd or 3rd webcast video stream to accomodate webcast attendees with different Internet speeds? *</td>
+            <td><!-- This is empty --></td>
+        </tr>
+        <tr>
+            <td>Is this an Internal webcast or an external webcast where the majority of attendees will access the webcast from the same company/organisation?</td>
+            <td>External</td>
+        </tr>
+        <tr>
+            <td>Will this webcast have any pre-recorded video clips to be played back during the show? *</td>
+            <td><apex:outputField value="{!Webcast__c.Prerecorded_Clips__c}"/></td>
+        </tr> <tr>
+        <td>Will this webcast include a live screen-demo(s)? *</td>
+        <td><apex:outputField value="{!Webcast__c.Screen_Live_Demos__c}"/></td> 
+        </tr>
+        <tr>
+            <td>Would you like to pre-record a screen-demo(s)? *</td>
+            <td><apex:outputField value="{!Webcast__c.Prerecord_Screen_Demos__c}"/></td> 
+        </tr>
+        <tr>
+            <td>Will live polling be required? *</td>
+            <td><apex:outputField value="{!Webcast__c.Will_live_polling_be_required__c}"/></td> 	
+        </tr> <tr>
+        <th style="background-color:black;color:White">Webcast Player Console "Widget" Selection:</th>
+        <th style="background-color:black"><!-- This will be blan --></th>
+        </tr>
+        <tr>
+            <td>Slides Widget</td>
+            <td><apex:outputField value="{!Webcast__c.Slides_Widget__c}"/></td>  
+        </tr> <tr>
+        <td>Media Player Widget</td>
+        <td><apex:outputField value="{!Webcast__c.Media_Player_Widget__c}"/></td>  	
+        </tr> <tr>
+        <td>Ask a Question.Question and Answer Widget?</td>
+        <td><apex:outputField value="{!Webcast__c.Ask_a_Question_Q_A_Widget__c}"/></td>  
+        </tr>
+        <tr>
+            <td>Transcript Widget (on-demand only)</td>
+            <td>No</td>
+        </tr> <tr>
+        <td>URL Widget</td>
+        <td>No</td>
+        </tr> <tr>
+        <td>Content Widget (provide URLs/documents and title of each URL/document)</td>
+        <td><apex:outputField value="{!Webcast__c.Content_Widget__c}"/></td>   
+        </tr> <tr>
+        <td>Speaker Bio Widget (provide names, titles, short bios and photos)</td>
+        <td><apex:outputField value="{!Webcast__c.Speaker_Bio_Widget__c}"/></td> 
+        </tr>
+        <tr>
+            <td>Chapters Widget (on-demand only)</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td>Resources Widget (provide URLs/documents and title of each URL/document)</td> 
+            <td><apex:outputField value="{!Webcast__c.Resource_Widget__c}"/></td> 
+        </tr>
+        <tr>
+            <td>Contact Us Widget *</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td>Survey Widget (or Survey pop up) *</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td>CoverFlow Widget *</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td>Twitter Widget *</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td>Social Network Widgets *(select network and URL to share)</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td>Wikipedia Widget *</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td>Email a Friend Widget *</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td>RSS Widget *</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td>Group Chat Widget *</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td>Quiz/Test Widget *</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td>Idea Widget *</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td>Breakout Session Widget *</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td>Quiz/Test Widget *</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <th style="background-color:black;color:White">Webcast Features (including registration page and emailers):</th>
+            <th style="background-color:black;"><!-- This will be SF Data --></th>
+        </tr>
+        <tr>
+            <td>Registration Page Fields:</td>
+            <td>Use 'Registration Page Fields' tab</td>
+        </tr>
+        <tr>
+            <td>Registration Page Banner (please send to your webcast manager as soon as possible):</td>
+            <td>Send via email</td>
+        </tr>
+        <tr>
+            <td>Lobby Page Banner (please send to your webcast manager as soon as possible):</td>
+            <td>Send via email</td>
+        </tr>
+        <tr>
+            <td>Webcast Player Console Banner or Background (please send to your webcast manager as soon as possible):</td>
+            <td>Send via email</td>
+        </tr>
+        <tr>
+            <td>Webcast Emailers:</td>
+            <td>Use 'Emailers Set Up' tab</td>
+        </tr>
+        <tr>
+            <td>Will this webcast take place from a venue with a live audience? If YES, please confirm venue address and contact details of the venue manager.</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td>Will this webcast take place from a studio or other external venue? If YES, please confirm venue address and contact details of the studio manager.</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td>Is Auto Registration required? (Auto Registration is where you host your own registration page) *</td>
+            <td><apex:outputField value="{!Webcast__c.Is_Auto_Registration_Required__c}"/></td>  
+        </tr>
+        <tr>
+            <td>Is a bulk upload of registrants required? *</td>
+            <td><!-- This will be SF Data --></td>
+        </tr>
+        <tr>
+            <td>Is Campaign Tracking required? *</td>
+            <td><apex:outputField value="{!Webcast__c.Is_Campaign_Tracking_required__c}"/></td>  
+        </tr>
+        <tr>
+            <td>Is Password protection required? *</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td>Do to wish to block certain email addresses, domain names and/or IP addresses? *</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td>Will you require ON24 audio and video production services for this webcast? If you've already reserved audio and video production services through another supplier, please confirm name and contact details (phone and email address). * </td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td>Notes / Any other information for ON24:</td>
+            <td><!-- This will be SF Data --></td>
+        </tr>
+        
+    </table>
+    
+</apex:page>

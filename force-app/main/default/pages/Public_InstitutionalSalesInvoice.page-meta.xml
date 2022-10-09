@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ApexPage xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>41.0</apiVersion>
+    <availableInTouch>false</availableInTouch>
+    <confirmationTokenRequired>false</confirmationTokenRequired>
+    <description>Institutional Sale Opportunity Invoice to be displayed on GARP public site. This and institutionalSalesInvoice should be kept in sync.</description>
+    <label>Public_InstitutionalSalesInvoice</label>
+</ApexPage>

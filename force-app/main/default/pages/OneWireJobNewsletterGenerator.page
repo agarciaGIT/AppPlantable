@@ -1,0 +1,343 @@
+<apex:page controller="OneWireJobNewsletterGeneratorCtrl" sidebar="false">
+    
+    <html>
+        <title>OneWire Newsletter Email Generator</title>
+        <head>
+            <style>
+                td.dataCol.first.last{
+                    padding-right: 10px;
+                }
+                td.dataCell{
+                  white-space: nowrap;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                height: 24px;
+                
+                }
+                table.list{
+                    table-layout: fixed;
+                }
+                h1{
+                    line-height: 44px;
+                    font-size: 20px;
+                }
+                h2{
+                    line-height: 24px;
+                    font-size: 12px;
+                }
+                .column{
+                    width: calc(50% - 12px); 
+                    float: left; 
+                }
+                .gutter{
+                    width: 24px;
+                    height: 1px;
+                    background: transparent;
+                    float: left;
+                }
+                .row{
+                    width: 100%;
+                    display: inline-block;
+                    padding-bottom: 12px;
+                }
+                .pointer{
+                    cursor: pointer;
+                }
+                .arrow-up {
+                  width: 0; 
+                  height: 0; 
+                  border-left: 5px solid transparent;
+                  border-right: 5px solid transparent;                  
+                  border-bottom: 5px solid #000;
+                }
+                
+                .arrow-down {
+                  width: 0; 
+                  height: 0; 
+                  border-left: 5px solid transparent;
+                  border-right: 5px solid transparent;               
+                  border-top: 5px solid #000;
+                }
+                
+                .arrow-right {
+                  width: 0; 
+                  height: 0; 
+                  border-top: 5px solid transparent;
+                  border-bottom: 5px solid transparent;              
+                  border-left: 5px solid #000;
+                }
+                
+                .arrow-right-big {
+                  width: 0; 
+                  height: 0; 
+                  border-top: 10px solid transparent;
+                  border-bottom: 10px solid transparent;              
+                  border-left: 10px solid #000;
+                }
+                
+                .arrow-left {
+                  width: 0; 
+                  height: 0; 
+                  border-top: 5px solid transparent;
+                  border-bottom: 5px solid transparent;                   
+                  border-right:5px solid #000; 
+                }
+                .arrow-left-big {
+                  width: 0; 
+                  height: 0; 
+                  border-top: 10px solid transparent;
+                  border-bottom: 10px solid transparent;                   
+                  border-right:10px solid #000; 
+                }
+            </style>
+            
+            <script>
+            var doPreview = function() {
+                                
+                var preview = document.getElementById('{!$Component.OneWireNewsletterGeneratorForm.htmlTemplatePreview}').value
+
+                var x = window.open()
+                
+                x.document.open()
+                x.document.write(preview)
+                x.document.close()
+                
+                return false
+                
+            }
+            </script> 
+
+        </head>
+        <body>
+
+            <apex:form id="OneWireNewsletterGeneratorForm"> 
+                
+                <apex:inputTextarea style="display: none;" id="htmlTemplatePreview" value="{!htmlTemplate}"></apex:inputTextarea>
+
+                <apex:actionFunction name="doSelect" action="{!doSelect}" reRender="pbJobsTable, pbSelectionTable, pbPageNumber">
+                    <apex:param name="jobId" value="" assignTo="{!jobId}" />
+                </apex:actionFunction> 
+                
+                <apex:actionFunction name="doRemove" action="{!doRemove}" reRender="pbJobsTable, pbSelectionTable, pbPageNumber">
+                    <apex:param name="jobId" value="" assignTo="{!jobId}" />
+                </apex:actionFunction> 
+                
+                <apex:actionFunction name="moveUp" action="{!moveUp}" reRender="pbSelectionTable">
+                    <apex:param name="jobId" value="" assignTo="{!jobId}" />
+                </apex:actionFunction> 
+                
+                <apex:actionFunction name="moveDn" action="{!moveDn}" reRender="pbSelectionTable">
+                    <apex:param name="jobId" value="" assignTo="{!jobId}" />
+                </apex:actionFunction> 
+                                
+                <apex:pageBlock > 
+                    <apex:pageMessages />
+                    
+                    <!-- CREATE NEW OR OPEN TEMPLATE -->
+                    <div style="display:{!IF(metadataListId = null, 'block', 'none')}; width: 100%;">
+                        
+                        <h1>
+                            OneWire Career Newsletter
+                        </h1>
+                        
+                        <br />
+                        
+                        <h2>
+                            Create or open an existing job list
+                        </h2>
+                        
+                        <br />
+                        
+                        <apex:pageBlockSection >
+
+                                <apex:selectList size="1" value="{!metadataListId}" label="Existing Lists">
+                                    <apex:selectOptions value="{!metadataLists}" />
+                                </apex:selectList>
+                                <apex:commandButton value="Open List" action="{!doOpen}"/> 
+    
+                                <apex:inputText label="Enter List Name" value="{!metadataListName}" />
+                                <apex:commandButton value="Create List" action="{!doSaveAs}"/>  
+                        </apex:pageBlockSection>
+                        
+                    </div>
+                    <!-- CREATE NEW OR OPEN TEMPLATE -->
+           
+                    <!-- ROW ONE -->
+                    <div class="row" style="display:{!IF(metadataListId = null, 'none', 'inline-block')};">
+                        <div class="column"> 
+                            <h1>
+                                Search All Jobs in Database
+                            </h1>
+                            <br />
+                            <h2>
+                                Keyword search
+                            </h2>
+
+                            <apex:inputText value="{!searchString}" style="margin-top: 12px; width: 100%;"/>
+                            
+                        </div>
+                        <span class="gutter"></span>
+                        <div class="column"> 
+                            <h1>
+                                Create List or Edit An Existing One
+                            </h1>
+                            <br />
+                            <h2>
+                                How it works
+                            </h2>
+                            <span>
+                                <p>
+                                    1. Select and deselect jobs by using the left/right arrows.
+                                </p>
+                                <p>
+                                    2. Sort jobs using the up/down arrows.
+                                </p>
+                                <p>
+                                    3. You can see additional job information by hovering over the title.
+                                </p>
+                            </span>
+                        </div>
+                    </div>
+                    <!-- ROW ONE -->    
+
+                    <!-- ROW TWO -->
+                    <div class="row" style="display:{!IF(metadataListId = null, 'none', 'inline-block')};">
+                        <div class="column"> 
+                            <h2>
+                                Add filters
+                            </h2>
+                            <apex:pageBlockSection columns="2">
+                                <apex:inputField label="Start Date" value="{!jobSObjectStartDate.Published_Date__c}" showDatePicker="true" />
+                                <apex:inputField label="End Date" value="{!jobSObjectEndDate.Published_Date__c}" showDatePicker="true" />
+                                <apex:inputText label="Region" value="{!region}" />
+                                <apex:inputText label="Company" value="{!company}" />
+                                <apex:inputText label="Category" value="{!category}" />
+                                <apex:inputText label="Title" value="{!title}" />
+                            </apex:pageBlockSection>
+                            <apex:commandButton style="width: 100%; margin-top: 7px;" action="{!doSearch}" value="Search" reRender="pbJobsTable, pbPageNumber" />
+                        </div>
+                        <span class="gutter"></span>
+                        <div class="column"> 
+                            <apex:pageBlockSection columns="4">
+                                <apex:commandButton style="width: 100%;" action="{!doNew}" value="Create New List"/>
+                                <apex:commandButton style="width: 100%;" action="{!doNew}" value="Open Existing List"/>
+                                <apex:commandButton style="width: 100%;" action="{!doDelete}" value="Delete List"/>
+                                <apex:commandButton style="width: 100%;" action="{!doSave}" value="Save List" reRender="pbSelectionTable"/>
+                            </apex:pageBlockSection> 
+                            <div style="height: 82px; padding-top: 46px; box-sizing: border-box;">
+                                <h1>
+                                    {!contentSelector.Name}
+                                </h1>
+                            </div>
+                            <apex:pageBlockSection columns="2" id="pbControls">
+                                <apex:commandButton style="width: 100%;" action="{!doGenerateHTML}" value="Generate HTML" reRender="htmlTemplatePreview, htmlTemplateSection, htmlTemplatePageBlock, htmlTemplate, pbControls"/>
+                                <apex:commandButton style="width: 100%;" disabled="{!IF(htmlTemplate <> null, false, true)}" onclick="doPreview()" value="Preview"/>
+                            </apex:pageBlockSection>
+                        </div>
+                    </div>
+                    <!-- ROW TWO -->  
+                    
+                    <!-- ROW THR -->
+                    <div class="row" style="display:{!IF(metadataListId = null, 'none', 'inline-block')};">
+                        <div class="column">                  
+                            <apex:pageBlockTable value="{!jobs}" var="job" id="pbJobsTable" rows="10" rules="rows">
+                                
+                                <apex:column headerValue="Title">
+                                    <a
+                                       class="truncate"
+                                       href="/{!job.Id}"
+                                       id="{!job.Id}"
+                                       onmouseover="LookupHoverDetail.getHover('{!job.Id}', '/{!job.Id}/m?retURL={!job.Id}&isAjaxRequest=1').show();"
+                                       onmouseout="LookupHoverDetail.getHover('{!job.Id}').hide();"
+                                       onfocus="LookupHoverDetail.getHover('{!job.Id}', '/{!job.Id}/m?retURL={!job.Id}&isAjaxRequest=1').show();"
+                                       onblur="LookupHoverDetail.getHover('{!job.Id}').hide();"
+                                       >
+                                        {!job.Title__c}
+                                    </a>
+                                </apex:column>
+                                
+                                <apex:column headerValue="Company">
+                                    <apex:outputText styleClass="truncate">{!job.Company__c}</apex:outputText>
+                                </apex:column>
+                                
+                                <apex:column headerValue="City, State Country">
+                                    <apex:outputText styleClass="truncate">{!job.City__c}, {!job.State__c} {!job.Country__c}</apex:outputText>
+                                </apex:column>
+                                
+                                <apex:column headerValue="Select">
+                                    <center>
+                                        <div onclick="doSelect('{!job.Id}')" class="arrow-right pointer"></div>
+                                    </center>
+                                </apex:column>
+                                
+                            </apex:pageBlockTable>
+                            <apex:pageBlockSection columns="3" id="pbPageNumber">
+                                
+                                <apex:commandButton style="float:left; display: block; width: 100%;" action="{!prev}" value="Previous" reRender="pbJobsTable, pbPageNumber" />
+                                
+                                <div style="text-align:center;">
+                                    {!pageNumber}/{!pages}
+                                </div>
+                                
+                                <apex:commandButton style="float:right; display: block; width: 100%;" action="{!next}" value="Next" reRender="pbJobsTable, pbPageNumber"/>
+                                
+                            </apex:pageBlockSection>
+                        </div>
+                        <span class="gutter"></span>
+                        <div class="column">
+                            
+                            <apex:pageBlockTable value="{!selectedJobs}" var="job" id="pbSelectionTable">
+                                
+                                <apex:column headerValue="Remove">
+                                    <center>
+                                        <div onclick="doRemove('{!job.Id}')" class="arrow-left pointer"></div>
+                                    </center>
+                                </apex:column>
+                                
+                                <apex:column headerValue="Title">
+                                    <a
+                                       class="truncate"
+                                       href="/{!job.Id}"
+                                       id="{!job.Id}"
+                                       onmouseover="LookupHoverDetail.getHover('{!job.Id}', '/{!job.Id}/m?retURL={!job.Id}&isAjaxRequest=1').show();"
+                                       onmouseout="LookupHoverDetail.getHover('{!job.Id}').hide();"
+                                       onfocus="LookupHoverDetail.getHover('{!job.Id}', '/{!job.Id}/m?retURL={!job.Id}&isAjaxRequest=1').show();"
+                                       onblur="LookupHoverDetail.getHover('{!job.Id}').hide();"
+                                       >
+                                        {!job.Title__c}
+                                    </a>
+                                </apex:column>
+                                
+                                <apex:column headerValue="Company">
+                                    <apex:outputText styleClass="truncate">{!job.Company__c}</apex:outputText>
+                                </apex:column> 
+                                
+                                <apex:column headerValue="Sort">
+                                    <center>
+                                        <div onclick="moveUp('{!job.Id}')" class="arrow-up pointer"></div> 
+                                    </center>
+                                    <div style="height: 6px;"></div>
+                                    <center>                                        
+                                        <div onclick="moveDn('{!job.Id}')" class="arrow-down pointer"></div>
+                                    </center>              
+                                </apex:column> 
+                                
+                            </apex:pageBlockTable>                               
+                        </div>
+                    </div>
+                    <!-- ROW THR -->
+
+                </apex:pageBlock>
+                
+                <apex:outputPanel id="htmlTemplateSection" style="width: 100%; visibility: {!IF(htmlTemplate = null, 'hidden', 'visible')}">                    
+                    <apex:pageBlock id="htmlTemplatePageBlock" title="Copy the below HTML">
+                        <apex:inputTextarea style="width: 100%; min-height: 200px; visibility: {!IF(htmlTemplate = null, 'hidden', 'visible')}" readonly="true" id="htmlTemplate" value="{!htmlTemplate}"></apex:inputTextarea>
+                    </apex:pageBlock>               
+                </apex:outputPanel>
+                
+            </apex:form>
+                     
+        </body>
+    </html>
+    
+</apex:page>

@@ -1,0 +1,240 @@
+<apex:page standardStylesheets="false" sidebar="false" showHeader="false">
+<apex:variable var="envPath" value="{!URLFOR($Resource.sfdcApp)}" />
+    <style>
+        body {
+            background: #FFFFFF url({!envPath}/img/light_noise_diagonal.png) repeat;
+            padding: 30px 0 !important;
+        }
+        .logo {
+            display: block;
+            margin: 0 auto;
+            width: 100%;
+            max-width: 447px;
+        }
+        .subheading {
+            text-align: center;
+            margin: 20px auto;
+        }
+        .login-box {
+            background: #FFFFFF;
+            padding: 20px;
+            display: block;
+            margin: 30px auto;
+            border: 1px solid lightgray;
+            width: 100%;
+            max-width: 400px;
+        }
+        .modal-box {
+            display: block;
+            margin: 5px auto;
+            width: 100%;
+            max-width: 400px;
+        }
+        .footer {
+            margin-top: 5px;
+            width: 100%;
+            border-top: 1px solid lightgray;
+        }
+        .footer ul {
+            margin: 10px;
+            padding: 0;
+            list-style-type: none;
+            text-align: center;
+        }
+        .footer ul li {
+            display: inline;
+            padding: 10px;
+        }
+        .error-message {
+            color: #CC3300;
+            padding: 5px;
+        }
+        .has-error input {
+            background-color: #F2DEDE;
+        }
+        .alert {
+            margin: 30px auto;
+            width: 100%;
+            max-width: 400px;
+        }
+    </style>
+    <link href="{!envPath}/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="{!envPath}/css/global_variables.css" rel="stylesheet" />
+    <link href="{!envPath}/css/sfdcApp.css" rel="stylesheet" />
+    
+
+
+   <script>
+   
+   var qs = (function(a) {
+    if (a == "") return {};
+    var b = {};
+    for (var i = 0; i < a.length; ++i)
+    {
+        var p=a[i].split('=');
+        if (p.length != 2) continue;
+        b[p[0]] = decodeURIComponent(p[1].replace(/\+/g, " "));
+    }
+    return b;
+    })(window.location.search.substr(1).split('&'));
+
+    debugger;
+
+    var pass="";
+    var url="";
+    var oppid="";
+    var sessionid="";
+    var userid="";
+    
+    if(qs["pass"] !== null && typeof qs["pass"] !== "undefined") {
+        pass = qs["pass"];
+    }
+    
+    if(qs["url"] !== null && typeof qs["url"] !== "undefined") {
+        url = qs["url"];    
+    }
+
+    if(qs["oppid"] !== null && typeof qs["oppid"] !== "undefined") {
+        oppid= qs["oppid"];    
+    }
+
+    if(qs["userid"] !== null && typeof qs["userid"] !== "undefined") {
+        userid= qs["userid"];    
+    }
+
+    if(qs["route"] !== null && typeof qs["route"] !== "route") {
+        route= qs["route"];    
+    }
+    
+    setTimeout(function() {
+    
+        continuePage();
+    
+        //if(pass == "1") {
+        //    document.getElementById('pass').style.display = 'block';
+        //} else if(pass == "0") {
+        //    document.getElementById('fail').style.display = 'block';
+        //} else {
+        //    continuePage();
+        //}    
+    
+    }, 300);
+    
+    // Parse URL into parameters
+    function getUrlParas() {
+        let paras = {};
+        let paraUrl = window.location.search.replace('?', '');
+		
+		if(paraUrl) {
+            for(let paraStr of paraUrl.split('&')) {
+                if(paraStr.indexOf('=') > -1) {
+                    let onePara = paraStr.split('=');
+                    paras[onePara[0]] = onePara[1];
+                }else {
+                    paras[paraStr] = '[no_value]';
+                }
+            }
+        }
+        
+        return paras;
+    }
+    
+    function continuePage(page) {
+
+        var hostName = window.location.hostname;
+        
+        if(qs["userid"] !== null && typeof qs["userid"] !== "undefined") {
+            if(hostName.indexOf("my.garp.org") > -1) {
+                 window.location.href="https://www.garp.org/index.html?uid=" + userid + '&route=' + route + '/#!/auth';
+            } else if(hostName.indexOf("preprod") > -1) {
+                window.location.href="http://ec2-54-191-42-178.us-west-2.compute.amazonaws.com/index.html?uid=" + userid + '&route=' + route + '/#!/auth';
+            }
+            return;
+        }
+       
+       if(page !== null && typeof page !== "undefined") {
+           url = page;
+       }
+       
+       debugger;
+       
+       // [US-22619] For overriding to any given url when cancelling
+       let urlParas = getUrlParas();
+       if(urlParas['curloverride'] == 1) {
+           let redUrl = urlParas['url'];
+           
+           if(redUrl) {
+               window.location.href = 'https://' + redUrl;
+               return false;
+           }
+       }
+       
+       if(url.indexOf("public_payment") == -1) {
+       
+           if(pass == "1" && url.indexOf("pending_") == -1) {
+               
+               if(hostName.indexOf("my.garp.org") > -1) {
+                   window.location.href='https://my.garp.org/sfdcApp#!/complete_checkout/' + url;
+               } else if(hostName.indexOf("checkout.garp.org") > -1) {
+                   window.location.href='https://my.garp.org/sfdcApp#!/complete_checkout/' + url;
+               } else if(hostName.indexOf("build") > -1) {
+                   window.location.href='https://build-garpbuild.cs16.force.com/sfdcApp#!/complete_checkout/' + url;
+               } else if(hostName.indexOf("preprod") > -1) {
+                   window.location.href='https://preprod-mygarp.cs19.force.com/sfdcApp#!/complete_checkout/' + url;
+               }
+           } else {
+               
+               if(url.indexOf("pending_") > -1) {
+                   url = url.substring(8);
+               }
+               
+               if(hostName.indexOf("my.garp.org") > -1) {
+                   window.location.href='https://my.garp.org/sfdcApp#!/complete_checkout_status/' + url + '/' + pass + '/' + oppid;
+               } else if(hostName.indexOf("checkout.garp.org") > -1) {
+                   window.location.href='https://my.garp.org/sfdcApp#!/complete_checkout_status/' + url + '/' + pass + '/' + oppid;
+               } else if(hostName.indexOf("build") > -1) {
+                   window.location.href='https://build-garpbuild.cs16.force.com/sfdcApp#!/complete_checkout_status/' + url + '/' + pass + '/' + oppid;
+               } else if(hostName.indexOf("preprod") > -1) {
+                   window.location.href='https://preprod-mygarp.cs19.force.com/sfdcApp#!/complete_checkout_status/' + url + '/' + pass + '/' + oppid;
+               }
+               
+           }
+        } else {
+        
+            if (typeof pass !== "undefined" && pass !== null) {
+            
+                if(pass == '1') {
+                    document.getElementById("pass").style.display='block';
+                } else {
+                    document.getElementById("fail").style.display='block';
+                }
+            }
+        }
+   }
+   </script>
+  <!-- Begin Default Content REMOVE THIS -->
+  <!-- End Default Content REMOVE THIS -->
+  
+  
+  <div id="pass" style="margin:50px;display:none">
+      <div>
+        <img alt="GARP" class="responsive" src="http://www.garp.org/newmedia/logoToolkit/Corporate_LogoSet/Short_GARP_Corporate.png" style="font-family:Arial, Geneva, Verdana, Helvetica, sans-serif;font-size:15px;color:#0e0e0e;padding-top:5px;padding-bottom:0px;max-width:190px;height:auto;" title="GARP" width="190" />
+      </div>
+  
+      <p>
+          <h1>Thank you for your payment!</h1>
+      </p>
+  </div>
+
+  <div id="fail" style="margin:50px;display:none">
+      <div>
+        <img alt="GARP" class="responsive" src="http://www.garp.org/newmedia/logoToolkit/Corporate_LogoSet/Short_GARP_Corporate.png" style="font-family:Arial, Geneva, Verdana, Helvetica, sans-serif;font-size:15px;color:#0e0e0e;padding-top:5px;padding-bottom:0px;max-width:190px;height:auto;" title="GARP" width="190" />
+      </div>
+      <p>
+          <h1>There was an issue with your payment!</h1>
+          <p>Please contact <a href="mailto:memberservices@garp.com">memberservices@garp.com</a> for more information</p>
+      </p>
+  </div>
+
+  
+</apex:page>

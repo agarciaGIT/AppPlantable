@@ -1,0 +1,256 @@
+<!-- 
+    Apex Page for generating invoice from master order
+    01/24/2019 Xiang - Created per [US-17765]
+-->
+<apex:page controller="InstitutionalSalesInvoiceController" renderAs="{!renderOpt}" 
+    docType="html-5.0" applyHtmlTag="false" applyBodyTag="false" showHeader="false" sidebar="false">
+    <html>
+        <head>
+            <style type="text/css">
+                body { font-family: sans-serif; font-size: 12px;}
+                .container { padding-left: 10px; padding-right: 10px;}
+                .logoDiv { text-align: right; padding-top: 5px; }
+                .logo { height: 50px; }
+                .textCenter { text-align: center; }
+                .headerText { font-size: 40px; font-weight: bold; color: rgb(9, 65, 118); margin: 0px; }
+                .headerTbl { width: 30%; }
+                .headerTbl th, .headerTbl td { padding-top: 5px; padding-bottom: 5px; }
+                .boldText { font-weight: bold; }
+                .topAlign { vertical-align: top; line-height: 14px; }
+                .italicText { font-style: italic; }
+                .fullWidth { width: 100% }
+                .addressCol { vertical-align: text-top; }
+                .headerColor { color: rgb(9, 65, 118); }
+                .dataTbl { border-collapse: collapse; }
+                .dataTbl th, .dataTbl td { border: 2px solid silver; padding: 5px; }
+                .dataTbl td { vertical-align: top; }
+                .dataTbl th, .headerTbl th { color: rgb(9, 65, 118); background: rgb(211, 225, 240); }
+                .margin { margin-top: 20px; margin-bottom: 20px; }
+                .textRight { text-align: right; }
+                .grayBack { background: rgb(240, 240, 240); }
+                .footerText { font-weight: bold; font-style: italic; color: rgb(9, 65, 118); }
+                
+                .red { color: red; }
+
+                .paid { background: url("{!$Resource.PaidWatermark}") no-repeat center center; background-size: contain; }
+                .cancelled { background: url("{!$Resource.CancelWatermark}") no-repeat center center; background-size: contain; }
+                
+                .footerContainer { width: 90%; border-top: 1px solid #d4d3d4; margin-left: auto; margin-right: auto; }
+            </style>
+            <style type="text/css" media="print">
+                @page {
+                    size: letter portrait;
+                    border: 1px solid rgb(211, 225, 240); 
+                    @bottom-right {
+                        content: element(footer);
+                    }
+                }
+                
+                div.footer {
+                    display: block;
+                    padding: 5px;
+                    position: running(footer);
+                }
+                
+                .pagenumber:before {
+                    content: counter(page);
+                }
+
+                .pagecount:before {
+                    content: counter(pages);
+                }
+            </style>
+        </head>
+        
+        <body>
+            <div class="footer">
+                <div class="footerContainer">
+                    <div style="text-align:right;">
+                        <span class="pagenumber"/>|<span style="color:#747474;">Pageof<span class="pagecount"/></span>
+                    </div>
+                </div>
+            </div>
+            
+            <apex:outputPanel layout="block" rendered="{!!showInvoice}">
+                <div class="textCenter">
+                    <h3>This institutional sale Opportunity is not yet approved. Invoice is not available currently.</h3>
+                </div>
+            </apex:outputPanel>
+
+            <apex:outputPanel layout="block" rendered="{!showInvoice}">
+                <div class="{!IF(isPaid, 'container paid', IF(isCancelled, 'container cancelled', 'container'))}">
+                    <div class="logoDiv">
+                        <apex:image styleClass="logo" value="{!$Resource.GARPIcon}"></apex:image>
+                    </div>
+                    
+                    <div class="textCenter">
+                        <h3 class="headerText">INVOICE</h3>
+                    </div>
+                    
+                    <div>
+                        <table class="headerTbl">
+                            <col width="50%"/><col width="50%"/>
+                            <thead>
+                                <tr>
+                                    <th>DATE</th>
+                                    <th>INVOICE #</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="boldText">
+                                        <apex:outputText value="{0, date, MMM d',' yyyy}">
+                                            <apex:param value="{!TODAY()}" />
+                                        </apex:outputText>
+                                    </td>
+                                    <td class="boldText">{!displayInvoice}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div>
+                        <table class="fullWidth">
+                            <col width="10%"/><col width="40%"/><col width="10%"/><col width="40%"/>
+                            <tbody>
+                                <tr>
+                                    <td class="addressCol boldText headerColor">TO:</td>
+                                    <td class="addressCol">
+                                        <span class="boldText">{!billCompany}</span><br/>
+                                        <span class="boldText">Attn: {!attentionName}</span><br/>
+                                        {!billAddress}<br/>
+                                        <apex:outputPanel rendered="{!!ISBLANK(billAddressLine2)}">{!billAddressLine2}<br/></apex:outputPanel>
+                                        {!billCity}<br/>
+                                        {!billState} {!billZip}<br/>
+                                        {!billCountry}<br/>
+                                        <apex:outputPanel rendered="{!!ISBLANK(attentionEmail)}">
+                                            E: {!attentionEmail}
+                                        </apex:outputPanel>
+                                    </td>
+                                    <td class="addressCol boldText headerColor">FROM:</td>
+                                    <td class="addressCol"><span class="boldText">{!garpName}</span><br/>
+                                    111 Town Square Place 14<sup>th</sup> Floor<br/>Jersey City, NJ 07310 USA<br/>T: +1 201.719.7210<br/>F: +1 201.222.5022<br/>Federal Tax ID #: {!garpTaxId}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div>
+                        <table class="fullWidth dataTbl margin">
+                            <col width="10%"/><col width="60%"/><col width="15%"/><col width="15%"/>
+                            <thead>
+                                <tr>
+                                    <th class="textCenter">Qty</th>
+                                    <th class="textCenter">Description</th>
+                                    <th class="textCenter">Unit Price</th>
+                                    <th class="textCenter">Line Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="textCenter">
+                                        <br/>
+                                        <p><apex:repeat value="{!lineItems}" var="oli">
+                                            <span class="{!IF(oli.isDiscount, 'red topAlign', 'topAlign')}">{!oli.quantity}</span><br/>
+                                        </apex:repeat></p>
+                                    </td>
+                                    <td>
+                                        <apex:outputPanel styleClass="boldText" rendered="{!!ISBLANK(salesSummary)}">
+                                            <apex:outputText escape="false" value="{!salesSummary}"/>
+                                        </apex:outputPanel><br/>
+                                        
+                                        <p><apex:repeat value="{!lineItems}" var="oli">
+                                            <span class="{!IF(oli.isDiscount, 'red topAlign', 'topAlign')}">{!oli.productName}</span><br/>
+                                        </apex:repeat></p>
+
+                                        <apex:outputPanel styleClass="italicText" rendered="{!!ISBLANK(generalStatement)}">
+                                            <apex:outputText escape="false" value="{!generalStatement}"/>
+                                        </apex:outputPanel>
+                                    </td>
+                                    <td class="textRight">
+                                        <br/>
+                                        <p><apex:repeat value="{!lineItems}" var="oli">
+                                            <span class="{!IF(oli.isDiscount, 'red topAlign', 'topAlign')}">
+                                                <apex:outputText value="{0, Number, Currency}">
+                                                    <apex:param value="{!oli.unitPrice}"/>
+                                                </apex:outputText>
+                                            </span><br/>
+                                        </apex:repeat></p>
+                                    </td>
+                                    <td class="textRight grayBack">
+                                        <br/>
+                                        <p><apex:repeat value="{!lineItems}" var="oli">
+                                            <span class="{!IF(oli.isDiscount, 'red boldText topAlign', 'boldText topAlign')}">
+                                                <apex:outputText value="{0, Number, Currency}">
+                                                    <apex:param value="{!oli.totalPrice}" />
+                                                </apex:outputText>
+                                            </span><br/>
+                                        </apex:repeat></p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" style="border:none;"></td>
+                                    <td class="textRight boldText grayBack">TOTAL</td>
+                                    <td class="textRight boldText grayBack">
+                                        <apex:outputText value="{0, Number, Currency}">
+                                            <apex:param value="{!totalAmount}" />
+                                        </apex:outputText>
+                                    </td>    
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div>
+                        <table class="fullWidth dataTbl margin">
+                            <col width="33%"/><col width="33%"/><col width="33%"/>
+                            <thead>
+                                <tr>
+                                    <th>SALESPERSON</th>
+                                    <th>PAYMENT TERMS</th>
+                                    <th>DUE DATE</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="boldText">{!salesPerson}</td>
+                                    <td class="boldText"><apex:outputText value="{!IF(ISBLANK(paymentTerm), 'N/A', paymentTerm)}"/></td>
+                                    <td class="boldText"><apex:outputText value="{!IF(ISBLANK(dueDate), 'Due Upon Receipt', dueDate)}"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="margin">
+                        <span class="boldText">Payment Options</span><br/>
+                        <span class="boldText">1) By Check</span> {!garpName}, 111 Town Square Place, 14<sup>TH</sup> Floor, Jersey City, NJ 07310 USA<br/>
+                        <span class="boldText">2) By Wire</span><br/>
+                        Bank Account Name: {!garpName}<br/>
+                        Bank Name: Citibank, N.A.<br/>
+                        Bank Address: 79 Fifth Avenue, New York, NY 10003, USA<br/>
+                        Account Number: {!garpAcctNum}<br/>
+                        Routing Number/Sort Code: 021000089<br/>
+                        Swift Code: CITIUS33<br/>
+                        <apex:outputPanel rendered="{!!noCreditPayment}">
+                            <span class="boldText">3) By Credit Card</span><br/>
+                            Credit Card payments will be taken in USD and we Only accept: American Express; Visa and Mastercard.<br/>
+                            Please contact Accounts Receivable via the email or phone number below to process your credit card payment.
+                        </apex:outputPanel>
+                    </div>
+                    
+                    <div class="margin">
+                        If you have any questions concerning this invoice, please contact: Snehal Patel, 201-719-7241, snehal.patel@garp.com.<br/>Make all checks payable to {!garpName}
+                    </div>
+                    
+                    <div class="textCenter margin">
+                        Thank you for your business. As the leading Association for risk managers, GARP is dedicated to the advancement of risk professionals through certification, training and the promotion of best practices globally.
+                    </div>
+                    
+                    <div class="textCenter footerText">
+                        Creating a Culture of Risk Awareness ®
+                    </div>
+                </div>
+            </apex:outputPanel>
+        </body>
+    </html>
+</apex:page>

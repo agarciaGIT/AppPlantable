@@ -1,0 +1,136 @@
+/* Input for this batch is Exam Type, string should match the Exam__c picklist value on Exam__c object for FRM,ERP and SCR
+ * Exam Group Id should be saved to Free_Ebooks_Batch_Record_Id custom label, query will filter Registrations with that Group Id
+ */
+global class CreateFreeOppEBookAndPracExams implements Database.Batchable<sObject>,Database.StateFul,Database.AllowsCallouts{
+	private string examType;
+    private string examGroupId = System.Label.Free_Ebooks_Batch_Record_Id;
+    private string recordId;
+    public CreateFreeOppEBookAndPracExams(string examTypeStr){
+        examType = examTypeStr;
+    }
+    public CreateFreeOppEBookAndPracExams(string examTypeStr,string inputRecordId){
+        examType = examTypeStr;
+        recordId = inputRecordId;
+    }
+    global Database.QueryLocator start(Database.BatchableContext BC){
+        
+        //run this batch for only one record at once.
+        //List<Exam_Date__c > lstDate = Exam_Date__c.getAll().values();
+        String StrDefered = 'Approved';       
+        String oppstatus = 'closed';
+        //date datExam = lstDate[0].Date__c;
+        //Set<String> sitecode =new Set<String>{'814','838'};
+        //Set<String> id =new Set<String>{'a1a1W000008ijQ5'};
+        Set<String> strSection = new Set<String>{examType};
+            
+        string strQuery = 'select id,Section__c,Exam_Site__r.Exam_Site_Code_idetifier__c,Opportunity__c,Deferral_Status__c,Candidate_Commitment__c,Member__c,Candidate_Requirement__c,Exam_Site__c,Defered__c from Exam_Attempt__c where  Defered__c =: StrDefered  and Opportunity_StageName__c =:oppstatus and cancelled__c !=true and EBooks_Created__c != true and Section__c in: strSection and Exam_Site__r.Exam__r.Exam_Group__c =:examGroupId';
+        if(String.isNotBlank(recordId)) {
+            strQuery += ' AND Id=: recordId';
+        }
+        if(test.isRunningTest()){
+            strQuery = 'select id,Section__c,Exam_Site__r.Exam_Site_Code_idetifier__c,Opportunity__c,Deferral_Status__c,Candidate_Commitment__c,Member__c,Candidate_Requirement__c,Exam_Site__c,Defered__c from Exam_Attempt__c where  Defered__c =: StrDefered  and Opportunity_StageName__c =:oppstatus and cancelled__c !=true and Section__c in: strSection';
+        }
+        return Database.getQueryLocator(strQuery); 
+        
+    }
+    
+    global void execute(Database.BatchableContext BC, List<Exam_Attempt__c> scope){
+        Set<String> productCodeSet = new Set<String>();
+        List<Exam_Attempt__c> listToUpdate = new List<Exam_Attempt__c>();
+        String eBookType;
+        if(examType == 'FRM Part 1'){
+            productCodeSet.add('FRM1X');
+            productCodeSet.add('FRMC1');
+            eBookType = 'Frm part 1';
+        }else if(examType == 'FRM Part 2'){
+            //productCodeSet.add('FRM2X');
+            productCodeSet.add('FRMC2');
+            eBookType = 'Frm part 2';
+        }else if(examType == 'ERP Exam Part I'){
+            //productCodeSet.add('ENC1X');
+            productCodeSet.add('ENCC1');
+            eBookType = 'ERP Part I';
+        }else if(examType == 'ERP Exam Part II'){
+            //productCodeSet.add('ENC2X');
+            productCodeSet.add('ENCC2');
+            eBookType = 'ERP Part II';
+        }else if(examType == 'SCR'){
+            productCodeSet.add('SCRX');
+            productCodeSet.add('SCRCN');
+            eBookType = 'SCR';
+        }
+        Set<Id> Conids = new Set<Id>();
+        
+        for(Exam_Attempt__c ea : scope){
+            Conids.add(ea.Member__c);
+            ea.EBooks_Created__c = true;
+            listToUpdate.add(ea);
+        }
+        
+        Contact objContact = [select id,name,Email,account.BillingStreet,Account.BillingState,Account.BillingCountry,Company_Clean_Name__c,Account.BillingCity, FirstName, HomePhone, LastName, Mailing_Address_Company__c, MailingCity, MailingCountry, MailingState, MailingStreet, MailingPostalCode,accountId from Contact where id =: Conids];
+        
+        Opportunity Newopp = new opportunity();
+        if(objContact != null )
+        {
+            List<Opportunity> lstNewOpps = new List<Opportunity>();
+            Newopp.Name = 'Free Ebook Extension';
+            Newopp.accountid = objContact.accountid;
+            Newopp.StageName = 'New Lead';
+            Newopp.CloseDate=system.today();
+            Newopp.ChargentSFA__Billing_Address__c = objContact.account.BillingStreet;
+            Newopp.ChargentSFA__Billing_City__c    = objContact.account.BillingCity;
+            Newopp.ChargentSFA__Billing_Company__c = objContact.Company_Clean_Name__c;
+            Newopp.ChargentSFA__Billing_Country__c = objContact.account.BillingCountry;
+            Newopp.ChargentSFA__Billing_Email__c   = objContact.Email;
+            Newopp.ChargentSFA__Billing_Last__c    = objContact.LastName;
+            Newopp.ChargentSFA__Billing_First__c   = objContact.FirstName;
+            Newopp.ChargentSFA__Billing_Phone__c   = objContact.HomePhone;
+            Newopp.ChargentSFA__Billing_Postcode__c= objContact.MailingPostalCode;
+            Newopp.ChargentSFA__Billing_State__c   = objContact.account.BillingState;
+            Newopp.Shipping_Last_Name__c           = objContact.LastName;
+            Newopp.Shipping_First_Name__c          = objContact.FirstName;
+            Newopp.Shipping_Street__c              = objContact.account.BillingStreet;
+            Newopp.Shipping_City__c                = objContact.account.BillingCity;
+            Newopp.Shipping_Country__c             = objContact.account.BillingCountry;
+            Newopp.Shipping_E_mail__c              = objContact.Email;
+            Newopp.Shipping_Phone_No__c            = objContact.HomePhone;
+            Newopp.Shipping_Postal_Code__c         = objContact.MailingPostalCode;
+            Newopp.Shipping_State__c               = objContact.account.BillingState;
+            Newopp.Give_Ebook_for_Free__c = true;
+            Newopp.E_book_Type__c = eBookType;
+            lstNewOpps.add(Newopp);
+			
+            insert lstNewOpps;
+            if(lstNewOpps.size() > 0){
+               
+                List<PriceBookEntry> PricebookEntryList = [select Id,unitprice, productcode, product2.Gl_Code__c from PriceBookEntry where Pricebook2.IsActive = true and Pricebook2.IsActive = true and productcode IN: productCodeSet and product2.Gl_Code__c = '4030' and isActive = true];
+                List<OpportunityLineItem> lstOppLines = new List<OpportunityLineItem>();
+                for(Opportunity opp : lstNewOpps)
+                {
+                    for(PriceBookEntry pbe : PricebookEntryList){
+                        OpportunityLineItem oppLine = new OpportunityLineItem(OpportunityId = opp.id,PricebookEntryId  = pbe.Id,Quantity =1,TotalPrice =0);
+                        lstOppLines.add(oppLine);
+                    }
+                }
+                
+                if(!lstOppLines.isEmpty())
+                    insert lstOppLines;
+                
+                ChargentSFA__Transaction__c trans = new ChargentSFA__Transaction__c();
+                trans.ChargentSFA__Opportunity__c = Newopp.Id;
+                trans.ChargentSFA__Amount__c = 0.00;
+                trans.ChargentSFA__Response_Message__c = 'Approved';
+                trans.ChargentSFA__Response_Status__c = 'Approved';
+                trans.ChargentSFA__Type__c = 'Charge';
+                trans.ChargentSFA__Gateway_Date__c =system.now();
+                insert trans;
+            }
+     	}
+        if(!listToUpdate.isEmpty()){
+            update listToUpdate;
+        }
+    }
+   	global void finish(Database.BatchableContext BC){
+        
+    }
+}

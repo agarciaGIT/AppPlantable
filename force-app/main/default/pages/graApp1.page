@@ -1,0 +1,146 @@
+<apex:page standardStylesheets="false" sidebar="false" showHeader="false" controller="graAppRemoter" applyBodyTag="false" cache="false" applyHtmlTag="false" docType="html-5.0">
+
+  <apex:variable var="envPath" value="{!URLFOR($Resource.graApp1)}" />
+  <apex:variable var="envPathStyles" value="{!URLFOR($Resource.graAppStyles1)}" />
+    
+  <html ng-app="graApp">
+    <head>
+        <link href="{!envPath}/lib/fontawsome/css/font-awesome.min.css" rel="stylesheet"/>
+        <link href="{!envPath}/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet"/>       
+        <link href="{!envPathStyles}/css/master_styles.css" rel="stylesheet"/>
+        <link href="{!envPath}/lib/ui-grid/ui-grid.min.css" rel="stylesheet"/>
+        <link href="{!envPath}/lib/ang-material-accordion/ang-accordion.css" rel="stylesheet"/>
+        
+        <script src="{!envPath}/lib/jquery-3.1.1.min.js"></script>
+
+        <apex:includeScript value="{!envPath}/lib/spinjs/spin.min.js"/>                
+        <apex:includeScript value="{!envPath}/lib/moment.min.js"/>
+        <apex:includeScript value="{!envPath}/lib/moment-timezone-with-data-2010-2020.min.js"/>
+        
+        <script src="{!envPath}/lib/underscore-min.js"></script>
+        <script src="{!envPath}/lib/bootstrap/js/bootstrap.min.js"></script>
+        <script src="{!envPath}/lib/async.min.js"></script>
+        
+        <script src="{!envPath}/lib/angular/angular.min.js"></script>
+        <script src="{!envPath}/lib/angular/angular-sanitize.min.js"></script>     
+        <script src="{!envPath}/lib/angular-modal-service/angular-modal-service.min.js"></script>
+        <script src="{!envPath}/lib/angular-ripple/angular-ripple.js"></script>
+
+        <script src="{!envPath}/lib/angulartics/angulartics.min.js"></script>
+        <script src="{!envPath}/lib/angulartics/angulartics-debug.min.js"></script>
+        <script src="{!envPath}/lib/angulartics/angulartics-google-analytics.min.js"></script>
+
+        <script src="{!envPath}/lib/angular/angular-ui-router.min.js"></script>
+        <script src="{!envPath}/lib/bootstrap/js/ui-bootstrap-tpls-2.2.0.min.js"></script>
+        <!-- script src="lib/ui-grid/ui-grid.min.js"></script -->
+        <script src="{!envPath}/lib/sprintf.min.js"></script>
+
+        <script type="text/javascript" src="{!envPath}/lib/vis/vis.js"></script>
+        <!-- link href="lib/vis/vis-network.min.css" rel="stylesheet" type="text/css" / -->
+        <script type="text/javascript" src="{!envPath}/lib/fileUpload/ng-file-upload.min.js"></script>
+        <script type="text/javascript" src="{!envPath}/lib/fileUpload/ng-file-upload-shim.min.js"></script>
+        
+        <script src="{!envPath}/lib/ang-material-accordion/ang-accordion.js"></script>
+
+        <!-- ui-select files -->
+        <script src="{!envPath}/lib/ui-select/select.js"></script>
+        <link href="{!envPath}/lib/ui-select/select.css" rel="stylesheet"/>
+
+        <script src="{!envPath}/js/app.js"></script>
+        <script src="{!envPath}/js/services.js"></script>
+        <script src="{!envPath}/js/controllers.js"></script>
+        <script src="{!envPath}/js/controllers/nav.js"></script>
+        
+        <script src="{!envPath}/js/controllers/panelFields.js"></script>       
+
+        <script src="{!envPath}/js/services/utilities.js"></script>
+        <script src="{!envPath}/js/services/panelField.js"></script>
+        <script src="{!envPath}/js/services/remoteData.js"></script>
+        
+        <link rel="stylesheet" type="text/css" href="https://cloud.typography.com/7208894/7849972/css/fonts.css" />
+            
+        <link rel="stylesheet" href="{!envPath}/lib/pillar3/vanillaSelectBox.css"/>
+        <link rel="stylesheet" href="{!envPath}/lib/pillar3/navMenu.css"/>
+        <link rel="stylesheet" href="{!envPath}/lib/pillar3/filters.css"/>
+        <link rel="stylesheet" href="{!envPath}/lib/pillar3/pillar3Home.css"/>
+        <script src="{!envPath}/lib/pillar3/vanillaSelectBox.js"></script>
+
+
+
+        <script type="text/javascript" 
+            src="https://public.tableau.com/javascripts/api/tableau-2.7.0.min.js"></script>
+        
+        <script src="https://cdn.rawgit.com/harvesthq/chosen/gh-pages/chosen.jquery.min.js"></script>
+        <link href="https://cdn.rawgit.com/harvesthq/chosen/gh-pages/chosen.min.css" rel="stylesheet"/>
+        
+
+        <apex:include pageName="graAppVisualForceServices"/>  
+        
+        <script>
+            var envPath = "{!envPath}";
+        </script>
+
+    </head>    
+      <body ng-controller="mainCtrl">
+        <div id='wrapper' class=''>
+            <div ng-controller="navController" ng-include="'{!envPath}/partials/nav.html'" id='sidebar-wrapper'>
+                
+            </div>
+            <div id='page-content-wrapper'>
+                <a href="#menu-toggle" id="menu-toggle">
+                    <span class="navbar-toggle" type="button">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </span>
+                    <span>Menu</span>
+                </a>
+                <div id="mainspin" style="min-height:200px">
+                    <apex:outputPanel layout="block" html-data-ui-view="" html-class="scale-fade" html-data-autoscroll="false"></apex:outputPanel>
+                </div>
+            </div>
+        </div>
+
+     <script>
+              (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+                    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+                        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+                                        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+            var spinnerOptions = {
+                lines: 13, // The number of lines to draw
+                length: 20, // The length of each line
+                width: 10, // The line thickness
+                radius: 30, // The radius of the inner circle
+                corners: 0.5, // Corner roundness (0..1)
+                rotate: 0, // The rotation offset
+                direction: 1, // 1: clockwise, -1: counterclockwise
+                color: '#8b8989', // #rgb or #rrggbb or array of colors
+                speed: 1, // Rounds per second
+                trail: 60, // Afterglow percentage
+                shadow: false, // Whether to render a shadow
+                hwaccel: false, // Whether to use hardware acceleration
+                className: 'spinner', // The CSS class to assign to the spinner
+                zIndex: 2e9, // The z-index (defaults to 2000000000)
+                top: '10', // Top position relative to parent in px
+                left: 'auto' // Left position relative to parent in px
+            };
+            
+            var selector = '#mainspin';
+            var obj = $(selector)
+            var mainSpinner;  
+            if(obj !== null && typeof obj !== "undefined" && obj.length !== null && typeof obj.length !== "undefined") {
+                mainSpinner = new Spinner(spinnerOptions).spin(obj[0]);
+            }           
+    </script>
+        <!-- Menu Toggle Script -->
+    <script>
+    $("#menu-toggle").click(function(e) {
+        e.preventDefault();
+        $("#wrapper").toggleClass("toggled");
+    });
+    </script>      
+    </body>
+</html>
+
+</apex:page>

@@ -1,0 +1,186 @@
+<apex:page standardStylesheets="false" sidebar="false" showHeader="false" controller="sfdcAppRemoter" extensions="IpDataApiController" applyBodyTag="false" cache="false" applyHtmlTag="false" docType="html-5.0">
+    
+    <apex:slds />
+    
+    <apex:variable var="envPath" value="{!URLFOR($Resource.sfdcApp1)}" />
+    <apex:variable var="envPathStyles" value="{!URLFOR($Resource.sfdcAppFonts1)}" />
+    <apex:variable var="cometD" value="{!URLFOR($Resource.cometd)}" />
+    
+    <apex:include pageName="sfdcAppVisualForceServices"/>   
+    
+    <html xmlns:ng="http://angularjs.org" ng-app="myApp" lang="en" xmlns:WB="https://open.weibo.com/wb">
+        <head>
+            
+            <title>GARP Account</title>
+            
+            <meta charset="utf-8"/>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />         
+            
+            <apex:stylesheet value="{!envPath}/img/favicon.ico"/>   
+            
+            <apex:stylesheet value="https://cloud.typography.com/7208894/718528/css/fonts.css"/>
+            
+            <script src="https://my.garp.org/lightning/lightning.out.js"></script>
+            <script src="{!cometD}/cometd.js"></script>
+                        
+            <style>
+                .restrict {
+                    height: 200px;
+                    overflow: hidden;
+                    margin-bottom: 10px;
+                }
+            </style>        
+            
+            <!-- Loads amCharts 4 -->
+            <script src="{!envPath}/lib/am-charts/core.js"></script>
+            <script src="{!envPath}/lib/am-charts/charts.js"></script>
+            <script src="{!envPath}/lib/am-charts/animated.js"></script>   
+            
+            <!-- move -->
+            <link rel="stylesheet" type="text/css" href="{!envPathStyles}/build/styles.min.css"/>            
+        </head>
+        <body style="background: #EEEFF0 url('https://www.garp.org/newmedia/design/GARP_background_NEW_50pct.png') repeat !important;" ng-controller="MainCtrl">    
+            
+            <div ng-if="!showPublicNav" id="nav" ng-include="'{!envPath}/partials/nav.html'"></div>
+            <div ng-if="showPublicNav" id="navPublic" ng-include="'{!envPath}/partials/common_hdr.html'"></div>                
+            
+            <apex:outputPanel layout="block" html-data-ui-view="" style="margin-top: 0px;" html-class="scale-fade" html-data-autoscroll="false"></apex:outputPanel>
+            
+            <div id="mainspin" style="min-height: 200px; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 99999;"></div>
+            <div id="error" ng-include="'{!envPath}/partials/error.html'"></div>
+            
+            <script>
+                window.envPath = "{!envPath}";
+                window.ipData = {
+                    country_name: "{!ipDataResponse.country_name}",
+                    message: "{!ipDataResponse.message}",
+                    ipAddress: "{!ipDataResponse.ipAddress}",
+                    capOn: {!ipDataResponse.capOn},
+                    capKey: "{!ipDataResponse.capKey}"
+                }
+                window.hcaptchaData= {
+                    resp:""
+                }
+                window.hcaptresp = function(hresp) {
+                    console.log('hcap:' + hresp);
+                    window.hcaptchaData.resp=hresp;
+                }
+            </script>
+            
+            <script src="{!envPath}/build/main.min.js" />
+            <script type="text/javascript" src="{!envPath}/lib/hcaptcha-component.min.js" />
+            
+            <script async="true" type="text/javascript" src="https://addevent.com/libs/atc/1.6.1/atc.min.js"></script>
+            <script async="true" type="text/javascript" src="https://s7.addthis.com/js/300/addthis_widget.js#pubid=ra-53f63a3a6b847ada"></script>
+            
+            <script>
+                var addthis_config = {"data_track_addressbar": true};
+                var addthis_share = addthis_share || {}
+                addthis_share = {
+                    passthrough : {
+                        twitter: {
+                            via: "GARP_Risk"
+                        }
+                    }
+                }
+            </script>
+          
+            <!-- sfdcApp Initializing Global Dependencies -->
+            <script>
+
+                // Set Get Cookie Function
+                getCookie = function(name) {
+                    var value = "; " + document.cookie;
+                    var parts = value.split("; " + name + "=");
+                    if (parts.length == 2) return parts.pop().split(";").shift();
+                } 
+
+                // Clear Shopping Cart on new session
+                localStorage.removeItem('shoppingCart');
+                
+                // Log use login
+                sfdcService.setLastLoginDate(function(err, data){});     
+
+                // Configure spinner globally
+                var spinnerOptions = {
+                    lines: 13, // The number of lines to draw
+                    length: 20, // The length of each line
+                    width: 10, // The line thickness
+                    radius: 30, // The radius of the inner circle
+                    corners: 0.5, // Corner roundness (0..1)
+                    rotate: 0, // The rotation offset
+                    direction: 1, // 1: clockwise, -1: counterclockwise
+                    color: '#8b8989', // #rgb or #rrggbb or array of colors
+                    speed: 1, // Rounds per second
+                    trail: 60, // Afterglow percentage
+                    shadow: false, // Whether to render a shadow
+                    hwaccel: false, // Whether to use hardware acceleration
+                    className: 'spinner', // The CSS class to assign to the spinner
+                    zIndex: 2e9, // The z-index (defaults to 2000000000)
+                    top: '10', // Top position relative to parent in px
+                    left: 'auto' // Left position relative to parent in px
+                };              
+                var selector = '#mainspin';
+                var obj = $(selector)
+                var mainSpinner;  
+                if(obj !== null && typeof obj !== "undefined" && obj.length !== null && typeof obj.length !== "undefined") {
+                    mainSpinner = new Spinner(spinnerOptions).spin(obj[0]);
+                }   
+
+            </script>
+            <!-- END sfdcApp Initializing Global Dependencies -->
+
+            <!-- TO BE REMOVED POST GTM RELEASE -->
+            <script>
+                var portalURL = 'my.garp.org';
+                var hostName = window.location.hostname;
+                if(hostName.indexOf("my.garp.org") > -1) {
+                    portalURL='https://my.garp.org';
+                }else if(hostName.indexOf("preprod") > -1) {
+                    portalURL='https://preprod-mygarp.cs97.force.com';
+                }
+                var qs = (function(a) {
+                    if (a == "") return {};
+                    var b = {};
+                    for (var i = 0; i < a.length; ++i)
+                    {
+                        var p=a[i].split('=');
+                        if (p.length != 2) continue;
+                        b[p[0]] = decodeURIComponent(p[1].replace(/\+/g, " "));
+                    }
+                    return b;
+                })(window.location.search.substr(1).split('&'));
+            
+                if(qs["start"] !== null && typeof qs["start"] !== "undefined") {
+                    var startPath = qs["start"];
+                    if(qs["redir"] === null || typeof qs["redir"] === "undefined"){
+                        window.location.href="https://' + portalURL + '/apex/sfdcApp?redir=1&start="+startPath;
+                    }
+                }
+            </script>
+            <!-- END TO BE REMOVED POST GTM RELEASE -->
+
+            <!-- Google Analytics -->
+            <script>       
+                (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+                (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+                m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+                })(window,document,'script','//www.google-analytics.com/analytics.js','ga');                   
+            </script>
+             <!-- END Google Analytics -->
+
+            <!-- Google Tag Manager -->
+            <script>
+                (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+                new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+                j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+                'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+                })(window,document,'script','dataLayer','GTM-NFGGBCN');
+            </script>
+            <!-- END Google Tag Manager -->
+            
+        </body>
+        
+    </html>
+    
+</apex:page>

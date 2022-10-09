@@ -1,0 +1,436 @@
+<apex:page standardStylesheets="false" 
+    sidebar="false" 
+    showHeader="false" 
+    id="visualForceServices" 
+    controller="graAppRemoter"
+    extensions="QualtricsApiController" 
+>
+    <script type="text/javascript">
+    
+    var graService = {
+        currentAccount: null
+    };
+    
+    Visualforce.remoting.timeout = 120000;
+
+    graService.getFirstStudySurveyQuestion = function(studyId, surveyId, callback){
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.graAppRemoter.getFirstStudySurveyQuestion}',
+            studyId, surveyId,
+            function(result, event){
+                callback(null, {result: result, event: event});
+            }, 
+            {escape: true}
+        );    
+    }
+    
+    graService.submitStudySurveyAnswer = function(studyId, surveyId, surveyQuestionId, surveyAnswer, surveyData, callback){
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.graAppRemoter.submitStudySurveyAnswer}',
+            studyId, surveyId, surveyQuestionId, surveyAnswer, surveyData,
+            function(result, event){
+                callback(null, {result: result, event: event});
+            }, 
+            {escape: true}
+        );    
+    }    
+
+    graService.getQualtricsDistributionLink = function(studyAccountId, callback){
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.QualtricsApiController.getQualtricsDistributionLink}',
+            studyAccountId,
+            function(result, event){
+                callback(null, {result: result, event: event});
+            }, 
+            {escape: true}
+        );    
+    }
+
+    graService.setLastLogin= function(contactId, studyContactId, callback) {
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.graAppRemoter.setLastLogin}',
+            contactId, studyContactId,
+            function(result, event){
+                var returnObj = {
+                    result: result,
+                    event: event
+                }
+                callback(null, returnObj);
+                return returnObj;                
+            }, 
+            {escape: true}
+        );            
+    }
+    
+    graService.sendEmail= function(subject, description, isPillar3, callback) {
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.graAppRemoter.sendEmail}',
+            subject, description, isPillar3,
+            function(result, event){
+                var returnObj = {
+                    result: result,
+                    event: event
+                }
+                callback(null, returnObj);
+                return returnObj;                
+            }, 
+            {escape: true}
+        );            
+    }
+    
+    graService.fetchAllUpdates= function(callback) {
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.graAppRemoter.fetchAllUpdates}',
+            function(result, event){
+                var returnObj = {
+                    result: result,
+                    event: event
+                }
+                callback(null, returnObj);
+                return returnObj;                
+            }, 
+            {escape: true}
+        );            
+    } 
+    
+    graService.getRelatedStudies= function(studyId, callback) {
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.graAppRemoter.getRelatedStudies}',
+            studyId,
+            function(result, event){
+                var returnObj = {
+                    result: result,
+                    event: event
+                }
+                callback(null, returnObj);
+                return returnObj;                
+            }, 
+            {escape: true}
+        );            
+    } 
+    
+    graService.fetchGBIUpdate= function(updateId, callback) {
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.graAppRemoter.fetchGBIUpdate}',
+            updateId,
+            function(result, event){
+                var returnObj = {
+                    result: result,
+                    event: event
+                }
+                callback(null, returnObj);
+                return returnObj;                
+            }, 
+            {escape: true}
+        );            
+    }
+    
+    
+    graService.updateUserEmail= function(emailAddress, callback) {
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.graAppRemoter.updateUserEmail}',
+            emailAddress,
+            function(result, event){
+                var returnObj = {
+                    result: result,
+                    event: event
+                }
+                callback(null, returnObj);
+                return returnObj;                
+            }, 
+            {escape: true}
+        );            
+    }    
+    
+    graService.updateContactInfo= function(firstName, lastName, title, phone, altphone, email, callback) {
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.graAppRemoter.updateContactInfo}',
+            firstName, lastName, title, phone, altphone, email,
+            function(result, event){
+                var returnObj = {
+                    result: result,
+                    event: event
+                }
+                callback(null, returnObj);
+                return returnObj;                
+            }, 
+            {escape: true}
+        );            
+    }    
+    
+    graService.setUserPhoto= function(attachmentId, callback) {
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.graAppRemoter.setUserPhoto}',
+            attachmentId,
+            function(result, event){
+                var returnObj = {
+                    result: result,
+                    event: event
+                }
+                callback(null, returnObj);
+                return returnObj;                
+            }, 
+            {escape: true}
+        );            
+    } 
+    
+    graService.removeUserPhoto= function(callback) {
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.graAppRemoter.removeUserPhoto}',
+            function(result, event){
+                var returnObj = {
+                    result: result,
+                    event: event
+                }
+                callback(null, returnObj);
+                return returnObj;                
+            }, 
+            {escape: true}
+        );            
+    }    
+    
+    graService.uploadAttachment = function(fileText, fileName, positionIndex, attachmentId, callback) {
+        
+        var maxStringSize = 6000000;    //Maximum String size is 6,000,000 characters
+        var maxFileSize = 4350000;      //After Base64 Encoding, this is the max file size
+        var chunkSize = 950000;         //Maximum Javascript Remoting message size is 1,000,000 characters
+        var fileSize = fileText.length;
+        var chunck = null;
+        var attachmentBody = null;
+        var doneUploading = false;
+        
+        if(fileSize <= positionIndex + chunkSize) {
+            attachmentBody = fileText.substring(positionIndex);
+            doneUploading = true;
+        } else {
+            attachmentBody = fileText.substring(positionIndex, positionIndex + chunkSize);
+        }
+        console.log("Uploading " + attachmentBody.length + " chars of " + fileSize);    
+        
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.graAppRemoter.uploadAttachment}',
+            attachmentId, attachmentBody, fileName,
+            function(result, event){
+                console.log(result);
+                if(event.type === 'exception') {
+                    console.log("exception");
+                    console.log(event);
+                    var returnObj = {
+                        result: result,
+                        event: event
+                    }
+                    callback(null, returnObj);
+                    return returnObj;      
+                } else if(event.status) {
+                    if(result.substring(0,3) == '00P') {
+                        if(doneUploading == true) {
+                            var returnObj = {
+                                result: result,
+                                event: event
+                            }
+                            callback(null, returnObj);
+                            return returnObj;      
+                        } else {
+                            positionIndex += chunkSize;
+                            graService.uploadAttachment(fileText, fileName, positionIndex, result, callback)
+                        }
+                    }
+                } else {
+                    console.log(event.message);
+                }          
+            }, 
+            {buffer: true, escape: true, timeout: 120000}
+        );            
+    }        
+    
+    graService.submitCase= function(subject, body, callback) {    
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.graAppRemoter.submitCase}',
+            subject, body,
+            function(result, event){
+                var returnObj = {
+                    result: result,
+                    event: event
+                }
+                callback(null, returnObj);
+                return returnObj;                
+            }, 
+            {escape: true}
+        );            
+    }
+    
+    graService.submitDP= function(studyId, invoiceEmail, paymentAgreedAmount, callback) {    
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.graAppRemoter.submitDP}',
+            studyId, invoiceEmail, paymentAgreedAmount,
+            function(result, event){
+                var returnObj = {
+                    result: result,
+                    event: event
+                }
+                callback(null, returnObj);
+                return returnObj;                
+            }, 
+            {escape: true}
+        );            
+    }
+    
+    graService.submitPillar3Attestation= function(callback) {    
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.graAppRemoter.submitPillar3Attestation}',
+            function(result, event){
+                var returnObj = {
+                    result: result,
+                    event: event
+                }
+                callback(null, returnObj);
+                return returnObj;                
+            }, 
+            {escape: true}
+        );            
+    }
+    
+    graService.submitData= function(studyRoundId, callback) {    
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.graAppRemoter.submitData}',
+            studyRoundId,
+            function(result, event){
+                var returnObj = {
+                    result: result,
+                    event: event
+                }
+                callback(null, returnObj);
+                return returnObj;                
+            }, 
+            {escape: true}
+        );            
+    }
+    
+    
+    graService.submitVote= function(voteId, questionId, answer, callback) {    
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.graAppRemoter.submitVote}',
+            voteId, questionId, answer,
+            function(result, event){
+                var returnObj = {
+                    result: result,
+                    event: event
+                }
+                callback(null, returnObj);
+                return returnObj;                
+            }, 
+            {escape: true}
+        );            
+    }
+    
+    
+    graService.fetchUserData= function(callback) {    
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.graAppRemoter.fetchUserData}',
+            function(result, event){
+                var returnObj = {
+                    result: result,
+                    event: event
+                }
+                callback(null, returnObj);
+                return returnObj;
+            }, 
+            {escape: true}
+        );            
+    }
+    
+    
+    graService.loadSFUploadLink = function(studyId, callback) {
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.graAppRemoter.loadSFUploadLink}',
+            studyId,
+            function(result, event) {
+                var returnObj = {
+                    result: result,
+                    event: event
+                }
+                callback(null, returnObj);
+                return returnObj;
+            }, 
+            {escape: true}
+        );            
+    }
+
+    graService.getStudySurveyQuestion = function(studyId, surveyId, questionId, surveyData, callback) {
+      Visualforce.remoting.Manager.invokeAction(
+          '{!$RemoteAction.graAppRemoter.getStudySurveyQuestion}',
+          studyId, surveyId, questionId, surveyData,
+          function(result, event) {
+              var returnObj = {
+                  result: result,
+                  event: event
+              }
+              callback(null, returnObj);
+              return returnObj;
+          }, 
+          {escape: true}
+      );   
+    }
+    
+    graService.commitSurveyData = function(studyId, surveyId, surveyData, callback) {
+      Visualforce.remoting.Manager.invokeAction(
+          '{!$RemoteAction.graAppRemoter.commitSurveyData}',
+          studyId, surveyId, surveyData,
+          function(result, event) {
+              var returnObj = {
+                  result: result,
+                  event: event
+              }
+              callback(null, returnObj);
+              return returnObj;
+          }, 
+          {escape: true}
+      );   
+    }
+    
+    graService.getPillar3Filters = function(callback) {
+      Visualforce.remoting.Manager.invokeAction(
+          '{!$RemoteAction.graAppRemoter.getPillar3Filters}',
+          function(result, event) {
+              var returnObj = {
+                  result: result,
+                  event: event
+              }
+              callback(null, returnObj);
+              return returnObj;
+          }, 
+          {escape: true}
+      );   
+    }
+    
+    graService.getPillar3Menu = function(callback) {
+      Visualforce.remoting.Manager.invokeAction(
+          '{!$RemoteAction.graAppRemoter.getPillar3Menu}',
+          function(result, event) {
+              var returnObj = {
+                  result: result,
+                  event: event
+              }
+              callback(null, returnObj);
+              return returnObj;
+          }, 
+          {escape: true}
+      );   
+    }
+    
+    graService.getPillar3Notifications = function(callback) {
+      Visualforce.remoting.Manager.invokeAction(
+          '{!$RemoteAction.graAppRemoter.getPillar3Notifications}',
+          function(result, event) {
+              var returnObj = {
+                  result: result,
+                  event: event
+              }
+              callback(null, returnObj);
+              return returnObj;
+          }, 
+          {escape: true}
+      );   
+    }
+    </script>
+</apex:page>

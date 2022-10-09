@@ -1,0 +1,23 @@
+<apex:component selfClosing="true"
+                controller="uploadPhoto"
+                allowDML="true">
+    <apex:attribute name="subject" type="Id"
+                    assignTo="{!userId}"
+                    required="true"
+                    description="The User ID for the community user"/>
+    
+    <apex:form >
+        <apex:image value="{!largePhotoUrl}" rendered="true" />
+        <br/>
+        <apex:inputFile value="{!blobValue}"
+                        contentType="{!contentType}"
+                        fileName="{!filename}"/>
+        <br/>
+        <apex:commandButton value="Upload"
+                            action="{!upload}"/>&nbsp;
+        <apex:commandButton value="Remove"
+                            action="{!removePhoto}"/>
+                            
+                            
+    </apex:form>
+</apex:component>

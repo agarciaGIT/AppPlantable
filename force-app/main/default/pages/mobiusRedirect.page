@@ -1,0 +1,3 @@
+<apex:page standardStylesheets="false" sidebar="false" showHeader="false" controller="mobiusRedirectController" action="{!redirect}">
+    Logging In...
+</apex:page>

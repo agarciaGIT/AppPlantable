@@ -1,0 +1,40 @@
+<apex:page standardController="Lead" extensions="BackupExamRegistrationController"> 
+    <apex:form >
+        <apex:actionPoller enabled="{!enabled}" action="{!checkBatchStatus}" reRender="status, leads, failures, statusDetails" interval="5"/>
+        <apex:pageBlock >
+            
+            <apex:pageBlockSection title="Backup Exam Registration Import Tool" collapsible="false" columns="1">
+                <apex:pageBlockSectionItem >
+                	<apex:outputLabel value="Execute in Terminal" for="instructions"/>
+					<span id="instructions">
+                     mongoexport -h ds131774-a0.mnv62.fleet.mlab.com:31774 -d exam_registrations -c registrations -u produser2 -p "iIJO78g7uy8^T&amp;%^R%R76t%ftfytf5" -o registrations.json --jsonArray --pretty
+                    </span>	
+                </apex:pageBlockSectionItem>
+                <apex:inputTextarea label="JSON Data" value="{!jsonString}" cols="100" rows="10"/>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="" for="startJob"/>
+                	<apex:commandButton value="Start Import" action="{!startJob}" id="startJob"/>
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+            
+            <apex:pageBlockSection title="Batch Status" collapsible="false" columns="1">
+                <apex:outputText label="Batch Status" value="{!status}" id="status" />       
+               	<apex:outputText label="Failures" value="{!batchJob.NumberOfErrors}" id="failures"/>
+                <apex:outputText label="Status Details" value="{!batchJob.ExtendedStatus}" id="statusDetails"/>  
+            </apex:pageBlockSection>
+            
+            <apex:pageBlockSection title="Batch Output Log" collapsible="false" columns="1">
+                <apex:pageBlockTable value="{!leads}" var="lead" id="leads">
+                    <apex:column value="{!lead.Id}"/>
+                    <apex:column value="{!lead.Name}"/>
+                    <apex:column value="{!lead.Email}"/>
+                    <apex:column value="{!lead.Backup_Exam_Registration_MongoDB_OID__c}"/>
+                    <apex:column value="{!lead.Backup_Exam_Registration_Import_Failed__c}"/>
+                    <apex:column value="{!lead.Backup_Exam_Registration_Logging__c}"/>
+                    <apex:column value="{!lead.LastModifiedDate}"/>
+                </apex:pageBlockTable>
+            </apex:pageBlockSection>
+            
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

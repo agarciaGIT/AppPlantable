@@ -1,0 +1,94 @@
+<apex:page controller="DeferralExtensionRequestCtrl" standardStylesheets="false" sidebar="false" showHeader="false">
+    
+    <apex:slds />
+    
+    <apex:variable var="envPath" value="{!URLFOR($Resource.sfdcApp)}" />
+    <apex:variable var="envPathFonts" value="{!URLFOR($Resource.sfdcAppFonts)}" />
+    <apex:stylesheet value="{!envPathFonts}/css/global_variables.css" />
+    <apex:stylesheet value="{!envPathFonts}/css/sfdcApp.css" />
+    <apex:form >
+        <div class="slds-scope full-height">
+            
+            <div class="angle-container bottom">
+                <div class="angle"></div>
+            </div>
+            
+            <div 
+                 style="background:#081A31; height: 64px; width: 100%; position: fixed; z-index: 100000; top: 0px;"   
+                 class="slds-grid slds-p-around_large slds-text-align_center"
+                 >
+                <span style="margin: 0 auto;">
+                    <img style="height: 3rem; cursor: pointer;" src="{!envPath}/img/logos/garp-full-png.png"/>
+                </span>
+            </div>
+            
+            <section class="slds-p-bottom_xx-large">
+                <div style="box-shadow: 0px 3px 10px 5px rgba(0, 0, 0, 0.1); background: #fff;" class="slds-grid slds-wrap slds-container_center slds-container_small slds-container_x-large slds-p-around_x-large">
+                    
+                    <div class="slds-col slds-size_12-of-12 slds-text-align_center">
+                        <h1>
+                            Deferral Extension Request
+                        </h1>   
+                    </div>
+
+                    <apex:outputPanel id="checkmarkContainer" style="width: 100%;">
+                        <apex:outputPanel rendered="{!submitted}"> 
+                            <div class="slds-col slds-size_12-of-12 slds-m-top_xx-large slds-text-align_center slds-p-around_xx-large">
+                                <img src="{!envPath}/img/exam-registration/checkmark-icon.png" /> 
+                            </div>       
+                            <div class="slds-col slds-size_12-of-12 slds-m-around_xx-large slds-text-align_center">
+                                <h3>
+                                    Thank you, your request has been submitted.
+                                </h3>
+                            </div>
+                        </apex:outputPanel>
+                    </apex:outputPanel>
+                    
+                    <apex:outputPanel id="messageContainer" style="width: 100%;">
+                        <apex:outputPanel rendered="{!message != null}">
+                            <div class="slds-col slds-size_12-of-12 slds-text-align_center">
+                                <h3>
+                                    {!message}
+                                </h3>
+                            </div>
+                        </apex:outputPanel>
+                    </apex:outputPanel>
+                    
+                    <apex:outputPanel id="actionContainer" style="width: 100%;">
+                        <apex:outputPanel rendered="{! AND(contact != null, NOT(submitted), message == null) }">
+                            <div class="slds-col slds-size_12-of-12">
+                                <p class="slds-m-vertical_large">            
+                                    The May 16, 2020 exam has been postponed to October 24, 2020. However, GARP can defer your exam for free if you prefer.  Would you like to sit for the exam on:
+                                </p>
+                                <article class="slds-card slds-m-bottom_large">
+                                    <fieldset class="slds-card__body slds-p-around_large">
+                                        <div class="slds-form-element">
+                                            <label class="slds-form-element__label">
+                                                * Exam Deferral Date
+                                            </label>
+                                            <div class="slds-form-element__control">
+                                                <div class="slds-select_container">
+                                                    <apex:selectList styleClass="slds-select" size="1" value="{!examDeferralDate}">
+                                                        <apex:selectOptions value="{!options}" />
+                                                    </apex:selectList>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </fieldset>
+                                </article>
+                                <p class="slds-m-vertical_large"> 
+                                    Please make your selection by April 15, 2020 (11:59PM Eastern Standard Time).           
+                                </p>
+                                <div class="slds-p-top_small" style="text-align: right;">
+                                    <apex:commandButton styleClass="slds-button slds-button_brand" value="SUBMIT" action="{!submit}" reRender="checkmarkContainer, messageContainer, actionContainer"/>
+                                </div>
+                            </div>
+                        </apex:outputPanel>
+                    </apex:outputPanel>
+
+                </div>
+            </section>
+        </div>
+    </apex:form>
+    
+</apex:page>

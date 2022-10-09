@@ -1,0 +1,177 @@
+<!--    Visualforce page - dynamic SCR Certificate as PDF
+        05/20/2020 Matt M. - [US-32768] CPD Certificates for SCR, FRM, ERP as dowbnloadable PDF.
+-->
+
+<apex:page controller="CPDCertificateCtrl"
+  showHeader="false"
+  sidebar="false"
+  showChat="false"
+  standardStylesheets="false"
+  applyhtmltag="false"
+  applyBodyTag="false"
+  renderAs="pdf"
+>
+  <apex:stylesheet value="https://cloud.typography.com/7208894/718528/css/fonts.css"
+  />
+  <apex:variable var="envPath" value="{!URLFOR($Resource.sfdcApp)}" />
+
+  <html>
+    <head>
+      <title>SCR Certificate | GARP</title>
+      <style type="text/css" media="print">
+        @page {
+          size: landscape;
+        }
+
+        body {
+          font-family: "Gotham A", "Gotham B", "Gotham", Tahoma, Helvetica,
+            sans-serif;
+          font-weight: normal;
+          margin: 0 auto;
+          text-align: center;
+        }
+
+        h1,
+        h2,
+        h3 {
+          text-transform: uppercase;
+          z-index: 1000;
+        }
+
+        img.garp_bg_logo {
+          position: absolute;
+          width: auto;
+          height: 700px;
+          margin: 0;
+          padding: 0;
+          object-fit: cover;
+          z-index: 10;
+        }
+
+        .page-container.cpd {
+          position: relative;
+          border: 12px solid rgb(62, 61, 61);
+          height: 678px;
+        }
+
+        .cert-body {
+          position: relative;
+          z-index: 100;
+        }
+
+        .bold {
+          font-weight: 700;
+        }
+        .bold.signed {
+          margin-bottom: 0;
+        }
+        .saffron {
+          color: rgb(252, 181, 21);
+        }
+        .cert-footer {
+          margin-top: 36px;
+        }
+        .cert-footer > div.signature {
+          position: relative;
+          float: left;
+          width: 50%;
+          margin: 0 auto;
+          font-size: 15px;
+          padding-top: 18px;
+          text-transform: uppercase;
+        }
+        .cert-footer > div.signature img {
+          position: relative;
+          z-index: 1;
+        }
+      </style>
+    </head>
+    <body>
+      <img
+        src="{!URLFOR($Resource.CPDImagesERP,'logo.png')}"
+        class="garp_bg_logo"
+      />
+      <div class="container page-container cpd">
+        <div id="spin"></div>
+
+        <div class="cert-body">
+          <img
+            src="{!URLFOR($Resource.CPDImagesERP,'CPD_ERP.png')}"
+            alt="GARP CPD ERP logo"
+            style="height: 60px; margin-top: 30px;"
+          />
+
+          <h3 style="margin: 18px;">
+            Global Association of Risk Professionals
+          </h3>
+
+          <p style="margin-bottom: 18px;">acknowledges that</p>
+
+          <h1 style="font-weight: 300;">{!firstName} {!lastname}, ERP</h1>
+
+          <p style="margin-bottom: 0px;">GARP ID: {!garpId}</p>
+          <p style="margin-top: 0px;">
+            has successfully completed the requirements established in the
+          </p>
+
+          <h2>Continuing Professional Development (CPD) Program</h2>
+
+          <p>
+            and is recognized as maintaining the highest level of professional 
+            <br />integrity and competency in risk
+            management for the years {!cycle}
+          </p>
+        </div>
+
+        <div class="cert-footer">
+          <div class="signature">
+            <div
+              style="
+                display: block;
+                margin: 0 auto;
+                margin-top: none;
+                margin-left: 60px;
+              "
+            >
+              <apex:image url="{!envPath}/img/RichardApostolik.png"
+                alt="Richard Apostolik"
+                height="75px"
+              />
+              <p class="bold signed">Richard Apostolik</p>
+              <p style="margin-top: 0px;">
+                <em
+                  ><small>President <br />and CEO</small></em
+                >
+              </p>
+            </div>
+          </div>
+
+          <div class="signature">
+            <div
+              style="
+                display: block;
+                margin: 0 auto;
+                margin-top: 12px;
+                margin-right: 60px;
+              "
+            >
+              <apex:image url="{!envPath}/img/WilliamMay.png"
+                alt="William May"
+                height="60px"
+              />
+              <p class="bold signed">William May</p>
+              <p style="margin-top: 0px;">
+                <em
+                  ><small
+                    >Senior Vice President <br />Global Head of Certifications
+                    <br />and Educational Programs</small
+                  ></em
+                >
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </body>
+  </html>
+</apex:page>

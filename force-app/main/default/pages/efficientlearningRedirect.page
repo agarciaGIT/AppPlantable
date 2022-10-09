@@ -1,0 +1,267 @@
+<apex:page standardStylesheets="false" sidebar="false" showHeader="false" controller="efficientLearningRedirectController">
+
+    <apex:form >
+        <apex:actionFunction action="{!callUpdateStatus}" name="updateStatus" rerender="submitFormArea"/>
+    </apex:form>
+    
+    <script src="https://qa.efficientlearning.com/lti/resource/jquery-1.11.0.min.js"></script>
+    <script src="https://qa.efficientlearning.com/lti/resource/hmac-sha1.js"></script>
+    <script src="https://qa.efficientlearning.com/lti/resource/enc-base64.js"></script>
+    <script src="https://qa.efficientlearning.com/lti/resource/enc-utf16.js"></script>
+    <script src="https://qa.efficientlearning.com/lti/resource/core.js"></script>
+
+    <script>
+        window._encodeURIComponent = window.encodeURIComponent;
+        window.encodeURIComponent = function(s) {
+            return window._encodeURIComponent(s).replace(/\(/g, "%28").replace(/\)/g, "%29");
+    
+        };
+    
+        function getInputMap() {
+            var map = [];
+    
+            var inputs = $('#lti_form').find('input[type!=submit]');
+    
+            //var select = $('#custom_course_guid');
+    
+            for (var i = 0; i < inputs.length; i++) {
+    
+                var input = inputs[i];
+    
+                map.push([input.name, input.value]);
+    
+            }
+    
+            //map.push([select[0].name, select.val()]);
+    
+            console.log(map);
+    
+            debugger;
+    
+            return map;
+    
+        }
+    
+    
+    
+        function generateNonce(length) {
+    
+            var text = "";
+    
+            var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    
+    
+    
+            for (var i = 0; i < length; i++)
+    
+                text = text + possible.charAt(Math.floor(Math.random() * possible.length));
+    
+    
+    
+            return text;
+    
+        }
+    
+    
+    
+        function sortMap(map) {
+    
+            var keys = map.map(function(el) {
+    
+                return el[0];
+    
+            });
+    
+            var sortedArray = [];
+    
+            keys.sort();
+    
+            keys.map(function(el) {
+    
+                map.map(function(innerEl) {
+    
+                    if (el == innerEl[0]) {
+    
+                        sortedArray.push(innerEl)
+    
+                    }
+    
+                });
+    
+            });
+    
+            return sortedArray;
+    
+        }
+    
+    
+    
+        function getBaseString() {
+    
+            var baseString = '';
+    
+            var method = $('#lti_form').attr('method');
+    
+            if (method.length == 0) {
+    
+                alert("error: method could not be located");
+    
+            }
+    
+            baseString = method.toUpperCase();
+    
+    
+    
+            $("#lis_person_name_family").val($("#lis_person_name_full").val());
+    
+            $("#lis_person_name_given").val($("#lis_person_name_full").val());	
+    
+                
+    
+            //$("#custom_content_guid").val($("#custom_course_guid").val());
+    
+            $("#context_title").val($( "#custom_course_guid option:selected" ).text());
+    
+            $("#context_id").val($("#custom_course_guid").val());
+    
+            var url = $('#lti_form').attr('action');
+    
+            var urlEncoded = encodeURIComponent(url);
+    
+            baseString = baseString + "&" + urlEncoded;
+    
+    
+    
+            // concat var string
+    
+            var map = sortMap(getInputMap());
+    
+            var inputMapString = '';
+    
+            for (var i = 0; i < map.length; i++) {
+    
+                var key = map[i][0];
+    
+                var val = map[i][1];
+    
+    
+    
+                if (key == 'oauth_signature') {
+    
+                    continue;
+    
+                }
+    
+    
+    
+                inputMapString = inputMapString + '&' + encodeURIComponent(key) + '=' + encodeURIComponent(val);
+    
+            }
+    
+            if (inputMapString.length > 0) {
+    
+                inputMapString = inputMapString.substring(1);
+    
+                inputMapString = encodeURIComponent(inputMapString);
+    
+            }
+    
+            baseString = baseString + '&' + inputMapString;
+    
+            return baseString;
+    
+        }
+    
+    
+    
+        function updateSignature() {
+    
+            var text = getBaseString();
+    
+            var client_secret = $('#oauth_secret').val();
+    
+            var key = client_secret + "&" + '';
+    
+            var signature = CryptoJS.HmacSHA1(text, key);
+    
+            var base64_signature = signature.toString(CryptoJS.enc.Base64);
+    
+    
+    
+            $('#oauth_signature').val(base64_signature);
+    
+        }
+    
+    
+    
+        function updateStuff() {
+    
+            $('#oauth_nonce').val(generateNonce(15));
+    
+            $('#oauth_timestamp').val(Math.floor(new Date().getTime() / 1000));
+    
+            updateSignature();
+    
+    
+    
+        }
+    </script>
+    
+    <apex:pageBlock id="loadingStatus">
+        <div id='loadingStatus'>
+            Loading...
+        </div>
+    </apex:pageBlock>
+    <form id="lti_form" action="https://ltiqa.efficientlearning.com/lti/lti/launch" method="post" enctype="application/x-www-form-urlencoded">
+   
+            <!-- fixed LTI global parameters -->
+            <input id="oauth_secret" name="oauth_secret" type="hidden" value="{!OAuth_Secret}" />
+    
+            <input id="oauth_version" name="oauth_version" type="hidden" value="1.0" />
+            <input id="oauth_signature_method" name="oauth_signature_method" type="hidden" value="HMAC-SHA1" />
+    
+            <!-- fixed CAClub global shared parameters HMAC-SHA1-->
+            <input id="oauth_consumer_key" name="oauth_consumer_key" type="hidden" value="{!OAuth_Consumer_Key}" />
+            <input id="roles" name="roles" type="hidden" value="urn:lti:role:ims/lis/Learner" />
+    
+			<input id="user_id" name="user_id" type="hidden" value="{!user_id}" />
+            <input id="lis_person_contact_email_primary" name="lis_person_contact_email_primary" type="hidden" value="{!lis_person_contact_email_primary}" />
+            <input id="lis_person_name_full" name="lis_person_name_full" type="hidden" value="{!lis_person_name_full}" />
+            <input id="custom_course_guid" name="custom_course_guid" type="hidden" value="{!Custom_Course_GUID}" />
+    
+            <input id="lis_person_name_family" name="lis_person_name_family" type="hidden" value="{!lis_person_name_family}" />
+            <input id="lis_person_name_given" name="lis_person_name_given" type="hidden" value="{!lis_person_name_given}" />
+            <input id="custom_content_guid" name="custom_content_guid" type="hidden" value="{!Custom_Content_GUID}" />
+            <input id="custom_action" name="custom_action" type="hidden" value="course" />
+            <input id="oauth_nonce" name="oauth_nonce" type="hidden" />
+            <input id="oauth_timestamp" name="oauth_timestamp" type="hidden" />
+            <input id="oauth_signature" name="oauth_signature" type="hidden" />
+            <input id="context_id" name="context_id" type="hidden" value="{!Context_ID}" />
+            <!--They need to send different context_id for multiple sessions of same course -->
+            <input id="context_title" name="context_title" type="hidden" />
+    
+            <!-- input type="submit" value="Search" / -->
+    </form>
+    
+    <apex:outputPanel id="submitFormArea">
+        <apex:outputPanel rendered="{!submitForm}">
+            <script>
+            document.getElementById("lti_form").submit();
+            </script>
+        </apex:outputPanel>
+    </apex:outputPanel>
+    
+    
+    
+    <script type="text/javascript">
+        updateStuff();
+        
+    	var emailAddress = $('#lis_person_contact_email_primary').val();
+    	if (typeof emailAddress !== "undefined" && emailAddress !== null && emailAddress.length > 0) {
+            updateStatus();
+            //document.getElementById("lti_form").submit();
+        } else {
+        	$('#loadingStatus').html("There was an issue accessing the learning system. Please logout and try again.<br>If this problem persists please contact memberservices@garp.com.");
+        }
+    </script> 
+</apex:page>

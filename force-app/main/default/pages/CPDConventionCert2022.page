@@ -1,0 +1,92 @@
+<!--    Visualforce page - dynamic CPD Certificate for Non certified attendant as PDF
+        03/7/2022 Rarazi - [US-50280] Automate Attendance Certificate for Convention for CPD Non certified attendant
+-->
+<apex:page standardController="Certificate_of_Attendance__c"
+  showHeader="false"
+  sidebar="false"
+  showChat="false"
+  standardStylesheets="false"
+  applyhtmltag="false"
+  applyBodyTag="false"
+  renderAs="pdf"
+>
+  <apex:stylesheet value="https://cloud.typography.com/7208894/718528/css/fonts.css"/>
+  <apex:variable var="envPath" value="{!URLFOR($Resource.sfdcApp)}"/>
+  <html>
+    <head>
+      <title>CPD Certificate | GARP</title>
+      <style type="text/css" media="print">
+		@page { size: portrait; margin: 0; size: A4; @top-center { content: element(header); } @bottom-center { content: element(footer);} }
+		p { margin: 0; padding: 0;}	
+            .ft10{font-size:18px;font-family:Tahoma;color:#081b2f;}
+            .ft11{font-size:31px;font-family:Tahoma;color:#081b2f;}
+            .ft12{font-size:35px;font-family:Tahoma;color:#081b2f;}
+            .ft13{font-size:17px;font-family:Tahoma;color:#081b2f;}
+            .ft14{font-size:18px;font-family:Tahoma;color:#081b2f;}
+            .ft15{font-size:15px;font-family:Tahoma;color:#005173;}
+            .ft16{font-size:8px;font-family:Tahoma;color:#005173;}
+        div.header 
+        {
+        	margin-bottom: .5in;
+          	width: 100%;
+        }
+        div.footer 
+        {           
+          position: fixed;
+          bottom: 0;
+          clear: both;
+          padding-top: 15px;
+          float:left;
+          width:100%;
+          height: 160px;
+        }
+        body
+        { 
+          	font-family: "Gotham A", "Gotham B", "Gotham", Tahoma, Helvetica, sans-serif; 
+          	font-weight: normal; 
+          	margin: 0;
+          	text-align: center;
+          	background-color: #f2fafd;
+        }
+        h1, h2, h3 { text-transform: uppercase; z-index: 1000; margin: 0; padding: 0;}
+        .bold { font-weight: 700; }
+      </style>
+    </head>
+    <body>
+		<div class="header">
+      		<apex:image url="{!$Resource.CPDCertTop}" width="860px" height="300px"/>
+        </div> 
+      	<div class="cert-body">
+        	<p style="margin-bottom: 18px;">THIS CERTIFICATE VERIFIES THAT</p>
+        	<br />
+			<h2 style="margin-bottom: 18px;">{!Certificate_of_Attendance__c.First_Name__c} {!Certificate_of_Attendance__c.Last_Name__c}</h2>
+       		<br />
+        	<p style="margin-bottom: 18px;">ATTENDED THE</p>
+        	<br />
+			<h1 style="margin-bottom: 18px;">GARP RISK CONVENTION</h1>
+         	<br />
+         	<p style="margin-bottom: 18px;">
+                ON&nbsp;
+                <apex:outputText value="{0,date,MM.dd.yyyy}">
+                   <apex:param value="{!Certificate_of_Attendance__c.Date__c}"/>
+                </apex:outputText>
+            </p>
+         	<br /><br />
+         	<p style="margin-bottom: 18px;">{!FLOOR(Certificate_of_Attendance__c.CPD_Points__c)} CREDITS HAVE BEEN EARNED FOR</p>
+         	<br />
+         	<h3 style="margin-bottom: 18px;">CONTINUING PROFESSIONAL DEVELOPMENT (CPD)</h3>
+          	<br />
+          	<p style="margin-bottom: 18px;">RISK MANAGEMENT AND FINANCIAL MARKETS AND PRODUCTS</p>
+          	<br /><br />
+          	<p style="margin-bottom: 18px;"></p>
+          	<p style="margin: 0px; " class="ft15">VERIFIED BY THE</p>
+          	<p style="margin: 0px; " class="ft15">GLOBAL ASSOCIATION OF RISK PROFESSIONALS</p>
+          	<p style="margin: 0px; " class="ft15">111 TOWN SQUARE PLACE, 14<sup>TH</sup>  FLOOR, JERSEY CITY, NJ 07310</p>
+          	<p style="margin: 0px; " class="ft15">1.201.719.7210, CPD@GARP.COM</p>
+        </div>
+        <div class="footer">
+      		<apex:image url="{!$Resource.CPDCertBottom}" width="860px" height="300px"/>
+        </div> 
+    </body>
+  </html>
+</apex:page>

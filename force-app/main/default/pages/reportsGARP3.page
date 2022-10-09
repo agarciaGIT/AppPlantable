@@ -1,0 +1,107 @@
+<apex:page standardStylesheets="false" sidebar="false" showHeader="false" controller="reportsGARP" applyBodyTag="false" cache="false" applyHtmlTag="false" docType="html-5.0">
+
+    <!-- apex:variable var="envPath" value="{!URLFOR($Resource.reportsGARP2)}" / -->    
+    <!-- apex:variable var="envPathLib" value="{!URLFOR($Resource.reportsGARPLib2)}" / --> 
+    <!-- apex:variable var="envPathLibA" value="{!URLFOR($Resource.reportsGARPLibA)}" / -->     
+
+    <apex:variable var="envPath" value="http://127.0.0.1:8080"/>    
+    <apex:variable var="envPathLib" value="http://127.0.0.1:8080" /> 
+    <apex:variable var="envPathLibA" value="http://127.0.0.1:8080" /> 
+    
+
+<html xmlns:ng="https://angularjs.org" ng-app="reportsGARP" lang="en">
+<head>
+    
+
+    <link href="{!envPath}/css/bootstrap.garp.css" rel="stylesheet"/>
+    <link href="{!envPath}/css/reportsGARP.css" rel="stylesheet"/>    
+    <link href="{!envPathLib}/lib/ui-grid/ui-grid.min.css" rel="stylesheet"/>
+    <link href="{!envPathLib}/lib/calendar/css/angular-bootstrap-calendar.min.css" rel="stylesheet" />
+    
+    <link rel="stylesheet" href="{!envPathLibA}/libA/jquery-minicolors/jquery.minicolors.css" />
+
+    
+    <apex:include pageName="reportsGARPServices1"/> 
+
+    <apex:includeScript value="{!envPathLib}/lib/jquery.min.js"/>
+
+    <apex:includeScript value="{!envPathLib}/lib/angular.min.js"/>
+  
+  <apex:includeScript value="{!envPathLib}/lib/underscore.js"/>
+  <apex:includeScript value="{!envPathLib}/lib/spin.min.js"/>
+  <apex:includeScript value="{!envPathLib}/lib/moment.min.js"/>
+  <apex:includeScript value="{!envPathLib}/lib/moment-timezone-with-data-2010-2020.min.js"/>
+  <apex:includeScript value="{!envPathLib}/lib/simple-excel.js"/>
+  <apex:includeScript value="{!envPathLib}/lib/angular-ui-router.min.js"/>
+  <apex:includeScript value="{!envPathLib}/lib/ui-bootstrap/ui-bootstrap-tpls-0.10.0.js"/>
+
+    <apex:includeScript value="{!envPathLib}/lib/underscore.js"/>
+    <apex:includeScript value="{!envPathLib}/lib/jsforce.min.js"/>
+    <apex:includeScript value="{!envPathLib}/lib/require.min.js"/>    
+    
+    <apex:includeScript value="{!envPathLib}/lib/async.js"/>
+    <apex:includeScript value="{!envPathLib}/lib/calendar/angular-bootstrap-calendar.js"/>
+      
+    <apex:includeScript value="{!envPathLib}/lib/underscore.js"/>
+    <apex:includeScript value="{!envPathLib}/lib/ui-grid/ui-grid.min.js"/>
+    
+    <apex:includeScript value="{!envPathLib}/lib/DlhSoft/DlhSoft.Kanban.Angular.Components.js"/>
+    <link rel="stylesheet" href="{!envPathLib}/lib/DlhSoft/DlhSoft.Kanban.Angular.Components.css" type="text/css" />    
+    
+    <script src="{!envPathLibA}/libA/jquery-minicolors/jquery.minicolors.js"></script>    
+    <script src="{!envPathLibA}/libA/jquery-minicolors/angular-minicolors.js"></script>    
+    
+    <apex:includeScript value="{!envPath}/js/app.js"/>
+    <apex:includeScript value="{!envPath}/js/services.js"/>
+    <apex:includeScript value="{!envPath}/js/services/stackedBarService.js"/>
+    <apex:includeScript value="{!envPath}/js/services/graphService.js"/>    
+    <apex:includeScript value="{!envPath}/js/services/gridService.js"/> 
+    <apex:includeScript value="{!envPath}/js/services/stackedLineService.js"/> 
+    <apex:includeScript value="{!envPath}/js/controllers/mainCtrl.js"/>
+    <apex:includeScript value="{!envPath}/js/controllers/examCtrl.js"/>      
+    <apex:includeScript value="{!envPath}/js/controllers/examColorsCtrl.js"/>      
+    <apex:includeScript value="{!envPath}/js/controllers/deployCalCtrl.js"/>
+    <apex:includeScript value="{!envPath}/js/controllers/mapCtrl.js"/>    
+    <apex:includeScript value="{!envPath}/js/controllers/projectCtrl.js"/>
+    
+    
+</head>
+<body>
+<script src="{!envPathLib}/lib/highcharts/highcharts.js"></script>
+<script src="{!envPathLib}/lib/highcharts/modules/exporting.js"></script>
+<script src="{!envPathLib}/lib/highmaps/modules/map.js"></script>
+<script src="{!envPathLib}/lib/highmaps/modules/data.js"></script>
+<script src="https://code.highcharts.com/mapdata/custom/world.js"></script>
+
+<script src="{!envPathLib}/lib/highcharts/js/highslide-full.min.js"></script>
+<script src="{!envPathLib}/lib/highcharts/js/highslide.config.js" charset="utf-8"></script>
+<link rel="stylesheet" type="text/css" href="{!envPathLib}/lib/highcharts/js/highslide.css" />
+<apex:stylesheet value="{!envPath}/css/font-awesome.min.css"/>
+    
+  <div>
+      <div id="spin"></div>
+      <!-- div ng-controller="filterCtrl" ng-include="'{!envPath}/partials/filters.html'"></div -->
+      <!-- div ng-controller="dataCtrl" ng-include="'{!envPath}/partials/accountingDailyAR.html'"></div -->
+      
+        <apex:outputPanel layout="block" html-data-ui-view="" html-class="scale-fade" html-data-autoscroll="false">
+       </apex:outputPanel>      
+  </div>
+  <!-- // PAGE WRAPPER -->
+  
+  <apex:includeScript value="{!envPathLib}/lib/bootstrap.js"/>
+    
+    <script type="text/javascript">
+
+    debugger;
+
+    var envPath = "{!envPath}";
+    var sessionID = "{!$Api.Session_ID}";
+    var jsForceConn = new jsforce.Connection({ accessToken: '{!$Api.Session_Id}' });
+
+   
+        
+</script>    
+  
+</body>
+</html>
+</apex:page>

@@ -1,0 +1,155 @@
+<apex:page standardStylesheets="false" sidebar="false" showHeader="false" controller="SitePaymentGARPController"> 
+<apex:variable var="envPath" value="{!URLFOR($Resource.sfdcApp)}" />
+<apex:variable var="envPathFonts" value="{!URLFOR($Resource.sfdcAppFonts)}" />
+    <title>GARP Checkout</title>
+    <style>
+        body {
+            background: #FFFFFF url({!envPath}/img/light_noise_diagonal.png) repeat;
+            padding: 30px 0 !important;
+        }
+        .logo {
+            display: block;
+            margin: 0 auto;
+            width: 100%;
+            max-width: 447px;
+        }
+        .subheading {
+            text-align: center;
+            margin: 20px auto;
+        }
+        .login-box {
+            background: #FFFFFF;
+            padding: 20px;
+            display: block;
+            margin: 30px auto;
+            border: 1px solid lightgray;
+            width: 100%;
+            max-width: 400px;
+        }
+        .modal-box {
+            display: block;
+            margin: 5px auto;
+            width: 100%;
+            max-width: 400px;
+        }
+        .footer {
+            margin-top: 5px;
+            width: 100%;
+            border-top: 1px solid lightgray;
+        }
+        .footer ul {
+            margin: 10px;
+            padding: 0;
+            list-style-type: none;
+            text-align: center;
+        }
+        .footer ul li {
+            display: inline;
+            padding: 10px;
+        }
+        .error-message {
+            color: #CC3300;
+            padding: 5px;
+        }
+        .has-error input {
+            background-color: #F2DEDE;
+        }
+        .alert {
+            margin: 30px auto;
+            width: 100%;
+            max-width: 400px;
+        }
+        .list-inline {
+            padding-left: 0;
+            list-style: none;
+        }
+        
+    </style>
+    <script>
+
+        var qs = (function(a) {
+        if (a == "") return {};
+        var b = {};
+        for (var i = 0; i < a.length; ++i)
+        {
+            var p=a[i].split('=');
+            if (p.length != 2) continue;
+            b[p[0]] = decodeURIComponent(p[1].replace(/\+/g, " "));
+        }
+        return b;
+        })(window.location.search.substr(1).split('&'));
+        
+        
+        function getCookie(name) {
+          var value = "; " + document.cookie;
+          var parts = value.split("; " + name + "=");
+          if (parts.length == 2) return parts.pop().split(";").shift();
+        }
+
+        function deleteCookie(name) {
+          document.cookie = name +'=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+        }
+
+        function createCookie(name,value,min) {
+          if (min) {
+              var date = new Date();
+              date.setTime(date.getTime()+(min*60*1000));
+              var expires = "; expires="+date.toGMTString();
+          }
+          else var expires = "";
+          document.cookie = name+"="+value+expires+"; path=/";
+        }
+        
+        setTimeout(function() {
+        
+        if(navigator.appName == 'Microsoft Internet Explorer' && 
+           (navigator.appVersion.indexOf("MSIE 9")>-1 || navigator.appVersion.indexOf("MSIE 8")>-1 || navigator.appVersion.indexOf("MSIE 7")>-1)) {
+               getElement("reloadWarn").style.display = "none"
+               getElement("ie9").style.display = "block"
+        }
+        
+        
+            var inCheckout = getCookie('incheckout')
+            if(inCheckout !== null && typeof inCheckout !== "undefined" && qs["req"] !== null && typeof qs["req"] !== "undefined" && inCheckout == qs["req"]) {
+                alert('It seems you have reloaded this page without checking out. Submitting this form again may charge your card twice! Please hit cancel and review your orders.');
+                isValidEchekForm = function() { alert('You cant checkout if you reload this page.') }
+            } else {
+                if(qs["req"] !== null && typeof qs["req"] !== "undefined") {
+                    createCookie('incheckout',qs["req"],1000);
+                }       
+                
+            }
+    }, 300);
+    
+    </script>
+    <link href="{!envPath}/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="{!envPath}/css/global_variables.css" rel="stylesheet" />
+    <link href="{!envPath}/css/sfdcApp.css" rel="stylesheet" />
+
+    <ChargentSFA:SitePaymentComponent showAddress="false" cancel="{!cURL}" success="{!sURL}" fail="{!fURL}"/> 
+    <div style="text-align:center">
+        <p></p>
+        <p id='ie9' style='display:none'>
+            <b>We have detected you are using and older version of IE that will not work. Please upgrade your browser or use Chrome or Firefox!</b>
+        </p>
+
+        <p id='reloadWarn' style='display:block'>
+            <b>Do not reload or use the back button! This may charge your card twice.</b>
+        </p>
+    </div>
+    <div class="container" style="text-align:center">
+            <ul class="credit-cards list-inline">
+                <li>
+                    <img src="{!envPath}/img/american-express-curved-32px.png" border="0" alt="American Express Card Image" title="American Express Card Image" class="img-responsive" />
+                </li>
+                <li>
+                    <img src="{!envPath}/img/mastercard-curved-32px.png" border="0" alt="Mastercard Card Image" title="Mastercard Express Card Image" class="img-responsive" />
+                </li>
+                <li>
+                    <img src="{!envPath}/img/visa-curved-32px.png" border="0" alt="Visa Card Image" title="Visa Card Image" class="img-responsive" />
+                </li>
+            </ul>
+            <p style="margin-bottom:5em;">Your card will be charged immediately</p>
+    </div>
+
+</apex:page>

@@ -1,0 +1,3 @@
+<apex:page standardStylesheets="false" sidebar="false" showHeader="false" controller="reportsGARP" applyBodyTag="false" cache="false" applyHtmlTag="false" docType="html-5.0">
+
+</apex:page>

@@ -1,0 +1,35 @@
+.shadowBox {
+    -webkit-box-shadow: 3px 3px 3px 3px rgba(0,112,210,0.7); 
+    box-shadow: 3px 3px 3px 3px rgba(0,112,210,0.7);
+}
+
+.textCenter {
+    text-align: center;
+}
+
+.boldTxt {
+    font-weight: bold;
+}
+
+.honeydew {
+    background-color: honeydew;
+}
+.aliceblue {
+    background-color: aliceblue;
+}
+.antiquewhite {
+    background-color: antiquewhite;
+}
+.beige {
+    background-color: beige;
+}
+.bisque {
+    background-color: bisque;
+}
+.cadetblue {
+    background-color: cadetblue;
+}
+
+.inlineBlock {
+    display: inline-block;
+}

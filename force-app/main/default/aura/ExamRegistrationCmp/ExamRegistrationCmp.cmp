@@ -1,0 +1,171 @@
+<aura:component controller="MemberManagementScreenClass" access="global">
+     
+    <!-- attributes -->
+    <aura:attribute name="data" type="Object"/>
+    <aura:attribute name="columns" type="List"/>
+    <aura:attribute name="selectedRowsCount" type="Integer" default="0"/>
+    <aura:attribute name="maxRowSelection" type="Integer" default="5"/>
+    <aura:attribute name="isButtonDisabled" type="Boolean" default="true" access="PRIVATE"/>
+    <aura:attribute name="GARPId" type="String" />
+    <aura:attribute name="ErrorMessage" type="String" />
+    <aura:attribute name="selectedComponent" type="String" />
+    <aura:attribute name="selectedSite" type="String" /> 
+    <aura:attribute name="SelectedExamGroup" type="String" /> 
+    <aura:attribute name="RegistredFRMProgram" type="String" default="showGroup"/> 
+    <aura:attribute name="isshow" type="boolean" default="false"/>
+    <aura:attribute name="ExamGroupMap" type="Map"/>  
+    <aura:attribute name="spinner" type="boolean" default="FALSE"/>
+    <aura:attribute name="selectedExamPart" type="String" /> 
+    <aura:attribute name="PayTypeoptions" type="List" default="[{'label': 'Early', 'value': 'Early'},
+                                                               {'label': 'Late', 'value': 'Late'},
+                                                               {'label': 'Standard', 'value': 'Standard'}
+                                                               ]"/>
+    <aura:attribute name="selectedPayType" type="String" />  
+    <aura:attribute name="ExamPartoptions" type="List" />
+    <aura:attribute name="ExamPartoptionsMap" type="Map" /> 
+    <aura:attribute name="contactId" type="String"/>
+    <aura:attribute name="DeferredstatusList" type="List"/>
+    <aura:attribute name="isModalOpen" type="boolean" default="false"/>
+    
+    
+    <div class="slds-card"> 
+        <div class="slds-page-header">
+            <div class="slds-align_absolute-center">
+                <div class="slds-text-heading_large">
+                    <div class="slds-m-top_xx-large">
+                        Exam Registration
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slds-box slds-theme_shade">
+        <span class="slds-align_absolute-center" style="color:red;">{!v.ErrorMessage}</span>
+        <aura:if isTrue="{!v.RegistredFRMProgram == 'showGroup'}">
+            <aura:if isTrue="{!!v.isshow}"> 
+                <div class="slds-grid">
+                    <div class="slds-col slds-size_4-of-12"> 
+                    </div>
+                    <div class="slds-col slds-size_4-of-12">                         
+                        <lightning:input type="text" name="garpID" value="{!v.GARPId}" label="GARP Member ID" />
+                        <div class="slds-p-top_large" style="float:right">
+                            <lightning:button  variant="Neutral" class="slds-button slds-button_neutral" label="Back"  onclick="{!c.BackButton}"/>
+                            <lightning:button variant="brand" label="Next" class="slds-button slds-button_brand" onclick="{!c.OnclickNextButton}"/>
+                        </div>
+                    </div>
+                </div>
+                <aura:set attribute="else">
+                    <div class="slds-grid">
+                        <div class="slds-col slds-size_4-of-12"> 
+                        </div>
+                        <div class="slds-col slds-size_3-of-12">  
+                            <!-- Exam Group Selection -->
+                            <lightning:select aura:id="subTypePicklist" value="{!v.SelectedExamGroup}"  name="subTypePicklist" label="Exam Group" onchange="{!c.onchangeExamGroup}">
+                                <option value="">--None--</option>
+                                <aura:iteration items="{!v.ExamGroupMap}" var="ind" indexVar="key">
+                                    <option text="{!ind.value}" value="{!ind.key}"/>
+                                </aura:iteration>
+                            </lightning:select>
+                        </div> 
+                        <div class="slds-col slds-size_4-of-12"/> 
+                    </div>
+                    <div style="height:400px"> 
+                        <aura:if isTrue="{!v.SelectedExamGroup != ''}"> 
+                            <div class="slds-grid">
+                                <div class="slds-col slds-size_3-of-12"> 
+                                    <ui:inputText placeholder="Search Site.." aura:id="searchInput" label="Site Search " keyup="{!c.onchangeExamGroup}" updateOn="keyup" class="slds-input"/>
+                                </div>
+                            </div>
+                            <lightning:datatable
+                                                 columns="{! v.columns }"
+                                                 data="{! v.data }"
+                                                 keyField="id"
+                                                 maxRowSelection="{! v.maxRowSelection }"
+                                                 onrowselection="{! c.OnclickselectedSite }"/>
+                        </aura:if> 
+                    </div>
+                    <br/><br/>
+                    <div class="slds-p-top_large" style="float:right">
+                        <lightning:button  variant="Neutral" class="slds-button slds-button_neutral" label="Back"  onclick="{!c.BacktoExamRegistration}"/>
+                        <lightning:button  variant="Neutral" class="slds-button slds-button_neutral" label="Cancel"  onclick="{!c.BackButton}"/>
+                        <aura:if isTrue="{!v.selectedSite != null}">
+                            <lightning:button  variant="brand" class="slds-button slds-button_neutral" label="Next"  onclick="{!c.NextExamRegistration}"/> 
+                        </aura:if>
+                    </div> 
+                </aura:set>
+                <div class="slds-col slds-size_4-of-12"> 
+                </div>
+            </aura:if>  
+        </aura:if>
+        <aura:if isTrue="{!or(v.RegistredFRMProgram =='Not Registred FRM Program',v.RegistredFRMProgram =='Registred FRM Program',v.RegistredFRMProgram == 'Error')}"> 
+            <div class="slds-grid"> 
+                <div class="slds-col slds-size_4-of-12"> 
+                </div>
+                <div class="slds-col slds-size_3-of-12">  
+                    <lightning:radioGroup name="radioGroup"
+                                          label="Pay Type"
+                                          options="{! v.PayTypeoptions }"
+                                          value="{! v.selectedPayType }"
+                                          type="radio"/>
+                </div>
+                <div class="slds-col slds-size_4-of-12">
+                    <lightning:radioGroup name="radioGroup1"
+                                          label="Exam Part"
+                                          options="{! v.ExamPartoptions }"
+                                          value="{! v.selectedExamPart}"
+                                          type="radio"/>
+                </div> 
+            </div>
+            <div class="slds-p-top_large" style="float:right">
+                <lightning:button  variant="Neutral" class="slds-button slds-button_neutral" label="Back"  onclick="{!c.BacktoExamRegistration}"/>
+                <lightning:button  variant="brand" class="slds-button slds-button_neutral" label="Create"  onclick="{!c.CreateExamRegistration}"/> 
+            </div>
+         </aura:if> 
+        <aura:if isTrue="{!v.RegistredFRMProgram =='Error'}"> 
+            <div class="slds-p-top_large" style="float:right">
+                <lightning:button  variant="Neutral" class="slds-button slds-button_neutral" label="Back"  onclick="{!c.BacktoExamRegistration}"/>
+            </div>
+        </aura:if>
+    </div>
+    </div>
+<aura:if isTrue="{!v.isModalOpen}"> 
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container"> 
+                    <header class="slds-modal__header">
+                        <lightning:buttonIcon iconName="utility:close"
+                                              onclick="{! c.closepopup }"
+                                              alternativeText="close"
+                                              variant="bare-inverse"
+                                              class="slds-modal__close"/>
+                        <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Exam Registration Status</h2>
+                    </header>
+                    
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1"> 
+                        
+                        <table class="slds-table slds-table--bordered slds-table--striped" style="margin-top:30px;">
+                            <tbody>
+                                <th>Type</th>
+                                <th> Invoice Number</th>
+                                <th> Amount</th>
+                                <th>Customer Secure Checkout</th>
+                                <th>Deferral Status</th>
+                                <aura:iteration items="{!v.DeferredstatusList}" var="wrap" > 
+                                    <tr>   <td>{!wrap.defType}</td> 
+                                        <td>{!wrap.InvoiceNumber}</td>
+                                        <td>{!wrap.amount}</td>
+                                        <td><a href="{!wrap.CustomerSecureCheck}" target="_blank">Payment Link</a></td>
+                                        <td>{!wrap.defStatus}</td>  </tr>
+                                </aura:iteration> 
+                            </tbody>
+                        </table>
+                    </div> 
+                    <footer class="slds-modal__footer"> 
+                        <lightning:button variant="brand"
+                                          label="OK"
+                                          title="OK"
+                                          onclick="{!c.closepopup}"/>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </aura:if>    
+</aura:component>

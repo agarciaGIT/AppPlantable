@@ -1,0 +1,18 @@
+<apex:page docType="html-5.0" sidebar="false" showHeader="true">
+    <apex:includeLightning />
+
+    <div id="comp_container" />
+
+    <script>
+    	// Generate Lightning Component in container div
+		$Lightning.use("c:GBIRequestHandlerApp", function() {
+			$Lightning.createComponent("c:GBIRequestHandlerComp",
+				{},
+				"comp_container",
+				function(cmp) {
+					console.log("GBIRequestHandlerComp initialized in VF Page.");
+				}
+			);
+		});
+    </script>
+</apex:page>

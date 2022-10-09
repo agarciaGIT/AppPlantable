@@ -1,0 +1,122 @@
+<aura:component controller="MemberManagementScreenClass" implements="force:appHostable,flexipage:availableForAllPageTypes,force:lightningQuickAction" access="global" >
+    <aura:attribute name="optionSelected" type="String" />
+    <aura:attribute name="GARPId" type="String" />
+    <aura:attribute name="showInput" type="Boolean" />
+    <aura:attribute name="navigateNext" type="Boolean" />
+    <aura:attribute name="InvoiceNumber" type="String" /> 
+    <aura:attribute name="selectedValue" type="String" /> 
+    <aura:attribute name="selectedComponent" type="String" default=""/>
+    <aura:attribute name="ErrorMessage" type="String" /> 
+    <div class="slds-card">
+        <aura:if isTrue="{! !v.navigateNext}">
+            <div class="slds-page-header">
+                <div class="slds-align_absolute-center">
+                    <div class="slds-text-heading_large">
+                        <div class="slds-m-top_xx-large">
+                            Member Services Administration
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slds-box slds-theme_default">
+                <div class="slds-grid">
+                    <div class="slds-col slds-size_3-of-12"> 
+                    </div>
+                    <div class="slds-size_6-of-12">
+                        <span class="slds-text-body–regular" style="color:red;">{!v.ErrorMessage}</span>
+                        <lightning:select value="{!v.optionSelected}" 
+                                          aura:id="ActionSelect" 
+                                          name="ActionSelect" 
+                                          label="Please select the action" 
+                                          required="true" 
+                                          onchange="{!c.onOptionSelect }">
+                            <option value="">Select one...</option>
+                            <option value="Defer/Undefer">Defer/Undefer</option>
+                            <option value="Free Invoice">Free Invoice</option>
+                            <option value="ExamSiteChange">ExamSiteChange</option>
+                            <option value="Technical Glitch">Technical Glitch</option>
+                            <option value="Pearson Merge Request">Pearson Merge Request</option>
+                            <option value="Switch Exam">Switch Exam</option>
+                            <option value="Create Switch Exam Fee">Create Switch Exam Fee</option>
+                            <option value="Update Opportunity Billing Info">Update Opportunity Billing Info</option>
+                            <option value="Update Opportunity Price">Update Opportunity Price</option>
+                            <option value="Scholarship refund">Scholarship refund</option>
+                            <option value="Ups Edit">Ups Edit</option>
+                        </lightning:select>
+                    </div>
+                </div>
+                <aura:if isTrue="{!v.optionSelected == 'Free Invoice'}">
+                    <div class="slds-grid">
+                        <div class="slds-col slds-size_3-of-12"> 
+                        </div>
+                        <div class="slds-col slds-size_6-of-12">                         
+                            <!--<span class="slds-text-body–regular" style="color:red;">{!v.ErrorMessage}</span>--> 
+                            <lightning:input type="text" name="text" value="{!v.InvoiceNumber}" label="Invoice Number" aura:id="invoice" />
+                            
+                            <div class="slds-p-top_large" style="float:right">
+                                <lightning:button variant="brand" 
+                                                  label="Next" 
+                                                  class="slds-button slds-button_brand" 
+                                                  onclick="{!c.OnclickfreeInvoiceNextButton}"/>
+                            </div>
+                        </div>
+                    </div>
+                </aura:if>
+                <aura:if isTrue="{!v.selectedComponent == 'NavigateUrl'}">
+                    <div class="slds-grid">
+                        <div class="slds-col slds-size_3-of-12"> 
+                        </div>
+                        <div class="slds-col slds-size_6-of-12">                         
+                            <!--<span class="slds-text-body–regular" style="color:red;">{!v.ErrorMessage}</span>--> 
+                            <lightning:input type="text" name="text" value="{!v.InvoiceNumber}" label="Invoice Number" aura:id="invoice" />
+                            
+                            <div class="slds-p-top_large" style="float:right">
+                                <lightning:button variant="brand" 
+                                                  label="Next" 
+                                                  class="slds-button slds-button_brand" 
+                                                  onclick="{!c.OnclickNextButton}"/>
+                            </div>
+                        </div>
+                    </div>
+                </aura:if>
+                <aura:if isTrue="{!and(v.selectedComponent != 'NavigateUrl',v.optionSelected != 'Free Invoice')}">
+                    <div class="slds-grid">
+                        <div class="slds-col slds-size_3-of-12"> 
+                        </div>
+                        <div class="slds-col slds-size_6-of-12">                         
+                            <lightning:input type="text" 
+                                             aura:id="garpID" 
+                                             name="garpID" 
+                                             value="{!v.GARPId}" 
+                                             label="GARP Member ID" 
+                                             required="true"/>
+                            <div class="slds-p-top_large" style="float:right">
+                                <lightning:button variant="brand" 
+                                                  label="Next" 
+                                                  class="slds-button slds-button_brand" 
+                                                  onclick="{!c.OnclickNextButton}"/>
+                            </div>
+                        </div>
+                    </div>
+                </aura:if>
+            </div>
+        </aura:if>
+        
+        
+        <aura:if isTrue="{!and(v.optionSelected == 'Defer/Undefer',v.navigateNext)}">
+            <c:MemberServicesTool_Changes garpId="{!v.GARPId}" typeSelected="Defer" navigateNext="{!v.navigateNext}"/>
+        </aura:if>
+        <aura:if isTrue="{!and(v.optionSelected == 'ExamSiteChange',v.navigateNext)}">
+            <c:MemberServicesTool_Changes garpId="{!v.GARPId}" typeSelected="ExamSite" navigateNext="{!v.navigateNext}"/>
+        </aura:if>
+        <aura:if isTrue="{!and(v.optionSelected == 'Technical Glitch',v.navigateNext)}">
+            <c:technicalGlitchlngComponent garpId="{!v.GARPId}" navigateNext="{!v.navigateNext}"/>
+        </aura:if>
+        <aura:if isTrue="{!and(v.optionSelected == 'Pearson Merge Request',v.navigateNext)}">
+            <c:PearsonMergeRequestCmp garpId="{!v.GARPId}" navigateNext="{!v.navigateNext}"/>
+        </aura:if>
+        <aura:if isTrue="{!and(v.optionSelected == 'Free Invoice',v.navigateNext)}">
+            <c:FreeInvoiceLntgCmp InvoiceNumber="{!v.InvoiceNumber}" navigateNext="{!v.navigateNext}"/>
+        </aura:if>
+    </div>
+</aura:component>

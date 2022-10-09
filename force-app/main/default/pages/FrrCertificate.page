@@ -1,0 +1,137 @@
+<!--    Visualforce page - dynamic FRR Certificate as PDF
+        06/23/2022 Rarazi - [US-55716] FRR Certificate as dynamic, downloadable PDF.
+-->
+
+<apex:page controller="FrrCertificateCtrl"
+  showHeader="false"
+  sidebar="false"
+  showChat="false"
+  standardStylesheets="false"
+  applyhtmltag="false"
+  applyBodyTag="false"
+  renderAs="PDF"
+>
+
+  {!errorMessage}
+
+  <apex:stylesheet value="https://cloud.typography.com/7208894/718528/css/fonts.css"/>
+  <apex:variable var="envPath" value="{!URLFOR($Resource.sfdcApp)}"/>
+
+  <html>
+    <head>
+      <title>FRR Certificate | GARP</title>
+      <style type="text/css" media="print">
+      @page { size: Portrait; } 
+        
+        body { 
+          font-family: "Gotham A", "Gotham B", "Gotham", Tahoma, Helvetica, sans-serif; 
+          font-weight: normal; 
+          margin: 0 auto; 
+          margin-bottom: 0;
+          text-align: center; 
+          text-transform: uppercase; 
+        }
+        .page-container.frr {
+          border: 12px solid rgb(0, 86, 117);  
+          height: 930px;
+        } 
+        .bold { font-weight: 700; }
+        .bold.signed { margin-bottom: 0; } 
+        .saffron { color: rgb(0, 86, 117);} 
+        .cert-footer { margin-top: 10px; } 
+        .cert-footer > div { 
+          position: relative; 
+          float: left; 
+          width: 33.33333333333333%; 
+          margin: 0 auto;
+          font-size: 10px;  
+        }
+        h6{
+          font-weight: 400;
+          font-family: "Gotham A", "Gotham B", "Gotham", Tahoma, Helvetica, sans-serif;
+          text-align: center;
+          font-size: 14px; 
+        }
+        h5{
+          font-weight: 100;
+          text-align: center; 
+          font-size: 22px;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container page-container frr" style="display: {!IF(errorMessage == null, 'block;', 'none;')}">
+        <div id="spin"></div>
+         <!--<div style="width: 100%;height: inherit;position: absolute;text-align: center;z-index: -1;">
+             <apex:image url="{!$Resource.garplogo}" style="width: 940px; margin-top: -35px"/>
+         </div> -->
+          
+        <div class="cert-body">
+          <apex:image url="{!$Resource.frrlogo}" width="250px"
+            alt="GARP FRR logo"
+            style="height: 60px; margin-top: 65px;"/>
+		  <br/>
+            <br/>
+          <h5 style="margin: 24px;">Global Association of Risk Professionals
+          </h5>
+		  <br/>
+          <h6 style="margin-bottom: 0px;">certifies that</h6>
+		  <br/>
+          <h1 style="font-weight: 100"
+            >{!firstName} {!lastname}
+          </h1>
+		  <br/>
+          <h6 style="margin-top:5px">has earned a certificate in</h6>
+		  <br/>
+          <h2 style="margin-bottom: 24px;" class="saffron">FINANCIAL RISK AND REGULATION (FRR<sup>&reg;</sup>)</h2>
+            <br/>
+          <h6>
+            On this {! displayDay } day of
+            <apex:outputText value="{0,date, MMMM}">
+              <apex:param value="{! allCompleteDate}"/>
+            </apex:outputText>
+            in the year {! displayYear}
+          </h6>
+          <br/>
+        </div>
+		<br/>
+        <div class="cert-footer">
+          <div>
+            <div style="display:block; margin: 0 auto; margin-top: none; margin-left: 60px;">
+             <apex:image url="{!$Resource.RichardApostolik}"  
+                alt="Richard Apostolik"
+                height="75px"/>
+              <p class="bold signed">Richard Apostolik</p>
+              <p style="margin-top: 0px">
+              <em>President <br />and CEO</em></p>
+            </div>
+          </div>
+          <div>
+            <apex:image url="{!$Resource.frrbadge}"
+              alt="GARP FRR Badge"
+              style="height: 160px"/>
+          </div>
+          <div>
+            <div style="display:block; margin: 0 auto; margin-right: 60px;">
+           	<apex:image url="{!$Resource.WilliamMay}"
+                alt="William May"
+                height="60px"/>
+              <p class="bold signed">William May</p>
+              <p style="margin-top: 0px">
+                  <em>Senior Vice President <br />Global Head of Certifications
+                  <br />and Educational Programs</em>
+                </p>
+            </div>
+              <br/>
+              <br/>
+          </div>
+            <br/>
+            <div style="display: table;margin-right: auto;margin-top: 10px; margin-left: 230px; font-family: Gotham A;">
+                <h6>GARP ID: {!garpId}</h6>
+            </div>
+        </div>
+      </div>
+    </body>
+  </html>
+
+</apex:page>

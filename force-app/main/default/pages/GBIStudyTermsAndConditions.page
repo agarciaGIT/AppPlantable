@@ -1,0 +1,120 @@
+<apex:page renderAs="pdf"
+  controller="GBIDPAsPDF"
+  showHeader="false"
+  sidebar="false"
+  standardStylesheets="false"
+  applyhtmltag="false"
+  applyBodyTag="false"
+>
+  <apex:variable var="envPath" value="{!URLFOR($Resource.sfdcApp)}" />
+
+  <head>
+    <style type="text/css" media="print">
+      .main-pdf {
+        font-family: Times;
+        font-size: 14px;
+      }
+      @page {
+        @bottom-left {
+          content: element(footer);
+        }
+        margin-top: 15px;
+        margin-bottom: -20px;
+        margin-left: 80px;
+        margin-right: 80px;
+      }
+      div.header {
+        text-align: center;
+        width: 100%;
+        max-height: 100%;
+        padding-bottom: 0;
+        margin-bottom: 0;
+      }
+      div.footer {
+        position: absolute;
+        width: 100%;
+        max-height: 100%;
+        margin-top: 90px;
+        z-index: 2;
+      }
+      div.body {
+        padding-top: 90px;
+        padding-bottom: 0;
+      }  
+    </style>
+  </head>
+  <apex:pageBlock >
+    <div class="main-pdf">
+      <div class="header">
+        <apex:image style="width: 100%"
+          url="{!$Resource.GBI_letterhead_header}"
+          alt="logo"
+        />
+      </div>
+    </div>
+    <apex:outputPanel >
+      <div class="main-pdf body">
+        <br />
+        <p style="text-align: center; text-decoration: underline; font-weight: 600;"
+          >GBI STUDY PAYMENT TERMS AND CONDITIONS</p>
+        <br />
+        <p style="font-weight: 800">Effective Date: June 3, 2021</p>
+        <p>The payment terms and conditions (&ldquo;Payment Terms&rdquo;) are
+          applicable to each GBI study (&ldquo;Study&rdquo;) undertaken by
+          Global Association of Risk Professionals, Inc. (&ldquo;GARP&rdquo;).
+          You agree and warrant that you have the requisite authority to bind
+          the Participating Bank to the Payment Terms.</p>
+        <p>Capitalized terms used, but not defined herein, and terms in bold
+          shall have the meanings assigned to them in the Disclosure Protocol
+          between GARP and the Participating Bank.</p>
+          
+        <p>1. <u>Participation Fee</u>. GARP will charge the Participating Bank
+        the participation fee listed on the Study registration page (the
+        &ldquo;Participation Fee&rdquo;).</p>
+        <p>2. <u>Term</u>. In consideration of the Participation Fee, the
+          Participating Bank may participate in the Study from the date the
+          Participating Bank enters into the applicable Disclosure Protocol to
+          the conclusion of the Study (the &ldquo;Term&rdquo;).</p>
+        <p>3. <u>Payment</u>. GARP will send an invoice to the Participating Bank
+          through the email address entered on the Study registration page.
+          The Participating Bank agrees to remit payment within thirty (30)
+          days of receipt of invoice. Participating Bank is responsible for
+          sales tax, if applicable. GARP reserves the right to charge a late
+          payment fee of 1.5% per month on overdue invoices.</p>
+        <p>4. <u>No Cancellation</u>. The Payment Terms are non-cancellable, and
+          the Participation Fee is non-refundable.</p>
+        <p>5. <u>Disclaimer</u>. The Participation Fee solely entitles the
+          Participating Bank to participate in the Study by submitting its
+          data in accordance with the Disclosure ProtocoL.GARP MAKES NO
+          REPRESENTATION OR WARRANTY OF ANY KIND, WHETHER EXPRESS, IMPLIED,
+          SATUTORY OR OTHERISE CONCERNING RESULTS OF THE
+          <strong>ANALYSIS</strong> OR THE ADEQUACY OF THE
+          <strong>ANALYSIS MATERIALS</strong>. GARP EXPRESSLY DISCLAIMS,
+          WITHOUT LIMITATION, ANY IMPLIED WARRANTIES, INCLUDING ANY WARRANTIES
+          OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.</p>
+        <p>6. <u>Limitation of Liability</u>. TO THE MAXIMUM EXTENT PERMITTED BY
+          APPLICABLE LAW, IN NO EVENT SHALL GARP BE LIABLE IN CONTRACT, TORT
+          (INCLUDING NEGLIGENCE) OR OTHERWISE FOR ANY DIRECT, INDIRECT,
+          SPECIAL, PUNITIVE OR CONSEQUENTIAL LOSS OR DAMAGE ARISING OUT OF OR
+          IN CONNECTION WITH THE PARTICIPATION FEE, THE PAYMENT TERMS OR THE
+          PARTICIPATING BANK&rsquo;S USE OF THE <strong>ANALYSIS</strong> OR
+          THE <strong>ANALYSIS MATERIALS</strong> REGARDLESS OF WHETHER GARP
+          HAS BEEN ADVISED OF THE POSSIBILITY OR COULD HAVE FORESEEN ANY SUCH
+          LOSS OR DAMAGE.</p>
+        <p>7. <u>Governing Law</u>. These Payment Terms are governed and
+          interpreted under the laws of the State of New York, without regard
+          to its conflicts of law principles.</p>
+        <p>8. <u>Assignment</u>. The Participating Bank is prohibited from
+          transferring, assigning or delegating its rights or obligations
+          under these Payment Terms (in whole or in part) to any other party
+          without the express written consent of GARP.</p>
+      </div>
+    </apex:outputPanel>
+    <div class="footer">
+      <apex:image width="100%"
+        url="{!$Resource.GBI_letterhead_footer}"
+        alt="garp.org"
+      />
+    </div>
+  </apex:pageBlock>
+</apex:page>

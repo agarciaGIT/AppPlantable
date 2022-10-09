@@ -1,0 +1,54 @@
+<apex:page controller="ICBRRPassListforGT" action="{!getExamAttempts}" readOnly="false" contentType="application/vnd.ms-excel#ICBRRPassList.xls">
+    <apex:form >
+        <table width="100%">
+            <tr>
+                <td><b>Passed ICBRR Candidates</b></td>
+            </tr>
+            
+        </table>
+        <table width="100%" border="1" title="Passed ICBRR Candidates">     
+          <thead>          
+                <tr > 
+                    <th align="center">GARP ID</th>
+                    <th align="center">FIRST NAME</th>
+                    <th align="center">Last Name</th>
+                    <th align="center">Certificate Name</th>
+                    <th align="center">Mailing Street</th>
+                    <th align="center">Mailing City</th>
+                    <th align="center">Mailing State</th>
+                    <th align="center">Mailing Zip/Postal Code</th>
+                    <th align="center">Mailing Country</th>
+                    <th align="center">Email</th> 
+                    <th align="center">Phone</th>
+                    <th align="center">Company Name</th>
+                    <th align="center">Appointment Date</th>
+                    <th align="center">Exam Grade</th>
+                    <th align="center">Exam Score</th> 
+               </tr>            
+            </thead>  
+            <tbody>
+         <apex:repeat value="{!registrations}" var="x"> 
+          
+                    <tr>                  
+                        <td align="center">{!x.garpId}</td>
+                        <td align="center">{!x.fName}</td>
+                        <td align="center">{!x.lName}</td>
+                        <td align="center">{!x.certificateName}</td>
+                        <td align="center">{!x.mailingStreet}</td>
+                        <td align="center">{!x.mailingState}</td>
+                        <td align="center">{!x.mailingCity}</td>
+                        <td align="center">{!x.mailingPostalCode}</td>
+                        <td align="center">{!x.mailingCountry}</td>
+                        <td align="center">{!x.memberEmail}</td>
+                        <td align="center">{!x.memberPhone}</td>
+                        <td align="center">{!x.companyName}</td>
+                        <td align="center">{!x.appointmentDate}</td>
+                        <td align="center">{!x.examGrade}</td> 
+                        <td align="center">{!x.examScore}</td>                     
+                    </tr>
+                </apex:repeat>
+              
+            </tbody>
+        </table>
+    </apex:form>
+</apex:page>

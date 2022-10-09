@@ -1,0 +1,388 @@
+<apex:page showHeader="false" standardStylesheets="false">
+    
+    <apex:includeScript value="/soap/ajax/35.0/connection.js" />
+    <apex:includeScript value="/soap/ajax/35.0/apex.js" />
+    <apex:includeScript value="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.1/angular.min.js"/>
+    <apex:includeScript value="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.1/angular-animate.min.js"/>
+    <apex:includeScript value="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.1/angular-aria.min.js"/>
+    <apex:includeScript value="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.1/angular-messages.min.js"/>
+    <apex:includeScript value="https://cdnjs.cloudflare.com/ajax/libs/angular-material/1.1.3/angular-material.min.js"/>
+    
+    <apex:stylesheet value="https://cdnjs.cloudflare.com/ajax/libs/angular-material/1.1.3/angular-material.min.css"/>
+    <apex:stylesheet value="https://fonts.googleapis.com/icon?family=Material+Icons" />
+    
+    <html>
+        <head>
+            <title>Workflow, Email Alert and Email Template Aggregator</title>
+            
+            <style>
+                .truncate{
+                    overflow: hidden; 
+                    text-overflow: ellipsis;
+                    white-space:nowrap;
+                    font-size: 10px;
+                }
+            </style>
+            
+        </head>
+        <body ng-app="aggregate" ng-controller="display">
+            
+            <md-toolbar style="background: #111; color: #fff;">
+                <div class="md-toolbar-tools">
+                    <h2>
+                        Workflow, Email Alert &#38; Email Template Aggregator
+                    </h2> 
+                    <span flex="true"></span>
+                    <md-button class="md-raised md-icon-button" ng-click="raw = !raw" ng-disabled="!output">
+                        <i class="material-icons">code</i>
+                    </md-button>
+                    <md-button class="md-raised md-icon-button" ng-click="download()" ng-disabled="!output">
+                        <i class="material-icons">file_download</i>
+                    </md-button>
+                    <md-button class="md-raised md-icon-button" ng-click="loadData()" ng-disabled="isLoading">                     
+                        <i class="material-icons">sync</i>
+                    </md-button>
+                </div>
+            </md-toolbar>
+            
+            <div layout="column" flex="true">
+                
+                <table border="1px" style="width:100%; table-layout: fixed;" ng-if="output && !raw">
+                    <thead>
+                        <tr>
+                            <th>Workflow Id</th>
+                            <th>Workflow Name</th>
+                            <th>Workflow Active</th>
+                            <th>Workflow Formula</th>
+                            <th>Email Alert Id</th>
+                            <th>Email Alert Name</th>
+                            <th>Email Template Id</th>
+                            <th>Email Template Name</th>
+                            <th>Email Template Is Active</th>
+                       <!---    <th>Email Template HTML</th>
+                            <th>Email Template Body</th>   ---->
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="item in output">
+                            <td class="truncate">{{item.workflowId}}</td>
+                            <td class="truncate">{{item.workflowName}}</td>      
+                            <td class="truncate">{{item.workflowActive}}</td>
+                            <td class="truncate">{{item.workflowFormula}}</td>
+                            <td class="truncate">{{item.emailAlertId}}</td>
+                            <td class="truncate">{{item.emailAlertName}}</td>
+                            <td class="truncate">{{item.emailTemplateId}}</td>
+                            <td class="truncate">{{item.emailTemplateName}}</td>
+                            <td class="truncate">{{item.emailTemplateIsActive}}</td>
+                          <!---  <td class="truncate">{{item.emailTemplateHTML}}</td>
+                            <td class="truncate">{{item.emailTemplateBody}}</td>  ---->
+                        </tr>
+                    </tbody>
+                </table>
+           
+                <span ng-if="output && raw">
+                    {{output}}
+                </span>
+                
+                <div ng-if="isLoading" layout="column" flex="true" layout-align="center center" layout-padding="true">
+                    <md-progress-circular md-mode="indeterminate"></md-progress-circular>
+                </div>
+                
+            </div> 
+            
+            <script>
+
+            var app = angular.module('aggregate', ['ngMaterial'])
+
+            app.factory('dataFactory', ['$q', '$http', function($q, $http){
+
+                sforce.connection.sessionId = '{!GETSESSIONID()}'
+
+                var factory = {}
+
+                factory.getEmailTemplates = function(){
+                    return $q(function(resolve, reject){
+                        sforce.connection.query('SELECT Id, Name, DeveloperName, Subject, HTMLValue, Body, Markup, IsActive FROM EmailTemplate', {
+                            onSuccess : function(result){
+                                resolve(result.getArray("records"))
+                            },
+                            onFailure : function(error){
+                                reject(error)
+                            }
+                        })
+                    })
+                }
+
+                factory.getResourceUrls = function(url){
+
+                    var options = {
+                        method: 'GET',
+                        url: url,
+                        headers: {
+                            'Authorization' : 'Bearer {!GETSESSIONID()}',
+                            'Content-Type' : 'application/json'
+                        }
+                    }
+
+                    return $http(options).then(function(response){
+                        var output = []
+                        for(var i in response.data.records){
+                            output.push(response.data.records[i].attributes.url)
+                        }
+                        return output
+                    })
+
+                }
+
+                factory.getResourceByUrl = function(url){
+
+                    var options = {
+                        method: 'GET',
+                        url: url,
+                        headers: {
+                            'Authorization' : 'Bearer {!GETSESSIONID()}',
+                            'Content-Type' : 'application/json'
+                        }
+                    }
+
+                    return $http(options)
+
+                }
+
+                return factory
+
+            }])
+
+            app.service('csvConverter', [function(){
+
+                this.downloadCSV = function(args) {
+                    var data, filename, link;
+                    var csv = args.csv
+                    if (csv == null) return;
+
+                    filename = args.filename || 'export.csv';
+
+                    if (!csv.match(/^data:text\/csv/i)) {
+                        csv = 'data:text/csv;charset=utf-8,' + csv;
+                    }
+                    data = encodeURI(csv);
+
+                    link = document.createElement('a');
+                    link.setAttribute('href', data);
+                    link.setAttribute('download', filename);
+                    link.click();
+                }
+
+                this.convertArrayOfObjectsToCSV = function(args) {
+
+                    var result, ctr, keys, columnDelimiter, lineDelimiter, data;
+
+                    data = args.data || null;
+                    if (data == null || !data.length) {
+                        return null;
+                    }
+
+                    columnDelimiter = args.columnDelimiter || ',';
+                    lineDelimiter = args.lineDelimiter || '\n';
+
+                    keys = Object.keys(data[0]);
+
+                    result = '';
+                    result += keys.join(columnDelimiter);
+                    result += lineDelimiter;
+
+                    data.forEach(function(item) {
+                        ctr = 0;
+                        keys.forEach(function(key) {
+                            if (ctr > 0){
+                                result += columnDelimiter;
+                            }
+                            result += item[key];
+                            ctr++;
+                        });
+                        result += lineDelimiter;
+                    });
+                    return result;
+                }
+
+            }])
+
+            app.controller('display', ['$scope', '$q', 'dataFactory', 'csvConverter', function($scope, $q, dataFactory, csvConverter){
+
+                $scope.isLoading = false
+                $scope.output = null
+                $scope.raw = false
+
+                var loadMetadata = function(url){
+                    return dataFactory.getResourceByUrl(url)
+                }
+
+                var loadAllMetadata = function(urls){
+
+                    var calls = []
+
+                    for(i in urls){
+                        calls.push(loadMetadata(urls[i]))
+                    }
+
+                    return $q.all(calls)
+
+                }
+
+                var loadWorkflowRules = function(){
+                    return dataFactory
+                    .getResourceUrls('/services/data/v39.0/tooling/query?q=select+id+from+WorkflowRule')
+                    .then(loadAllMetadata)
+                }
+
+                var loadWorkflowAlerts = function(){
+                    return dataFactory.getResourceUrls('/services/data/v39.0/tooling/query?q=select+id+from+WorkflowAlert')
+                    .then(loadAllMetadata)
+                }
+
+                var loadEmailTemplates = function(){
+                    return dataFactory.getEmailTemplates()
+                }
+
+                var getEmailTemplateMap = function(arr){
+                    var map = {}
+                    for(var i in arr){
+                        map[arr[i].DeveloperName] = arr[i]
+                    }
+                    return map
+                }
+
+                var getWorkflowAlertMap = function(arr){
+                    var map = {}
+                    for(var i in arr){
+                        map[arr[i].data.DeveloperName] = arr[i]
+                    }
+                    return map
+                }
+
+                var getWorkflowByEmailAlertDeveloperNameMap = function(workflows){
+                    var map = {}
+                    for(var w in workflows){
+                        var actions = workflows[w].data.Metadata.actions
+                        for(var a in actions){
+                            if(actions[a].type == "Alert"){
+                                map[actions[a].name] = workflows[w].data
+                            }
+                        }
+                    }
+                    return map
+                }
+
+                $scope.download = function(){
+                    var csv = csvConverter.convertArrayOfObjectsToCSV({data : $scope.output})
+                    csvConverter.downloadCSV({ filename: "extract.csv", csv : csv })
+                }
+
+                $scope.loadData = function(){
+
+                    $scope.isLoading = true
+
+                    $q.all([loadWorkflowRules(), loadWorkflowAlerts(), loadEmailTemplates()]).then(function(data){
+
+                        var emailTemplateAlertMap = {}
+
+                        var workflowRulesMap    = getWorkflowByEmailAlertDeveloperNameMap(data[0])
+                        var workflowAlertsMap   = getWorkflowAlertMap(data[1])
+                        var emailTemplatesMap   = getEmailTemplateMap(data[2])
+                        console.log(workflowRulesMap)
+                        var dataset = []
+
+                        for(var key in workflowRulesMap){
+
+                            var alertTemplateName = (workflowAlertsMap[key] !== undefined) ? workflowAlertsMap[key].data.Metadata.template : null
+
+                            var join = {}
+
+                            join.workflowRule   = workflowRulesMap[key]
+
+                            if(alertTemplateName){
+
+                                alertTemplateName   = alertTemplateName.substring((alertTemplateName.lastIndexOf('/') + 1), alertTemplateName.length)
+
+                                join.emailAlert     = workflowAlertsMap[key].data
+                                join.emailTemplate  = (emailTemplatesMap[alertTemplateName] !== undefined) ? emailTemplatesMap[alertTemplateName] : null
+
+                            }
+
+                            dataset.push(join)
+
+                        }
+                        console.log(dataset)
+                        var output = []
+
+                        for(var i in dataset){
+
+                            var obj = {}
+
+                            if(dataset[i].workflowRule !== undefined && dataset[i].workflowRule){
+                                obj.workflowId              = dataset[i].workflowRule.Id
+                                obj.workflowName            = dataset[i].workflowRule.Name
+                                obj.workflowActive          = dataset[i].workflowRule.Metadata.active
+
+                                if(dataset[i].workflowRule.Metadata.criteriaItems.length){
+
+                                    var criteriaItems = dataset[i].workflowRule.Metadata.criteriaItems
+
+                                    var formula = []
+
+                                    for(var c in criteriaItems){
+                                        formula.push(criteriaItems[c].field + ' ' + criteriaItems[c].operation + ' ' + criteriaItems[c].value)
+                                    }
+
+                                    var booleanFilter
+                                    if(dataset[i].workflowRule.Metadata.booleanFilter){
+                                        booleanFilter = dataset[i].workflowRule.Metadata.booleanFilter
+                                        for(f in formula){
+                                            var regex = new RegExp((parseInt(f) + 1))
+                                            booleanFilter = booleanFilter.replace(regex, formula[f])
+                                        }
+                                    }else{
+                                        booleanFilter = formula.join(' AND ')
+                                    }
+                                    obj.workflowFormula = booleanFilter
+
+                                }
+
+
+                            }
+
+                            if(dataset[i].emailAlert !== undefined && dataset[i].emailAlert){
+                                obj.emailAlertId            = dataset[i].emailAlert.Id
+                                obj.emailAlertName          = dataset[i].emailAlert.DeveloperName
+                            }
+
+                            if(dataset[i].emailAlert !== undefined && dataset[i].emailAlert){
+                                obj.emailAlertId            = dataset[i].emailAlert.Id
+                                obj.emailAlertName          = dataset[i].emailAlert.DeveloperName
+                                obj.emailTemplateId         = dataset[i].emailTemplate.Id
+                                obj.emailTemplateName       = dataset[i].emailTemplate.Name
+                                obj.emailTemplateIsActive   = dataset[i].emailTemplate.IsActive
+                               // obj.emailTemplateHTML       = dataset[i].emailTemplate.HtmlValue
+                               // obj.emailTemplateBody       = dataset[i].emailTemplate.Body
+                            }
+
+                            output.push(obj)
+
+                        }
+
+                        $scope.isLoading = false
+                        $scope.output = output
+
+                    })
+
+                }
+
+            }])
+
+            </script>
+        </body>
+    </html>
+    
+    
+    
+</apex:page>

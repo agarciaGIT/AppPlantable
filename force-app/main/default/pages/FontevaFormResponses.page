@@ -1,0 +1,2 @@
+<apex:page controller="FontevaClass" showHeader="false" sidebar="false" standardStylesheets="false" readOnly="false" contentType="text/csv#formResponses.csv" action="{!getFormResponses}">{!formDataOutput}
+</apex:page>

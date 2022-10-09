@@ -1,0 +1,29 @@
+.THIS {
+}
+
+.THIS .shortTable {
+    height: 400px !important;
+}
+
+.THIS .borderTop {
+    border-top: 1px solid rgb(221, 219, 218);
+}
+
+.THIS .borderBottom {
+    border-bottom: 1px solid rgb(221, 219, 218);
+}
+
+.THIS .inlineChk .slds-checkbox {
+    display: inline !important;
+}
+
+.THIS .resultBox {
+    -webkit-box-shadow: -2px -2px 2px 0px rgba(0,0,0,0.4);
+    -moz-box-shadow: -2px -2px 2px 0px rgba(0,0,0,0.4);
+    box-shadow: -2px -2px 2px 0px rgba(0,0,0,0.4);
+}
+
+.THIS .resultTable {
+    height: 600px;
+    width: 100%;
+}

@@ -1,0 +1,21 @@
+<apex:page sidebar="false" standardStylesheets="false">    
+    <apex:includeLightning />     
+    <div  id="componentContainer" />    
+  
+    <script>           
+         var infoString  = "{!JSENCODE($CurrentPage.parameters.OppId)}"; 
+    $Lightning.use("c:ScholarshipRefundsApp", function() {               
+        $Lightning.createComponent("c:ScholarshipRefunds",                   
+                                   {                       
+                                       OppId: infoString                    
+                                      
+                                   },                  
+                                       
+                                       "componentContainer",                   
+                                       function(cmp) {                      
+                                       console.log("LightningAppForVF loaded successfully in VF page");                   
+                                   }                
+                                       );           
+                                   });       
+                                       </script> 
+</apex:page>

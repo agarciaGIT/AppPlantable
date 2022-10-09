@@ -1,0 +1,29 @@
+<apex:page standardController="Exam_Administration__c" extensions="cloneExamAdminPageContrlr">
+    <apex:form >
+        <apex:pageMessages />
+        <apex:includeLightning />
+        <div  id="LightningCompContainer" style="height:1000px;"/>
+        <apex:actionFunction name="redirectFunction" action="{!redirectToExamAdmin}" rerender="none">
+            <apex:param name="newRecordId" value=""/>
+        </apex:actionFunction>
+    
+    <script>
+        $Lightning.use("c:cloneExamAdminApp", function() {
+            $Lightning.createComponent("c:cloneExamAdmin", {
+            },
+            "LightningCompContainer",
+            function(component) {
+               component.set("v.recordId",'{!$CurrentPage.parameters.id}');
+               $A.eventService.addHandler({ "event": "c:cloneExamAdminRespEvt", "handler" : handleReturnEvent});
+            });
+        });
+        function handleReturnEvent(event){
+            console.log('Inside VF Event Handler');
+            var eventResponse = event.getParam("newExamAdminId");
+            console.log('New Exam Admin Id'+eventResponse);
+            redirectFunction(eventResponse);
+        }
+ 
+    </script>
+    </apex:form>
+</apex:page>

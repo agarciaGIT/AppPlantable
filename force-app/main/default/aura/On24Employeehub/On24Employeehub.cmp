@@ -1,0 +1,5 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" access="global" >
+    <lightning:card title="ON24 Engagement Hub Access"> 
+     <lightning:button label="Access Now" class = "on24buttonClass" onclick="{!c.gotoOn24URL }"/>
+    </lightning:card>
+</aura:component>

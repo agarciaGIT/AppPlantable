@@ -1,0 +1,36 @@
+<aura:component implements="lightning:appHomeTemplate" description="Header, Two Columns and a Footer">
+	<aura:attribute name="top" type="Aura.Component[]" />
+    <aura:attribute name="left" type="Aura.Component[]" />
+    <aura:attribute name="right" type="Aura.Component[]" />
+    <aura:attribute name="bottomleft" type="Aura.Component[]" />
+    <aura:attribute name="bottomright" type="Aura.Component[]" />
+
+    <div>
+        <lightning:layout horizontalAlign="spread">
+            <lightning:layoutItem flexibility="grow"
+                                  class="">
+                {!v.top}
+            </lightning:layoutItem>            
+        </lightning:layout>
+                
+        <div class="slds-grid slds-gutters slds-wrap ">
+            <div class="slds-col slds-x-small-size_12-of-12 slds-medium-size_1-of-2 slds-m-top_small">
+                {!v.left}
+            </div>
+            <div class="slds-col slds-x-small-size_12-of-12 slds-medium-size_1-of-2 slds-m-top_small">
+                {!v.right}
+            </div>
+        </div>
+        
+        <div class="slds-grid slds-gutters slds-wrap ">
+            <div class="slds-col slds-x-small-size_12-of-12 slds-medium-size_1-of-2 slds-m-top_small">
+                {!v.bottomleft}
+            </div>
+            <div class="slds-col slds-x-small-size_12-of-12 slds-medium-size_1-of-2 slds-m-top_small">
+                {!v.bottomright}
+            </div>
+        </div>
+        
+    </div>
+    
+</aura:component>

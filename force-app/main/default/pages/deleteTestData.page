@@ -1,0 +1,21 @@
+<apex:page sidebar="false" standardStylesheets="false">    
+    <apex:includeLightning />     
+    <div  id="componentContainer" />    
+  
+    <script>           
+         var infoString  = "{!JSENCODE($CurrentPage.parameters.MemberId)}"; 
+    $Lightning.use("c:deleteTestDataApp", function() {               
+        $Lightning.createComponent("c:deleteTestData",                   
+                                   {                       
+                                       garpId: infoString                    
+                                      
+                                   },                  
+                                       
+                                       "componentContainer",                   
+                                       function(cmp) {                      
+                                       console.log("LightningAppForVF loaded successfully in VF page");                   
+                                   }                
+                                       );           
+                                   });       
+                                       </script> 
+</apex:page>

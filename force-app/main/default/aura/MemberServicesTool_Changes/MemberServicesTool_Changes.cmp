@@ -1,0 +1,227 @@
+<aura:component controller="MemberServicesTool_Controller">
+    <aura:attribute name="garpId" type ="String"/>
+    <aura:attribute name="typeSelected" type ="String"/>
+    <aura:attribute name="errorMsg" type ="String"/>
+    <aura:attribute name="picklistTitle" type ="String"/>
+    <aura:attribute name="picklist2Title" type ="String"/>
+    <aura:attribute name="showError" type ="Boolean"/>
+    <aura:attribute name="showPicklists" type ="Boolean" default="false"/>
+    <aura:attribute name="showExamGrp" type ="Boolean" default="false"/>
+    <aura:attribute name="selectedGrp" type="String"/>
+    <aura:attribute name="examGrpOptions" type="List"/>
+    <aura:attribute name="showAdmins" type ="Boolean" default="false"/>
+    <aura:attribute name="showAdmins2" type ="Boolean" default="false"/>
+    <aura:attribute name="showExamSitePart1" type ="Boolean" default="false"/>
+    <aura:attribute name="showExamSitePart2" type ="Boolean" default="false"/>
+    <aura:attribute name="showRadioGroup" type ="Boolean" default="false"/>
+    <aura:attribute name="showRegistrations" type ="Boolean" default="true"/>
+    <aura:attribute name="navigateNext" type ="Boolean"/>
+    <aura:attribute name="saveCompleted" type ="Boolean"/>
+    <aura:attribute name="disableFutureFreeDeferral" type ="Boolean"/>
+    <aura:attribute name="registrations" type="Exam_Attempt__c[]"/>
+    <aura:attribute name="value" type="String" default=""/>
+    <aura:attribute name="selectedRegistrations" type="List"/>
+    <aura:attribute name="selectedRegistrationsTypes" type="List"/>
+    <aura:attribute name="columns" type="List"/>
+    <aura:attribute name="part1AdminOptionsMap" type = "Map"/>
+    <aura:attribute name="part2AdminOptionsMap" type = "Map"/>
+    <aura:attribute name="part1AdminOptions" type="List"/>
+    <aura:attribute name="part2AdminOptions" type="List"/>
+    <aura:attribute name="selectedAdmin1" type="String"/>
+    <aura:attribute name="selectedAdmin2" type="String"/>
+    <aura:attribute name="part1ExamSiteOptions" type="List"/>
+    <aura:attribute name="part2ExamSiteOptions" type="List"/>
+    <aura:attribute name="selectedExamSite1" type="String"/>
+    <aura:attribute name="selectedExamSite2" type="String"/>
+    <aura:attribute name="selectedSubType" type="String"/>
+    <aura:attribute name="freeDeferralOptions" type="List" default="[
+                    {'label': 'Yes', 'value': 'Yes'},
+                    {'label': 'No', 'value': 'No'}
+                    ]"/>
+    <aura:attribute name="freeDeferralValue" type="String" default=""/>
+    <aura:attribute name="oneTimeDeferralValue" type="String" default=""/>
+    <aura:attribute type="Object" name="request" />
+    <aura:attribute name="spinner" type="Boolean" default="false" />
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <div class="slds-card">
+        <div class="slds-page-header">
+            <div class="slds-align_absolute-center">
+                <div class="slds-text-heading_large">
+                    <div class="slds-m-top_xx-large">
+                        Exam Registration
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slds-box slds-theme_default">
+            <div class="backgroundInverse">
+                <aura:if isTrue="{! v.spinner }">
+                    <lightning:spinner alternativeText="Loading"/>
+                </aura:if>
+            </div>
+            <div class="slds-align_absolute-center">
+                <aura:if isTrue="{!v.showError}">
+            		<p style="color:#FF0000;">{!v.errorMsg}</p>
+                </aura:if>
+            </div>
+            <aura:if isTrue="{!and(v.showRegistrations,!v.saveCompleted)}">
+                <div class="slds-grid">
+                    <div class="slds-col slds-size_2-of-12"> 
+                    </div>
+                    <div class="slds-col slds-size_8-of-12">
+                        <div class="slds-box">
+                            <lightning:datatable columns="{! v.columns }"
+                                                 data="{! v.registrations }"
+                                                 keyField="Id"
+                                                 onrowselection="{!c.handleSelect}"/>
+                        </div>
+                        <div class="slds-p-top_small" style="float:right">
+                            <lightning:button  variant="brand" 
+                                          class="slds-button slds-button_brand" 
+                                          label="Back"  
+                                          onclick="{!c.BackToMain}"/>    
+                            <lightning:button variant="brand" 
+                                                  label="Next" 
+                                                  class="slds-button slds-button_brand" 
+                                                  onclick="{!c.OnclickNextButton}"/>
+                        </div>
+                    </div>
+                </div>
+            </aura:if>
+            <aura:if isTrue="{! and(v.showPicklists,!v.saveCompleted)}">
+                <div class="slds-grid slds-m-top_xx-large">
+                    <div class="slds-col slds-size_3-of-12"> 
+                    </div>
+                    <div class="slds-col slds-size_6-of-12">
+                        <aura:if isTrue="{!v.showExamGrp}">
+                            <div>
+                                <lightning:select name="examGroup" 
+                                                  label="Select Exam Group"
+                                                  aura:id="examGroup" 
+                                                  value="{!v.selectedGrp}"
+                                                  required="true" 
+                                                  onchange="{!c.onExamGrpSelect }">
+                                    <option value="">...Select Exam Group...</option>
+                                    <aura:iteration items="{!v.examGrpOptions}" var="option">
+                                        <option text="{!option.Name}" value="{!option.Id}"/>
+                                    </aura:iteration>
+                                </lightning:select>
+                            </div>
+                        </aura:if>
+                        <aura:if isTrue="{!v.showAdmins}">
+                            <div>
+                                <lightning:select name="part1ExamAdmin" 
+                                                  label="{!v.picklistTitle}"
+                                                  aura:id="part1ExamAdmin" 
+                                                  value="{!v.selectedAdmin1}"
+                                                  required="true"
+                                                  onchange="{!c.onOptionSelectAdmin1 }">
+                                    <option value="">...Select Exam Admin...</option>
+                                    <aura:iteration items="{!v.part1AdminOptions}" var="option">
+                                        <option text="{!option.Name}" value="{!option.Id}"/>
+                                    </aura:iteration>
+                                </lightning:select>
+                            </div>
+                        </aura:if>
+                        <aura:if isTrue="{!v.showExamSitePart1}">
+                            <div>
+                                <lightning:select name="part1ExamSite" 
+                                                  label="Select Part 1/SCR Exam Site"
+                                                  aura:id="part1ExamSite" 
+                                                  value="{!v.selectedExamSite1}"
+                                                  required="true" 
+                                                  onchange="{!c.onExamSiteSelectPart1 }">
+                                    <option value="">...Select Exam Site...</option>
+                                    <aura:iteration items="{!v.part1ExamSiteOptions}" var="option">
+                                        <option text="{!option.Name}" value="{!option.Id}"/>
+                                    </aura:iteration>
+                                </lightning:select>
+                            </div>
+                        </aura:if>
+                        <aura:if isTrue="{!v.showAdmins2}">
+                            <div>
+                                <lightning:select name="part2ExamAdmin" 
+                                                  label="{!v.picklist2Title}"
+                                                  aura:id="part2ExamAdmin" 
+                                                  value="{!v.selectedAdmin2}"
+                                                  required="true" 
+                                                  onchange="{!c.onOptionSelectAdmin2 }">
+                                    <option value="">...Select Exam Admin...</option>
+                                    <aura:iteration items="{!v.part2AdminOptions}" var="option">
+                                        <option text="{!option.Name}" value="{!option.Id}"/>
+                                    </aura:iteration>
+                                </lightning:select>
+                            </div>
+                        </aura:if>
+                        <aura:if isTrue="{!v.showExamSitePart2}">
+                            <div>
+                                <lightning:select name="part2ExamSite" 
+                                                  label="Select Part 2 Exam Site"
+                                                  aura:id="part2ExamSite" 
+                                                  value="{!v.selectedExamSite2}"
+                                                  required="true" 
+                                                  onchange="{!c.onExamSiteSelectPart2 }">
+                                    <option value="">...Select Exam Site...</option>
+                                    <aura:iteration items="{!v.part2ExamSiteOptions}" var="option">
+                                        <option text="{!option.Name}" value="{!option.Id}"/>
+                                    </aura:iteration>
+                                </lightning:select>
+                            </div>
+                        </aura:if>
+                        <aura:if isTrue="{!or(v.showAdmins,v.showAdmins2)}">
+                            <lightning:select name="subType" 
+                                              label="Select Deferral Subtype"
+                                              aura:id="subType" 
+                                              value="{!v.selectedSubType}"
+                                              required="true" 
+                                              onchange="{!c.onSubTypeSelect }">
+                                <option value="">...Select Subtype...</option>
+                                <option value="Deferral Standard">Deferral Standard</option>
+                                <option value="Deferral LDR">Deferral LDR</option>
+                                <option value="Deferral Free">Deferral Free</option>
+                                <option value="Deferral COVID">Deferral COVID</option>
+                                <option value="Deferral Excused Absence">Deferral Excused Absence</option>
+                                <option value="Deferral Postponement">Deferral Postponement</option>
+                            </lightning:select>
+                            <lightning:radioGroup name="freeDeferralCheck"
+                                                  aura:id="radioGroup"
+                                                  label="Free Deferral?"
+                                                  options="{! v.freeDeferralOptions }"
+                                                  value="{! v.freeDeferralValue }"
+                                                  type="radio"
+                                                  required="true"/>
+                            <lightning:radioGroup name="oneTimeDeferralCheck"
+                                                  aura:id="radioGroup"
+                                                  label="Do Not Count Against One Time Deferral Option?"
+                                                  options="{! v.freeDeferralOptions }"
+                                                  value="{! v.oneTimeDeferralValue }"
+                                                  type="radio"
+                                                  required="true"
+                                                  disabled="{!v.disableFutureFreeDeferral}"
+                                                  title="Required when moving to Next group"/>
+                        </aura:if>
+                        <div class="slds-p-top_small" style="float:right">
+                            	<lightning:button  variant="brand" 
+                                          class="slds-button slds-button_brand" 
+                                          label="Back"  
+                                          onclick="{!c.BackToExamReg}"/>
+                                <lightning:button variant="brand" 
+                                                  label="Save" 
+                                                  class="slds-button slds-button_brand" 
+                                                  onclick="{!c.saveButton}"/>
+                        </div>
+                    </div>
+                </div>
+            </aura:if>
+            <aura:if isTrue="{!v.saveCompleted}">
+                <div class="slds-grid">
+                    <div class="slds-col slds-size_3-of-12"> 
+                    </div>
+                    <div class="slds-col slds-size_6-of-12 slds-align_absolute-center">
+                        <p>Data saved successfully</p>
+                    </div>
+                </div>
+            </aura:if>
+        </div>
+    </div>
+</aura:component>

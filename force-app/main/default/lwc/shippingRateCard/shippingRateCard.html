@@ -1,0 +1,23 @@
+<template>
+    <lightning-card class="garp-slds">
+        <h3 slot="title">
+            SHIPPING RATE
+        </h3>
+        <template if:true={noAddress}>
+            <p>Please enter your billing and shipping information to view your shipping rate.</p>
+        </template>
+
+        <template if:true={rateNotFound}>
+            <p>There are no shipping options for this address, please enter a new address or contact memberservices@garp.com for help.</p>
+        </template>
+
+        <template if:true={hasCharge}>
+            <div>USD <lightning-formatted-number
+                value={sObjData.Shipping_Charge__c}
+                format-style="currency"
+                currency-code="USD"
+            >
+            </lightning-formatted-number></div>
+        </template>
+    </lightning-card>
+</template>

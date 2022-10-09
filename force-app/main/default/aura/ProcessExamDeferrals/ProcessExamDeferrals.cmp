@@ -1,0 +1,11 @@
+<aura:component implements="flexipage:availableForRecordHome,force:hasRecordId,force:lightningQuickActionWithoutHeader" 
+                controller="ProcessExamDeferrals" >
+	<aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:attribute name="showMessage" type="Boolean" default="false" access="private"/>
+    <aura:attribute name="responseMessage" type="String" access="private"/>
+    <aura:renderIf isTrue="{!v.showMessage}">
+        <div id="responseMsg">
+            <lightning:formattedText value="{!v.responseMessage}"/>
+        </div>
+    </aura:renderIf>
+</aura:component>

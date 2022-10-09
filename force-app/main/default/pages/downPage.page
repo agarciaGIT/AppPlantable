@@ -1,0 +1,181 @@
+<apex:page standardStylesheets="false" sidebar="false" showHeader="false" applyBodyTag="false" cache="false" applyHtmlTag="false" docType="html-5.0">
+    
+    
+    <apex:variable var="envPath" value="{!URLFOR($Resource.downPageResources)}" />
+
+<head>
+    <link rel="stylesheet" type="text/css" href="{!envPath}/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="{!envPath}/master_styles.css" />
+    <script type="text/javascript" src="{!envPath}/jquery.min.js"></script>
+    <script type="text/javascript" src="{!envPath}/script.js"></script>
+</head>
+<div style="background: #081a31;height: 39px;"></div>
+<div class="g-p-upgrade">
+    
+    <div class="g-l-centered-element g-l-centered-element--1200 g-u-margin-top--half section-1">
+
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-12 text-center">
+                    <img style="margin: 0 auto;" src="{!envPath}/imgs/garp_logo.png" title="Global Association of Risk Professionals" alt="Global Association of Risk Professionals" class="img-responsive" />
+                </div>
+            </div>
+            <div class="row g-u-margin-top--half">
+                <h2 class="g-c-h2 g-u-font-light g-u-medium-grey text-center">Excuse Us as <br />We Update Our Website</h2>
+            </div>
+            <div class="row g-u-margin-top--third">
+                <div class="col-lg-offset-2 col-lg-4 col-md-6 col-sm-12 g-u-margin-top--small">
+                    <div class="g-c-info-box">
+                        <g-gem class="gem-2 small gem-c--frm" type="'gem-2'" style="transform: scale(1);">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 213.43 237.42">
+                                <polygon points="213.43 197.51 71.83 98.7 213.43 0 213.43 197.51"></polygon>
+                                <polygon points="213.43 197.51 155.68 98.7 213.43 0 213.43 197.51"></polygon>
+                                <polygon points="213.43 197.51 71.83 98.7 155.68 98.76 213.43 197.51"></polygon>
+                                <polygon points="71.86 98.81 171.21 168.08 71.86 237.42 71.86 98.81"></polygon>
+                                <polygon points="71.86 98.81 112.38 168.08 71.86 237.42 71.86 98.81"></polygon>
+                                <polygon points="112.38 168.12 171.21 168.08 71.86 237.42 112.38 168.12"></polygon>
+                                <polygon points="71.83 237.39 0 187.27 71.83 137.21 71.83 237.39"></polygon>
+                                <polygon points="71.83 237.39 42.53 187.27 71.83 137.21 71.83 237.39"></polygon>
+                                <polygon points="71.83 237.39 0 187.27 42.53 187.3 71.83 237.39"></polygon>
+                            </svg>
+                        </g-gem>
+                        <h3 class="g-c-h3 g-u-font-bold g-u-margin-top--none">
+                            <a href="https://my.garp.org/sfdcApp#!/exam/registration/frm"
+                            analytics-on="click"
+                            analytics-event="click_text" 
+                            analytics-category="box1" 
+                            analytics-label="upgrade_frm">Financial<br/> Risk Manager<br/> (FRM&reg;) EXAM</a>
+                        </h3>
+                        <p class="g-u-margin-top--x-small">The globally recognized standard for those who manage financial risk.</p>
+                        <p class="g-u-margin-top--small">
+                            <a class="g-c-btn" href="https://my.garp.org/sfdcApp#!/exam/registration/frm"
+                            analytics-on="click"
+                            analytics-event="click_button" 
+                            analytics-category="box1" 
+                            analytics-label="upgrade_frm">Register Now</a></p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6 col-sm-12 g-u-margin-top--small">
+                    <div class="g-c-info-box g-c-info-box--erp">
+                        <g-gem class="gem-2 small gem-c--erp" type="'gem-2'" style="transform: scale(1);">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 213.43 237.42">
+                                <polygon points="213.43 197.51 71.83 98.7 213.43 0 213.43 197.51"></polygon>
+                                <polygon points="213.43 197.51 155.68 98.7 213.43 0 213.43 197.51"></polygon>
+                                <polygon points="213.43 197.51 71.83 98.7 155.68 98.76 213.43 197.51"></polygon>
+                                <polygon points="71.86 98.81 171.21 168.08 71.86 237.42 71.86 98.81"></polygon>
+                                <polygon points="71.86 98.81 112.38 168.08 71.86 237.42 71.86 98.81"></polygon>
+                                <polygon points="112.38 168.12 171.21 168.08 71.86 237.42 112.38 168.12"></polygon>
+                                <polygon points="71.83 237.39 0 187.27 71.83 137.21 71.83 237.39"></polygon>
+                                <polygon points="71.83 237.39 42.53 187.27 71.83 137.21 71.83 237.39"></polygon>
+                                <polygon points="71.83 237.39 0 187.27 42.53 187.3 71.83 237.39"></polygon>
+                            </svg>
+                        </g-gem>
+                        <h3 class="g-c-h3 g-u-font-bold g-u-margin-top--none">
+                            <a href="https://my.garp.org/sfdcApp#!/exam/registration/erp"
+                            analytics-on="click" 
+                            analytics-event="click_text" 
+                            analytics-category="box2" 
+                            analytics-label="upgrade_erp">Energy Risk<br/> Professional<br/> (ERP&reg;) EXAM</a>
+                        </h3>
+                        <p class="g-u-margin-top--x-small">The first and leading global designation for energy professionals.</p>
+                        <p class="g-u-margin-top--small">
+                            <a class="g-c-btn" href="https://my.garp.org/sfdcApp#!/exam/registration/erp"
+                            analytics-on="click" 
+                            analytics-event="click_button" 
+                            analytics-category="box2" 
+                            analytics-label="upgrade_erp">Register Now</a></p>
+                    </div>
+                </div>
+            </div>
+            <div class="row g-u-margin-top--half">
+                <div class="col-sm-offset-3 col-sm-6 text-center">
+                    <p>We hope to have the full website back up soon. Exam candidates who need immediate assistance please contact <a href="mailto:memberservices@garp.com">memberservices@garp.com</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Page Footer -->
+<div class="g-u-margin-top--two-thirds g-u-bg--light-grey g-c-page-footer">
+    <div class="g-c-angle-mask g-c-angle-mask--top" style="background-image: url('{!envPath}/diagonal-white-top.svg');"></div>
+    <g-gem class="gem-footer gem-c--corp" type="'gem-footer'" style="transform: scale(1);">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 258.21 288.09">
+            <polygon points="0 30.24 139.66 169.89 169.97 0 0 30.23 0 30.24"></polygon>
+            <polygon points="0 30.24 139.66 169.89 110.7 59.28 0 30.23 0 30.24"></polygon>
+            <polygon points="110.65 59.24 169.97 0 0 30.24 110.65 59.24"></polygon>
+            <polygon points="0 30.73 0 288.09 258.21 288.09 0 30.73"></polygon>
+        </svg>
+    </g-gem>
+</div>
+<!-- End Page Footer -->
+
+<footer style="min-height: auto;">
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-6">
+                <p>We are a not-for-profit organization and the leading globally recognized membership association for risk managers.</p>
+                <p>&copy; 2019 Global Association of Risk Professionals</p>
+            </div>
+            <div class="col-sm-6">
+                <table class="social-icons table" style="margin-top: 0">
+                    <tbody>
+                        <tr>
+                            <td style="position: relative">
+                                <a id="showWeChat" href="" style="outline:0;">
+                                    <i class="fa fa-weixin"></i>
+                                </a>
+                                <div id="weChatQRCode" style="display: none; position: absolute; left: 0; top: -145px; width: 154px;">
+                                    <img src="{!envPath}/imgs/GARP-China-QR-code.jpg" class="img-responsive" style="display: block; margin: -1rem auto;" alt="GARP weChat/weixin QR code" />
+                                </div>
+                            </td>
+                            <td>
+                                <a href=" https://www.facebook.com/GARPRisk" target="_blank">
+                                    <i class="fa fa-facebook"></i>
+                                </a>
+                            </td>
+                            <td>
+                                <a href="https://twitter.com/GARP_Risk" target="_blank">
+                                    <i class="fa fa-twitter"></i>
+                                </a>
+                            </td>
+                            <td>
+                                <a href="https://www.linkedin.com/company/global-association-of-risk-professionals" target="_blank">
+                                    <i class="fa fa-linkedin"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <a href="https://instagram.com/garp_risk" target="_blank">
+                                    <i class="fa fa-instagram"></i>
+                                </a>
+                            </td>
+                            <td>
+                                <a href="https://weibo.com/garpfrm" target="_blank">
+                                    <i class="fa fa-weibo"></i>
+                                </a>
+                            </td>
+                            <td>
+                                <a href="https://www.youtube.com/user/GARPvideo" target="_blank">
+                                    <i class="fa fa-youtube"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</footer>
+<script>
+$( document ).ready(function() {
+    $('#showWeChat').click(function(e) {
+        e.preventDefault();
+        $('#weChatQRCode').toggle();
+    });
+});
+</script>      
+</apex:page>

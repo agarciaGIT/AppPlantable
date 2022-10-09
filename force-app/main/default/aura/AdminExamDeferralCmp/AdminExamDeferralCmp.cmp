@@ -1,0 +1,157 @@
+<aura:component controller="AdminExamDeferralClass" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickActionWithoutHeader" access="global">
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:handler event="aura:doneWaiting" action="{!c.hideSpinner}"/>
+    <aura:attribute name="spinner" type="boolean" default="FALSE"/>
+    <aura:attribute name="isSectionShow" type="String" default="Group"/>
+    <aura:attribute name="ExadminObj" type="Object"/>
+    <aura:attribute name="fromExamAdminList" type="Object"/>
+    <aura:attribute name="fromtoEmpty" type="String"/>
+    <aura:attribute name="Admincolumns" type="List"/>
+    <aura:attribute name="examPartcolumns" type="List"/>
+    <aura:attribute name="examPartList" type="Object"/>
+    <aura:attribute name="examPartMap" type="Map" default="{'FRM':null,'ERP':null}"/>
+    <aura:attribute name="isButtonDisabled" type="Boolean" default="true"/>
+    <aura:attribute name="ToExamAdministrations" type="Map" />
+    <aura:attribute name="ExamSitecolumns" type="List"/>
+    <aura:attribute name="ExamSiteMapList" type="Map"/>
+    <aura:attribute name="SelectedExamSiteMapList" type="Map" default="{}"/>
+    <aura:attribute name="ExamSiteMapData" type="Map"/>
+    <aura:attribute name="examAdminExamList" type="List"/>
+    <aura:attribute name="columns" type="List"/>
+    <aura:attribute name="ExamToAdminMapData" type="Map" default="{}"/>  
+    <aura:attribute name="ExamGroupList" type="List"/> 
+    
+    
+    <div class="slds-col modal-header slds-modal__header">
+        <h1 class="slds-page-header__title">Exam Group</h1>
+        <p class="slds-text-body_small slds-line-height_reset">From/To Exam Group</p>
+    </div>  
+    <div class="slds-box slds-theme_shade">
+        <aura:if isTrue="{!v.spinner}">
+        <div aura:id="spinnerId" class="slds-spinner_container">
+            <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="alert">
+                <span class="slds-assistive-text">Loading...</span>
+                <div class="slds-spinner__dot-a"></div>
+                <div class="slds-spinner__dot-b"></div>
+            </div>
+        </div>
+    </aura:if>
+        <aura:if isTrue="{!v.isSectionShow == 'Group'}"> 
+            <div class="slds-grid"> 
+                <div class="slds-col slds-size_1-of-12"/>
+                <div class="slds-col slds-size_3-of-12">   
+                    <lightning:select name="Fromld"  value="{!v.ExadminObj.FromGroupId}" label="From" > 
+                        <option value="">-- None --</option>
+                        <aura:iteration items="{!v.ExamGroupList}" var="val" indexVar="index">
+                            <option value="{!val.Id}">{!val.Name}</option>
+                        </aura:iteration>
+                    </lightning:select>
+                </div> 
+                <div class="slds-col slds-size_1-of-12"/>  
+                <div class="slds-col slds-size_3-of-12">    
+                    <lightning:select name="Told"  value="{!v.ExadminObj.ToGroupId}" label="To" > 
+                        <option value="">-- None --</option>
+                        <aura:iteration items="{!v.ExamGroupList}" var="val"  indexVar="index">
+                            <option value="{!val.Id}">{!val.Name}</option>
+                        </aura:iteration>
+                    </lightning:select> 
+                </div>
+                <div class="slds-col slds-size_1-of-12"/> 
+                <div class="slds-col slds-size_2-of-12">
+                    <br/><br/>
+                    <lightning:button  variant="brand" class="slds-button slds-button_neutral" label="Search"  onclick="{!c.SearchExamAdministrations}"/> 
+                    <lightning:button  variant="brand" class="slds-button slds-button_neutral" label="Next"  onclick="{!c.onClickNextButton}" disabled="{!v.isButtonDisabled}"/> 
+                    
+                </div>
+            </div>
+            <aura:if isTrue="{!not(empty(v.fromExamAdminList))}">
+                <lightning:card title="From Exam Administrations">
+                    <div class="slds-scrollable" style="max-height: 15rem; width: 84rem"> 
+                        <lightning:datatable
+                                             keyField="id"
+                                             data="{! v.fromExamAdminList }"
+                                             columns="{! v.Admincolumns }"
+                                             maxRowSelection="1" onrowselection="{! c.getAdminFromObject }"/>
+                    </div>
+                </lightning:card>
+            </aura:if>
+            <br/>
+            <aura:if isTrue="{!not(empty(v.examPartList))}">
+                <lightning:card title="From Group Related Part Exams">
+                    <div class="slds-scrollable" style="max-height: 15rem; width: 84rem">
+                        <lightning:datatable
+                                             keyField="id"
+                                             data="{! v.examPartList }"
+                                             columns="{! v.examPartcolumns }"  onrowselection="{! c.getselectedExamPart }"/>
+                    </div>
+                </lightning:card>
+            </aura:if>
+            <aura:if isTrue="{!not(empty(v.examAdminExamList))}">
+                <lightning:card title="From Group Related Exams">
+                    <div class="slds-scrollable" style="max-height: 15rem; width: 84rem">
+                        <lightning:datatable
+                                             keyField="id"
+                                             data="{! v.examAdminExamList }"
+                                             columns="{! v.columns }"  onrowselection="{! c.getFromGroupExamSelection }"/>
+                    </div>
+                </lightning:card> 
+            </aura:if>
+        </aura:if>
+        <aura:if isTrue="{!v.isSectionShow == 'To Exam Admin'}">  
+            <br/>
+            <lightning:button  variant="brand" class="slds-button slds-button_neutral" label="Back"  onclick="{!c.backButton}"/>
+            <lightning:button  variant="brand" class="slds-button slds-button_neutral" label="Search Site"  onclick="{!c.getSitesButton}"/>
+            <br/> 
+            <lightning:card title="To Exam Administrations">  
+                <aura:iteration items="{!v.ToExamAdministrations}"  var="mapKey">  
+                    <br/><strong><p>{!mapKey.key}</p></strong> <br/>
+                    <div class="slds-scrollable" style="max-height: 10rem; width: 84rem">
+                        <lightning:datatable title="{!mapKey.key}"
+                                             keyField="id"
+                                             data="{!mapKey.value}"
+                                             columns="{!v.Admincolumns}" maxRowSelection="1" onrowselection="{!c.getToAdminSelection}"/>
+                    </div>
+                </aura:iteration> 
+            </lightning:card>  
+        </aura:if>
+        <aura:if isTrue="{!v.isSectionShow == 'Exam Site'}">
+            <lightning:button  variant="brand" class="slds-button slds-button_neutral" label="Back"  onclick="{!c.backButton}"/>
+            <lightning:button  variant="brand" class="slds-button slds-button_neutral" label="Save"  onclick="{!c.saveExamAdmin}"/>
+            <lightning:card title="Exam Sites">
+                <div class="slds-grid"> 
+                    <div class="slds-col slds-size_2-of-12"/>
+                    <lightning:select name="Fromld"  value="{!v.ExadminObj.ensOfExamGroup}" label="End of Exam Group Registration Deferral" > 
+                        <option value="">-- None --</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                    </lightning:select>
+                    <div class="slds-col slds-size_2-of-12"/>
+                    <lightning:select name="Fromld"  value="{!v.ExadminObj.moveSelectedMembers}" label="Move Selected Members" > 
+                        <option value="">-- None --</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                    </lightning:select>
+                    <div class="slds-col slds-size_2-of-12"/>
+                    <lightning:select name="subType"  value="{!v.ExadminObj.subType}" label="Deferral Subtype" > 
+                        <option value="">...Select Subtype...</option>
+                        <option value="Deferral Standard">Deferral Standard</option>
+                        <option value="Deferral LDR">Deferral LDR</option>
+                        <option value="Deferral Free">Deferral Free</option>
+                        <option value="Deferral COVID">Deferral COVID</option>
+                        <option value="Deferral Excused Absence">Deferral Excused Absence</option>
+                        <option value="Deferral Postponement">Deferral Postponement</option>
+                    </lightning:select>
+                </div>
+                <aura:iteration items="{!v.ExamSiteMapList}"  var="mapKey" indexVar="key">  
+                    <br/> <strong><p>{!mapKey.key}</p></strong> <br/>
+                    <div class="slds-scrollable" style="max-height: 10rem; width: 84rem">
+                        <lightning:datatable class="{!mapKey.key}"	
+                                             keyField="id"
+                                             data="{!mapKey.value}"
+                                             columns="{!v.ExamSitecolumns}"  onrowselection="{!c.getSiteSelection}"/>
+                    </div>
+                </aura:iteration> 
+            </lightning:card>
+        </aura:if>
+    </div>
+</aura:component>

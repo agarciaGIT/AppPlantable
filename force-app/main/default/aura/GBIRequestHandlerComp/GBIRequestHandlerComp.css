@@ -1,0 +1,17 @@
+/*
+	.THIS.shadowBox = shadowBox is immediate child of this Lightning Component
+ */
+.THIS.shadowBox, .THIS .shadowBox {
+    -webkit-box-shadow: 8px 8px 4px 0px rgba(174,198,227,0.8);
+    -moz-box-shadow: 8px 8px 4px 0px rgba(174,198,227,0.8);
+    box-shadow: 8px 8px 4px 0px rgba(174,198,227,0.8);
+}
+
+.THIS .boldText {
+    font-weight: bold;
+}
+
+.THIS.cardPaddingForBox {
+    padding-left: .75rem !important;
+    padding-right: .75rem !important;
+}

@@ -1,0 +1,28 @@
+@import 'c/styles';
+
+.notification-container {
+    height: 64px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding-left: 15px;
+    padding-right: 15px;
+    --slds-c-icon-color-foreground-default: rgb(8, 26, 49);
+}
+
+
+
+.notification-marker {
+    color: white;
+    position: absolute;
+    right: -6px;
+    top: -3px;
+    height: 15px;
+    width: 15px;
+    border-radius: 100%;
+    background-color: red;
+    font-size: 12px;
+    text-align: center;
+    font-weight: bold;
+    line-height: 15px;
+}

@@ -1,0 +1,272 @@
+<template>
+    <div data-id="styles"></div>
+    <template if:true={isDataLoaded}>
+
+        <template if:true={isRegistration}>
+
+            <article class="garp-slds">
+                <lightning-input
+                type="text" 
+                data-id="Title" 
+                label="Title" 
+                value={contact.Title} 
+                onchange={handleFormInputChange} 
+                data-customvalidation="WesternOnly" 
+                data-customvalidationmsg="Your entry must only use western characters." 
+                minlength="2" 
+                message-when-too-short="Your entry must be at least 2 characters."
+                maxlength="255"
+                disabled={isSaving}
+                class="slds-m-top--large"
+                required
+            >
+            </lightning-input>
+
+            <c-lwc-custom-lookup
+                -label="Company"
+                data-id="Company__c"
+                institution-type="Organization"
+                select-record-id={selectedInstitutionId}
+                select-record-name={contact.Company__c}
+                onselected={selectInstitution}
+                onsearch={searchInstitution}
+                class="slds-m-top--large"
+                required=true
+                field-error="Company is a required field"
+            >
+            </c-lwc-custom-lookup>
+
+            </article>
+
+        </template>
+        <template if:true={isNotRegistration}>
+
+            <lightning-card class="garp-slds">
+
+                <template if:true={isNotEventRegistration}>
+                    <div slot="footer" class="slds-align_absolute-center">
+                        <template if:true={isPopup}>
+                            <lightning-button variant="brand" label="Submit" title="Submit" onclick={handleUpdateClick} class="" disabled={isSaving}></lightning-button>
+                        </template>   
+                        <template if:true={isNotPopup}>
+                            <div class="slds-grid slds-wrap slds-gutters_small" style="width: 100%;">
+                                <div class="slds-col slds-size_6-of-12 slds-text-align_left">
+                                    <lightning-button variant="brand" label="Continue" title="Continue" onclick={handleContinueClick} class="inverse" disabled={isSaving}></lightning-button>
+                                </div>
+                                <div class="slds-col slds-size_6-of-12 slds-text-align_right">
+                                    <lightning-button variant="brand" label="Submit" title="Submit" onclick={handleUpdateClick} class="" disabled={isSaving}></lightning-button>
+                                </div>
+                            </div>
+                        </template>   
+                    </div>
+                </template>
+
+                <article class={registrationTypeClass}>
+
+                    <h3>JOB INFORMATION</h3>
+
+                    <lightning-radio-group
+                        name="radioGroup"
+                        data-id="Currently_Working_Status__c" 
+                        label="Work Status"
+                        options={workingOptions}
+                        value={contact.Currently_Working_Status__c}
+                        onchange={handleFormInputChange}
+                        type="radio"
+                        class="slds-m-top--large"
+                        required
+                        ></lightning-radio-group>
+                    
+                    <lightning-combobox 
+                        name="Area_of_Concentration__c"
+                        data-id="Area_of_Concentration__c" 
+                        label="What industry do/did you work in?"
+                        value={contact.Area_of_Concentration__c} 
+                        onchange={handleFormInputChange}
+                        placeholder="Select Industry"
+                        options={industryOptions}
+                        disabled={isSaving}
+                        class="slds-m-top--large"
+                        required
+                    >
+                    </lightning-combobox>
+                    
+                    <lightning-combobox 
+                        name="Industry_Working_Year__c"
+                        data-id="Industry_Working_Year__c" 
+                        label="What year did you start working in the industry?"
+                        value={contact.Industry_Working_Year__c} 
+                        onchange={handleFormInputChange}
+                        placeholder="Select Year"
+                        options={workingYearOptions}
+                        disabled={isSaving}
+                        class="slds-m-top--large"
+                        required
+                    >
+                    </lightning-combobox>
+
+                    <c-lwc-custom-lookup
+                    -label="Current/Last Company"
+                    data-id="Company__c"
+                    institution-type="Organization"
+                    select-record-id={selectedInstitutionId}
+                    select-record-name={contact.Company__c}
+                    onselected={selectInstitution}
+                    onsearch={searchInstitution}
+                    class="slds-m-top--large"
+                    style="display: block;"
+                    required=true
+                    field-error="Company is a required field"
+                    >
+                    </c-lwc-custom-lookup>
+
+                    <lightning-combobox
+                    name="Corporate_Title__c"
+                    data-id="Corporate_Title__c" 
+                    label="What is your professional level?"
+                    value={contact.Corporate_Title__c} 
+                    onchange={handleFormInputChange}
+                    placeholder="Select"
+                    options={professionalLevelOptions}
+                    disabled={isSaving}
+                    class="slds-m-top--large"
+                    required
+                    >
+                    </lightning-combobox>
+
+                    <lightning-combobox
+                        name="Job_Function__c"
+                        data-id="Job_Function__c" 
+                        label="Job Function"
+                        value={contact.Job_Function__c} 
+                        onchange={handleFormInputChange}
+                        placeholder="Select Job Function"
+                        options={jobFunctionOptions}
+                        disabled={isSaving}
+                        class="slds-m-top--large"
+                        required
+                    >
+                    </lightning-combobox>
+
+                    <template if:true={isJobFunctionRisk}>
+                        <lightning-combobox
+                            name="Risk_Specialty__c"
+                            data-id="Risk_Specialty__c" 
+                            label="What is your risk specialty?"
+                            value={contact.Risk_Specialty__c} 
+                            onchange={handleFormInputChange}
+                            placeholder="Select Risk Specialty"
+                            options={riskSpecialtyOptions}
+                            disabled={isSaving}
+                            class="slds-m-top--large"
+                            required
+                        >
+                        </lightning-combobox>
+                    </template>
+                    
+                    <lightning-combobox
+                        name="Risk_Management_Working_Year__c"
+                        data-id="Risk_Management_Working_Year__c" 
+                        label="What year did you start working in Risk Management?"
+                        value={contact.Risk_Management_Working_Year__c} 
+                        onchange={handleFormInputChange}
+                        placeholder="Select Year"
+                        options={workingYearOptions}
+                        disabled={isSaving}
+                        class="slds-m-top--large"
+                        required
+                    >
+                    </lightning-combobox>
+
+                    <lightning-checkbox-group 
+                        name="Checkbox Group"
+                        label="Do you currently hold any professional designations?"
+                        data-id="ProfessionalDesignations" 
+                        options={professionalDesignationOptions}
+                        value={professionalDesignationSelections}
+                        onchange={handleFormInputChange}
+                        class="slds-m-top--large"
+                    ></lightning-checkbox-group>
+
+                    <template if:true={isDesignationOther}>
+                        <lightning-input
+                            type="text" 
+                            data-id="Other_Qualifications__c" 
+                            label="Other Qualifications" 
+                            value={contact.Other_Qualifications__c} 
+                            onchange={handleFormInputChange} 
+                            data-customvalidation="WesternOnly" 
+                            data-customvalidationmsg="Your entry must only use western characters." 
+                            minlength="2" 
+                            message-when-too-short="Your entry must be at least 2 characters."
+                            maxlength="255"
+                            disabled={isSaving}
+                            class="slds-m-top--large"
+                        >
+                        </lightning-input>
+                    </template> 
+                </article>
+
+                <article class={registrationTypeClass}>
+                    <h3>ACADEMIC INFORMATION</h3>
+
+                    <c-lwc-custom-lookup
+                        -label="Current or Most Recent School Attended"
+                        institution-type="Academic"
+                        select-record-id={selectedInstitutionId}
+                        select-record-name={contact.School_Name__c}
+                        onselected={selectInstitution}
+                        onsearch={searchInstitution}
+                        class="slds-m-top--large"
+                        style="display: block;"
+                        field-error="School is a required field"
+                        required
+                    >
+                    </c-lwc-custom-lookup>
+
+                    <lightning-combobox
+                        name="Highest_Degree__c"
+                        data-id="Highest_Degree__c" 
+                        label="Degree Program"
+                        value={contact.Highest_Degree__c} 
+                        onchange={handleFormInputChange}
+                        placeholder="Select Degree"
+                        options={degreeOptions}
+                        disabled={isSaving}
+                        class="slds-m-top--large"
+                        required
+                    >
+                    </lightning-combobox>
+
+                    <lightning-combobox
+                        name="Expected_Graduation_Date__c"
+                        data-id="Expected_Graduation_Date__c" 
+                        label="Year of Graduation"
+                        value={contact.Expected_Graduation_Date__c} 
+                        onchange={handleFormInputChange}
+                        placeholder="Select Year"
+                        options={graduationYearOptions}
+                        disabled={isSaving}
+                        class="slds-m-top--large"
+                        required
+                    >
+                    </lightning-combobox>
+                    
+                    <lightning-combobox
+                        name="Expected_Graduation_Month__c"
+                        data-id="Expected_Graduation_Month__c" 
+                        label="Graduation Month"
+                        value={contact.Expected_Graduation_Month__c} 
+                        onchange={handleFormInputChange}
+                        placeholder="Select Month"
+                        options={graduationMonthOptions}
+                        disabled={isSaving}
+                        class="slds-m-top--large"
+                        required
+                    >
+                    </lightning-combobox>                
+                </article>
+            </lightning-card>
+        </template>
+    </template>
+</template>

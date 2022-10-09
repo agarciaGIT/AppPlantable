@@ -1,0 +1,68 @@
+<aura:component controller="PortalUser_CTRL" implements="force:hasRecordId,flexipage:availableForAllPageTypes"
+                    description="display portal user button or info">
+
+
+    <!--External-->
+    <aura:attribute name="recordId" type="String" description="Id of the current record. This attribute is taken from record home by the force:hasRecordId implementation." />
+
+    <!--Internal-->
+    <aura:attribute name="hasPortalUser" type="Boolean" description="does current record has a portal user? decided after server call" />
+    <aura:attribute name="orgId" type="String" description="Id of the org. decided after server call" />
+    <aura:attribute name="portalId" type="String" description="Id of the portal/community. decided after server call" />
+    <aura:attribute name="contactId" type="String" description="Id of the current contact. decided after server call (should be same as recordId)" />
+    <aura:attribute name="userId" type="String" description="Id of the portal user to get or create. decided after server call" />
+    <aura:attribute name="hasError" type="Boolean" description="does component has error" default="{!false}" />
+    <aura:attribute name="errorMessage" type="String" description="Show the error message if error occur" />
+
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <!--This is to listen to other changes that may change this component - so refresh it-->
+    <aura:handler event="force:refreshView" action="{!c.doInit}" />
+
+
+    <!--add a toast error handler-->
+    <c:ErrorHandler aura:id="errorHandler" />
+
+    <lightning:card title="Portal">
+        <div class="slds-grid slds-grid_align-center slds-wrap">
+            <div class="spinner-container">
+
+                <lightning:spinner aura:id="uploadingSpinner" size="small" class="slds-hide" />
+
+                <aura:if isTrue="{!v.hasError}" >
+
+                    <div class="slds-grid slds-wrap">
+                        <div class="slds-size_1-of-1 slds-text-align_center slds-truncate">
+                            <lightning:icon iconName="action:close" title="{!v.errorMessage}" alternativeText="{!v.errorMessage}" size="medium" />
+                        </div>
+                    </div>
+
+                    <aura:set attribute="else">
+
+                        <aura:if isTrue="{!v.hasPortalUser}" >
+                            <div class="slds-grid slds-wrap">
+                                <div class="slds-size_1-of-1 slds-text-align_center">
+                                    <lightning:buttonIcon iconName="utility:user" variant="border-filled" size="large" onclick="{!c.loginAsPortalUser}" aura:id="buttonLogin" title="Log in As Portal User" alternativeText="Log in As Portal User" />
+                                </div>
+                                <div class="slds-size_1-of-1 slds-text-align_center">Login</div>
+                            </div>
+
+                            <aura:set attribute="else" >
+                                <div class="slds-grid slds-wrap">
+                                    <div class="slds-size_1-of-1 slds-text-align_center">
+                                        <lightning:buttonIcon iconName="utility:add" variant="border-filled" size="large" onclick="{!c.createUser}" aura:id="buttonAdd" title="Create User" alternativeText="Create User" />
+                                    </div>
+                                    <div class="slds-size_1-of-1 slds-text-align_center">Create User</div>
+                                </div>
+                            </aura:set>
+                        </aura:if>
+
+                    </aura:set>
+                </aura:if>
+
+            </div>
+        </div>
+    </lightning:card>
+
+
+
+</aura:component>
