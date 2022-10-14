@@ -6,7 +6,7 @@
 */
 public without sharing class ChargentSFATransactionTriggerHandler implements TriggerAbstract {
     
-    public static List<Opportunity> OppListToUpdate = new List<Opportunity>();
+    static List<Opportunity> OppListToUpdate = new List<Opportunity>();
     static List<Product_Refunds__c> ProductRefundsListToUpdate = new List<Product_Refunds__c>();
     static Set<String> VoidTypeOppSet = new Set<String>();
     static Set<String> ChargeTypeOppSet = new Set<String>();
@@ -84,7 +84,7 @@ public without sharing class ChargentSFATransactionTriggerHandler implements Tri
                    (newTransaction.ChargentSFA__Type__c =='Refund'|| newTransaction.ChargentSFA__Type__c =='Charge Back Accepted' || newTransaction.ChargentSFA__Type__c =='Charge Back Loss')){
                        RefundOppSet.add(newTransaction.ChargentSFA__Opportunity__c); 
                        
-                       oppTransactionMap.put(newTransaction.ChargentSFA__Opportunity__c,newTransaction.id);    
+                       oppTransactionMap.put(newTransaction.id,newTransaction.ChargentSFA__Opportunity__c);    
                    }
             }
         }

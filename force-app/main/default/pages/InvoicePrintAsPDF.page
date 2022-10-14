@@ -180,22 +180,16 @@
                     </td>
                 </tr>
             </apex:repeat>
-            <!--<apex:outputPanel layout="block" rendered="{!oppty.isTeamRegistration==False}">-->
+            <apex:outputPanel layout="block" rendered="{!oppty.isTeamRegistration==False}">
                 <tr>   
-                    <td>
-                        <apex:outputPanel layout="block" rendered="{!oppty.isTeamRegistration==False}">
-                        	<apex:outputText value="Total" styleClass="label-invoice-pdf"/>
-                        </apex:outputPanel>
-                    </td>
+                    <td><apex:outputText value="Total" styleClass="label-invoice-pdf"/></td>
                     <td align="right">
-                        <apex:outputPanel layout="block" rendered="{!oppty.isTeamRegistration==False}">
-                            <apex:outputText value="${0,number,###,###,##0.00}">
-                                <apex:param value="{!oppty.amount}"/>
-                            </apex:outputText> 
-                        </apex:outputPanel>
+                        <apex:outputText value="${0,number,###,###,##0.00}">
+                            <apex:param value="{!oppty.amount}"/>
+                        </apex:outputText>  
                     </td>            
                 </tr>
-            <!--</apex:outputPanel>-->
+            </apex:outputPanel>
         </table>
         
         <table cellspacing="0" class="panel-table-invoice-pdf" width="100%" rendered="{!oppty.instSale==False}">      
@@ -609,14 +603,14 @@ xx{!msg}: CC {!CC}: Check {!Check}: CC By Fax {!CreditByFax}: Wire {!Wire} ~ Eve
                     <apex:outputPanel layout="block" rendered="{!examRegistrationType == 'early'}">
                         <b> <span class="bold-text">Payment:</span></b> In order for your registration to be considered complete based on the Early Registration rate, your payment must be received by the 
                             <apex:outputPanel rendered="{!OR(examAdminType == 'MAY',examAdminType == 'JUL',examAdminType == 'APR')}"> January 31, 2022 </apex:outputPanel>
-                            <apex:outputPanel rendered="{!OR(examAdminType == 'NOV',examAdminType == 'DEC',examAdminType == 'OCT')}"> July 31, 2022 </apex:outputPanel>
+                            <apex:outputPanel rendered="{!OR(examAdminType == 'NOV',examAdminType == 'DEC')}"> July 31, 2022 </apex:outputPanel>
                         deadline. If your payment is received after the deadline, you will be charged the Standard Rate; in which case you will be required to make an additional payment.
                     </apex:outputPanel>
                     
                     <apex:outputPanel layout="block" rendered="{!examRegistrationType == 'standard'}">
                         <b> <span class="bold-text">Payment:</span></b> In order for your registration to be considered complete based on the Standard Registration rate, your payment must be received by the 
                             <apex:outputPanel rendered="{!OR(examAdminType == 'MAY',examAdminType == 'JUL',examAdminType == 'APR')}"> March 31, 2022 </apex:outputPanel>
-                            <apex:outputPanel rendered="{!OR(examAdminType == 'NOV',examAdminType == 'DEC',examAdminType == 'OCT')}"> September 30, 2022 </apex:outputPanel>
+                            <apex:outputPanel rendered="{!OR(examAdminType == 'NOV',examAdminType == 'DEC')}"> September 30, 2022 </apex:outputPanel>
                         deadline. If your payment is received after the deadline, your registration will be cancelled; as registration is closed.
                     </apex:outputPanel>
                     <p><b> <span class="bold-text">Below are the check instructions. </span></b>
@@ -658,14 +652,14 @@ xx{!msg}: CC {!CC}: Check {!Check}: CC By Fax {!CreditByFax}: Wire {!Wire} ~ Eve
                     <apex:outputPanel layout="block" rendered="{!examRegistrationType == 'early'}">
                         <b> <span class="bold-text">Payment:</span></b> In order for your registration to be considered complete based on the Early Registration rate, your payment must be received by the 
                             <apex:outputPanel rendered="{!OR(examAdminType == 'MAY',examAdminType == 'JUL',examAdminType == 'APR')}"> January 31, 2022 </apex:outputPanel>
-                            <apex:outputPanel rendered="{!OR(examAdminType == 'NOV',examAdminType == 'DEC',examAdminType == 'OCT')}"> July 31, 2022 </apex:outputPanel>
+                            <apex:outputPanel rendered="{!OR(examAdminType == 'NOV',examAdminType == 'DEC')}"> July 31, 2022 </apex:outputPanel>
                         deadline. If your payment is received after the deadline, you will be charged the Standard Rate; in which case you will be required to make an additional payment.
                     </apex:outputPanel>
                     
                     <apex:outputPanel layout="block" rendered="{!examRegistrationType == 'standard'}">
                         <b> <span class="bold-text">Payment:</span></b> In order for your registration to be considered complete based on the Standard Registration rate, your payment must be received by the 
                             <apex:outputPanel rendered="{!OR(examAdminType == 'MAY',examAdminType == 'JUL',examAdminType == 'APR')}"> March 31, 2022 </apex:outputPanel>
-                            <apex:outputPanel rendered="{!OR(examAdminType == 'NOV',examAdminType == 'DEC',examAdminType == 'OCT')}"> September 30, 2022 </apex:outputPanel>
+                            <apex:outputPanel rendered="{!OR(examAdminType == 'NOV',examAdminType == 'DEC')}"> September 30, 2022 </apex:outputPanel>
                         deadline. If your payment is received after the deadline, your registration will be cancelled; as registration is closed.
                     </apex:outputPanel>
                                         

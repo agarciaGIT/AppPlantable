@@ -95,7 +95,7 @@ global class updateExamSitesForFailedExamsBatch implements Database.Batchable<sO
                        and Defered__c = 'Approved' AND Cancelled__c !=true  and Opportunity_StageName__c ='closed' and Result__c =''];
        }else{
 		   lstExam2 = [SELECT Id,Exam_Administration__r.Exam_Group__c,Candidate_Commitment__c,Member__c,Site_code__c,Exam_Administration__c,Cancelled__c,ADA_Status__c,Defered__c,RAD_Status__c,Opportunity_StageName__c FROM Exam_Attempt__c where Member__c in: lstMember AND Section__c =:part2Section
-                       and Exam_Administration__r.Exam_Group__c =: nextExamGroupId AND Cancelled__c !=true  and Opportunity_StageName__c ='closed' and Result__c =''];
+                       and Exam_Administration__r.Exam_Group__c =: nextExamGroupId and Defered__c = 'Approved' AND Cancelled__c !=true  and Opportunity_StageName__c ='closed' and Result__c =''];
        }
        
        for(Exam_Attempt__c objList : lstExam2){

@@ -1,6 +1,6 @@
 <apex:page standardStylesheets="false" sidebar="false" showHeader="false" controller="reportsGARP" applyBodyTag="false" cache="false" applyHtmlTag="false" docType="html-5.0">
 
-    <apex:variable var="envPath" value="{!URLFOR($Resource.reportsGARP1)}" />    
+    <apex:variable var="envPath" value="{!URLFOR($Resource.reportsGARP)}" />    
     <apex:variable var="envPathLib" value="{!URLFOR($Resource.reportsGARPLib)}" /> 
     <apex:variable var="envPathLibA" value="{!URLFOR($Resource.reportsGARPLibA)}" />     
 

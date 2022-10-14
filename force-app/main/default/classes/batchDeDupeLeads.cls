@@ -35,51 +35,42 @@ global class batchDeDupeLeads implements Database.Batchable<SObject>{
         }
         System.debug('emails:' + emails);
         
-        List<Lead> lstLead = [select id, email, Is_Test__c from Lead where Email != NULL AND IsDeleted = False 
+        List<Lead> lstLead = [select id, email from Lead where Email != NULL AND IsDeleted = False 
                               AND email in :emails.keySet() Order By CreatedDate DESC];
         System.debug('lstLead:' + lstLead);
         
         mapRestLeads = new MAP<string,List<LEAD>>();
         mapFirstLeads = new MAP<string,LEAD>();
-        emails = new MAP<String,ID>();
-        Set<String> testLeads = new Set<String>();
+        
         for(Lead l :lstLead) {
             
-            if(l.Is_Test__c) {
-                testLeads.add(l.Id);
+            Lead fndFirstLeads = mapFirstLeads.get(l.email);
+            List<LEAD> fndRestLeads = mapRestLeads.get(l.email);
+            
+            System.debug('fndFirstLeads:' + fndFirstLeads);
+            System.debug('fndRestLeads:' + fndRestLeads);
+            
+            if(fndFirstLeads == NULL) {
+                mapFirstLeads.put(l.email,l);
+                System.debug('Add first:' + l);
+                
             } else {
-                emails.put(l.email, l.id);
-                Lead fndFirstLeads = mapFirstLeads.get(l.email);
-                List<LEAD> fndRestLeads = mapRestLeads.get(l.email);
-                
-                System.debug('fndFirstLeads:' + fndFirstLeads);
-                System.debug('fndRestLeads:' + fndRestLeads);
-                
-                if(fndFirstLeads == NULL) {
-                    mapFirstLeads.put(l.email,l);
-                    System.debug('Add first:' + l);
+                if(fndRestLeads == NULL) {
+                    fndRestLeads = new List<LEAD>();
+                    fndRestLeads.add(l);
+                    mapRestLeads.put(l.email, fndRestLeads);
+                    System.debug('New Rest first:' + fndRestLeads);
                     
                 } else {
-                    if(fndRestLeads == NULL) {
-                        fndRestLeads = new List<LEAD>();
-                        fndRestLeads.add(l);
-                        mapRestLeads.put(l.email, fndRestLeads);
-                        System.debug('New Rest first:' + fndRestLeads);
-                        
-                    } else {
-                        fndRestLeads.add(l);
-                        mapRestLeads.put(l.email, fndRestLeads);
-                        System.debug('Add Rest:' + fndRestLeads);
-                    }
+                    fndRestLeads.add(l);
+                    mapRestLeads.put(l.email, fndRestLeads);
+                    System.debug('Add Rest:' + fndRestLeads);
                 }
-                
             }
-
         }
         
         System.debug('mapFirstLeads:' + mapFirstLeads);
         System.debug('mapRestLeads:' + mapRestLeads);
-        System.debug('testLeads:' + testLeads);
         
         for(Lead l :mapFirstLeads.values()) {
             
@@ -129,17 +120,6 @@ global class batchDeDupeLeads implements Database.Batchable<SObject>{
         }
         System.debug('update lstFD:' + lstFD);
         update lstFD;
-        
-        if(!testLeads.isempty()) {
-            list<Form_Data__c> lstFDDel = [select Id, Email__c, Contact__c, Lead__c, Lead__r.Email from Form_Data__c where Lead__c in :testLeads];
-            System.debug('lstFDDel:' + lstFDDel);
-            delete lstFDDel;
-            
-            for(String l :testLeads) {
-                delLeads.add(l);
-            }
-        }
-        
         
         System.debug('delLeads:' + delLeads);
         delLeadList = [select id, email from Lead where id in :delLeads];

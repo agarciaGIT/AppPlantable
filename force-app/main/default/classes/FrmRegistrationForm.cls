@@ -233,14 +233,14 @@ public class FrmRegistrationForm extends ExamRegistrationForm {
             List<Exam_Part__c> parts = [select Id, Name, Exam_Part_Number__c, Exam__r.Exam__c,
                                         Exam_Administration__c, Exam_Date__c, Exam_Start_Date__c
                                         from Exam_Part__c where Exam_Administration__r.Exam_Group__r.Active__c = True AND
-                                       	Exam__r.Exam__c in ('FRM Part 1','FRM Part 2') 
+                                        Exam__r.Exam__c in ('FRM Part 1','FRM Part 2') 
                                         AND
                                         
-                                       	// AG 2/17/2021
+                                        // AG 2/17/2021
                                         // Allow to hide Exam Admin by Date
                                         (Exam_Administration__r.Registration_Start_Date__c = NULL OR Exam_Administration__r.Registration_Start_Date__c <= TODAY) AND
                                         (Exam_Administration__r.Registration_End_Date__c = NULL OR Exam_Administration__r.Registration_End_Date__c >= TODAY)
-										];
+                                        ];
             
             MAP<String,Exam_Part__c> mapParts = new MAP<String,Exam_Part__c>();
             for(Exam_Part__c p :parts) {
@@ -991,6 +991,7 @@ public class FrmRegistrationForm extends ExamRegistrationForm {
                 pricebookEntryIds.add(item.pricebookEntry.Id);
             }
             
+            
             if(registrationRequest.shippingInfo != NULL) {
             
                 system.debug('shippingInfo:' + registrationRequest.shippingInfo);
@@ -1027,7 +1028,6 @@ public class FrmRegistrationForm extends ExamRegistrationForm {
                     system.debug('opportunityLineItems:' + opportunityLineItems);
                 }
             }
-            
         }
         system.debug(opportunityLineItems);
         System.debug('registrationRequest.selections:' + registrationRequest.selections);
@@ -1120,7 +1120,6 @@ public class FrmRegistrationForm extends ExamRegistrationForm {
         }
         System.debug('mapExamRates:' + mapExamRates);
         
-        // Team Registration Custom Settings
         Map<String, Team_Registration_Products__c> mapCustTeamProds = Team_Registration_Products__c.getAll();
         Map<String, Team_Registration_Products__c> mapTeamProds = new Map<String, Team_Registration_Products__c>();
         if(teamRegistration != NULL && mapCustTeamProds != NULL) {
@@ -1128,9 +1127,8 @@ public class FrmRegistrationForm extends ExamRegistrationForm {
                 mapTeamProds.put(trp.Product_Code__c + '~' + trp.GL_Code__c, trp);
             }
         }
-        System.debug('mapCustTeamProds:' + mapCustTeamProds);
         System.debug('mapTeamProds:' + mapTeamProds);
-                
+        
         for(Selection selection: registrationRequest.selections){
             String key = selection.examPart.examPart.Exam__c +':'+selection.examPart.examPart.Exam_Administration__c;
             System.debug('selection key:' + key);
@@ -1150,45 +1148,17 @@ public class FrmRegistrationForm extends ExamRegistrationForm {
                     
                     // AG 3/18/2022 - Replace team reg products
                     Team_Registration_Products__c fndTeamProd = mapTeamProds.get(pbe.ProductCode + '~' + pbe.Product2.GL_Code__c);
-                    if(fndTeamProd != NULL && teamRegistration.Discounted_Price__c == NULL && teamRegistration.Is_Scholarship__c == False) {
-                        
+                    if(fndTeamProd != NULL) {
                         oli.Product2Id = fndTeamProd.Replacement_Product_Id__c;
-                        oli.PricebookEntryId = fndTeamProd.Replacement_Product_Price_Id__c;                            
-                        
-                        System.debug('team reg replace:' + oli);
-
+                        oli.PricebookEntryId = fndTeamProd.Replacement_Product_Price_Id__c;
                     }
-                        opportunityLineItems.add(oli); 
-    
-                    // AG 5/27/2022 - Add team discount
-                    if(fndTeamProd != NULL && (teamRegistration.Discounted_Price__c != NULL || teamRegistration.Is_Scholarship__c)) {
-                        
-                        if(teamRegistration.Discounted_Price__c != NULL) {
-                            // Add Discount Product
-                            OpportunityLineItem oppLineItemRate = new OpportunityLineItem();
-                            oppLineItemRate.Product2Id = fndTeamProd.Discount_Product_Id__c;
-                            oppLineItemRate.PricebookEntryId = fndTeamProd.Discount_Product_Price_Id__c;
-                            oppLineItemRate.Quantity = 1; 
-                            oppLineItemRate.UnitPrice = (pbe.UnitPrice - teamRegistration.Discounted_Price__c) * -1;
-                            opportunityLineItems.add(oppLineItemRate);
-                            System.debug('team reg add disc:' + oppLineItemRate);
-                            
-                        } else {
-                            // Add Scholarship Product
-                            OpportunityLineItem oppLineItemRate = new OpportunityLineItem();
-                            oppLineItemRate.Product2Id = fndTeamProd.Scholarship_Product_Id__c;
-                            oppLineItemRate.PricebookEntryId = fndTeamProd.Scholarship_Product_Price_Id__c;   
-                            oppLineItemRate.Quantity = 1; 
-                            oppLineItemRate.UnitPrice = pbe.UnitPrice * -1;
-                            opportunityLineItems.add(oppLineItemRate);
-                            System.debug('team reg add scholarship discount:' + oppLineItemRate);                        
-                        }
-                    }        
-                    System.debug('opportunityLineItems:' + opportunityLineItems);   
-                }
+                    
+                    opportunityLineItems.add(oli); 
+                }        
+                System.debug('opportunityLineItems:' + opportunityLineItems);   
             }
+
         }
-        
         system.debug(opportunityLineItems);
         List<OpportunityLineItem> chinaLocationFees = this.addChinaLocationFee(selectedSites);
         if(chinaLocationFees != null && !chinaLocationFees.isEmpty()){

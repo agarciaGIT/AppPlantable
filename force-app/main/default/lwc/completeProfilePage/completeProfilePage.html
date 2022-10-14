@@ -1,0 +1,91 @@
+<template>
+    <lightning-card variant="narrow" title="Job Information">
+        <lightning-radio-group name="workGroup"
+            label="Work Status"
+            options={workOptions}
+            value={workStatusValue}
+            type="radio" required>
+        </lightning-radio-group> 
+
+        <lightning-combobox
+            name="hear"
+            label="How did you hear about us?"
+            value={hearValue}
+            placeholder="Select Option"
+            options={hearOptions}
+            onchange={handleHearChange}
+            class="validate" 
+            required>
+        </lightning-combobox><br/>
+
+        <lightning-combobox
+            name="year"
+            label="What year did you start working in the industry?"
+            value={yearValue}
+            placeholder="Select Option"
+            options={yearOptions}
+            onchange={handleYearChange}
+            class="validate" 
+            required>
+        </lightning-combobox><br/>
+
+        <lightning-input type="text" name="lastCompany" label="Current/Last Company" value={lastCompany} class="validate" required onchange={handleFormInputChange}></lightning-input><br/>
+
+        <lightning-combobox
+            name="professional"
+            label="What is your professional level?"
+            value={professionalValue}
+            placeholder="Select Option"
+            options={professionalOptions}
+            onchange={handleProfessionalChange}
+            class="validate" 
+            required>
+        </lightning-combobox><br/>
+
+        <lightning-combobox
+            name="job"
+            label="What is your job function?"
+            value={jobValue}
+            placeholder="Select Option"
+            options={jobOptions}
+            onchange={handleJobChange}
+            class="validate" 
+            required>
+        </lightning-combobox><br/>
+        
+        <lightning-radio-group name="designationGroup"
+            label="Professional Designations"
+            options={designationOptions}
+            value={designationValue}
+            type="radio" required>
+        </lightning-radio-group> 
+
+        <lightning-input type="text" name="school" label="Current or Most Recent School Attended" value={lastSchool} class="validate" required onchange={handleFormInputChange}></lightning-input><br/>   
+        
+        <lightning-combobox
+            name="degree"
+            label="Highest Degree Earned"
+            value={degreeValue}
+            placeholder="Select Option"
+            options={degreeOptions}
+            onchange={handleDegreeChange}
+            class="validate" 
+            required>
+        </lightning-combobox><br/>
+
+        <lightning-combobox
+            name="graduation"
+            label="Year of Graduation"
+            value={graduationValue}
+            placeholder="Select Option"
+            options={yearOptions}
+            onchange={handleGraduationChange}
+            class="validate" 
+            required>
+        </lightning-combobox><br/>
+
+        <lightning-button label=" Skip " onclick={navigateToConfirmationPage}></lightning-button>
+        <lightning-button label=" Complete "></lightning-button>
+
+    </lightning-card>   
+</template>

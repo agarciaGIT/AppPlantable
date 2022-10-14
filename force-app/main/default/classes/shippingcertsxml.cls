@@ -42,10 +42,12 @@ public static string internationalShipping(List<certificate_shipping__c> lstcert
         sXML += '<ShipmentInformation>\n';
         sXML += '<ServiceType>'+CheckNull(certs.UPS_Service_Code_For_Xml__c)+'</ServiceType>\n';
         sXML += '<NumberOfPackages>1</NumberOfPackages>\n';
-        sXML += '<DescriptionOfGoods>Diplomas</DescriptionOfGoods>\n';
+        sXML += '<DescriptionOfGoods>Education Materials</DescriptionOfGoods>\n';
         sXML += '<ShipperNumber>7699YE</ShipperNumber>\n';
         sXML += '<BillingOption>PP</BillingOption>\n'; 
-        sXML += '<BillTransportationTo>Shipper</BillTransportationTo>\n';
+        sXML += '<BillTransportationTo>SHP</BillTransportationTo>\n';
+        if(certs.Duty_Tax_to_Garp__c)
+            sXML += '<BillDutyTaxTo>SHP</BillDutyTaxTo>\n';
         sXML += '<QVNOption>\n';
         sXML += '<QVNRecipientAndNotificationTypes>\n';
         sXML += '<EMailAddress>'+CheckNull(certs.Shipping_E_mail__c)+'</EMailAddress>\n';
@@ -57,7 +59,7 @@ public static string internationalShipping(List<certificate_shipping__c> lstcert
         sXML += '</QVNOption>\n';
         sXML += '</ShipmentInformation>\n';
         sXML += '<Package>\n';
-        sXML += '<PackageType>UPS Letter</PackageType>\n';
+        sXML += '<PackageType>EE</PackageType>\n';
         sXML += '<Weight>'+CheckNull(String.valueOf(certs.Total_Package_Weight__c))+'</Weight>\n';
         sXML += '<TrackingNumber></TrackingNumber>\n';
         sXML += '<LargePackageIndicator></LargePackageIndicator>\n';
@@ -141,7 +143,7 @@ public static string domesticShipping(List<certificate_shipping__c> lstcerts)
         sXML += '<DescriptionOfGoods>Education Materials</DescriptionOfGoods>\n';
         sXML += '<ShipperNumber>7699YE</ShipperNumber>\n';
         sXML += '<BillingOption>PP</BillingOption>\n';
-        sXML += '<BillTransportationTo>Shipper</BillTransportationTo>\n';
+        sXML += '<BillTransportationTo>SHP</BillTransportationTo>\n';
         sXML += '<QVNOption>\n';
         sXML += '<QVNRecipientAndNotificationTypes>\n';
         sXML += '<EMailAddress>'+CheckNull(certs.Shipping_E_mail__c)+'</EMailAddress>\n';
@@ -153,7 +155,7 @@ public static string domesticShipping(List<certificate_shipping__c> lstcerts)
         sXML += '</QVNOption>\n';
         sXML += '</ShipmentInformation>\n';
         sXML += '<Package>\n';
-        sXML += '<PackageType>CP</PackageType>\n';
+        sXML += '<PackageType>EE</PackageType>\n';
         sXML += '<Weight>'+CheckNull(String.valueOf(certs.Total_Package_Weight__c))+'</Weight>\n';
         sXML += '<TrackingNumber></TrackingNumber>\n';
         sXML += '<LargePackageIndicator></LargePackageIndicator>\n';
@@ -209,10 +211,12 @@ public static String invoicelessXML(List<certificate_shipping__c> lstcerts)
         sXML += '<ShipmentInformation>\n';
         sXML += '<ServiceType>'+CheckNull(certs.UPS_Service_Code_For_Xml__c)+'</ServiceType>\n';
         sXML += '<NumberOfPackages>1</NumberOfPackages>\n';
-        sXML += '<DescriptionOfGoods>Diplomas</DescriptionOfGoods>\n';
+        sXML += '<DescriptionOfGoods>Education Materials</DescriptionOfGoods>\n';
         sXML += '<ShipperNumber>7699YE</ShipperNumber>\n';
         sXML += '<BillingOption>PP</BillingOption>\n';
-        sXML += '<BillTransportationTo>Shipper</BillTransportationTo>\n';
+        sXML += '<BillTransportationTo>SHP</BillTransportationTo>\n';
+        if(certs.Duty_Tax_to_Garp__c)
+            sXML += '<BillDutyTaxTo>SHP</BillDutyTaxTo>\n';
         sXML += '<QVNOption>\n';
         sXML += '<QVNRecipientAndNotificationTypes>\n';
         sXML += '<EMailAddress>'+CheckNull(certs.Shipping_E_mail__c)+'</EMailAddress>\n';

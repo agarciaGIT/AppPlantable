@@ -9,7 +9,7 @@ public class batchCompleteOrExpireCPD_Test {
         insert acc;
         Contact c1 = new contact(lastname = 'Test Contact1', AccountID = acc.ID, email = 'testcontact1@contact.com', KPI_Member__c = True );
         insert c1;
-        contract con = new contract(StartDate = system.today(),ContractTerm = 12,Accountid = acc.id,Status = 'Draft',CurrencyIsoCode = 'USD');
+        contract con = new contract(StartDate = system.today(),Accountid = acc.id,Status = 'Draft',CurrencyIsoCode = 'USD');
         insert con;
         con.Status = 'Activated ( Auto-Renew )';
         con.ContractTerm = 24;

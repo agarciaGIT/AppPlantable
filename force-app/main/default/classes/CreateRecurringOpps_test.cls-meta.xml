@@ -1,14 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ApexClass xmlns="http://soap.sforce.com/2006/04/metadata">
-    <apiVersion>54.0</apiVersion>
+    <apiVersion>33.0</apiVersion>
     <packageVersions>
-        <majorNumber>5</majorNumber>
-        <minorNumber>88</minorNumber>
-        <namespace>ChargentBase</namespace>
-    </packageVersions>
-    <packageVersions>
-        <majorNumber>5</majorNumber>
-        <minorNumber>88</minorNumber>
+        <majorNumber>2</majorNumber>
+        <minorNumber>63</minorNumber>
         <namespace>ChargentSFA</namespace>
     </packageVersions>
     <status>Active</status>

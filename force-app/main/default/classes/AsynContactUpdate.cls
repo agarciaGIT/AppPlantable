@@ -628,7 +628,6 @@ public class AsynContactUpdate {
                                  ]) 
         {
             Contract lastMemberContract = null;
-            boolean foundActiveMembership = false;
             objContact.KPI_SCR_Candidate__c = false;
             objContact.KPI_SCR_Holder__c = false;
             objContact.KPI_SCR_Completion_Date__c = null;
@@ -676,6 +675,7 @@ public class AsynContactUpdate {
             
             List<Contract> contracts = mapNewActIdsContract.get(objContact.AccountId);
             for(Contract con : contracts) {
+                
                 
                 
                 Date lastDate = null;
@@ -848,9 +848,8 @@ public class AsynContactUpdate {
                         if (objContact.MailingCountry != 'Canada' && (con.Membership_Type__c == 'Individual' || con.Membership_Type__c == 'Student')) {
                             objContact.Email_Member_Update__c = true;
                         }
-                        foundActiveMembership = true;
                     }
-                    if(con.status == 'Expired' && foundActiveMembership == false){
+                    if(con.status == 'Expired'){
                         if(date.today() > con.EndDate) {
                             objContact.KPI_Membership_Expiration_Date__c = con.EndDate;
                             Integer monthDiff = con.EndDate.monthsBetween(nowDateTime);
@@ -879,8 +878,8 @@ public class AsynContactUpdate {
                         if (con.StartDate != null) { 
                             if(objContact.KPI_CPE_Current_Cycle__c != NULL) {
                                 objContact.CPE_Last_Cycle__c = objContact.KPI_CPE_Current_Cycle__c;
+                                objContact.KPI_CPE_Current_Cycle__c = String.valueOf(con.StartDate.year()) + '/' + String.valueOf(con.StartDate.year() + 1);
                             }
-                            objContact.KPI_CPE_Current_Cycle__c = String.valueOf(con.StartDate.year()) + '/' + String.valueOf(con.StartDate.year() + 1);
                             
                             if (con.StartDate.year() <= Date.today().year()) {
                                 objContact.KPI_CPE_Participation__c = true;

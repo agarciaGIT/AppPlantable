@@ -1,0 +1,187 @@
+<template>
+    <div class="navbar">
+      <a class="active-tab" href="#Dashboard" data-target-id="dashboard" data-name="dashboard" onclick={switchTab}>Dashboard</a>
+      <div class="dropdown" data-target-id="account-dropdown">
+          <button class="dropbtn">My Account 
+            <i class="fa fa-caret-down"></i>
+          </button>
+          <div class="dropdown-content">
+              <a href="#PersonalInformation" data-target-id="account" data-name="personalInfo" onclick={switchDropDownMenu}>Personal Information</a>
+              <a href="#PreferredChapters" data-target-id="account" data-name="preferred" onclick={switchDropDownMenu}>Preferred Chapters</a>
+              <a href="#Membership" data-target-id="account" data-name="membership" onclick={switchDropDownMenu}>Membership</a>
+              <a href="#Expertise" data-target-id="account" data-name="expertise" onclick={switchDropDownMenu}>Expertise</a>
+              <a href="#Purchasehistory" data-target-id="account" data-name="purchase" onclick={switchDropDownMenu}>Purchase history</a>
+              <a href="#Directory" data-target-id="account" data-name="account-directory" onclick={switchDropDownMenu}>Directory</a>
+              <a href="#Volunteer" data-target-id="account" data-name="volunteer" onclick={switchDropDownMenu}>Volunteer</a>
+          </div>
+      </div> 
+      <div class="dropdown" data-target-id="program-dropdown">
+          <button class="dropbtn">My Programs 
+            <i class="fa fa-caret-down"></i>
+          </button>
+          <div class="dropdown-content">
+            <a href="#Programs" data-target-id="program" data-name="program" onclick={switchDropDownMenu}>My Programs</a>
+            <a href="#StudyMarerials" data-target-id="program" data-name="study" onclick={switchDropDownMenu}>Study Marerials</a>
+          </div>
+      </div> 
+      <a href="#Events" data-target-id="events" data-name="events" onclick={switchTab}>My Events</a>
+      <div class="dropdown" data-target-id="resource-dropdown">
+          <button class="dropbtn">Risk Resources 
+            <i class="fa fa-caret-down"></i>
+          </button>
+          <div class="dropdown-content">
+            <a href="#MutimediaLibrary" data-target-id="resource" data-name="multimedia" onclick={switchDropDownMenu}>Mutimedia Library</a>
+            <a href="#GARP-Risk" data-target-id="resource" data-name="content-hub" onclick={switchDropDownMenu}>GARP-Risk.net Content Hub</a>
+            <a href="#ExclusiveOffers" data-target-id="resource" data-name="exclusive" onclick={switchDropDownMenu}>Exclusive Offers</a>
+            <a href="#Directory" data-target-id="resource" data-name="risk-directory" onclick={switchDropDownMenu}>Directory</a>
+          </div>
+      </div> 
+      <div class="dropdown" data-target-id="intelligence-dropdown">
+            <button class="dropbtn">Risk Intelligence
+              <i class="fa fa-caret-down"></i>
+            </button>
+            <div class="dropdown-content">
+              <a href="#Technology" data-target-id="intelligence" data-name="technology" onclick={switchDropDownMenu}>Technology</a>
+              <a href="#Credit" data-target-id="intelligence" data-name="credit" onclick={switchDropDownMenu}>Credit</a>
+              <a href="#Culture" data-target-id="intelligence" data-name="culture" onclick={switchDropDownMenu}>Culture & Governance</a>
+              <a href="#Energy" data-target-id="intelligence" data-name="energy" onclick={switchDropDownMenu}>Energy</a>
+              <a href="#Operational" data-target-id="intelligence" data-name="operational" onclick={switchDropDownMenu}>Operational</a>
+              <a href="#Market" data-target-id="intelligence" data-name="market" onclick={switchDropDownMenu}>Market</a>
+            </div>
+      </div>    
+    </div>
+    <div class="maindiv">    
+      <template if:true={showDashboard}>
+        <div class="row">
+          <div class="sections">
+            <c-dashboard-page></c-dashboard-page>
+          </div>
+          <div class="sections">
+            <div class="membershipdiv">
+              <c-membership-card></c-membership-card>
+            </div>
+            <div class="directorydiv">
+              <c-member-directory></c-member-directory>
+            </div>
+            <div class="centerdiv">
+              <c-career-center></c-career-center>
+            </div>
+          </div>
+          <div class="sections">
+            <div class="frmdiv">
+              <c-frm-dashboard></c-frm-dashboard>
+            </div>
+            <div class="scrdiv">
+              <c-scr-dashboard></c-scr-dashboard>
+            </div>
+            <div class="chapterdiv">
+              <c-preferred-chapter></c-preferred-chapter>
+            </div>
+          </div>
+        </div>  
+        <!--<div class="row">
+          <div class="dashboarddiv">
+            <c-dashboard-page></c-dashboard-page>
+          </div>
+          <div class="membershipdiv">
+            <c-membership-card></c-membership-card>
+          </div> 
+          <div class="frmdiv">
+            <c-frm-dashboard></c-frm-dashboard>
+          </div> 
+          <div class="chapterdiv">
+            <c-preferred-chapter></c-preferred-chapter>
+          </div>
+          <div class="directorydiv">
+            <c-member-directory></c-member-directory>
+          </div>
+          <div class="centerdiv">
+            <c-career-center></c-career-center>
+          </div>
+          <div class="scrdiv">
+            <c-scr-dashboard></c-scr-dashboard>
+          </div>
+        </div>-->
+      </template> 
+      <template if:true={showPersonalInfo}>
+        <h3>PersonalInfo Content</h3>
+        <p>Test showPersonalInfo page.</p>
+      </template> 
+      <template if:true={showPreferred}>
+        <h3>Preferred Content</h3>
+        <p>Test showPreferred page.</p>
+      </template> 
+      <template if:true={showMembership}>
+        <h3>Membership Content</h3>
+        <p>Test showMembership page.</p>
+      </template> 
+      <template if:true={showExpertise}>
+        <h3>Expertise Content</h3>
+        <p>Test showExpertise page.</p>
+      </template> 
+      <template if:true={showPurchase}>
+        <h3>Purchase Content</h3>
+        <p>Test showPurchase page.</p>
+      </template> 
+      <template if:true={showAccountDirectory}>
+        <h3>AccountDirectory Content</h3>
+        <p>Test showAccountDirectory page.</p>
+      </template> 
+      <template if:true={showVolunteer}>
+        <h3>Volunteer Content</h3>
+        <p>Test showVolunteer page.</p>
+      </template> 
+      <template if:true={showProgram}>
+        <h3>Program Content</h3>
+        <p>Test showProgram page.</p>
+      </template> 
+      <template if:true={showStudy}>
+        <h3>Study Content</h3>
+        <p>Test showStudy page.</p>
+      </template> 
+      <template if:true={showEvent}>
+        <h3>Event Content</h3>
+        <p>Test Event page.</p>
+      </template> 
+      <template if:true={showMutimedia}>
+        <h3>Mutimedia Content</h3>
+        <p>Test showMutimedia page.</p>
+      </template> 
+      <template if:true={showContentHub}>
+        <h3>ContentHub Content</h3>
+        <p>Test showContentHub page.</p>
+      </template> 
+      <template if:true={showExclusive}>
+        <h3>Exclusive Content</h3>
+        <p>Test showExclusive page.</p>
+      </template> 
+      <template if:true={showRiskDirectory}>
+        <h3>RiskDirectory Content</h3>
+        <p>Test showRiskDirectory page.</p>
+      </template> 
+      <template if:true={showTechnology}>
+        <h3>Technology Content</h3>
+        <p>Test showTechnology page.</p>
+      </template> 
+      <template if:true={showCredit}>
+        <h3>Credit Content</h3>
+        <p>Test showCredit page.</p>
+      </template> 
+      <template if:true={showCulture}>
+        <h3>Culture Content</h3>
+        <p>Test showCulture page.</p>
+      </template> 
+      <template if:true={showEnergy}>
+        <h3>Energy Content</h3>
+        <p>Test showEnergy page.</p>
+      </template> 
+      <template if:true={showOperational}>
+        <h3>Operational Content</h3>
+        <p>Test showCulture page.</p>
+      </template> 
+      <template if:true={showMarket}>
+        <h3>Market Content</h3>
+        <p>Test showMarket page.</p>
+      </template>
+    </div>    
+</template>

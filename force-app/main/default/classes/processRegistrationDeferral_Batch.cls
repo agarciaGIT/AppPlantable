@@ -45,7 +45,6 @@ global class processRegistrationDeferral_Batch implements Database.Batchable<sOb
         List<Opportunity> oppList = new List<Opportunity>();
         Map<Id,Opportunity> modToOppMap = new Map<Id,Opportunity>();
         Set<Id> modIds = new Set<Id>();
-        Set<Id> programIds = new Set<Id>();
         Set<Exam_Registration_Modification__c> deferralsToUpdateSet = new Set<Exam_Registration_Modification__c>();
         List<Exam_Registration_Modification__c> deferralsToUpdate = new List<Exam_Registration_Modification__c>();
         DescribeSObjectResult describeResult = Exam_Attempt__c.getSObjectType().getDescribe();  
@@ -113,13 +112,6 @@ global class processRegistrationDeferral_Batch implements Database.Batchable<sOb
                     if(examAttemptToDeferralMap.get(ea.id).Part_II_Exam_Part_To__c != null)
                         clonedRec.Exam_Part__c = examAttemptToDeferralMap.get(ea.id).Part_II_Exam_Part_To__c;
                 }
-                if(ea.Result__c != null){
-                    if(ea.Section__c == 'SCR' && ea.Result__c == 'No-Show'){
-                        programIds.add(ea.Candidate_Commitment__c);
-                    }
-                    clonedRec.Result__c = null;
-                    ea.Result__c = null;
-                }
                 clonedRec.Future_Free_Deferral__c = false;
                 clonedRec.Selected_To_Allow_Future_Deferral__c = false;
                 clonedRec.Defered__c = 'Approved';
@@ -163,9 +155,6 @@ global class processRegistrationDeferral_Batch implements Database.Batchable<sOb
                 clonedRec.Exam_Violation_Commets__c = '';
                 clonedRec.Exam_Violation_Type__c = null;
                 clonedRec.hasViolation__c = false;
-                clonedRec.Hide_Exam_Result__c = false;
-                clonedRec.ID_Exception__c = false;
-                clonedRec.Accepted_ID_Type__c = '';
                 
     
                 ea.Defered__c = 'Approved';
@@ -174,24 +163,9 @@ global class processRegistrationDeferral_Batch implements Database.Batchable<sOb
                 ea.Deferral_Status__c ='Deferred Out';
                 ea.Select_To_Move__c = false;
                 ea.Deferral_SubType__c = erm.Deferral_SubType__c;
-                       
                 oldAttemptsListToUpdate.add(ea);
                 newAttemptsList.add(clonedRec);
             }
-        }
-        
-        if(programIds != null){
-            List<Contract> programList = [Select Id,Status,Eligible_For_Scr_Discount__c,Eligible_For_Scr_Discount_Date__c,SCR_Start_Date__c,SCR_End_Date__c
-                                          from Contract where Id IN: programIds];
-            for(Contract prg : programList){
-                prg.Status = 'Activated';
-                prg.Eligible_For_Scr_Discount__c = false;
-                prg.Eligible_For_Scr_Discount_Date__c = null;
-                prg.SCR_Start_Date__c = null;
-                prg.SCR_End_Date__c = null;
-            }
-            
-            update programList;
         }
         
         if(!oldAttemptsListToUpdate.isEmpty()){

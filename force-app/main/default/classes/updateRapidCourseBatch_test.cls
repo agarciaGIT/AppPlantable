@@ -2,6 +2,7 @@
 public class updateRapidCourseBatch_test {
     @TestSetup
     static void createTestData() {
+        TestClassUtil.isForNewTrigger();
         Integer totalCount = 1;
         datetime yesterday = Datetime.now().addDays(-1);
         

@@ -1,7 +1,6 @@
 import { LightningElement, api, track, wire } from 'lwc';
 import getMemberProfileForEdit from '@salesforce/apex/GARP_MC_MemberProfile.getMemberProfileForEdit';
 import setMemberProfile from '@salesforce/apex/GARP_MC_MemberProfile.setMemberProfile';
-import setMemberEmail from '@salesforce/apex/GARP_MC_MemberProfile.setMemberEmail';
 import { fireEvent } from 'c/pubsub';
 import { util_isDefined, util_customValidationCheck, util_validateForm, 
         util_mapSFFields, util_mapSFRecordsToSelectOptions, util_convertStateCodeToName,
@@ -39,9 +38,7 @@ export default class MemberProfileManagePropertiesCard extends LightningElement 
         BillingAddress: false,
         PhoneNumbers: false,
         AcademicInformation: false,
-        EmploymentInformation: false,
-        Survey: false,
-        CompanyTitle: false
+        EmploymentInformation: false
     }
     readOnly = true;
     isSaving = false;
@@ -66,8 +63,7 @@ export default class MemberProfileManagePropertiesCard extends LightningElement 
             this.profileData = result;
 
             this.orgContact = JSON.stringify(this.profileData.contact);
-            this.orgEmail =  this.profileData.contact.Email;
-debugger;
+
             // Fix US States
             this.contact = util_convertStateCodeToName(this.profileData);
             this.countryOptions = util_mapSFRecordsToSelectOptions(this.profileData.countries, 'Country__c');
@@ -106,7 +102,7 @@ debugger;
             if(this.showProfileParts.EmploymentInformation == true && (!util_isDefined(this,"profileData.contact.Company__c") || this.profileData.contact.Company__c == '')) {
                 isValid = false;
             }
-            if(this.showProfileParts.AcademicInformation == true && (!util_isDefined(this,"profileData.contact.School_Name__c") || this.profileData.contact.School_Name__c == '')) {
+            if(this.showProfileParts.EmploymentInformation == true && (!util_isDefined(this,"profileData.contact.School_Name__c") || this.profileData.contact.School_Name__c == '')) {
                 isValid = false;
             }
         }
@@ -134,36 +130,16 @@ debugger;
             updateObj.profileParts = this.showProfileParts;
 
             if(util_isDefined(this,"profileData.contact.Id")) {
-                updateObj.ContactId = this.profileData.contact.Id;
-            }
-            if(util_isDefined(this,"profileData.contact.AccountId")) {
-                updateObj.AccountId = this.profileData.contact.AccountId;
+                updateObj.contactId = this.profileData.contact.Id;
             }
             this.contact = this.profileData.contact;
 
             // Save Updates
             setMemberProfile({profileUpdate: updateObj})
             .then(result =>{
-                
-                if(updateObj.profileParts.NameEmail && this.orgEmail != updateObj.Email) {
-                    // Save Updates
-                    setMemberEmail({profileUpdate: updateObj})
-                    .then(result =>{
-                        this.readOnly = true;
-                        this.isSaving = false;
-                        this.initComponent();
-                    })
-                    .catch(error =>{
-                        this.errorMsg = error;
-                        this.readOnly = true;
-                        this.isSaving = false;
-                    })
-
-                } else {
-                    this.readOnly = true;
-                    this.isSaving = false;
-                    this.initComponent();
-                }
+                this.readOnly = true;
+                this.isSaving = false;
+                this.initComponent();
             })
             .catch(error =>{
                 this.errorMsg = error;

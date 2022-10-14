@@ -216,15 +216,4 @@ public class processRegModfAndDeferralsBatches_Test {
         
         test.stopTest();
     }
-    
-    static testMethod void testDefSameGrp_Batch(){
-        testData();
-        test.startTest();
-        modification.Part_I_Exam_Group_To__c = objExamGrp.Id;
-        modification.Status__c = 'Opportunity Created';
-        update modification;
-        Id batchInstanceId = Database.executeBatch(new processRefDefSameGrp_Batch(),1);
-        
-        test.stopTest();
-    }
 }

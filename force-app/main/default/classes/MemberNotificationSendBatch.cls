@@ -1,24 +1,16 @@
 global class MemberNotificationSendBatch implements Database.Batchable<sObject>{
     
     public String notificationId;  
-    public String recipientId;  
 
-    global MemberNotificationSendBatch(String notificationId, String recipientId){
+    global MemberNotificationSendBatch(String notificationId){
         system.debug('Function: MemberNotificationSendBatch');
         system.debug('notificationId:' + notificationId);
-        system.debug('recipientId:' + recipientId);
         
-        this.notificationId= notificationId;   
-        this.recipientId = recipientId;
+        this.notificationId= notificationId;            
     }
     
     global Database.QueryLocator start(Database.BatchableContext BC){ 
-        
-		String query = 'select Id, Name, Email__c, GARP_ID__c, Sending_Status__c, Error_Message__c, Member_Notification__r.Template__c, Member_Notification__r.Custom_Message__c from Member_Notification_Recipient__c where Member_Notification__c = :notificationId AND Sending_Status__c != \'Sent\'';    
-        if(recipientId != NULL) {
-            query = 'select Id, Name, Email__c, GARP_ID__c, Sending_Status__c, Error_Message__c, Member_Notification__r.Template__c, Member_Notification__r.Custom_Message__c from Member_Notification_Recipient__c where Member_Notification__c = :notificationId AND Id = :recipientId';
-        }
-        
+        String query = 'select Id, Name, Email__c, GARP_ID__c, Sending_Status__c, Error_Message__c, Member_Notification__r.Template__c, Member_Notification__r.Custom_Message__c from Member_Notification_Recipient__c where Member_Notification__c = :notificationId AND Sending_Status__c != \'Sent\'';
         system.debug('query:' + query);
         return Database.getQueryLocator(query);
     }
@@ -49,5 +41,6 @@ global class MemberNotificationSendBatch implements Database.Batchable<sObject>{
     }
     
     global void finish(Database.BatchableContext BC){
+        MemberNotificationClass.notifyLoggedInUsers();
     }
 }

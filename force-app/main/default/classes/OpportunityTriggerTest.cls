@@ -1,10 +1,9 @@
 @isTest
 private class OpportunityTriggerTest {
-    static set<String> prodkeycodes=new set<string>();   
-    static set<string> GL_CODE=new set<string>();
-    static set<String> prodcodes=new set<string>();  
+    
     @TestSetup
     static void createTestData() {
+        TestClassUtil.isForNewTrigger();
         Integer totalCount = 5;
         Integer totalCountOpp = 1;
         
@@ -75,9 +74,6 @@ private class OpportunityTriggerTest {
         List<Contact> ContactResults=TestDataFactory.createContacts(totalCount);
         insert ContactResults;
         
-        
-        
-        
         OppResults[0].Renew_Membership__c = true;
         //OppResults[2].Renew_Membership__c = true;
         //OppResults[3].Renew_Membership__c = true;
@@ -89,7 +85,7 @@ private class OpportunityTriggerTest {
         ContractResults[2].recordtypeId = RecordTypeHelper.getRecordTypeIdFromSchema('Contract','FRM_Program');
         ContractResults[3].recordtypeId = RecordTypeHelper.getRecordTypeIdFromSchema('Contract','SCR_Program');
         insert ContractResults;
-        ContractResults[0].Status = 'Draft';
+        ContractResults[0].Status = 'Activated';
         ContractResults[1].Status = 'Activated';
         update ContractResults;
         
@@ -106,37 +102,38 @@ private class OpportunityTriggerTest {
         insert ExamAttemptList;
         
         // Add product and Pricebook to the particular opportunity using OpportunityLineItem 
-       
         List<OpportunityLineItem> OpportunityLineItemList = new List<OpportunityLineItem>();
-        OpportunityLineItem oppLineItem1 = new OpportunityLineItem(OpportunityId = OppResults[0].Id,PricebookEntryId = PricebookEntryList[0].Id,UnitPrice = 250,
+        OpportunityLineItem oppLineItem1 = new OpportunityLineItem(OpportunityId = OppResults[0].Id,PricebookEntryId = PricebookEntryList[0].Id,UnitPrice = 550,
                                                                    Quantity = 1,Product_company__c='GRA Test',Exam_Registration__c = ExamAttemptList[0].Id,Scholarship_Application__c = sa.Id);
         OpportunityLineItemList.add(oppLineItem1);
-        OpportunityLineItem oppLineItem2 = new OpportunityLineItem(OpportunityId = OppResults[0].Id,PricebookEntryId = PricebookEntryList[1].Id,UnitPrice = 250,
+        OpportunityLineItem oppLineItem2 = new OpportunityLineItem(OpportunityId = OppResults[0].Id,PricebookEntryId = PricebookEntryList[1].Id,UnitPrice = 550,
                                                                    Quantity = 1,Product_company__c='GRA Test',Exam_Registration__c = ExamAttemptList[0].Id,Scholarship_Application__c = sa.Id);
         OpportunityLineItemList.add(oppLineItem2);
-        OpportunityLineItem oppLineItem3 = new OpportunityLineItem(OpportunityId = OppResults[0].Id,PricebookEntryId = PricebookEntryList[2].Id,UnitPrice = 250,
+        OpportunityLineItem oppLineItem3 = new OpportunityLineItem(OpportunityId = OppResults[0].Id,PricebookEntryId = PricebookEntryList[2].Id,UnitPrice = 550,
                                                                    Quantity = 1,Product_company__c='GRA Test',Exam_Registration__c = ExamAttemptList[0].Id,Scholarship_Application__c = sa.Id);
         OpportunityLineItemList.add(oppLineItem3);
-        OpportunityLineItem oppLineItem4 = new OpportunityLineItem(OpportunityId = OppResults[0].Id,PricebookEntryId = PricebookEntryList[3].Id,UnitPrice = 250,
+        OpportunityLineItem oppLineItem4 = new OpportunityLineItem(OpportunityId = OppResults[0].Id,PricebookEntryId = PricebookEntryList[3].Id,UnitPrice = 550,
                                                                    Quantity = 1,Product_company__c='GRA Test',Exam_Registration__c = ExamAttemptList[0].Id,Scholarship_Application__c = sa.Id);
         OpportunityLineItemList.add(oppLineItem4);
-        OpportunityLineItem oppLineItem5 = new OpportunityLineItem(OpportunityId = OppResults[0].Id,PricebookEntryId = PricebookEntryList[4].Id,UnitPrice = 250,
+        OpportunityLineItem oppLineItem5 = new OpportunityLineItem(OpportunityId = OppResults[0].Id,PricebookEntryId = PricebookEntryList[4].Id,UnitPrice = 550,
                                                                    Quantity = 1,Product_company__c='GRA Test',Exam_Registration__c = ExamAttemptList[0].Id,Scholarship_Application__c = sa.Id);
         OpportunityLineItemList.add(oppLineItem5);
-        OpportunityLineItem oppLineItem6 = new OpportunityLineItem(OpportunityId = OppResults[0].Id,PricebookEntryId = PricebookEntryList[5].Id,UnitPrice = 250,
+        OpportunityLineItem oppLineItem6 = new OpportunityLineItem(OpportunityId = OppResults[0].Id,PricebookEntryId = PricebookEntryList[5].Id,UnitPrice = 550,
                                                                    Quantity = 1,Product_company__c='GRA Test',Exam_Registration__c = ExamAttemptList[0].Id,Scholarship_Application__c = sa.Id);
         
         OpportunityLineItemList.add(oppLineItem6);
-        OpportunityLineItem oppLineItem7 = new OpportunityLineItem(OpportunityId = OppResults[0].Id,PricebookEntryId = PricebookEntryList[6].Id,UnitPrice = 250,
+        OpportunityLineItem oppLineItem7 = new OpportunityLineItem(OpportunityId = OppResults[0].Id,PricebookEntryId = PricebookEntryList[6].Id,UnitPrice = 550,
                                                                    Quantity = 1,Product_company__c='GRA Test',Exam_Registration__c = ExamAttemptList[0].Id,Scholarship_Application__c = sa.Id);
         OpportunityLineItemList.add(oppLineItem7);
         insert OpportunityLineItemList;
         
-		List<Event_Registration__c> EventRegistrationResults=TestDataFactory.createEventRegistration(totalCount,OppResults);
+        
+        List<Event_Registration__c> EventRegistrationResults=TestDataFactory.createEventRegistration(totalCount,OppResults);
         insert EventRegistrationResults;
     } 
     
     @isTest static void testOpportunityTrigger_ClosedStage(){
+        TestClassUtil.isForNewTrigger();
         list<Site__c> listsite=new list<site__c>();
         Site__c site_record = new Site__c( name = 'Test Site ',Display_Address__c = 'Test Display_Address__c ',
                                           active__c = true,Non_selectable__c = false,Exam_Date__c = System.today().addDays(13),
@@ -157,6 +154,11 @@ private class OpportunityTriggerTest {
         Opportunity opp = oppList[0];
         opp.stagename = 'Closed';
         Opp.recordtypeId = RecordTypeHelper.getRecordTypeIdFromSchema('Opportunity','Manual');
+        /*Opp.Institutional_Sale__c = True;
+        Opp.Institutional_Sale_Stage__c = 'Draft';
+        Opp.Inst_Sale_Emails__c = 'test 33333';
+        Opp.Inst_Sale_Service_End_Date__c = system.today();
+        Opp.Inst_Sale_Opp__c = oppList[0].Id;*/
         opp.Manual_State__c = 'test';
         opp.Alternate_Method_of_Payment__c = 'Wire';
         update opp;
@@ -164,8 +166,11 @@ private class OpportunityTriggerTest {
     } 
     
     @isTest static void testOpportunityTrigger_RecurringIntentStage(){
+        TestClassUtil.isForNewTrigger();
         List<OpportunityLineItem> OpportunityLineItemList = [Select Id,Product_company__c from OpportunityLineItem  LIMIT 2];
         OpportunityLineItemList[0].Product_company__c = 'testing';
+        //OpportunityLineItemList[1].Product_company__c = 'testing';
+        
         test.startTest();
         List<Opportunity> oppList = [Select Id,stagename from Opportunity LIMIT 2];
         Opportunity opp = oppList[0];
@@ -174,11 +179,11 @@ private class OpportunityTriggerTest {
         Opp.Auto_Renew__c = True;
         update opp;
         test.stopTest();
+        
     }
-  
     
     @isTest static void testOpportunityTrigger_ClosedLostStage(){
-       
+        TestClassUtil.isForNewTrigger();
         List<OpportunityLineItem> OpportunityLineItemList = [Select Id,Product_company__c from OpportunityLineItem  LIMIT 2];
         OpportunityLineItemList[0].Product_company__c = 'testing';
         
@@ -190,16 +195,11 @@ private class OpportunityTriggerTest {
         Opp.recordtypeId = RecordTypeHelper.getRecordTypeIdFromSchema('Opportunity','Manual');
         Opp.Auto_Renew__c = True;
         update opp;
-        
-        list<contract> contrlist=[select id,recordtypeId,Status,Opportunity__c from contract limit 1];
-        contrlist[0].recordtypeId=RecordTypeHelper.getRecordTypeIdFromSchema('Contract','FRM_Program');
-        contrlist[0].Opportunity__c = oppList[0].id;
-   		contrlist[0].status = 'Activated';
-        update contrlist;
         test.stopTest();
     }
     
     @isTest static void testOpportunityTriggerHelperV1(){
+        TestClassUtil.isForNewTrigger();
         List<OpportunityLineItem> OpportunityLineItemList = [Select Id,Product_company__c from OpportunityLineItem  LIMIT 4];
         List<Product2> ProductList = [Select Id,ProductCode,Family,GL_Code__c from Product2  LIMIT 4];
         List<Scholarship_Application__c> Sa_list =[Select Applicant__c,Exam_Type__c,Status__c,Exam_Group__c from Scholarship_Application__c Limit 1];
@@ -208,10 +208,7 @@ private class OpportunityTriggerTest {
         
         List<Contact> ContactList = [Select Id,Email from Contact  LIMIT 4];
         
-        Product_Rate_Offering__c pro = new Product_Rate_Offering__c(Contact__c = ContactList[0].Id,
-                                                                    Current_Product__c=ProductList[0].Id,
-                                                                    Customer_Email__c = ContactList[0].Email.tolowercase(),
-                                                                    Status__c = 'Active');
+        Product_Rate_Offering__c pro = new Product_Rate_Offering__c(Contact__c = ContactList[0].Id, Current_Product__c=ProductList[0].Id,Customer_Email__c = ContactList[0].Email.tolowercase(),Status__c = 'Active');
         insert pro;
         test.startTest();
         OpportunityLineItemList[0].Product_company__c = 'testing';
@@ -231,21 +228,18 @@ private class OpportunityTriggerTest {
         
         List<Contract> ContractResults=[select id,AccountId,Membership_Type__c,recordtypeId,CustomerSignedId,Status from Contract LIMIT 4];
         ContractResults[0].RecordTypeId = RecordTypeHelper.getRecordTypeIdFromSchema('Contract', 'Risk_Net');
-        //ContractResults[0].status = 'Activated';
         ContractResults[1].recordtypeId = RecordTypeHelper.getRecordTypeIdFromSchema('Contract', 'OSTA_Program');
         ContractResults[2].RecordTypeId = RecordTypeHelper.getRecordTypeIdFromSchema('Contract', 'SCR_Program');
         ContractResults[3].recordtypeId = RecordTypeHelper.getRecordTypeIdFromSchema('Contract','FRM_Program');
-        ContractResults[1].status = 'Activated';
-        ContractResults[3].status = 'Activated';
         update ContractResults;
-        
+   
         opp0.stagename = 'Closed';
         opp0.recordtypeId = RecordTypeHelper.getRecordTypeIdFromSchema('Opportunity','Manual');
         opp0.Manual_State__c = 'test';
         opp0.Alternate_Method_of_Payment__c = 'Wire';
         
         update oppList;     
-       
+        
         //List<ChargentSFA__Transaction__c> TransactionResults=TestDataFactory.createChargentSFATransaction(oppList.size(),oppList);
         //insert TransactionResults; 
         
@@ -280,38 +274,5 @@ private class OpportunityTriggerTest {
         opportunityTriggerUtils_New.getUPSCode('UPS Saver');
         opportunityTriggerUtils_New.getUPSCode(null);
     }
-    
-    @isTest static void testOpportunityTriggerHelperV2(){
-        
-        List<Contact> lstContact  = [SELECT id,FirstName,LastName,Email,HomePhone,AccountId FROM Contact limit 1];
-        lstContact[0].Email='test@gmail.com';
-        update lstContact;
-        list<string> Gc=new list<string>{'4000','4001','4002','4011','4012'};
-        list<String> pc=new list<string>{'FRM1','FRM1E','MEMC','FRMRET1','SCRX','SAERP1','DCERTFRM','ENC2X','FRM1X','ENC1X','FRM2X'};
-        list<String> pkc=new list<string>();        
-        
-        for (Integer i =0;i<1;i++){ 
-            pkc.add(pc[i]+':'+Gc[i]+':'+lstContact[i].Email);
-        }
-        prodkeycodes=new set<string>(pkc);   
-        GL_CODE=new set<string>(Gc);
-        prodcodes=new set<string>(pc);  
-        
-        List<Product2> prod = [select id,productCode,isActive,Is_Shippable__c,Family,GL_Code__c from Product2 limit 1] ;
-        prod[0].productCode=pc[0];
-        prod[0].GL_Code__c=Gc[0];
-        update prod;
-        Product_Rate_Offering__c prorate = new Product_Rate_Offering__c(Contact__c = lstContact[0].Id,
-                                                                    Current_Product__c=prod[0].Id,Attestation_Required__c=false,
-                                                                    Customer_Email__c = lstContact[0].Email.tolowercase(),
-                                                                    Status__c = 'Active');
-        insert prorate;
-        test.startTest();
-        OpportunityTriggerHelper_New.closeRateOffers(prodcodes,GL_CODE,lstContact,prodkeycodes);
-        prorate.Attestation_Required__c=true;
-        OpportunityTriggerHelper_New.closeRateOffers(prodcodes,GL_CODE,lstContact,prodkeycodes);
-        test.stopTest();
-    }
-   
     
 }

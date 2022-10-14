@@ -218,7 +218,7 @@ const util_customValidationCheck = (validationType, fieldValue)  => {
 const util_validateForm = (template)  => {
 
     var isValid = true;
-    template.querySelectorAll('lightning-input, lightning-combobox, lightning-textarea').forEach(function(inputCmp) {
+    template.querySelectorAll('lightning-input, lightning-combobox').forEach(function(inputCmp) {
         inputCmp.setCustomValidity("");
         inputCmp.reportValidity();
 
@@ -232,7 +232,7 @@ const util_validateForm = (template)  => {
             inputCmp.setCustomValidity(msg);
             inputCmp.reportValidity();
             isValid = false;
-        } else if(isCmpValid && util_isDefined(inputCmp.dataset.customvalidation) && util_isDefined(inputCmp,"value.length") && inputCmp.value.length > 0) {
+        } else if(isCmpValid && util_isDefined(inputCmp.dataset.customvalidation) && util_isDefined(inputCmp,"value.length") && inputCmp.value.length) {
             isCmpValid = util_customValidationCheck(inputCmp.dataset.customvalidation, inputCmp.value);
             if(!isCmpValid) {
                 var msg = 'There was an issue with your entry.';

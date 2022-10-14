@@ -1,0 +1,19 @@
+<apex:page >
+    <apex:includeLightning />
+    
+    <!-- script src="https://garp--devapr22.my.salesforce.com/lightning/lightning.out.js"></script -->
+    
+    <div id="lightning" />
+    <script>
+    debugger;
+        $Lightning.use("c:GARPLightningOutCompWrapper", function() {
+             $Lightning.createComponent("c:MemberProfileCompanySelect", {},
+              "lightning",
+              function(cmp) {
+                console.log("LWC component was created");
+                // do some stuff
+              }
+          );
+        });
+    </script>
+</apex:page>

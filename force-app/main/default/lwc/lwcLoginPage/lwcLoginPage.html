@@ -1,0 +1,72 @@
+<template>
+   <template if:true={isLoading}>
+      <lightning-spinner alternative-text="Loading" variant="brand" size="large">
+      </lightning-spinner>
+   </template>
+   <template if:true={boolVisible}>
+      <lightning-card variant="narrow" title="New to GARP? Create an account below.">
+            <div>
+               <p>
+                     Creating an account will get you limited access to GARP content, daily and weekly industry updates, free membership in your local GARP Chapter, basic access to our GARP Career Center, and access to select webcasts and white papers. Affiliate members are welcome to upgrade to <a href='javascript:gotoRegistration()'>Individual Member</a> at any time.
+               </p>
+            </div><br/>
+            <lightning-input type="text" name="email" label="YOUR EMAIL ADDRESS" value={email} class="emailAddress" required onchange={handleFormInputChange}></lightning-input><br/>
+            <lightning-input type="text" name="firstName" label="YOUR FIRST NAME" value={firstName} class="validate" required onchange={handleFormInputChange}></lightning-input><br/>
+            <lightning-input type="text" name="lastName" label="YOUR LAST NAME" value={lastName} class="validate" required onchange={handleFormInputChange}></lightning-input><br/>
+            <lightning-combobox
+               name="Country"
+               label="YOUR COUNTRY/REGION"
+               value={CountryValue}
+               placeholder="Select Country"
+               options={countries}
+               onchange={handleCountryChange}
+               class="validate" 
+               required>
+            </lightning-combobox><br/>
+
+            <lightning-combobox
+               name="Industry"
+               label="YOUR INDUSTRY"
+               value={IndustryValue}
+               placeholder="Select Industry"
+               options={industries}
+               onchange={handleIndustryChange} 
+               class="validate"
+               required>
+            </lightning-combobox><br/>
+
+            <lightning-combobox
+               name="Job"
+               label="YOUR JOB FUNCTION"
+               value={JobValue}
+               placeholder="Select Job"
+               options={jobs}
+               onchange={handleJobChange}
+               class="validate"
+               required>
+            </lightning-combobox><br/>
+
+            <c-lwc-custom-lookup 
+               institution-type="Organization"
+               select-record-id={selectedInstitutionId}
+               onselected={selectInstitution}
+               onsearch={searchInstitution}
+               data-id="Company__c" 
+               -label="YOUR COMPANY" 
+               required=true 
+               select-record-name={company} 
+               field-error="Company is a required field"
+               class="slds-m-top--large">
+         </c-lwc-custom-lookup><br/>
+
+            <div>
+               <p>By clicking ‘Create an account’ you agree to the <a href="javascript:gotoWebsite('code_of_conduct')">Code of Conduct</a>, <a href="javascript:gotoWebsite('privacy_policy')">Privacy Policy</a>, <a href="#">Terms of Service.</a> and receiving emails from GARP that may be of interest to you.</p>
+            </div><br/>
+
+         <lightning-button label=" Create an Account " onclick={submitData}></lightning-button>
+      </lightning-card> 
+   </template> 
+   <template if:false={boolVisible}>
+      <c-member-profile-survey contact-id={contactId}></c-member-profile-survey>
+   </template> 
+</template>

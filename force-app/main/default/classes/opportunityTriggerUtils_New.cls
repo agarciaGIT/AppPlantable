@@ -1,5 +1,5 @@
 public class opportunityTriggerUtils_New {
-    public static String MobiusProductYear;
+    
     public static Contract getNewRiskContract(OpportunityLineItem oli,Map<Id,Contact> accIdToContactMap){
         Id riskNetRecordTypeID = RecordTypeHelper.getRecordTypeIdFromSchema('Contract','Risk_Net');
         Contract riskContract = new Contract();
@@ -47,59 +47,6 @@ public class opportunityTriggerUtils_New {
         ostaContract.CustomerSignedId = contactId;
         
         return ostaContract;
-    }
-    
-    public static void unprovisionMobiuseBook(Map<Id, String> garpMemberIdByOpportunityId, String exam, String part) {
-        Set<Integer> productIds = new Set<Integer>();
-        Map<String, Mobius_Products__c> mobiusProducts = Mobius_Products__c.getall();                
-        Mobius_Products__c MobiusProductYearObj = mobiusProducts.get(exam + ' Current Year');
-        if(MobiusProductYearObj != null) {
-            MobiusProductYear = MobiusProductYearObj.Year__c;
-            
-            
-            for(Mobius_Products__c mobiusProduct :mobiusProducts.values()) {
-                if(mobiusProduct.Year__c == MobiusProductYear && mobiusProduct.Exam__c == exam && mobiusProduct.Part__c == part){
-                    productIds.add(Integer.valueOf(mobiusProduct.Product_Id__c));
-                }
-            }
-        
-            
-            for(String key: garpMemberIdByOpportunityId.keySet()){
-                system.debug('');
-                MobiusAPI.mUnProvisionAnEBook(key, Integer.valueOf(garpMemberIdByOpportunityId.get(key)), productIds);
-            }
-        }
-    }
-    
-    public static void cancelFFRA(Set<Id> oppIDs) {
-        system.debug('* * * cancelFFR ...'+ oppIDs);
-        MAP<ID,ID> ids = new MAP<ID,ID>();
-        MAP<ID,ID> contactAcct = new MAP<ID,ID>();
-        
-        LIST<Opportunity> opps = [select Id, AccountId, ChargentSFA__Billing_Email__c from Opportunity where ID in :oppIDs];
-        for(Opportunity opp :opps) {
-            ids.put(opp.AccountId, opp.id);
-        }
-        system.debug('ids:' + ids);
-        LIST<Contact> conts = [select Id, AccountId from Contact where AccountId in :ids.keySet()];
-        for(Contact cont :conts) {
-            contactAcct.put(cont.AccountId, cont.id);
-        }
-        system.debug('contactAcct:' + contactAcct);
-        
-        for(Opportunity opp :opps) {
-            ID contId = contactAcct.get(opp.AccountId);
-            if(contId != NULL) {            
-                API_Transaction__c trans = smartProsAPI.cancelPurchaseStart(opp.ChargentSFA__Billing_Email__c, opp.Id);
-                smartProsAPI.SendRequest(trans.Request__c, trans.Id);
-            }
-        }
-        Id fbrRecordType = RecordTypeHelper.GetRecordTypeId('Contract', 'FBR Program');
-        List<Contract> lstContr = [select Id, Status, AccountID from Contract where AccountID in :ids.keySet() and RecordTypeID = :fbrRecordType];
-        for(Contract contr :lstContr) {
-            contr.Status = 'Canceled';
-        }
-        update lstContr;
     }
     
     public static String getUPSCode(String strDesc) {

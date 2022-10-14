@@ -25,11 +25,11 @@ private class Utilities_test{
                               KPI_ERP_Enrollment_Date__c = Date.newInstance(2009, 2, 17));
         insert contact;
         
-        con = new contract(StartDate = system.today(),Accountid = acc.id,Status = 'Draft',CurrencyIsoCode = 'USD',ContractTerm = 12);
+        con = new contract(StartDate = system.today(),Accountid = acc.id,Status = 'Draft',CurrencyIsoCode = 'USD');
         insert con;
         con.Status = 'Activated ( Auto-Renew )';
         con.ContractTerm = 24;
-        con.StartDate = date.newInstance(2022, 01, 01);
+        con.StartDate = date.newInstance(2019, 01, 01);
         con.recordTypeID = RecordTypeHelper.GetRecordTypeId('Contract','CPE');
         update con;
         

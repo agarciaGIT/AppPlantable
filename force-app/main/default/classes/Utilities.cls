@@ -918,26 +918,40 @@ global class Utilities{
         String AccessToken='';
         Integer cnt=1;
         
+        MAP<Integer, Boolean> mapInvalidChars = new MAP<Integer, Boolean>();
+        mapInvalidChars.put(34,False);
+        mapInvalidChars.put(38,False);
+        mapInvalidChars.put(39,False);
+        mapInvalidChars.put(39,False);
+        mapInvalidChars.put(40,False);
+        mapInvalidChars.put(41,False);
+        mapInvalidChars.put(44,False);
+        mapInvalidChars.put(45,False);
+        mapInvalidChars.put(46,False);
+        mapInvalidChars.put(47,False);
+        mapInvalidChars.put(58,False);
+        mapInvalidChars.put(59,False);
+        mapInvalidChars.put(60,False);
+        mapInvalidChars.put(61,False);
+        mapInvalidChars.put(62,False);
+        mapInvalidChars.put(63,False);
+        mapInvalidChars.put(64,False);
+        mapInvalidChars.put(91,False);
+        mapInvalidChars.put(92,False);
+        mapInvalidChars.put(93,False);
+        mapInvalidChars.put(95,False);
+        mapInvalidChars.put(96,False);
+        
         While(cnt < 10) {
             Integer trys = 0;
             Boolean done=false;
             Double rnd;
             while(trys < 100 && done == False) {
-              //rnd = Math.floor(Math.random() * ((122-35)+1) + 35);
-              rnd = Math.floor((100 * Math.random()));
-              System.debug('rnd:' + rnd);
-              
-              done=false;
-              // 0-9 or A-Z
-              if((rnd >= 48 && rnd <= 57) || (rnd >= 65 && rnd <= 90) || rnd == 64 ||  rnd == 36 ||  rnd == 33 ) {
-                  done=true;
-              }
-              //done = mapInvalidChars.get(Integer.valueOf(rnd));
-              trys++;
-            }
+              rnd = Math.floor(Math.random() * ((122-35)+1) + 35);
+                 done = mapInvalidChars.get(Integer.valueOf(rnd));
+                trys++;
+          }
             String myChar = String.fromCharArray( new List<integer> { Integer.valueOf(rnd) } );
-            System.debug('myChar :' + myChar);
-            
             AccessToken = AccessToken + myChar;
             cnt++;
         }

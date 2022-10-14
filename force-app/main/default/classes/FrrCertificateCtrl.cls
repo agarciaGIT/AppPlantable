@@ -36,8 +36,7 @@ public without sharing class FrrCertificateCtrl {
             List<Contract> frrContracts = [
                 SELECT Id, All_Requirements_Completed_Date__c 
                 FROM Contract 
-                WHERE CustomerSigned.Id = :contactId AND RecordType.Name = 'ICBRR Program' AND
-                All_Requirements_Completed_Date__c != NULL
+                WHERE CustomerSigned.Id = :contactId AND RecordType.Name = 'ICBRR Program'                
             ];
             
             // Throw a page exceptions

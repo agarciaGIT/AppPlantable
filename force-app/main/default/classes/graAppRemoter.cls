@@ -775,7 +775,7 @@ global without sharing class graAppRemoter {
                         if(newStudyAccountInfo  != NULL) {
                             newStudyAccountInfo.Payment_Agreed_Date__c = datetime.now();
                             newStudyAccountInfo.Invoice_Email__c = invoiceEmail;
-                            newStudyAccountInfo.Payment_Agreed_Amount__c = (paymentFeeAmount != 0 && paymentFeeAmount != 0.00) ? paymentFeeAmount : null;
+                            newStudyAccountInfo.Payment_Agreed_Amount__c = paymentFeeAmount;
                         
                             update newStudyAccountInfo;
                         } else {
@@ -1645,7 +1645,7 @@ global without sharing class graAppRemoter {
     
     @RemoteAction
     public static List<Pillar_3_Notification__c> getPillar3Notifications () {
-        List<Pillar_3_Notification__c> notifList = [SELECT Name, Title__c, Type__c,Type_Color__c, Notification_Date__c FROM Pillar_3_Notification__c order by Notification_Date__c desc, Priority__c desc];
+        List<Pillar_3_Notification__c> notifList = [SELECT Name, Title__c, Type__c,Type_Color__c, Notification_Date__c FROM Pillar_3_Notification__c WHERE Active__c = True order by Notification_Date__c desc, Priority__c desc];
         return notifList;
     }
 }

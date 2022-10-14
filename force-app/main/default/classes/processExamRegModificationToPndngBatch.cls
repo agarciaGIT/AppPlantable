@@ -17,7 +17,7 @@ global class processExamRegModificationToPndngBatch implements Database.Batchabl
                                                    Part_I_Exam_Part_To__c,Part_II_Exam_Part_To__c,
                                                    Part_I_Exam_Site_From__c,Part_II_Exam_Site_From__c,
                                                    Part_I_Exam_Site_To__c,Part_II_Exam_Site_To__c,
-                                            	   Bulk_Site_Deferral__c
+                                                   Bulk_Site_Deferral__c
                                             from Exam_Registration_Modification__c 
                                             where Status__c = 'Opportunity Created' AND Id =: recordId]);
         }else{
@@ -58,7 +58,7 @@ global class processExamRegModificationToPndngBatch implements Database.Batchabl
         }
         
         if(!deferralsToUpdate.isEmpty())
-        	update deferralsToUpdate;
+            update deferralsToUpdate;
         
         if(!modIds.isEmpty() && !test.isRunningTest())
             ExamManagementController.processExamRegMods(modIds,true,true);

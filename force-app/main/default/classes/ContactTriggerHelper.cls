@@ -410,7 +410,7 @@ public class ContactTriggerHelper {
                                                         Result__c,RPT_Exam_Mode__c,Integration_Type__c,OutBound_Type__c,Opportunity_StageName__c,
                                                         ATA_Cert_Type__c,ATA_Cert_Id__c,ATA_Name_As_It_Appears_On_Id__c
                                                  from Exam_Attempt__c
-                                                 where Cancelled__c = false and (Is_Active_Exam_Group__c = true or Result__c = null) and RPT_Exam_Mode__c = 'CBT'
+                                                 where Cancelled__c = false and Is_Active_Exam_Group__c = true and RPT_Exam_Mode__c = 'CBT'
                                                  and (Member__c IN: contactATAPSIMap.keyset() OR Member__c IN: contactCertUpdMap.keyset())];
         for(Exam_Attempt__c ea : examAttemptList){
             boolean updateEA = false;

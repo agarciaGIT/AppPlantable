@@ -471,7 +471,7 @@ insert exmSite1;*/
             registration.getProductCodesBasedOnFilters1(new Exam_Attempt__c [] {attempt},new user(id = userinfo.getUserId()));
             registration.getFRMExams(new user(id = userinfo.getUserId()));
             registration.getERPExams(new user(id = userinfo.getUserId()));
-            registration.getFBRICBRProductCodes('fbr',null,'test');
+            registration.getFBRICBRProductCodes('fbr',null);
             registration.getExamFee1(new Exam__c[] {exam});
             registration.getPrice('');
             
@@ -506,11 +506,11 @@ insert exmSite1;*/
         testdata();
         test.starttest();
         try{
-            registration.getFBRICBRProductCodes('fbr',contact.email,'Test');
-            registration.getFBRICBRProductCodes('ICBRR',contact.email,'Test');
-            registration.getFBRICBRProductCodes('WILEY',contact.email,'Test');
-            registration.getFBRICBRProductCodes('INDIVIDUAL',contact.email,'Test');
-            registration.getFBRICBRProductCodes('STUDENT',contact.email,'Test');
+            registration.getFBRICBRProductCodes('fbr',contact.email);
+            registration.getFBRICBRProductCodes('ICBRR',contact.email);
+            registration.getFBRICBRProductCodes('WILEY',contact.email);
+            registration.getFBRICBRProductCodes('INDIVIDUAL',contact.email);
+            registration.getFBRICBRProductCodes('STUDENT',contact.email);
         }catch(Exception ex){}
         test.stoptest();  
     }

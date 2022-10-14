@@ -1,0 +1,51 @@
+<template>
+    <div class="page-content-wrapper">
+        <div id="j_id0:j_id11" data-autoscroll="false" data-ui-view="" class="scale-fade ng-scope">
+        <div class="full-width-title ng-scope">
+        <span>
+        <h2>About</h2>
+    </span>
+    </div>
+    <div style="margin:25px 0;" class="ng-scope">
+        <div class="container gbi-container gbi-container_updates">
+            <p>
+                The GARP Benchmarking Initiative (GBI) was started in 2011 after the global credit crisis highlighted the need for greater global systemic risk awareness. Regulatory studies surfaced a critical limitation: Financial service organizations are multinational and markets are cross-border and interconnected, but regulatory and political systems are nation-based. Therefore, system risk issues require data analysis across borders without regard to jurisdiction or political concerns.&nbsp;
+            </p>
+            <p>
+                GBI solves this problem by working across borders and in direct consultation with all stakeholders, reducing operational risks, and producing greater accuracy of results and speed of analysis. GBI uses a secure data collection and dissemination system and pre-agreed confidentiality protocols to ensure multiple studies can be conducted in parallel with participant data anonymity. Having now completed over 50 studies including over 123 globally active financial institutions, GBI houses institutional knowledge of study implementation, has a centralized data repository, and provides the industry with an independent analytic entity that reduces operational risks and inaccurate results and allows for robust data validation and cost savings.
+            </p>
+        </div>
+    </div>
+    <div class="row ng-scope">
+        <div class="container gbi-container gbi-container_updates">
+            <div style="margin:15px 0;">
+                <h1>Participating Institutions</h1>
+            </div>
+            <div class="general-docs_wrapper">
+                <div class="container gbi-container">
+                    <div class="row study-documents_labels">
+                        <lightning-datatable
+                            key-field="id"
+                            columns={columns}
+                            data={participantList}
+                            hide-checkbox-column
+                            default-sort-direction={defaultSortDirection}
+                            sorted-direction={sortDirection}
+                            sorted-by={sortedBy}
+                            onsort={onHandleSort}>
+                        </lightning-datatable>
+                    </div>
+                    <template if:true={isNoParticiptant}>
+                        <div class="row ng-scope">
+                            <div class="col-xs-5">
+                                <span>There are no Participating Institutions posted at this time.</span>
+                            </div>
+                        </div>
+                    </template>    
+                    </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>

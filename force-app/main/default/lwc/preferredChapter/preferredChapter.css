@@ -1,0 +1,94 @@
+.panel {
+    margin-bottom: 20px;
+    background-color: #fff;
+    border-radius: 4px;
+}
+.panel-heading {
+    padding: 10px 15px;
+    border-bottom: 1px solid transparent;
+    border-top-right-radius: 3px;
+    border-top-left-radius: 3px;
+}
+.panel-title {
+    margin-top: 0;
+    margin-bottom: 0;
+    font-size: 16px;
+    color: inherit;
+}
+.panel-body {
+    padding: 15px;
+}
+.garp-btn-portal {
+    background-color: #fff;
+    border: 1px solid #006c99;
+    margin: 1.5em 0;
+    color: #006c99!important;
+}
+.btn {
+    padding: 6px 12px;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.428571429;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    background-image: none;
+    border-radius: 4px;
+    user-select: none;
+}
+.center-block {
+    display: block;
+}
+.garp-btn-portal {
+    background-color: #fff;
+    border: 1px solid #006c99;
+    margin: 1.5em 0;
+    color: #006c99!important;
+}
+.garp-btn-portal {
+    background-color: #fff;
+    border: 1px solid #006c99;
+    margin: 1.5em 0;
+    color: #006c99!important;
+}
+.garp-btn-portal {
+    background-color: #fff;
+    border: 1px solid #006c99;
+    margin: 1.5em 0;
+    color: #006c99!important;
+}
+.click-link:hover, [ng-click] {
+    cursor: pointer;
+}
+.garp-btn-portal {
+    background-color: #fff;
+    border: 1px solid #006c99;
+    margin: 1.5em 0;
+    color: #006c99!important;
+}
+.center-block {
+    display: block;
+}
+.btn {
+    padding: 6px 12px;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.428571429;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    background-image: none;
+    border-radius: 4px;
+    user-select: none;
+}
+a {
+    text-decoration: none;
+}
+h4 {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 1.1;
+    color: inherit;
+}

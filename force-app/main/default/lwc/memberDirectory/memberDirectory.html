@@ -1,0 +1,68 @@
+<template>
+    <!--<lightning-card>-->
+    <div class="panel">
+        <div class="mbrPrflHead panel-heading">
+          <h3 class="panel-title">Member Directory</h3>
+        </div>
+          <div id="directoryFormArea" class="panel-body">
+            <div id="directorySubSpin"></div>
+            <div id="search">
+              <input type="text" name="st" id="st" class="form-control ng-pristine ng-untouched ng-valid ng-empty ng-valid-maxlength" style="height: 34px;padding-top: 0px;" ng-model="dirsearch.searchText" ng-maxlength="255" placeholder="Search by name or location">
+              <br>
+              <div class="row">
+                <div class="searchdiv">
+                  <button name="searchButton" class="button full-width">Search</button>
+                </div>
+              </div>
+              <div id="results">
+              </div>
+            </div>
+      
+            <div id="profile" style="display:none;">
+              <div>
+                <div style="float:left;">
+                  <p>
+                    <b></b>
+                  </p>
+                  <p>
+                    ,   
+                  </p>
+                </div>
+              </div>
+              <p></p>
+              <table class="table table-condensed examday-reminder-area">
+                <tbody><tr>
+                  <td><b>Certification(s):</b></td>
+                  <td>
+                    
+                  </td>
+                </tr>
+                <tr>
+                  <td><b>Year Certified:</b></td>
+                  <td>
+                    
+                  </td>
+                </tr>
+                </tbody>
+              </table>
+      
+              <div id="invite">
+                <p>
+                  <button name="connectButton" class="btn garp-btn-orange">
+                    Invite to Connect
+                  </button>
+                </p>
+                <p>
+                  This person has either not enabled the Connect feature or is not
+                  an Individual Member. Click the 'Invite to Connect' button above
+                  to send notification of your interest in connecting. Please check
+                  back later to see if they have chosen to engage.
+                </p>
+              </div>
+              <p></p>
+              <p><a href="">Back to search results</a></p>
+            </div>
+        </div>
+    </div>
+  <!--</lightning-card>-->
+</template>

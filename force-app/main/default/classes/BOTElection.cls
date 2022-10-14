@@ -27,34 +27,38 @@ public class BOTElection {
         DateTime currentDate = DateTime.now();
         
         List < Board__c > electionBoardDetails = [SELECT Name, Number_Of_Open_Seats__c, Election_Start_Date__c, Election_End_Date__c, Is_Current_Election__c, Show_Widget_On_Dash__c FROM Board__c where Is_Current_Election__c = true];
-        List < Board_Participation__c > allElectionCandidates = [SELECT Name, Contact__r.GARP_Profile__r.Bio__c, Contact__r.GARP_Profile__r.Id, Board__c, Board_Title__c, Contact__r.Name, Contact__r.GARP_Profile__r.Qualifications__c FROM Board_Participation__c where Board__r.Is_Current_Election__c=true];
-        List<String> GARPProfileIDsOfElectionCandidates = new List<String>();
-        List<String> allElectionCandidatesMediaURLs = new List<String>();
         
-        for(Board_Participation__c electionCandidate: allElectionCandidates){
-            GARPProfileIDsOfElectionCandidates.add(electionCandidate.Contact__r.GARP_Profile__r.Id);
+        if(!electionBoardDetails.IsEmpty()) {
+        
+            List < Board_Participation__c > allElectionCandidates = [SELECT Name, Contact__r.GARP_Profile__r.Bio__c, Contact__r.GARP_Profile__r.Id, Board__c, Board_Title__c, Contact__r.Name, Contact__r.GARP_Profile__r.Qualifications__c FROM Board_Participation__c where Board__r.Is_Current_Election__c=true];
+            List<String> GARPProfileIDsOfElectionCandidates = new List<String>();
+            List<String> allElectionCandidatesMediaURLs = new List<String>();
+            
+            for(Board_Participation__c electionCandidate: allElectionCandidates){
+                GARPProfileIDsOfElectionCandidates.add(electionCandidate.Contact__r.GARP_Profile__r.Id);
+            }
+            
+            List < cdrive__Cloud_Files__c > allElectionCandidatesMedia = [SELECT Id, cdrive__contextID__c, cdrive__File_Name__c from cdrive__Cloud_Files__c where cdrive__contextID__c = :GARPProfileIDsOfElectionCandidates]; 
+            for(cdrive__Cloud_Files__c electionCandidateMedia: allElectionCandidatesMedia){
+                allElectionCandidatesMediaURLs.add('https://s3-us-west-2.amazonaws.com/garpsalesforcepublic/GARP_Profile__c/' + electionCandidateMedia.cdrive__contextID__c + '/' + electionCandidateMedia.Id + '_' + electionCandidateMedia.cdrive__File_Name__c);
+            }  
+            String ElectionYear = electionBoardDetails[0].Name;  
+            
+            if((electionBoardDetails[0].Election_Start_Date__c < currentDate) && (electionBoardDetails[0].Election_End_Date__c > currentDate)){
+                isElectionOpen = true;
+            }
+            
+            if(electionBoardDetails[0].Show_Widget_On_Dash__c){
+                showWidgetOnDash = true;
+            }
+            
+            rd.electionBoardDetails = electionBoardDetails;
+            rd.allElectionCandidates = allElectionCandidates;
+            rd.allElectionCandidatesMediaURLs = allElectionCandidatesMediaURLs;
+            rd.hasVotervotedBefore = hasVoterVotedInThisElectionBefore(contactId, ElectionYear);
+            rd.isElectionOpen = isElectionOpen;
+            rd.showWidgetOnDash = showWidgetOnDash;
         }
-        
-        List < cdrive__Cloud_Files__c > allElectionCandidatesMedia = [SELECT Id, cdrive__contextID__c, cdrive__File_Name__c from cdrive__Cloud_Files__c where cdrive__contextID__c = :GARPProfileIDsOfElectionCandidates]; 
-        for(cdrive__Cloud_Files__c electionCandidateMedia: allElectionCandidatesMedia){
-            allElectionCandidatesMediaURLs.add('https://s3-us-west-2.amazonaws.com/garpsalesforcepublic/GARP_Profile__c/' + electionCandidateMedia.cdrive__contextID__c + '/' + electionCandidateMedia.Id + '_' + electionCandidateMedia.cdrive__File_Name__c);
-        }  
-        String ElectionYear = electionBoardDetails[0].Name;  
-        
-        if((electionBoardDetails[0].Election_Start_Date__c < currentDate) && (electionBoardDetails[0].Election_End_Date__c > currentDate)){
-            isElectionOpen = true;
-        }
-        
-        if(electionBoardDetails[0].Show_Widget_On_Dash__c){
-            showWidgetOnDash = true;
-        }
-        
-        rd.electionBoardDetails = electionBoardDetails;
-        rd.allElectionCandidates = allElectionCandidates;
-        rd.allElectionCandidatesMediaURLs = allElectionCandidatesMediaURLs;
-        rd.hasVotervotedBefore = hasVoterVotedInThisElectionBefore(contactId, ElectionYear);
-        rd.isElectionOpen = isElectionOpen;
-        rd.showWidgetOnDash = showWidgetOnDash;
         return rd;
     }
     

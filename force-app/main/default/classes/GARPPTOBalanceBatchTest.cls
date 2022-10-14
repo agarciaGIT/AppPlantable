@@ -5,11 +5,11 @@ private class GARPPTOBalanceBatchTest {
     private static void testBatch() {
         Integer targetYear = System.today().year() + 1;
         
-        User u1 = TestingHelper.createUser('GARP Marketing', 'nosuchuser1@nomail.com', false);
+        User u1 = TestingHelper.createUser('Marketing', 'nosuchuser1@nomail.com', false);
         u1.Start_Date_with_Company__c = Date.newInstance(targetYear, Date.today().month(), Date.today().day()).addMonths(-12);
         u1.PTO_Office__c = 'NJ';
         
-        User u2 = TestingHelper.createUser('GARP Marketing', 'nosuchuser2@nomail.com', false);
+        User u2 = TestingHelper.createUser('Marketing', 'nosuchuser2@nomail.com', false);
         u2.SVP_and_Above__c = true;
         u2.alias = 'tst9528';
         u2.PTO_Office__c = 'NJ';

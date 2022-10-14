@@ -15,7 +15,6 @@ global without sharing class InvoiceAsPDFController{
     @TestVisible private static final String DEC_EXAM_REG_GL = '4012';
     @TestVisible private static final String APR_EXAM_REG_GL = '4004';
     @TestVisible private static final String AUG_EXAM_REG_GL = '4008';
-    @TestVisible private static final String OCT_EXAM_REG_GL = '4011';
         
     @TestVisible private static final String FBR_GL = '4000';
     @TestVisible private static final String PAY_DEFERRED_GL = '6110';
@@ -115,8 +114,7 @@ global without sharing class InvoiceAsPDFController{
                 Shipping_Phone_No__c, Shipping_Company_Name__c, Shipping_Country__c, Display_Invoice_Number__c,Product_Name__c, Shipping_City__c,
                 Institutional_Sale__c, Inst_Sale_Opp__c, Inst_Sale_Opp__r.StageName, Inst_Sale_Opp__r.ChargentSFA__Billing_Company__c, Inst_Sale_Opp__r.CloseDate, Inst_Sale_Opp__r.Display_Invoice_Number__c, Inst_Sale_Opp__r.Inst_Sale_Display_Invoice_Number__c, 
                 Shipping_Street__c, Shipping_E_mail__c, ChargentSFA__Charge_Amount__c, Amount, GARP_Member_ID__c, CreatedDate, LEGACY_Purchase_Date__c, Program_Name__c, Program_Abbrev__c,
-                Team_Registration__c, Team_Registration__r.Manual_Invoice_Number__c, Team_Registration__r.Manual_Invoice_Payment_Date__c, Team_Registration__r.Account__r.Name,
-                Team_Registration__r.Is_Scholarship__c,  Team_Registration__r.Discounted_Price__c
+                Team_Registration__c, Team_Registration__r.Manual_Invoice_Number__c, Team_Registration__r.Manual_Invoice_Payment_Date__c, Team_Registration__r.Account__r.Name
 				FROM Opportunity
                 WHERE id= :oppId and StageName != 'Recurring Intent'];
        
@@ -340,7 +338,7 @@ global without sharing class InvoiceAsPDFController{
                    if (GLCode == IND_GL) {
                    Membership = true;
                } 
-               if (GLCODE == AUG_EXAM_REG_GL || GLCode == NOV_EXAM_REG_GL || GLCode == MAY_EXAM_REG_GL || GLCode == JUL_EXAM_REG_GL || GLCode == DEC_EXAM_REG_GL || GLCode == APR_EXAM_REG_GL || GLCode == OCT_EXAM_REG_GL) {
+               if (GLCODE == AUG_EXAM_REG_GL || GLCode == NOV_EXAM_REG_GL || GLCode == MAY_EXAM_REG_GL || GLCode == JUL_EXAM_REG_GL || GLCode == DEC_EXAM_REG_GL || GLCode == APR_EXAM_REG_GL) {
                    if (prodCode.containsIgnoreCase('frm')) {
                        FRM=true; 
                    }
@@ -370,8 +368,6 @@ global without sharing class InvoiceAsPDFController{
                        examAdminType = 'APR';
                    } else if(GLCode == AUG_EXAM_REG_GL) {
                        examAdminType = 'AUG';
-                   }else if(GLCode == OCT_EXAM_REG_GL) {
-                       examAdminType = 'OCT';
                    }
                }
                
@@ -529,11 +525,11 @@ global without sharing class InvoiceAsPDFController{
              }
                         
              isTeamRegistration = False;
-             if(opp.Team_Registration__c != NULL && opp.Team_Registration__r.Is_Scholarship__c == False && opp.Team_Registration__r.Discounted_Price__c == Null) {
+             if(opp.Team_Registration__c != NULL) {
                  isTeamRegistration = True;
                  teamRegCompany = opp.Team_Registration__r.Account__r.Name;
                  teamRegInvoiceNumber = opp.Team_Registration__r.Manual_Invoice_Number__c;
-				 teamRegPaidDate = datetime.newInstance(opp.Team_Registration__r.Manual_Invoice_Payment_Date__c.year(), opp.Team_Registration__r.Manual_Invoice_Payment_Date__c.month(), opp.Team_Registration__r.Manual_Invoice_Payment_Date__c.day()).format('MMMM dd, yyyy');
+				 teamRegPaidDate = datetime.newInstance(opp.Team_Registration__r.Manual_Invoice_Payment_Date__c.year(), opp.Team_Registration__r.Manual_Invoice_Payment_Date__c.month(), opp.Team_Registration__r.Manual_Invoice_Payment_Date__c.day()).format('MM/dd/yyyy');
                  teamRegCloseDate = datetime.newInstance(opp.CloseDate.year(), opp.CloseDate.month(), opp.CloseDate.day()).format('MM/dd/yyyy');
              }
              createdDate = opp.CreatedDate;

@@ -1,0 +1,21 @@
+<template>
+  <article class="slds-card studies-list-by-type">
+    <div class="slds-card__body slds-card__body_inner">
+
+ <!-- <template iterator:it={studies}>
+  <div key={it.Id}>
+  <div if:true={it.first} class="doSomething">
+   </div>
+        {it.Name}
+
+   <div if:true={it.last} class="doSomething">
+  </div>
+  </div>
+ </template> -->
+{studies}
+ <c-study-card-list></c-study-card-list>
+      <!-- Type Title component (i.e. My Studies) -->
+      <!-- Study Card List (of Study Card components) -->
+    </div>
+    </article>
+</template>

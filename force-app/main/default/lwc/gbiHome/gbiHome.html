@@ -1,0 +1,74 @@
+<template>
+    <div class="wrapper">
+        <div class="sidebar-wrapper">
+            <ul class="nav sidebar-nav">
+                <li class="navbar-brand">
+                    <a href="#">
+                        <img src="/resource/1647877728000/graApp/img/logos/gbi-knockout.png">
+                    </a>
+                </li>
+                <li>
+                    <a class="click-link active" data-id="study" onclick={handleChangeSection}>
+                        <span class="hover-bar"></span>
+                        <i class="nc-icon-outline files_single-copy-04 circle"></i> Studies
+                    </a>
+                </li>
+                <template if:true={GBIAnalyticsParticipant}>
+                    <li>
+                        <a class="click-link ng-scope" data-id="pillar" onclick={handleChangeSection}>
+                            <span class="hover-bar"></span>
+                            <i class="nc-icon-outline ui-2_chart-bar-52 circle"></i> Pillar 3 Data
+                        </a>
+                    </li>
+                </template>
+                <li>
+                    <a class="click-link" data-id="document" onclick={handleChangeSection}>
+                        <span class="hover-bar"></span>
+                        <i class="nc-icon-outline files_folder-download circle"></i> Documents
+                    </a>
+                </li>
+                <li>
+                    <a class="click-link" data-id="profile" onclick={handleChangeSection}>
+                        <span class="hover-bar"></span>
+                        <i class="nc-icon-outline nc-icon-outline users_single-02 circle"></i> Profile
+                    </a>
+                </li>
+                <li>
+                    <a class="click-link" data-id="support"  onclick={handleChangeSection}>
+                        <span class="hover-bar"></span>
+                        <i class="nc-icon-outline ui-2_alert circle"></i> Support
+                    </a>
+                </li>
+                <li>
+                    <a class="click-link" data-id="about" onclick={handleChangeSection}>
+                        <span class="hover-bar"></span>
+                        <i class="nc-icon-outline ui-2_alert-circle-i circle"></i> About
+                    </a>
+                </li>
+            </ul>
+            <div class="signdiv">
+                <a class="click-link btn" onclick={signOut}><span class="angular-ripple animate" style="width: 170px; height: 170px; left: 24.2812px; top: -69.3334px;"></span>
+                    Sign Out
+                </a>
+            </div>
+        </div>
+        <template if:true={isStudySectionVisible}>
+            <c-gbi-studies></c-gbi-studies>
+        </template> 
+        <template if:true={isPillarSectionVisible}>
+            <c-gbi-pillar></c-gbi-pillar>
+        </template> 
+        <template if:true={isDocumentSectionVisible}>
+            <c-gbi-documents></c-gbi-documents>
+        </template> 
+        <template if:true={isProfileSectionVisible}>
+            <c-gbi-profile></c-gbi-profile>
+        </template> 
+        <template if:true={isSupportSectionVisible}>
+            <c-gbi-support></c-gbi-support>
+        </template> 
+        <template if:true={isAboutSectionVisible}>
+            <c-gbi-about></c-gbi-about>
+        </template>       
+    </div>
+</template>

@@ -1,0 +1,21 @@
+<apex:page sidebar="false" standardStylesheets="false">    
+    <apex:includeLightning />     
+    <div  id="componentContainer" />    
+  
+    <script>           
+         var infoString  = "{!JSENCODE($CurrentPage.parameters.InvoiceNumber)}"; 
+    $Lightning.use("c:switchCreationApp", function() {               
+        $Lightning.createComponent("c:switchCreation",                   
+                                   {                       
+                                       invoiceNumber: infoString                    
+                                      
+                                   },                  
+                                       
+                                       "componentContainer",                   
+                                       function(cmp) {                      
+                                       console.log("LightningAppForVF loaded successfully in VF page");                   
+                                   }                
+                                       );           
+                                   });       
+                                       </script> 
+</apex:page>

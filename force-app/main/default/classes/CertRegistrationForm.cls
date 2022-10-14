@@ -305,6 +305,10 @@ public abstract class CertRegistrationForm {
         
         affiliateMembershipOpportunity.StageName = 'Closed';
 
+        // Setting recursive flags to ensure that the Affiliate Opportunity closing activates the Affiliate Contract.
+        opportunityTriggerHelper.isFirstRun = true;
+        opportunityTriggerUtils.bIsRecursiveForRenewOpps = false;
+
         UPDATE affiliateMembershipOpportunity;
 
     }

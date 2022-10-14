@@ -1,0 +1,52 @@
+.panel {
+    margin-bottom: 20px;
+    background-color: #fff;
+    border-radius: 4px;
+}
+.dashboardAd {
+    padding: 0;
+    color: #081a31;
+    font-family: "Gotham A","Gotham B",Gotham,Arial,Helvetica,sans-serif;
+}
+.dashboardAd>div {
+    margin: 15px 24px 24px 24px;
+}
+.dashboardAd>div h2 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    text-transform: uppercase;
+}
+.SCRad .text {
+    color: #fcb515;
+}
+.dashboardAd>div h3 {
+    margin-top: 5px;
+    margin-bottom: 5px;
+    font-size: 20px;
+}
+.dashboardAd>div p {
+    font-size: 16px;
+    line-height: 24px;
+}
+p {
+    margin: 0 0 10px;
+}
+.button {
+    font-family: "Gotham A","Gotham B",Gotham,Tahoma,Helvetica,sans-serif;
+    color: #fff;
+    background: #00a2dd;
+    font-size: 1em;
+    line-height: 1;
+    font-weight: 800;
+    text-align: center;
+    border: 2px solid transparent;
+    border-radius: 1px;
+    height: auto;
+    padding: 12px 16px;
+    padding-right: 16px;
+    padding-left: 16px;
+    text-decoration: none!important;
+    box-shadow: 0 1px 3px #7f7f7f;
+    text-transform: uppercase;
+    outline: 0;
+}

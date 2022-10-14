@@ -14,16 +14,14 @@ public without sharing class ExamAttemptHandler implements TriggerAbstract {
     static List<Exam_Attempt__c> lstExamAttempt = new List<Exam_Attempt__c>();
     static List<Exam_Attempt__c> resultChangedList = new List<Exam_Attempt__c>();
     static List<Contact_Update_Event__e> contUpdEvts = new List<Contact_Update_Event__e>();
+    static List<Contract> ContractList = new List<Contract>();
     static boolean stopRecurssion = true;
     
     // Constructor
-    public ExamAttemptHandler(){
-        
-    }
+    public ExamAttemptHandler(){}
     
     /**
 * bulkBefore
-*
 * This method is called prior to execution of a BEFORE trigger. Use this to cache
 * any data required into maps prior execution of the trigger.
 */
@@ -43,10 +41,25 @@ public without sharing class ExamAttemptHandler implements TriggerAbstract {
     
     public void bulkAfter(){
         system.debug('**********In ExamAttemptHandler bulkAfter*******  ');
-        //Map<Id,Exam_Attempt__c> mapEAIds = new Map<Id,Exam_Attempt__c>();
+        Set<String> ContractIdSet = new Set<String>();
         if(stopRecurssion){
             if(!trigger.isDelete){
-                
+                system.debug('     <<::  bulkAfter  trigger.oldMap ::>>   '+trigger.oldMap);
+                if(trigger.oldMap != null){
+                    for(Exam_Attempt__c newExamAttempt : (List<Exam_Attempt__c>)trigger.New){
+                        Exam_Attempt__c oldExamAttempt = (Exam_Attempt__c)trigger.oldMap.get(newExamAttempt.Id);
+                        system.debug('bulkAfter  newExamAttempt 1::>>   '+newExamAttempt.Candidate_Commitment__c+'  ==  '+newExamAttempt.Section__c+'   ++   '+newExamAttempt.Result__c);
+                        system.debug('bulkAfter  newExamAttempt 2::>>   '+oldExamAttempt.Candidate_Commitment__c+'  ==  '+oldExamAttempt.Section__c+'   ++   '+oldExamAttempt.Result__c);
+                        if(newExamAttempt.Candidate_Commitment__c != null && newExamAttempt.Section__c == 'ICBRR' && newExamAttempt.Result__c != Null && newExamAttempt.Result__c != 'Pass' && String.isBlank(oldExamAttempt.Result__c)){
+                            ContractIdSet.add(newExamAttempt.Candidate_Commitment__c);
+                        }
+                    }
+                }
+                system.debug(ContractIdSet.size()+'     <<::  bulkAfter  ContractIdSet ::>>   '+ContractIdSet);
+                if(ContractIdSet.size() > 0){
+                    ContractList = [SELECT Id,Status FROM Contract WHERE Id IN: ContractIdSet LIMIT 40000];
+                }
+                system.debug(ContractList.size()+'     <<::  bulkAfter  ContractList ::>>   '+ContractList);
             }
         }
     }
@@ -168,6 +181,11 @@ public without sharing class ExamAttemptHandler implements TriggerAbstract {
                 if(!contUpdEvts.isEmpty()){
                     Eventbus.publish(contUpdEvts);
                 }
+                
+                system.debug(ContractList.size()+'     <<::  andFinally  ContractList ::>>   '+ContractList);
+                if(ContractList.size() > 0){
+                    updateContractStatus(ContractList);
+                }
             }
         }
     }
@@ -187,7 +205,30 @@ public without sharing class ExamAttemptHandler implements TriggerAbstract {
         if(oldExamAttempt.Result__c != newExamAttempt.Result__c || newExamAttempt.Defered__c != oldExamAttempt.Defered__c ){
             mapEA.put(newExamAttempt.Candidate_Requirement__c,newExamAttempt);
         }else
-        //Creating platform events to update contacts
-        contUpdEvts.add(triggerutilities.getContactEvents(newExamAttempt.Member__c,'Exam_Attempt__c',JSON.serialize(newExamAttempt),JSON.serialize(oldExamAttempt),newExamAttempt.Id));
+            //Creating platform events to update contacts
+            contUpdEvts.add(triggerutilities.getContactEvents(newExamAttempt.Member__c,'Exam_Attempt__c',JSON.serialize(newExamAttempt),JSON.serialize(oldExamAttempt),newExamAttempt.Id));
+    }
+    
+    public void updateContractStatus(List<Contract> contList){
+        system.debug(contList.size()+'     <<::  updateContractStatus  contList ::>>   '+contList);
+        Map<Id,Contract> contMapToUpdate = new Map<Id,Contract>();
+        List<String> contIdList = new List<String>();
+        
+        for(Exam_Attempt__c ea : [SELECT Id,Candidate_Commitment__c FROM Exam_Attempt__c WHERE Candidate_Commitment__c IN: contList AND Id NOT IN : trigger.newMap.keySet() AND Result__c != null]){
+            contIdList.add(ea.Candidate_Commitment__c);
+        }
+        system.debug(contIdList.size()+'     <<::  updateContractStatus  contIdList ::>>   '+contIdList);
+        
+        for(Contract cont : contList){
+            if(contIdList.contains(cont.Id)){
+                cont.Status = 'Expired';
+                contMapToUpdate.put(cont.Id,cont);
+            }
+        }
+        system.debug(contMapToUpdate.size()+'     <<::  updateContractStatus  contMapToUpdate ::>>   '+contMapToUpdate);
+        
+        if(contMapToUpdate.size() > 0){
+            update contMapToUpdate.values();
+        }
     }
 }

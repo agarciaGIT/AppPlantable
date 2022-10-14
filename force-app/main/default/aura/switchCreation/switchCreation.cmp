@@ -1,0 +1,53 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" access="global"   controller="switchController">
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:attribute name="invoiceNumber" type="String" default=""/>
+    <aura:attribute name="examsiteid" type="String" default="" />
+    <aura:attribute name="showExamSiteId" type="boolean" />
+     <aura:attribute name="PayType" type="String"  default=""/>
+     <aura:attribute name="errors" type="String" default=""/>
+   
+
+     <aura:attribute name="chinaSelection" type="String" default=""/>
+    
+    <aura:handler event="aura:waiting" action="{!c.showSpinner}"/>
+    <aura:handler event="aura:doneWaiting" action="{!c.hideSpinner}"/>
+    <div class="slds-align--absolute-center">
+        <lightning:spinner aura:id="spinner" variant="brand" size="large" class="slds=hide"/>
+    </div>
+    
+    
+    <div class="slds-col--padded slds-size--1-of-1 slds-medium--1-of-1 slds-large-size--1-of-1"> 
+        
+        <div class="slds-form-element__control" > 
+            <lightning:input label="Invoice Number" name="InvoiceNumber" value="{!v.invoiceNumber}" required="true" /> 
+        </div> 
+        <div class="slds-form-element__control" > 
+            <lightning:select aura:id="payment" name="payment" label="Payment " required="true">
+                <option value="{!v.PayType}">{!v.PayType}</option>
+              
+            </lightning:select>
+        </div> 
+        
+        <div class="slds-form-element__control" > 
+            <lightning:select aura:id="China" name="payment" label="China " required="true"  >
+                <option value="{!v.chinaSelection}">{!v.chinaSelection}</option>
+              
+            </lightning:select>
+        </div> 
+        
+        
+        
+        <aura:if isTrue="{!v.showExamSiteId}">
+            
+            <div class="slds-form-element__control">
+                
+                <lightning:input label="ExamSiteId" aura:id="ExamSiteId" name="ExamSiteId" value="{!v.examsiteid}" required ="true" /> 
+            </div>
+        </aura:if>
+    </div>
+    <div class="slds-text-body_regular slds-text-align_center" style="Padding-top:20px"> 
+        <lightning:button variant="brand" label="Create Switch Order" title="search Invoice Number" 
+                          onclick="{!c.createSwitchOrder}"  />
+    </div> 
+</aura:component>

@@ -1,0 +1,66 @@
+<template>
+    <div class="page-content-wrapper">
+        <div style="min-height:200px">
+        <div data-autoscroll="false" data-ui-view="" class="scale-fade">
+        <div class="full-width-title">
+        <span>
+            <h2>General Support</h2>
+        </span>
+    </div>
+    <div></div>
+    <div class="row">
+        <div class="general-support_wrapper">
+            <div class="container gbi-container">
+                <div>
+                    <div class="col-md-12">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <span class="in-input">Search to highlight key terms</span>
+                                    <div class="input-group" style="width: 100%">
+                                        <input value={searchValue} name="search" class="form-control form-control-wide general-support_search-input" onchange={handleFormInputChange}>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+    
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="row bottom-padding">
+                                    <div class="col-md-12">
+                                        <div class="bottom-padding"><p>Q:How do I do stuff?</p></div>
+                                        <div><p>This is how you do it....</p></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row help-form_wrapper">
+                            <div class="col-md-12">
+                                <p>
+                                    Can't find what your looking for? Open a support case.
+                                </p>
+                                <div class="form-group">
+                                    <span class="in-input">Subject</span>
+                                    <div class="input-group" style="width: 100%">
+                                        <input type="text" name="subject" value={subjectValue} class="form-control form-control-wide" onchange={handleFormInputChange}>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <span class="in-input">Description</span>
+                                    <textarea value={descriptionValue} name="description" rows="4" cols="50" class="form-control form-control-wide" id="caseBody" spellcheck="false" onchange={handleFormInputChange}>
+                                    </textarea>
+                                </div>
+                                <div>
+                                    <button type="button" class="btn" onclick={handleSubmit}>Submit</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+</div>
+</template>

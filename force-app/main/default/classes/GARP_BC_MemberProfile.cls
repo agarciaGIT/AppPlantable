@@ -62,40 +62,6 @@ public class GARP_BC_MemberProfile {
         
         return retValues;
     }
-    
-    public static Boolean setSafeBoolean(Boolean inBool) {
-        if(inBool == NULL) {
-            return False;
-        }
-        return inBool;
-    }
-    
-    public static Boolean setMemberEmail(GARP_MS_MemberProfile.memberProfileUpdate profileUpdate){
-        Boolean ret = false;
-        
-        if(profileUpdate == NULL) {
-            return false;
-        }
-        
-        if(profileUpdate.ContactId != NULL) {
-            String userId = UserInfo.getUserId();
-            System.debug('userId:' + userId);
-            
-            List<User> users = [SELECT Id, ContactId, Email, Username FROM User WHERE Id = :userId];
-            System.debug('users:' + users);
-            if(!users.isEmpty() && users[0].Name != 'GARP Membership') {
-                User user = users[0];
-                if(user.Email != profileUpdate.Email) {
-                    user.Email = profileUpdate.Email;
-                    user.Username = profileUpdate.Email;
-                    System.debug('user update:' + user);
-                    update user;
-                    ret = true;
-                }                        
-            }
-        }
-        return ret;
-    }
             
     public static Boolean setMemberProfile(GARP_MS_MemberProfile.memberProfileUpdate profileUpdate){
         Boolean ret = false;
@@ -106,7 +72,7 @@ public class GARP_BC_MemberProfile {
         
         System.debug('setMemberProfile profileUpdate:' + profileUpdate);
         
-        if(profileUpdate.ContactId != NULL && profileUpdate.AccountId != NULL) {
+        if(profileUpdate.ContactId != NULL) {
             List<Contact> lstCont = [select Id, FirstName, LastName, Email,
                                      HomePhone, OtherPhone, Fax, LinkedIn_URL__c,
                                      Mailing_Address_Company__c, MailingStreet, MailingCity, MailingState, MailingPostalCode, MailingCountry,
@@ -130,7 +96,6 @@ public class GARP_BC_MemberProfile {
                     update updateContact;
                     
                     System.debug('updateContact:' + updateContact);
-                    
                     return true;
                 } else if(profileUpdate.profileParts.MailingAddress) {                
                     updateContact.Mailing_Address_Company__c = profileUpdate.Mailing_Address_Company;
@@ -163,18 +128,17 @@ public class GARP_BC_MemberProfile {
                     updateContact.Job_Function__c = profileUpdate.Job_Function;
                     updateContact.Risk_Specialty__c = profileUpdate.Risk_Specialty;
                     updateContact.Risk_Management_Working_Year__c = profileUpdate.Risk_Management_Working_Year;
-                    updateContact.Professional_Designation_ACCA__c = setSafeBoolean(profileUpdate.Professional_Designation_ACCA);
-                    updateContact.Professional_Designation_CA__c = setSafeBoolean(profileUpdate.Professional_Designation_CA);
-                    updateContact.Professional_Designation_CAIA__c = setSafeBoolean(profileUpdate.Professional_Designation_CAIA);
-                    updateContact.Professional_Designation_CFA__c = setSafeBoolean(profileUpdate.Professional_Designation_CFA);
-                    updateContact.Professional_Designation_CFP__c = setSafeBoolean(profileUpdate.Professional_Designation_CFP);
-                    updateContact.Professional_Designation_CIA__c = setSafeBoolean(profileUpdate.Professional_Designation_CIA);
-                    updateContact.Professional_Designation_CMA__c = setSafeBoolean(profileUpdate.Professional_Designation_CMA);
-                    updateContact.Professional_Designation_CMT__c = setSafeBoolean(profileUpdate.Professional_Designation_CMT);
-                    updateContact.Professional_Designation_CPA__c = setSafeBoolean(profileUpdate.Professional_Designation_CPA);
-                    updateContact.Professional_Designation_CQF__c = setSafeBoolean(profileUpdate.Professional_Designation_CQF);
-                    updateContact.Professional_Designation_PMP__c = setSafeBoolean(profileUpdate.Professional_Designation_PMP);
-                    updateContact.Professional_Designation_Other__c = setSafeBoolean(profileUpdate.Professional_Designation_Other);
+                    updateContact.Professional_Designation_ACCA__c = profileUpdate.Professional_Designation_ACCA;
+                    updateContact.Professional_Designation_CA__c = profileUpdate.Professional_Designation_CA;
+                    updateContact.Professional_Designation_CAIA__c = profileUpdate.Professional_Designation_CAIA;
+                    updateContact.Professional_Designation_CFA__c = profileUpdate.Professional_Designation_CFA;
+                    updateContact.Professional_Designation_CFP__c = profileUpdate.Professional_Designation_CFP;
+                    updateContact.Professional_Designation_CIA__c = profileUpdate.Professional_Designation_CIA;
+                    updateContact.Professional_Designation_CMA__c = profileUpdate.Professional_Designation_CMA;
+                    updateContact.Professional_Designation_CMT__c = profileUpdate.Professional_Designation_CMT;
+                    updateContact.Professional_Designation_CPA__c = profileUpdate.Professional_Designation_CPA;
+                    updateContact.Professional_Designation_CQF__c = profileUpdate.Professional_Designation_CQF;
+                    updateContact.Professional_Designation_PMP__c = profileUpdate.Professional_Designation_PMP;
                     updateContact.Other_Qualifications__c = profileUpdate.Other_Qualifications;
                     
                     update updateContact;
@@ -213,18 +177,18 @@ public class GARP_BC_MemberProfile {
                     updateContact.Job_Function__c = profileUpdate.Job_Function;
                     updateContact.Risk_Specialty__c = profileUpdate.Risk_Specialty;
                     updateContact.Risk_Management_Working_Year__c = profileUpdate.Risk_Management_Working_Year;
-                    updateContact.Professional_Designation_ACCA__c = setSafeBoolean(profileUpdate.Professional_Designation_ACCA);
-                    updateContact.Professional_Designation_CA__c = setSafeBoolean(profileUpdate.Professional_Designation_CA);
-                    updateContact.Professional_Designation_CAIA__c = setSafeBoolean(profileUpdate.Professional_Designation_CAIA);
-                    updateContact.Professional_Designation_CFA__c = setSafeBoolean(profileUpdate.Professional_Designation_CFA);
-                    updateContact.Professional_Designation_CFP__c = setSafeBoolean(profileUpdate.Professional_Designation_CFP);
-                    updateContact.Professional_Designation_CIA__c = setSafeBoolean(profileUpdate.Professional_Designation_CIA);
-                    updateContact.Professional_Designation_CMA__c = setSafeBoolean(profileUpdate.Professional_Designation_CMA);
-                    updateContact.Professional_Designation_CMT__c = setSafeBoolean(profileUpdate.Professional_Designation_CMT);
-                    updateContact.Professional_Designation_CPA__c = setSafeBoolean(profileUpdate.Professional_Designation_CPA);
-                    updateContact.Professional_Designation_CQF__c = setSafeBoolean(profileUpdate.Professional_Designation_CQF);
-                    updateContact.Professional_Designation_PMP__c = setSafeBoolean(profileUpdate.Professional_Designation_PMP);
-                    updateContact.Professional_Designation_Other__c = setSafeBoolean(profileUpdate.Professional_Designation_Other);
+                    updateContact.Professional_Designation_ACCA__c = profileUpdate.Professional_Designation_ACCA;
+                    updateContact.Professional_Designation_CA__c = profileUpdate.Professional_Designation_CA;
+                    updateContact.Professional_Designation_CAIA__c = profileUpdate.Professional_Designation_CAIA;
+                    updateContact.Professional_Designation_CFA__c = profileUpdate.Professional_Designation_CFA;
+                    updateContact.Professional_Designation_CFP__c = profileUpdate.Professional_Designation_CFP;
+                    updateContact.Professional_Designation_CIA__c = profileUpdate.Professional_Designation_CIA;
+                    updateContact.Professional_Designation_CMA__c = profileUpdate.Professional_Designation_CMA;
+                    updateContact.Professional_Designation_CMT__c = profileUpdate.Professional_Designation_CMT;
+                    updateContact.Professional_Designation_CPA__c = profileUpdate.Professional_Designation_CPA;
+                    updateContact.Professional_Designation_CQF__c = profileUpdate.Professional_Designation_CQF;
+                    updateContact.Professional_Designation_PMP__c = profileUpdate.Professional_Designation_PMP;
+                    updateContact.Professional_Designation_Other__c = profileUpdate.Professional_Designation_Other;
                     
                     updateContact.Other_Qualifications__c = profileUpdate.Other_Qualifications;
                                         
@@ -238,24 +202,25 @@ public class GARP_BC_MemberProfile {
                     System.debug('updateContact:' + updateContact);
                     return true;
                     
-                } else if(profileUpdate.profileParts.BillingAddress) { 
-                    List<Account> lstAcct = [select Id, Billing_Address_Company__c, BillingStreet, BillingCity, BillingState, BillingPostalCode, BillingCountry from Account where Id = :profileUpdate.AccountId];
-                    if(!lstAcct.isEmpty()) {
-                        Account updateAcct = lstAcct[0];
-                        updateAcct.Billing_Address_Company__c = profileUpdate.Billing_Address_Company;
-                        updateAcct.BillingStreet = profileUpdate.BillingStreet;
-                        updateAcct.BillingCity = profileUpdate.BillingCity;
-                        updateAcct.BillingState = profileUpdate.BillingState;
-                        updateAcct.BillingPostalCode = profileUpdate.BillingPostalCode;
-                        updateAcct.BillingCountry = profileUpdate.BillingCountry;
-                        
-                        System.debug('updateAcct:' + updateAcct);
-                        update updateAcct;
-                        ret = true;
-                    }
                 }
             }
+        } else if(profileUpdate.AccountId != NULL && profileUpdate.profileParts.BillingAddress) {       
+            List<Account> lstAcct = [select Id, Billing_Address_Company__c, BillingStreet, BillingCity, BillingState, BillingPostalCode, BillingCountry from Account where Id = :profileUpdate.AccountId];
+            if(!lstAcct.isEmpty()) {
+                Account updateAcct = lstAcct[0];
+                updateAcct.Billing_Address_Company__c = profileUpdate.Billing_Address_Company;
+                updateAcct.BillingStreet = profileUpdate.BillingStreet;
+                updateAcct.BillingCity = profileUpdate.BillingCity;
+                updateAcct.BillingState = profileUpdate.BillingState;
+                updateAcct.BillingPostalCode = profileUpdate.BillingPostalCode;
+                updateAcct.BillingCountry = profileUpdate.BillingCountry;
+                
+                System.debug('updateAcct:' + updateAcct);
+                update updateAcct;
+                ret = true;
+            }
         }
+        
         return ret;
     }
 

@@ -714,7 +714,6 @@ public class ExamRegistrationTestDataFactory {
         
         String chargeRequestJSON = JSON.serialize(chargeRequest);
         
-        ContactTriggerHandler.stopRecurssion = false;
         Response.Detail chargeResponse = ExamRegistrationFormRemoter.payExamRegistrationOrder(examType, chargeRequestJSON); 
         
         System.debug(chargeResponse);

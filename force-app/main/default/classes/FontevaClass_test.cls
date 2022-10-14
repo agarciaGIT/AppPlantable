@@ -11,6 +11,7 @@ public class FontevaClass_test {
     static Set<String> recIds = new Set<String>();
         
     static void setup(){
+        //TestClassUtil.isForOldTrigger();
         Id BusRecordTypeId = RecordTypeHelper.GetRecordTypeId('Account','Business');
         Id BusContRecordTypeId = RecordTypeHelper.GetRecordTypeId('Contact','Business Relationship');
         
@@ -217,6 +218,7 @@ public class FontevaClass_test {
     }
     
     static void setup2(){
+        //TestClassUtil.isForOldTrigger();
         Id BusRecordTypeId = RecordTypeHelper.GetRecordTypeId('Account','Business');
         Id BusContRecordTypeId = RecordTypeHelper.GetRecordTypeId('Contact','Business Relationship');
         
@@ -432,7 +434,7 @@ public class FontevaClass_test {
         registrationIds.add(attendee.Id);
         
         FontevaClass.setRegistrations(registrationIds);
-        ChargentSFATransactionTriggerHandler.OppListToUpdate.clear();
+        
         FontevaClass.processRefund(recIds);
         
         FontevaClass.getFormResponses();
@@ -454,7 +456,7 @@ public class FontevaClass_test {
         registrationIds.add(attendee.Id);
         
         FontevaClass.setRegistrations(registrationIds);
-        ChargentSFATransactionTriggerHandler.OppListToUpdate.clear();
+        
         FontevaClass.processRefund(recIds);
         
         Test.stopTest();
@@ -612,6 +614,7 @@ public class FontevaClass_test {
     
     @isTest
     public static void test4(){
+        //TestClassUtil.isForOldTrigger();
         Test.startTest();
         
         OrderApi__Sales_Order__c salesOrder = new OrderApi__Sales_Order__c(

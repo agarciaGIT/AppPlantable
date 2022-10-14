@@ -5,7 +5,7 @@
 * interface to help ensure the trigger code is bulkified and all in one place.
 */
 public without sharing class ContactTriggerHandler implements TriggerAbstract {
-    public static boolean stopRecurssion = false;
+    static boolean stopRecurssion = false;
     static List<Object_History__c > contactHistories = new List<Object_History__c >();
     static Map<Id,Contact> accIdToContactMap = new Map<Id,Contact>();
     static string userType = UserInfo.getUserType();

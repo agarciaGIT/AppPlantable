@@ -153,7 +153,6 @@ public class ScrContractTriggerHelper {
                       ){                   
                           ps.Outbound_Event_Types__c  = 'CDD';
                           ps.Is_Canddiate_Info_Changed__c  = true;
-                          ps.Authorization_Type__c = 'Update';
                       }else{
                           ps.Is_Canddiate_Info_Changed__c  = false;
                       } 
@@ -265,13 +264,13 @@ public class ScrContractTriggerHelper {
                 PearsonId.add(p.Id);
             }
             if(PearsonId.size()>0){
-                if(system.isBatch()){
+                /*if(system.isBatch()){
                     ID jobID = System.enqueueJob(new PearsonVueCallOutQueueable(PearsonId));
                  }else{
                      PearsonVueRTIDataHelper.PearsonVueDatacallout(PearsonId);
-                 }
-                /*List<Integration_Stream_Event__e> evts = TriggerUtilities.getIntgEvents(PearsonId, 'Contract', 'PearsonVue');
-                EventBus.publish(evts);*/
+                 }*/
+                List<Integration_Stream_Event__e> evts = TriggerUtilities.getIntgEvents(PearsonId, 'Contract', 'PearsonVue');
+                EventBus.publish(evts);
                 
             }
             

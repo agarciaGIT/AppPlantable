@@ -10,7 +10,6 @@ global class LibysnClass {
     //    getLibsynRSSFeed();
     //}
     
-    @future(callout = true)
     static global void getLibsynRSSFeed(string URL) {
         if(test.isRunningTest()){ 
             xml = '<?xml version="1.0" encoding="UTF-8"?>'+
@@ -213,60 +212,4 @@ global class LibysnClass {
         }
         return bp;      
     }
-    
-    static global void updateAllFeeds() {
-        // GARP Risk
-        LibysnClass.getLibsynRSSFeed('https://feeds.libsyn.com/96199/rss/?include-libsyn-metadata=true');
-        
-        // Climate Risk
-        LibysnClass.getLibsynRSSFeed('https://feeds.libsyn.com/284498/rss/?include-libsyn-metadata=true');
-        
-        // New Age
-        LibysnClass.getLibsynRSSFeed('https://feeds.libsyn.com/176627/rss/?include-libsyn-metadata=true');
-                                      
-    }
-    
-    @InvocableMethod(label='LibysnClass' description='Call LibysnClass Methods')
-    public static void LibysnClassInvocable(List<List<String>> inputParams) {  
-        
-        System.debug('inputParams:' + inputParams);
-        
-        String method;
-        String param1;
-        String param2;
-        String param3;
-        String param4;
-        String param5;
-        List<String> ids = inputParams[0];
-        
-        if(!ids.isEmpty()){
-            Integer cnt=0;
-            for(String idVal :ids) {
-                if(cnt==0)
-                    method = idVal;
-                else if(cnt==1)
-                    param1 = idVal;
-                else if(cnt==2)
-                    param2 = idVal;
-                else if(cnt==3)
-                    param3 = idVal;
-                else if(cnt==4)
-                    param4 = idVal;
-                else if(cnt==5)
-                    param5 = idVal;
-                cnt++;
-            }
-            System.debug('method:' + method);
-            System.debug('param1:' + param1);
-            System.debug('param2:' + param2);
-            System.debug('param3:' + param3);
-            System.debug('param4:' + param4);
-            System.debug('param5:' + param5);
-            
-            if(method == 'updateAllFeeds') {
-                updateAllFeeds();
-            }
-        }
-    }
-    
 }

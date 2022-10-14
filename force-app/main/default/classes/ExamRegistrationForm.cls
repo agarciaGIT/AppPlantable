@@ -202,7 +202,7 @@ public abstract class ExamRegistrationForm {
         public List<Selection> selections                                   { get; set; }
         public Map<String, Item> products                                   { get; set; }
         public UpsXmlRatingServiceSelectionResponse.RatedShipment shipping  { get; set; }
-        public Shipping_Charge__c shippingInfo                              { get; set; }
+        public Shipping_Charge__c shippingInfo                               { get; set; }
         public RegistrationRequestTeamInfo teamRegistrationInfo             { get; set; }
     }
 
@@ -217,8 +217,6 @@ public abstract class ExamRegistrationForm {
         public String registrationType                      { get; set; }
         public Card card                                    { get; set; }
         public List<Selection> selections                   { get; set; }
-        public Shipping_Charge__c shippingInfo                               { get; set; }
-        public RegistrationRequestTeamInfo teamRegistrationInfo             { get; set; }
     }
 
     public class ChargeResponse{
@@ -278,7 +276,7 @@ public abstract class ExamRegistrationForm {
     * @return the map of all Exam Sites in context
     */
     public Map<Id, Exam_Sites__c> getExamSitesMap(Set<String> examPartNames){
-        Map<Id, Exam_Sites__c> ret = new Map<Id, Exam_Sites__c>([                
+        return new Map<Id, Exam_Sites__c>([                
             SELECT 
                 Id, 
                 Name,
@@ -314,10 +312,6 @@ public abstract class ExamRegistrationForm {
             
             ORDER BY Exam_Part__r.Exam_Part_Number__c, Site__r.Name ASC 
         ]);
-        
-        System.debug('****Exam Sites:' + ret);
-        
-        return ret;
     }
 
     public Map<String, Item> createMap(List<PricebookEntry> items){
@@ -444,50 +438,24 @@ public abstract class ExamRegistrationForm {
     }
 
     public Team_Registration__c getTeamRegistration(ID teamRegistrationId) {
-        return [
-            select id, Name, Account__c, Account__r.Name, Is_Scholarship__c,
-            Free_Membership__c, Access_Code__c, Attestation_Required__c, Attestation_Copy__c,
-            Discounted_Price__c
-            from Team_Registration__c where Id = :teamRegistrationId];
+        return [select Id, Name, Account__c, Account__r.Name from Team_Registration__c where Id = :teamRegistrationId];
     }
     
     public Team_Registration__c getTeamRegistration(string teamRegistrationCode) {
         
         Date tdy = Date.today();
         String examType = registrationType.name();
-        List<Team_Registration__c> teamRegs = [
-            select id, Name, Exam_Type__c, Account__c, Account__r.Name, Is_Scholarship__c,
-            Free_Membership__c, Access_Code__c, Attestation_Required__c, Attestation_Copy__c,
-            Discounted_Price__c,
-            (SELECT Id, AccountId, StageName FROM Opportunities__r)
-            from Team_Registration__c 
-            where Access_Code__c = :teamRegistrationCode AND Payment_Status__c = 'Paid' AND
-            Start_Date__c <= :tdy AND End_Date__c >= :tdy AND Exam_Type__c = :examType AND Seats_Balance__c > 0];
-                    
+        List<Team_Registration__c> teamRegs = [select Id, Name, Account__c, Account__r.Name, Attestation_Required__c
+                                               from Team_Registration__c 
+                                               where Access_Code__c = :teamRegistrationCode AND Payment_Status__c = 'Paid' AND
+                                               Start_Date__c <= :tdy AND End_Date__c >= :tdy AND Exam_Type__c = :examType AND Seats_Balance__c > 0];
+        
         if(!teamRegs.isEmpty()) {
             return teamRegs[0];
         } else {
             return null;    
         }
         
-    }
-    
-    public OpportunityLineItem getTeamRegMembershipLineItem() {
-        OpportunityLineItem oli;
-        
-        List<PriceBookEntry> lstPrice = [SELECT Pricebook2.IsActive, UnitPrice, ProductCode, Product2Id, Product2.Name, Product2.Image__c, Product_ID__c
-                                         FROM PriceBookEntry
-                                         WHERE IsActive = TRUE AND ProductCode IN ('MEMF') AND Pricebook2.IsActive = TRUE];
-        if(!lstPrice.isEmpty()) {
-            oli = new OpportunityLineItem(
-                PricebookEntryId = lstPrice[0].Id,
-                Product2Id = lstPrice[0].Product2Id,
-                UnitPrice = 0,
-                Quantity = 1
-            );
-            
-        }
-        return oli;
     }
     
     public Map<Id, ExamSelectionOptions.ExamPricebookEntry> getExamPricebookEntries(Set<Id> examIds) {
@@ -611,26 +579,6 @@ public abstract class ExamRegistrationForm {
             }
             System.debug('examRates final:' + examRates);
             
-            // Team Reg Discounts
-            Map<String, Team_Registration_Products__c> mapTeamProds = new Map<String, Team_Registration_Products__c>();
-            String teamCode = this.teamRegistration.Access_Code__c;
-            Team_Registration__c teamReg = this.teamRegistration;
-            System.debug('teamReg:' + teamReg);
-            
-            if(teamReg != null) {                
-                
-                // Team Registration Custom Settings
-                Map<String, Team_Registration_Products__c> mapCustTeamProds = Team_Registration_Products__c.getAll();
-                if(teamRegistration != NULL && mapCustTeamProds != NULL) {
-                    for(Team_Registration_Products__c trp :mapCustTeamProds.values()) {
-                        mapTeamProds.put(trp.Product_Code__c, trp);
-                    }
-                }
-                System.debug('mapCustTeamProds:' + mapCustTeamProds);
-                System.debug('mapTeamProds:' + mapTeamProds);                
-            }
-            
-            // Get Prices
             for(Exam_Rate__c er: examRates){
                 product2Ids.add(er.Product__c);
             }
@@ -655,20 +603,6 @@ public abstract class ExamRegistrationForm {
                 examPricebookEntry.exam                     = er.Exam__r;
                 examPricebookEntry.priceBookEntry           = pricebookEntryByProduct2Id.get(er.Product__c);
                 examPricebookEntry.rateType                 =  mapRateTypes.get(er.Product__c);
-                
-                // Override Price with Team Reg
-                if(teamReg != NULL) {
-                    Team_Registration_Products__c fndTrp = mapTeamProds.get(er.Product__r.ProductCode);
-                    if(fndTrp != NULL) {
-                        if(teamReg.Discounted_Price__c != NULL) {
-                            examPricebookEntry.priceBookEntry.UnitPrice = teamReg.Discounted_Price__c;
-                            System.debug('TeamReg Override:' + examPricebookEntry.priceBookEntry); 
-                        } else if(teamReg.Is_Scholarship__c) {
-                            examPricebookEntry.priceBookEntry.UnitPrice = 0;
-                            System.debug('TeamReg Override:' + examPricebookEntry.priceBookEntry);                             
-                        }
-                    }
-                }
                 
                 Set<Exam_Rate__c> otherProducts = otherRatesProdMap.get(er.Exam__r.Exam__c);
                 System.debug('otherProducts:' + otherProducts);

@@ -1,0 +1,98 @@
+.panel {
+    background-color: #fff;
+    border-radius: 4px;
+}
+.panel-heading {
+    padding: 10px 15px;
+    border-bottom: 1px solid transparent;
+    border-top-right-radius: 3px;
+    border-top-left-radius: 3px;
+}
+.panel-title {
+    margin-top: 0;
+    margin-bottom: 0;
+    font-size: 16px;
+    color: inherit;
+}
+h3 {
+    font-weight: 500;
+    line-height: 1.1;
+}
+.panel-body {
+    padding: 15px;
+}
+.button {
+    font-family: "Gotham A","Gotham B",Gotham,Tahoma,Helvetica,sans-serif;
+    font-size: 1em;
+    line-height: 1;
+    font-weight: 800;
+    background: #00a2dd;
+    text-align: center;
+    border: 2px solid transparent;
+    border-radius: 1px;
+    height: auto;
+    padding: 12px 16px;
+    padding-right: 16px;
+    padding-left: 16px;
+    box-shadow: 0 1px 3px #7f7f7f;
+    text-transform: uppercase;
+    outline: 0;
+    display: block;
+    width: 100%;
+}
+.form-control {
+    display: block;
+    width: 100%;
+    font-size: 14px;
+    line-height: 1.4;
+    background-color: #fff;
+    background-image: none;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+.input-group {
+    position: relative;
+    display: table;
+    border-collapse: separate;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+.input-group-btn {
+    position: relative;
+    width: 1%;
+    vertical-align: middle;
+    white-space: nowrap;
+    display: table-cell;
+}
+.btn-default {
+    color: #333;
+    background-color: #fff;
+    border-color: #ccc;
+} 
+.btn {
+    display: inline-block;
+    padding: 6px 12px;
+    margin-bottom: 0;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.428571429;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    background-image: none;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    user-select: none;
+}
+.list-group {
+    padding-left: 0;
+    margin-bottom: 20px;
+}
+.nc-icon-outline {
+    display: inline-block;
+    font: normal normal normal 1.11em/1 'Nucleo Outline';
+    font-size: 1.11em;
+    speak: none;
+    text-transform: none;
+    -webkit-font-smoothing: antialiased;
+}

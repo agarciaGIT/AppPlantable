@@ -5,7 +5,6 @@ public class TempAccount {
     public Boolean privacyPolicyAttestation { get; set; }
     public Boolean photographyPolicyAttestation { get; set; }
     public Boolean sponsorInformationExchangeAttestation { get; set; }
-    public Boolean garpInformationExchangeAttestation { get; set; }
     
     public Boolean emailEventsSubscription { get; set; }
     public Boolean emailWebcastsSubscription { get; set; }
@@ -51,7 +50,6 @@ public class TempAccount {
     public String idName {get;set;}
     public String idType {get;set;}
     public String idNumber{get;set;}    
-    public String idLocation{get;set;}    
     
     public String idFirstName {get;set;}
     public String idMiddleName {get;set;}
@@ -173,7 +171,6 @@ public class TempAccount {
     public String cap {get; set;}
     public String capip {get; set;}
     public String examAttemptId {get; set;}
-    public String teamCode {get; set;}
     public String streetTownDetails {get; set;}
     public String nameOfRecipient {get; set;}
     public String provincesLevel {get; set;}
@@ -184,4 +181,5 @@ public class TempAccount {
     public String homePhoneNumber {get; set;}
     public String mailingZipPostalCode {get; set;}
     public String districtCountry {get; set;}
+    public String teamCode {get; set;}
 }

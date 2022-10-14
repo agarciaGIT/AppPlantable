@@ -357,7 +357,7 @@ private class ExamRegistrationFormRemoterTest {
 
         //ExamRegistrationFormHelper.validateRequest = false;
         User user = ExamRegistrationTestDataFactory.createExamRegistration('FRM', 'Check', 'TESTUSERONE', FALSE, FALSE);
-        
+        Test.startTest();
         Opportunity opportunity = [
             SELECT Id, RecordType.Name, AccountId, StageName,
             (SELECT Id, Status FROM Contracts__r)
@@ -369,13 +369,14 @@ private class ExamRegistrationFormRemoterTest {
         opportunity.StageName = 'Closed';
 
         UPDATE opportunity;
-		Test.startTest();
+
         List<Contract> contracts = new List<Contract>();
         for(Contract contract: opportunity.Contracts__r){
             contract.Status = 'Activated';
             contracts.add(contract);
         }
 
+        //contractSyncUtil.bRecursive = true;
         UPDATE contracts;
         
         Exam_Rate__c er = [Select Id,Exam__c from Exam_Rate__c where Exam__r.Exam__c = 'FRM Part 1' Limit 1];
@@ -422,6 +423,8 @@ private class ExamRegistrationFormRemoterTest {
             contract.Status = 'Activated';
             contracts.add(contract);
         }
+
+        //contractSyncUtil.bRecursive = true;
         UPDATE contracts;
 
         
@@ -469,6 +472,7 @@ private class ExamRegistrationFormRemoterTest {
             contracts.add(contract);
         }
 
+        //contractSyncUtil.bRecursive = true;
         UPDATE contracts;
         
         //Test.startTest();

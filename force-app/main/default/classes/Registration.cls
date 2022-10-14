@@ -2,7 +2,7 @@ public without sharing class Registration{
     public static boolean bFRMActivatedXX = false;
     public static boolean bERPActivatedXX = false;
     static Decimal dTotalPrice = 0;
-    static Id siteID = null; 
+    static Id siteID = null;
     static boolean bCreateMemContracts = true;
     static id userid = [select id, name, Record_id__c from updateids__c where name = 'User'].Record_id__c;
     static decimal dStandardAmount = 0;
@@ -107,18 +107,6 @@ public without sharing class Registration{
         }        
     }
     
-    public class wrapperCreateWebcastRegistration {
-        public Id contactId {
-            get;
-            set;
-        }
-        
-        public String webcastRegistrationId {
-            get;
-            set;
-        } 
-    }
-        
     public class purchaseCodeData {
         public Id priceBookEntryId { get; set; }
         public String prodCode { get; set; }
@@ -389,7 +377,6 @@ public without sharing class Registration{
         public string strCBRCorpMemberProdCode { get; set; }
         public string strCBRCorpMemberGlCode { get; set; }
         public string strCBRCorpMemberAttestaionCopy { get; set; }
-        public Boolean strCBRCorpPrepay { get; set; }
         
         public string strMemberProdCode {
             get;
@@ -628,7 +615,6 @@ public without sharing class Registration{
                 for(OpportunityLineItem oppLine :masterOrder.OpportunityLineItems) {
                     
                     if(oppLine.PricebookEntry.Product2.ProductCode != null) {
-                        system.debug(objData.isFbrChecked+'      <<<:: oppLine.PricebookEntry.Product2.ProductCode ::>>   '+oppLine.PricebookEntry.Product2.ProductCode );
                         if((oppLine.PricebookEntry.Product2.ProductCode == 'FBRNM' && objData.isFbrChecked == true) || (oppLine.PricebookEntry.Product2.ProductCode == 'CBRNM' && objData.isIcbrChecked == true)) {
                             quantity = (Integer)oppLine.Quantity;
                             vbord.bord.bulkOrderExam1Product = new purchaseCodeData();
@@ -853,7 +839,6 @@ public without sharing class Registration{
             Name_As_it_Appears_On_ID__c, 
             ID_Type__c, 
             ID_Number__c, 
-            OSTA_ID_Location__c,
             First_Name_as_it_Appears_on_ID__c,
             Middle_Name_as_it_Appears_on_ID__c,
             Last_Name_as_it_Appears_on_ID__c,            
@@ -909,8 +894,6 @@ public without sharing class Registration{
                     con.ID_Type__c = tempAccount.idType;    
                 }
             }
-            if(tempAccount.idLocation != NULL && tempAccount.idLocation.length() > 0)
-            	con.OSTA_ID_Location__c = tempAccount.idLocation;
             
             // OSTA Save Full ID and last 5
             Boolean updateConsent = False;
@@ -1235,7 +1218,7 @@ public without sharing class Registration{
                 newLead.Email_The_Week_in_Risk__c = false;
                 
                 insert newLead;
-                return newLead.id; 
+                return newLead.id;
             }
         }
         
@@ -1400,7 +1383,7 @@ public without sharing class Registration{
         Chapter_Meeting_Registration__c chapterMeetingRegistration;
         Boolean newRegistration = true;
         if(objData.chapterMeetingRegistrationId == null) {
-            List<Chapter_Meeting_Registration__c> lstChaptMeetRegs = [select Id, Name, Status__c, Role__c, Chapter_Meeting__c, Contact__c, Opportunity__c, Attendance_Method__c from Chapter_Meeting_Registration__c where Chapter_Meeting__c = :objData.chapterMeetingId and Contact__c = :contactId];
+            List<Chapter_Meeting_Registration__c> lstChaptMeetRegs = [select Id, Name, Status__c, Role__c, Chapter_Meeting__c, Contact__c, Opportunity__c from Chapter_Meeting_Registration__c where Chapter_Meeting__c = :objData.chapterMeetingId and Contact__c = :contactId];
             if(lstChaptMeetRegs != null && lstChaptMeetRegs.size() > 0) {
                 chapterMeetingRegistration = lstChaptMeetRegs[0];
                 newRegistration = false;
@@ -1408,7 +1391,7 @@ public without sharing class Registration{
                 chapterMeetingRegistration  = new Chapter_Meeting_Registration__c();        
             }        
         } else {
-            List<Chapter_Meeting_Registration__c> lstChaptMeetRegs = [select Id, Name, Status__c, Role__c, Chapter_Meeting__c, Contact__c, Opportunity__c, Attendance_Method__c from Chapter_Meeting_Registration__c where id = :objData.chapterMeetingRegistrationId];
+            List<Chapter_Meeting_Registration__c> lstChaptMeetRegs = [select Id, Name, Status__c, Role__c, Chapter_Meeting__c, Contact__c, Opportunity__c from Chapter_Meeting_Registration__c where id = :objData.chapterMeetingRegistrationId];
             if(lstChaptMeetRegs != null && lstChaptMeetRegs.size() > 0) {
                 chapterMeetingRegistration = lstChaptMeetRegs[0];
                 newRegistration = false;
@@ -1423,19 +1406,6 @@ public without sharing class Registration{
             chapterMeetingRegistration.put('Status__c','Registered');
         
         chapterMeetingRegistration.put('Role__c','Registrant');
-        chapterMeetingRegistration.put('Attendance_Method__c',objData.AttendanceMethod);        
-        
-        if(objData.privacyPolicyAttestation != null && objData.privacyPolicyAttestation){ 
-            chapterMeetingRegistration.put('Privacy_Policy_Attestation__c',System.now());
-        }
-        
-        if(objData.sponsorInformationExchangeAttestation != null && objData.sponsorInformationExchangeAttestation){
-            chapterMeetingRegistration.put('Sponsor_Information_Exchange_Attestation__c',System.now());
-        }
-        
-        if(objData.garpInformationExchangeAttestation != null && objData.garpInformationExchangeAttestation){
-            chapterMeetingRegistration.put('GARP_Information_Exchange_Attestation__c',System.now());
-        }        
         
         if(newRegistration == true)
             chapterMeetingRegistration.put('Chapter_Meeting__c', objData.chapterMeetingId);
@@ -1450,7 +1420,7 @@ public without sharing class Registration{
             chapterMeetingRegistration.put('Opportunity__c', null);
         }
         
-        System.debug('**chapterMeetingRegistration:' + chapterMeetingRegistration); 
+        System.debug(chapterMeetingRegistration); 
         
         if(newRegistration == true){
             
@@ -1493,67 +1463,6 @@ public without sharing class Registration{
         }
         
     }  
-    
-    public static wrapperCreateWebcastRegistration createWebcastRegistration(TempAccount objData,String contactId) {
-        wrapperCreateWebcastRegistration returnWebcastWrapper = new wrapperCreateWebcastRegistration();
-        wrapperCreateOrder newAffiliateOrder = new wrapperCreateOrder();
-        String userContactId = null;
-        
-        List<Webcast__c> lstWebcasts = [select ID, Name, EventId__c, X0n24_API_Key__c from Webcast__c where ID = :objData.webcastId];
-        if(lstWebcasts != null && lstWebcasts.size() > 0) {
-            
-            Webcast__c webCast = lstWebcasts[0];
-            
-            if(contactId != null){
-                // PORTAL
-                userContactId = contactId;
-                insertWebcastRegistration(objData, contactId);
-            } else if(contactId == null){
-                // PUBLIC
-                //if(objData.Membership_Type == 'Affiliate') {
-                    newAffiliateOrder = CreateOrder(objData);
-                    userContactId = newAffiliateOrder.contactId;
-                    insertWebcastRegistration(objData, newAffiliateOrder.contactId);
-                //} else {
-                //    GARP_BC_Webcasts.createNonMemberWebcastRegistration(objData);
-                //}
-            }
-            
-            
-           // List < Webcast_Registration__c  > webcastRegistration = [SELECT Id FROM Webcast_Registration__c where (Contact__c =: userContactId and Webcast__c =: objData.webcastId)];
-           List < Webcast_Registration__c  > webcastRegistration = [SELECT Id,Lead__r.Id FROM Webcast_Registration__c where (Contact__c =: userContactId and Webcast__c =: objData.webcastId)];        
-            if(webcastRegistration != null && webcastRegistration.size() > 0) {
-                // API_Transaction__c trans = on24API.createAPITransactionRecord(webcastRegistration[0].Id, userContactId, webCast.EventId__c, webCast.X0n24_API_Key__c);
-                API_Transaction__c trans = on24API.createAPITransactionRecord('webcast',webcastRegistration[0].Id, userContactId, webCast.EventId__c, webCast.X0n24_API_Key__c);
-                
-                if(trans != null)
-                    on24API.SendRequest(null, trans.Id);
-                
-                returnWebcastWrapper.webcastRegistrationId = webcastRegistration[0].Id;
-                returnWebcastWrapper.contactId = userContactId;
-            }
-        }
-        
-        return returnWebcastWrapper;
-    }
-    
-    public static void insertWebcastRegistration(TempAccount objData,Id contactId){
-        Webcast_Registration__c  newWebcastRegistration = new Webcast_Registration__c();
-        
-        String objName = objData.FirstName + ' ' + objData.LastName + '/' + objData.webcastId;
-        
-        newWebcastRegistration.Name = objName;
-        newWebcastRegistration.Contact__c = contactId;
-        newWebcastRegistration.Status__c = 'Registered';
-        newWebcastRegistration.Webcast__c = objData.webcastId;
-        
-        //System.Debug('objData.sponsorInformationExchangeAttestation:' + objData.sponsorInformationExchangeAttestation);
-        
-        //newWebcastRegistration.Agree_To_Sponsor_Contact__c = objData.sponsorInformationExchangeAttestation ? DateTime.Now() : NULL;
-        
-        //System.Debug('newWebcastRegistration:' + newWebcastRegistration);        
-        insert newWebcastRegistration;
-    }
     
     public static Boolean isTempAccountItemTrue(Boolean item) {
         if(item != NULL && item == true)
@@ -2037,7 +1946,7 @@ public without sharing class Registration{
             membershipEligible = true;
         }
         
-        Opportunity oppRecord; 
+        Opportunity oppRecord;
         
         if(foundFRM1==true || foundFRM2==true || foundERP1==true || foundERP2==true) {       
             
@@ -2195,7 +2104,12 @@ public without sharing class Registration{
     public static Contact updateContactInfo(TempAccount objData, Id recordId, Lead convertedLead) {
         
         Contact con = [
-            SELECT id, GARP_ID_New__c, Title, GARP_Member_ID__c, Faculty_Reference__c, Degree_Program_Name__c, MailingCity, Other_Qualifications__c, Mailing_Address_Company__c, MailingCountry, MailingState, MailingPostalCode, MailingStreet, Middle_Initial__c, Nickname__c, Professional_Designation_CPA__c, Professional_Designation_Other__c, Professional_Designation_CA__c, professional_Designation_CFA__c, Professional_Designation_PMP__c, Email, Currently_in_School__c, School_Name__c, Company__c, Membership_Type__c, FirstName, HomePhone, Job_Function__c, Risk_Specialty__c, LastName, MobilePhone, Suffix__c, KPI_Membership_Auto_Renew_Orig_Status__c, Name_As_it_Appears_On_ID__c, ID_Type__c, ID_Number__c, ID_Expiration_Date__c, Full_Name_in_Chinese__c, Gender__c, Birthdate, Currently_Working_Status__c, Currently_in_School_Status__c 
+            SELECT id, GARP_ID_New__c, Title, GARP_Member_ID__c, Faculty_Reference__c, Degree_Program_Name__c, MailingCity, Other_Qualifications__c, 
+            	   Mailing_Address_Company__c, MailingCountry, MailingState, MailingPostalCode, MailingStreet, Middle_Initial__c, Nickname__c, 
+                   Professional_Designation_CPA__c, Professional_Designation_Other__c, Professional_Designation_CA__c, professional_Designation_CFA__c, 
+            	   Professional_Designation_PMP__c, Email, Currently_in_School__c, School_Name__c, Company__c, Membership_Type__c, FirstName, HomePhone, 
+                   Job_Function__c, Risk_Specialty__c, LastName, MobilePhone, Suffix__c, KPI_Membership_Auto_Renew_Orig_Status__c, Name_As_it_Appears_On_ID__c, 
+                   ID_Type__c, ID_Number__c, ID_Expiration_Date__c, Full_Name_in_Chinese__c, Gender__c, Birthdate, Currently_Working_Status__c, Currently_in_School_Status__c 
             FROM contact 
             WHERE id = :recordId
         ];
@@ -2234,6 +2148,9 @@ public without sharing class Registration{
         }
         
         con.Company__c = objData.Company;
+        
+        //system.assert(false, 'BOOM!'+ con.Company__c + '~' + objData);
+        
         con.Middle_Initial__c = objData.MiddleInitial;
         con.Suffix__c = objData.Salutation;
         con.MailingPostalCode = objData.MailingPostalCode;
@@ -2549,9 +2466,6 @@ public without sharing class Registration{
         List < OpportunityLineItem > lstOppLineItems = new List < OpportunityLineItem >();
         system.debug('productcode1 == ' + objData.productcode1);
         if (objData.productcode1 == null) return lstOppLineItems;
-        
-        Team_Registration__c teamRegUsed;
-        
         Decimal dExamFee = 0;
         String strNameByProdcutCode = '';
         List < String > lstExamNames = new List < String > ();
@@ -2755,43 +2669,16 @@ public without sharing class Registration{
                                                    Customer_Email__c = :objData.email AND Status__c = 'Active'];
         if(lstRates != NULL && lstRates.size() > 0) {
             for(Product_Rate_Offering__c por :lstRates) {
-                        
                 if(por.Discount_Product__r != NULL) {
                     setProdCodes.add(por.Discount_Product__r.ProductCode);
-                    setGlCodes.add(por.Discount_Product__r.GL_Code__c);    
-                    mapDiscountRates.put(por.Discount_Product__r.ProductCode + ':' + por.Discount_Product__r.Gl_Code__c, por);                        
+                    setGlCodes.add(por.Discount_Product__r.GL_Code__c);            
+                    mapDiscountRates.put(por.Discount_Product__r.ProductCode + ':' + por.Discount_Product__r.Gl_Code__c, por);    
                 }
                 mapRates.put(por.Current_Product__r.ProductCode + ':' + por.Current_Product__r.Gl_Code__c, por);    
             }
         }     
         System.debug('mapRates:' + mapRates);
         System.debug('mapDiscountRates:' + mapDiscountRates);
-        
-        
-        // Team Registrations
-        String teamCode = objData.teamCode;
-        Team_Registration__c teamReg;
-        LIST<Team_Registration__c> lstTeamRates = [select id, Discounted_Price__c, Attestation_Required__c, Attestation_Copy__c
-                                                     from Team_Registration__c where Payment_Status__c = 'Paid' AND Access_Code__c = :teamCode];
-        System.debug('lstTeamRates:' + lstTeamRates);
-        
-        // Team Registration Custom Settings
-        Map<String, Team_Registration_Products__c> mapCustTeamProds = Team_Registration_Products__c.getAll();
-        Map<String, Team_Registration_Products__c> mapTeamProds = new Map<String, Team_Registration_Products__c>();            
-        if(!lstTeamRates.isEmpty()) {
-            teamReg = lstTeamRates[0];
-            
-            if(mapCustTeamProds != NULL) {
-                for(Team_Registration_Products__c trp :mapCustTeamProds.values()) {
-                    mapTeamProds.put(trp.Product_Code__c + '~' + trp.GL_Code__c, trp);
-                }
-            }
-            System.debug('mapCustTeamProds:' + mapCustTeamProds);
-            System.debug('mapTeamProds:' + mapTeamProds);            
-                
-        }
-        System.debug('mapRates:' + mapRates);
-        System.debug('mapDiscountRates:' + mapDiscountRates);        
         
         List<PriceBookEntry> lstPrice = [SELECT Id, UnitPrice, ProductCode, Product2Id, Product2.Gl_Code__c, Product2.Name  
             FROM PriceBookEntry 
@@ -2834,11 +2721,11 @@ public without sharing class Registration{
             Product_Rate_Offering__c fndRate = mapRates.get(PricebookEntryId.ProductCode + ':' + PricebookEntryId.Product2.Gl_Code__c);
             System.debug('fndRate:' + fndRate);
             
-            if(fndRate != NULL && fndRate.Discount_Product__r.ProductCode != NULL && fndRate.Discount_Product__r.GL_Code__c != NULL) {
-                PriceBookEntry fndPrice = mapPriceBook.get(fndRate.Discount_Product__r.ProductCode + ':' + fndRate.Discount_Product__r.GL_Code__c);
+            if(fndRate != NULL) {
+                PriceBookEntry fndPrice = mapPriceBook.get(fndRate.Discount_Product__r.productcode + ':' + fndRate.Discount_Product__r.GL_Code__c);
                 System.debug('fndPrice:' + fndPrice);
                 
-                if(fndPrice != NULL) {
+                if(fndRate.Discount_Product__r != NULL && fndPrice != NULL) {
                     
                     // Add Discount Product
                     OpportunityLineItem oppLineItemRate = new OpportunityLineItem();
@@ -2853,34 +2740,6 @@ public without sharing class Registration{
                 }
             }
             
-            // Team Registration discount 
-            System.debug('teamReg:' + teamReg); 
-            
-            if(teamReg != NULL) {                
-                System.debug('PricebookEntryId.ProductCode:' + PricebookEntryId.ProductCode); 
-                System.debug('PricebookEntryId.Product2.Gl_Code__c:' + PricebookEntryId.Product2.Gl_Code__c); 
-                
-                Team_Registration_Products__c findTrp = mapTeamProds.get(PricebookEntryId.ProductCode + '~' + PricebookEntryId.Product2.Gl_Code__c);
-                System.debug('findTrp:' + findTrp); 
-                
-                if(findTrp != NULL) {                
-                    teamRegUsed = teamReg;
-                    
-                    if(teamReg.Discounted_Price__c != NULL) {
-                        // Add Discount Product
-                        OpportunityLineItem oppLineItemRate = new OpportunityLineItem();
-                        oppLineItemRate.OpportunityId = oppId;
-                        oppLineItemRate.Product2Id = findTrp.Discount_Product_Id__c;
-                        oppLineItemRate.PricebookEntryId = findTrp.Discount_Product_Price_Id__c;
-                        oppLineItemRate.Quantity = 1; 
-                        oppLineItemRate.UnitPrice = (PricebookEntryId.UnitPrice - teamReg.Discounted_Price__c) * -1;
-                        dTotalPrice += oppLineItemRate.UnitPrice;
-                        
-                        System.debug('oppLineItemRate:' + oppLineItemRate);
-                        lstOppLineItems.add(oppLineItemRate);
-                    }
-                }
-            }
             
             // Bulk Orders
             if(vbord != null && vbord.bord != null && vbord.bord.oppData != null && vbord.bord.oppData.size() > 0) {
@@ -3140,17 +2999,9 @@ public without sharing class Registration{
             FROM OpportunityLineItem
             WHERE Id IN :opportunityLineItemIds
         ];
-                
-        // Update Opp with Team Reg
-        if(teamRegUsed != NULL) {
-            Opportunity opp = [select id, Team_Registration__c from Opportunity where id = :oppId];
-            opp.Team_Registration__c = teamRegUsed.Id;
-            update opp;
-            
-        }
         
         return lstOppLineItems;
-
+        
     }
     
     public static void publicChapterMeetingRegister(String chapterMeetingId, Boolean isComing, String leadEmailAddress){
@@ -3172,8 +3023,6 @@ public without sharing class Registration{
     }
     
     public static void createEventRegistration(TempAccount objData, Id contID, Id accID, Id oppId, Registration.verifyBulkOrderReturnData vbord, Boolean closeOpportunity) {
-        
-        System.debug('createEventRegistration:' + objData);
         
         Set<String> setEventIds = new Set<String>();
         for (TempAccount.productDefinition objProdDef: objData.productcode1) {
@@ -3256,14 +3105,6 @@ public without sharing class Registration{
                     er.Sponsor_Information_Exchange_Attestation__c = System.now();
                 }
                 
-                if(objData.garpInformationExchangeAttestation != null && objData.garpInformationExchangeAttestation){
-                    er.GARP_Information_Exchange_Attestation__c = System.now();
-                }
-                
-                if(objData.AttendanceMethod != null){
-                    er.Attendance_Method__c = objData.AttendanceMethod;
-                }
-                
                 String objName = objData.FirstName + ' ' + objData.LastName + '/' + ev.Name;
                 
                 if(objName.length() > 80){
@@ -3317,10 +3158,6 @@ public without sharing class Registration{
                 
                 if(objData.sponsorInformationExchangeAttestation != null && objData.sponsorInformationExchangeAttestation){
                     fndEventReg.Sponsor_Information_Exchange_Attestation__c = System.now();
-                }
-
-                if(objData.garpInformationExchangeAttestation != null && objData.garpInformationExchangeAttestation){
-                    fndEventReg.GARP_Information_Exchange_Attestation__c = System.now();
                 }
                 
                 fndEventReg.Opportunity__c = oppId;
@@ -3824,13 +3661,13 @@ public without sharing class Registration{
         }
 
         System.debug('examNamesForExamResultsBeingLoaded: ' + examNamesForExamResultsBeingLoaded);
-        system.debug('objUser.contactId::>>  '+objUser.contactId);
+        
         Contact contactRecord = [
             SELECT Id, KPI_ERP_Enrollment_Date__c, AccountID, KPI_FRM_Enrollment_Date__c 
             FROM Contact 
             WHERE Id = :objUser.contactId
         ];
-        system.debug('contactRecord::>>  '+contactRecord);
+        
         for(Contract obj : [
             SELECT Id, RecordTypeId, StartDate, Enrollment_paid_for_2009__c, Status  
             FROM Contract 
@@ -4312,7 +4149,7 @@ public without sharing class Registration{
     }
     
     
-    public static Map < String, wrapperProductInfo > getFBRICBRProductCodes(string strProdType, String email, String teamCode) {
+    public static Map < String, wrapperProductInfo > getFBRICBRProductCodes(string strProdType, String email) {
         Set < String > setProdCodes = new set < String > ();
         if (strProdType == 'FBR') {
             setProdCodes.add('FBRNM');
@@ -4357,31 +4194,7 @@ public without sharing class Registration{
                 mapRates.put(por.Current_Product__r.ProductCode, por);    
             }
         }
-        System.debug('mapRates:' + mapRates);
-        
-        // Team Registrations
-        //String teamCode = 'SAOT2O!YR';
-        Team_Registration__c teamReg;
-        LIST<Team_Registration__c> lstTeamRates = [select id, Discounted_Price__c, Attestation_Required__c, Attestation_Copy__c
-                                                     from Team_Registration__c where Payment_Status__c = 'Paid' AND Access_Code__c = :teamCode];
-                                                     
-        System.debug('lstTeamRates:' + lstTeamRates);
-        
-        // Team Registration Custom Settings
-        Map<String, Team_Registration_Products__c> mapCustTeamProds = Team_Registration_Products__c.getAll();
-        Map<String, Team_Registration_Products__c> mapTeamProds = new Map<String, Team_Registration_Products__c>();            
-        
-        if(!lstTeamRates.isEmpty()) {
-            teamReg = lstTeamRates[0];
-                            
-            if(mapCustTeamProds != NULL) {
-                for(Team_Registration_Products__c trp :mapCustTeamProds.values()) {
-                    mapTeamProds.put(trp.Product_Code__c + '~' + trp.GL_Code__c, trp);
-                }
-            }
-            System.debug('mapCustTeamProds:' + mapCustTeamProds);
-            System.debug('mapTeamProds:' + mapTeamProds);                            
-        }
+        System.debug('mapRates:' + mapRates); 
         
         Map < String, wrapperProductInfo > mapWrapper = new Map < String, wrapperProductInfo > ();
         wrapperProductInfo objWrapper;
@@ -4448,49 +4261,20 @@ public without sharing class Registration{
                 Product_Rate_Offering__c fndRate = mapRates.get(objPriceBook.productcode);
                 System.debug('fndRate:' + fndRate); 
                 if(fndRate != NULL) {
-                    if(fndRate.Discount_Product__r.ProductCode != NULL) {
+                    if(fndRate.Discount_Product__r != NULL) {
                         // Set normal product to $0
                         //objWrapper.dCBRMemberExamAmt = 0;
                         
                         // Add Discount Product
                         objWrapper.dCBRCorpMemberExamAmt = fndRate.Offer_Amount__c;
                         objWrapper.strCBRCorpMemberGlCode = fndRate.Discount_Product__r.GL_Code__c;
-                        objWrapper.strCBRCorpMemberProdCode = fndRate.Discount_Product__r.ProductCode;
+                        objWrapper.strCBRCorpMemberProdCode = fndRate.Discount_Product__r.productcode;
                         if(fndRate.Attestation_Required__c == True) {
                             objWrapper.strCBRCorpMemberAttestaionCopy = fndRate.Attestation_Copy__c;   
                         }
                         
                     } else {
                         objWrapper.dCBRMemberExamAmt = fndRate.Offer_Amount__c;
-                    }
-                }
-                
-                // Team Registration
-                System.debug('teamReg:' + teamReg); 
-                if(teamReg != NULL) {
-                    
-                    System.debug('productcode:' + objPriceBook.productcode); 
-                    System.debug('Gl_code__c:' + objPriceBook.product2.Gl_code__c); 
-                    
-                    Team_Registration_Products__c findTrp = mapTeamProds.get(objPriceBook.productcode + '~' + objPriceBook.product2.Gl_code__c);
-                    System.debug('findTrp:' + findTrp); 
-                    if(findTrp != NULL) {
-                        
-                        if(teamReg.Attestation_Required__c == True) {
-                            objWrapper.strCBRCorpMemberAttestaionCopy = teamReg.Attestation_Copy__c;   
-                        }
-                        
-                        if(teamReg.Discounted_Price__c != NULL) {
-                            // Add Discount Product
-                            objWrapper.dCBRCorpMemberExamAmt = teamReg.Discounted_Price__c;
-                            objWrapper.strCBRCorpMemberGlCode = findTrp.GL_Code__c;
-                            objWrapper.strCBRCorpMemberProdCode = findTrp.Product_Code__c;
-                        } else {
-                            objWrapper.strCBRCorpPrepay = true;
-                        }
-                        
-                        System.debug('findTrp:' + findTrp); 
-                        
                     }
                 }
                 
@@ -4518,42 +4302,20 @@ public without sharing class Registration{
                 Product_Rate_Offering__c fndRate = mapRates.get(objPriceBook.productcode);
                 System.debug('fndRate:' + fndRate); 
                 if(fndRate != NULL) {
-                    if(fndRate.Discount_Product__r.ProductCode != NULL) {
+                    if(fndRate.Discount_Product__r != NULL) {
+                        // Set normal product to $0
+                        //objWrapper.dCBRMemberExamAmt = 0;
                         
                         // Add Discount Product
                         objWrapper.dCBRCorpNonMemberExamAmt = fndRate.Offer_Amount__c;
                         objWrapper.strCBRCorpNonMemberGlCode = fndRate.Discount_Product__r.GL_Code__c;
-                        objWrapper.strCBRCorpNonMemberProdCode = fndRate.Discount_Product__r.ProductCode;
-                        
+                        objWrapper.strCBRCorpNonMemberProdCode = fndRate.Discount_Product__r.productcode;
                         if(fndRate.Attestation_Required__c == True) {
                             objWrapper.strCBRCorpNonMemberAttestaionCopy = fndRate.Attestation_Copy__c;   
                         }                        
-                                                
+                        
                     } else {
-                        objWrapper.dCBRNonMemberExamAmt = fndRate.Offer_Amount__c;
-                    }
-                }
-                
-                // Team Registration
-                if(teamReg != NULL) {
-                    Team_Registration_Products__c findTrp = mapTeamProds.get(objPriceBook.productcode + '~' + objPriceBook.product2.Gl_code__c);
-                    if(findTrp != NULL) {
-                        
-                        if(teamReg.Attestation_Required__c == True) {
-                            objWrapper.strCBRCorpMemberAttestaionCopy = teamReg.Attestation_Copy__c;   
-                        }
-                        
-                        if(teamReg.Discounted_Price__c != NULL) {
-                            // Add Discount Product
-                            objWrapper.dCBRCorpNonMemberExamAmt = teamReg.Discounted_Price__c;
-                            objWrapper.strCBRCorpNonMemberGlCode = findTrp.GL_Code__c;
-                            objWrapper.strCBRCorpNonMemberProdCode = findTrp.Product_Code__c;
-                        } else {
-                            objWrapper.strCBRCorpPrepay = true;
-                        }
-                        
-                        System.debug('findTrp:' + findTrp); 
-
+                        objWrapper.dCBRMemberExamAmt = fndRate.Offer_Amount__c;
                     }
                 }
                 
@@ -4740,16 +4502,10 @@ public without sharing class Registration{
         
         return mapWrapper;
     }
-
-    public static Map < String, Registration.wrapperProductInfo > getProductCodes1(String strExamType, String email) {
-        return getProductInternal(strExamType, email, null);
-    }
     
-    public static Map < String, Registration.wrapperProductInfo > getProductInternal(String strExamType, String email, String teamCode) {
+    public static Map < String, Registration.wrapperProductInfo > getProductCodes1(String strExamType, String email) {
         Id currentUSer = userInfo.getuserId();
         system.debug('currentUSer == ' + currentUSer);
-        system.debug('teamCode:' + teamCode);
-        
         User objUSer = [select id, Email, contactId from user where id = : currentUSer];
         system.debug('objUSer == ' + objUSer);
         List < Exam_Attempt__c > lstExamAttempts = [
@@ -4772,7 +4528,7 @@ public without sharing class Registration{
         
         Map < String, wrapperProductInfo > mapWrapper = new Map < String, wrapperProductInfo > ();
         if (strExamType == 'FBR' || strExamType == 'ICBRR' || strExamType == 'INDIVIDUAL' || strExamType == 'STUDENT' || strExamType == 'WILEY' || strExamType == 'RISKNET' || strExamType == 'FBRA') {
-            mapWrapper = getFBRICBRProductCodes(strExamType, email, teamCode);
+            mapWrapper = getFBRICBRProductCodes(strExamType, email);
             mapWrapper = getMiscellaneousProdCodes(mapWrapper);
         } else {
             mapWrapper = getExamFee1(getExamDetails(lstExamNames));

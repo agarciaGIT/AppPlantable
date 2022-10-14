@@ -20,6 +20,7 @@ public with sharing class CertRegistrationTestDataFactory {
         //CHARGENT
         ChargentBase__Gateway__c chargentGateway = new ChargentBase__Gateway__c(
             Name = 'Test',
+            ChargentBase__Merchant_ID__c = 'dasghjtru548709-4',
             ChargentBase__Active__c = true,
             ChargentBase__Available_Payment_Methods__c = 'Credit Card'
         );
@@ -308,7 +309,6 @@ public with sharing class CertRegistrationTestDataFactory {
         
         String chargeRequestJSON = JSON.serialize(chargeRequest);
         
-        ContactTriggerHandler.stopRecurssion = false;
         Response.Detail chargeResponse = CertRegistrationFormRemoter.payCertRegistrationOrder(registrationType, chargeRequestJSON); 
         
         System.debug(chargeResponse);

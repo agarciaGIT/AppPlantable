@@ -1,0 +1,311 @@
+.navbar-custom {
+    background-color: #081B31;
+    color: #ffffff;
+    border-radius: 0;
+    font-family: "Gotham A","Gotham B","Gotham",Tahoma,Helvetica,sans-serif,'Open Sans',arial,sans-serif;
+}
+.navbar {
+    position: relative;
+    min-height: 86px;
+    margin-bottom: 20px;
+    border: 1px solid transparent;
+}
+article, aside, details, figcaption, figure, footer, header, hgroup, main, menu, nav, section, summary {
+    display: block;
+}
+.page-content {
+    flex: 1 1 auto;
+    position: relative;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+.page-content-wrapper {
+    width: 100%;
+    position: relative;
+    margin-right: 0;
+}
+.container-fluid {
+    padding-right: 15px;
+    padding-left: 15px;
+    margin-right: auto;
+    margin-left: auto;
+}
+.welcome {
+    font-family: "Gotham A", "Gotham B", "Gotham", Tahoma, Helvetica, sans-serif;
+}
+.row {
+    margin-right: -15px;
+    margin-left: -15px;
+}
+.welcome-title {
+    font-size: 2em;
+    font-weight: bold;
+    color: #393a3d;
+    text-align: center;
+    padding: 1em 1em;
+}
+.col-md-12 {
+    width: 100%;
+}
+.col-md-12, .col-md-7, .col-md-5  {
+    float: left;
+    position: relative;
+    min-height: 1px;
+    padding-right: 15px;
+    padding-left: 15px;
+}
+.welcome-content {
+    font-size: 1.286em;
+    line-height: 1.63;
+    color: #393a3d;
+    padding: 1em;
+}
+.col-md-7 {
+    width: 58.33333333%;
+}
+ol, ul {
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+.welcome-content-btn {
+    text-align: center;
+    padding: 15px;
+}
+.col-md-5 {
+    width: 41.66666667%;
+}
+.col-md-4 {
+    width: 33.33333333%;
+    float: left;
+    padding-right: 15px;
+    padding-left: 15px;
+    position: relative;
+}
+.section {
+    height: 345px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px 0 rgb(0 0 0 / 8%);
+    border: solid 1px #dedede;
+    background-color: #ffffff;
+    margin: 30px 0 15px;
+    font-size: 1.1em;
+}
+.section-header {
+    font-size: 1.286em;
+    font-weight: 500;
+    color: #000000;
+    height: 60px;
+    padding: 15px;
+    background-color: #f7f7f7;
+    border-bottom: 1px solid #ddd;
+}
+.section-header i {
+    padding-right: 10px;
+}
+.fa {
+    display: inline-block;
+    font: normal normal normal 14px/1 FontAwesome;
+    font-size: inherit;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+}
+.section-content {
+    height: 265px;
+    padding: 20px 20px 0;
+    overflow: auto;
+}
+.relevant-resources {
+    padding-inline-start: 30px;
+}
+.relevant-resources li {
+    margin-bottom: 10px;
+}
+.container-fluid>.navbar-collapse, .container-fluid>.navbar-header, .container>.navbar-collapse, .container>.navbar-header {
+    margin-right: 0;
+    margin-left: 0;
+}
+.navbar-header {
+    float: left;
+}
+.navbar-toggle {
+    display: none;
+}
+.navbar-toggle {
+    float: left;
+    margin-right: 0;
+    padding-left: 0;
+    position: relative;
+    float: right;
+    padding: 9px 10px;
+    margin-top: 8px;
+    margin-right: 15px;
+    margin-bottom: 8px;
+    background-color: transparent;
+    background-image: none;
+    border: 1px solid transparent;
+    border-radius: 4px;
+}
+input:focus, button {
+    outline: 0;
+}
+button, input, select, textarea {
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+}
+button, select {
+    text-transform: none;
+}
+button {
+    overflow: visible;
+}
+button, input, optgroup, select, textarea {
+    margin: 0;
+    font: inherit;
+}
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+    border: 0;
+}
+.fa-lg {
+    font-size: 1.33333333em;
+    line-height: .75em;
+    vertical-align: -15%;
+}
+.navbar-collapse.collapse {
+    display: block!important;
+    height: auto!important;
+    padding-bottom: 0;
+    overflow: visible!important;
+}
+.navbar-collapse {
+    width: auto;
+    border-top: 0;
+    box-shadow: none;
+    padding-right: 15px;
+    padding-left: 15px;
+}
+.navbar-nav {
+    float: left;
+    margin: 7.5px -15px;
+}
+.nav {
+    padding-left: 0;
+    list-style: none;
+}
+.navbar-nav>li {
+    float: left;
+    position: relative;
+    display: block;
+}
+.navbar-nav>li>a {
+    padding-top: 15px;
+    padding-bottom: 15px;
+    line-height: 20px;
+}
+.nav>li>a {
+    position: relative;
+    display: block;
+    padding: 10px 15px;
+}
+.header-nav-adjustments {
+    border: 1px solid #fff;
+    border-radius: 5px;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-bottom: 0;
+    z-index: 1000;
+}
+.navbar-custom .navbar-nav > li > a:hover, .navbar-custom .navbar-nav > li > a:focus, .navbar-custom .navbar-nav > .active > a:hover, .navbar-custom .navbar-nav > .active > a:focus, .navbar-custom .navbar-nav > .open >a {
+    text-decoration: none;
+    background-color: transparent;
+}
+.reports {
+    background-color: #f3f16a !important;
+    color: #393a3d !important;
+}
+.header-nav-adjustments {
+    padding: 10px 30px !important;
+}
+.dropdown, .dropdown-menu, .dropdown-submenu {
+    z-index: 1000;
+    background-color: #081B31;
+}
+.btn:hover {
+    background: #081a31;
+    border: 2px solid #081a31;
+    color: white;
+}
+.btn {
+    border: 2px solid #00a2dd;
+    padding: 11px 52px;
+    border-radius: 2px;
+    background: #00a2dd;
+    color: #fff;
+    font-weight: 500;
+    box-shadow: 0 2px 5px 0px rgb(0 0 0 / 26%);
+    transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+}
+img {
+    border: 0;
+    vertical-align: middle;
+}
+.page-content {
+    flex: 1 1 auto;
+    position: relative;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+.section-content {
+    height: 199px;
+    padding: 20px 20px 0;
+    overflow: auto;
+}
+.panel-group {
+    margin-bottom: 20px;
+}
+.welcome {
+    display: table;
+    content: " ";
+    font-family: "Gotham A", "Gotham B", "Gotham", Tahoma, Helvetica, sans-serif;
+    clear: both;
+}
+.welcome-content-btn > a {
+    font-size: 1.286em;
+}
+.notifications .type {
+    text-transform: uppercase;
+    font-weight: bold;
+    color: #333;
+}
+.notifications .notif-title {
+    color: #00a2dd;
+}
+.notifications li small {
+    color: #333;
+}
+.small, small {
+    font-size: 85%;
+}
+body, p, span, a, h1, h2, h3, h4 {
+    font-family: "Gotham A", "Gotham B", "Gotham", Tahoma, Helvetica, sans-serif;
+}
+.relevant-resources li::marker {
+    font-size: 25px;
+    line-height: 0;
+    color: #00a2dd;
+}
+.dot {
+    height: 7px;
+    width: 7px;
+    background-color: #00a2dd;;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 10px;
+  }

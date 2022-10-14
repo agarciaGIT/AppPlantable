@@ -3,7 +3,7 @@
     showHeader="false"
     id="visualForceServices"
     controller="sfdcAppRemoter" 
-    extensions="RegistrationFormLeadRemoter,RegistrationFormShippingRemoter,JobController,ConventionController,EventController,EventContentRestController,EventSponsorData,ExamManagementController,PolicyController,SurveyRegistrationController,TagManagerController,ExamRegistrationFormRemoter,CertRegistrationFormRemoter"
+    extensions="RegistrationFormLeadRemoter,RegistrationFormShippingRemoter,JobController,ConventionController,EventController,EventContentRestController,EventSponsorData,ExamManagementRemoter,PolicyController,SurveyRegistrationController,TagManagerController,ExamRegistrationFormRemoter,CertRegistrationFormRemoter,GARP_MS_Membership,GARP_MS_Courses"
 >
     <script type="text/javascript">
     
@@ -12,6 +12,106 @@
     };
 
     Visualforce.remoting.timeout = 120000;
+    
+    // GARP_MS_Membership
+    sfdcService.GetMembershipRegistrationInfo = function(callback){
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.GARP_MS_Membership.GetMembershipRegistrationInfo}',
+            function(result, event){
+                if(event.status) callback(null, { result: result, event: event });    
+                else callback(event.message, null);              
+            }, 
+            {escape: true}
+        );            
+    }
+    
+    sfdcService.VerifyExistingMembershipCustomer = function(email, firstName, lastName, cta, callback){
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.GARP_MS_Membership.VerifyExistingMembershipCustomer}',
+            email, firstName, lastName, cta,
+            function(result, event){
+                if(event.status) callback(null, { result: result, event: event });    
+                else callback(event.message, null);              
+            }, 
+            {escape: true}
+        );            
+    }
+    
+    // GARP_MS_Courses
+  
+    
+    sfdcService.GetFFRRegistrationInfo = function(callback){
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.GARP_MS_Courses.GetFFRRegistrationInfo}',
+            function(result, event){
+                if(event.status) callback(null, { result: result, event: event });    
+                else callback(event.message, null);              
+            }, 
+            {escape: true}
+        );            
+    }
+    
+    sfdcService.VerifyExistingFFRCustomer = function(email, firstName, lastName, cta, callback){
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.GARP_MS_Courses.VerifyExistingFFRCustomer}',
+            email, firstName, lastName, cta,
+            function(result, event){
+                if(event.status) callback(null, { result: result, event: event });    
+                else callback(event.message, null);              
+            }, 
+            {escape: true}
+        );            
+    }
+    
+    sfdcService.GetFRRRegistrationInfo = function(callback){
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.GARP_MS_Courses.GetFRRRegistrationInfo}',
+            function(result, event){
+                if(event.status) callback(null, { result: result, event: event });    
+                else callback(event.message, null);              
+            }, 
+            {escape: true}
+        );            
+    }
+  
+    sfdcService.VerifyExistingFRRCustomer = function(email, firstName, lastName, cta, callback){
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.GARP_MS_Courses.VerifyExistingFRRCustomer}',
+            email, firstName, lastName, cta,
+            function(result, event){
+                if(event.status) callback(null, { result: result, event: event });    
+                else callback(event.message, null);              
+            }, 
+            {escape: true}
+        );            
+    }
+    
+
+    sfdcService.VerifyExistingFFRCustomer = function(email, firstName, lastName, cta, callback){
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.GARP_MS_Courses.VerifyExistingFFRCustomer}',
+            email, firstName, lastName, cta,
+            function(result, event){
+                if(event.status) callback(null, { result: result, event: event });    
+                else callback(event.message, null);              
+            }, 
+            {escape: true}
+        );            
+    }
+
+    // Common
+    
+    sfdcService.getSessionId= function(callback){
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.sfdcAppRemoter.getSessionId}',
+            function(result, event){
+                if(event.status) callback(null, { result: result, event: event });    
+                else callback(event.message, null);              
+            }, 
+            {escape: true}
+        );            
+    }  
+
 
     // Universal Registration Form Remote Methods
     sfdcService.fetchShippingOptions = function(countryCode, postalCode, productIds, callback){
@@ -382,7 +482,7 @@
     
     sfdcService.getExamRescheduleInformation= function(examGroupId, program, callback) {
         Visualforce.remoting.Manager.invokeAction(
-            '{!$RemoteAction.ExamManagementController.getExamRescheduleInformation}',
+            '{!$RemoteAction.ExamManagementRemoter.getExamRescheduleInformation}',
             examGroupId,program,
             function(result, event){
                 callback(null, { result: result, event: event });               
@@ -393,7 +493,7 @@
 
     sfdcService.getExamRescheduleFees = function(examGroupId, program, selectedAdminPartI, selectedAdminPartII, selectedSitePartI, selectedSitePartII, callback) {
         Visualforce.remoting.Manager.invokeAction(
-            '{!$RemoteAction.ExamManagementController.getExamRescheduleFees}',
+            '{!$RemoteAction.ExamManagementRemoter.getExamRescheduleFees}',
             examGroupId, program, selectedAdminPartI, selectedAdminPartII, selectedSitePartI, selectedSitePartII,
             function(result, event){
                 callback(null, { result: result, event: event });               
@@ -405,7 +505,7 @@
     
     sfdcService.createExamRescheduleFeesOrder = function(examGroupId, program, selectedAdminPartI, selectedAdminPartII, selectedSitePartI, selectedSitePartII, callback) {
         Visualforce.remoting.Manager.invokeAction(
-            '{!$RemoteAction.ExamManagementController.createExamRescheduleFeesOrder}',
+            '{!$RemoteAction.ExamManagementRemoter.createExamRescheduleFeesOrder}',
             examGroupId, program, selectedAdminPartI, selectedAdminPartII, selectedSitePartI, selectedSitePartII,
             function(result, event){
                 callback(null, { result: result, event: event });               
@@ -417,7 +517,7 @@
     
     sfdcService.getAllProgramInfo = function(callback) {
         Visualforce.remoting.Manager.invokeAction(
-            '{!$RemoteAction.ExamManagementController.getAllProgramInfo}',
+            '{!$RemoteAction.ExamManagementRemoter.getAllProgramInfo}',
             function(result, event){
                 callback(null, { result: result, event: event });               
             }, 
@@ -427,7 +527,7 @@
     
     sfdcService.getProgramInfo = function(programType, callback) {
         Visualforce.remoting.Manager.invokeAction(
-            '{!$RemoteAction.ExamManagementController.getProgramInfo}',
+            '{!$RemoteAction.ExamManagementRemoter.getProgramInfo}',
             programType,
             function(result, event){
                 callback(null, { result: result, event: event });               
@@ -438,7 +538,7 @@
     
     sfdcService.createCBTIntegrationAuthorization= function(examRegId, callback) {
         Visualforce.remoting.Manager.invokeAction(
-            '{!$RemoteAction.ExamManagementController.createCBTIntegrationAuthorization}',
+            '{!$RemoteAction.ExamManagementRemoter.createCBTIntegrationAuthorization}',
             examRegId,
             function(result, event){
                 callback(null, { result: result, event: event });               
@@ -449,7 +549,7 @@
 
     sfdcService.processExamRegModsFromClient = function(examRegModId, callback) {
         Visualforce.remoting.Manager.invokeAction(
-            '{!$RemoteAction.ExamManagementController.processExamRegModsFromClient}',
+            '{!$RemoteAction.ExamManagementRemoter.processExamRegModsFromClient}',
             examRegModId,
             function(result, event){
                 callback(null, { result: result, event: event });               
@@ -1586,7 +1686,7 @@
     
     sfdcService.logFailedAuthorization= function(examRegId, callback) {
         Visualforce.remoting.Manager.invokeAction(
-            '{!$RemoteAction.ExamManagementController.logFailedAuthorization}',
+            '{!$RemoteAction.ExamManagementRemoter.logFailedAuthorization}',
             examRegId,
             function(result, event){
                 callback(null, { result: result, event: event });               
@@ -1854,6 +1954,7 @@
             {escape: true}
         );            
     }
+
     
     sfdcService.getExamProducts = function(strExamName, email, callback) {    
         Visualforce.remoting.Manager.invokeAction(
@@ -2905,18 +3006,18 @@ sfdcService.attestCPE = function(contractReqId, callback) {
          );          
     }
     
-    sfdcService.updateOSTAIDInfo = function(contactId, idType, idNumber, idLocation, expDate, callback) {    
+    sfdcService.updateOSTAIDInfo = function(contactId, idType, idNumber, expDate, callback) {    
          expDate = new Date(expDate).toUTCString();
          Visualforce.remoting.Manager.invokeAction(
-             '{!$RemoteAction.ExamManagementController.updateOSTAIDInfo}',
-              contactId, idType, idNumber, idLocation, expDate,
+             '{!$RemoteAction.ExamManagementRemoter.updateOSTAIDInfo}',
+              contactId, idType, idNumber, expDate,
              function(result, event){
                  callback(null, { result: result, event: event });              
              }, 
              {escape: true}
          );          
     }
-    
+
     sfdcService.submitProfileData = function(experiences, tempAcc, contactId, progReqId, callback) {
         Visualforce.remoting.Manager.invokeAction(
             '{!$RemoteAction.sfdcAppRemoter.submitProfileData}',
@@ -2931,6 +3032,5 @@ sfdcService.attestCPE = function(contractReqId, callback) {
             }, 
             {escape: true}
         );            
-    }
-    </script>
+    }    </script>
 </apex:page>

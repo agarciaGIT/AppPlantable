@@ -3,12 +3,11 @@ public class GARP_BC_Shipping {
     public static Shipping_Charge__c getShippingRate(String productCode, String glCode, String countryCode){
         Shipping_Charge__c ret;
         
-        if(countryCode != NULL && glCode != NULL && countryCode.length() > 0 && glCode.length() > 0) {
-            List<Shipping_Charge__c> lstShip = [select id, Shipping_Charge__c from Shipping_Charge__c where Product_Code__c = :productCode AND GL_Code__c = :glCode AND Country_Code__r.LetterCode__c = :countryCode];
-            if(!lstShip.isEmpty()) {
-                ret = lstShip[0];
-            }
+        List<Shipping_Charge__c> lstShip = [select id, Shipping_Charge__c from Shipping_Charge__c where Product_Code__c = :productCode AND GL_Code__c = :glCode AND Country_Code__r.LetterCode__c = :countryCode];
+        if(!lstShip.isEmpty()) {
+            ret = lstShip[0];
         }
+        
         return ret;
     }
     
@@ -16,14 +15,8 @@ public class GARP_BC_Shipping {
     public static Shipping_Charge__c getShippingRate(GARP_MS_Shipping.shipOrder shipOrder){
         Shipping_Charge__c ret;
         
-        
-        if(shipOrder == NULL || shipOrder.lineItems == NULL || shipOrder.address == NULL || shipOrder.address.countrycode == NULL) {
-            return ret;
-        }
-
         System.debug('shipOrder:' + shipOrder);
 
-        
         Set<String> prodCodes = new Set<String>();
         Set<String> glCodes = new Set<String>();
         
@@ -39,15 +32,7 @@ public class GARP_BC_Shipping {
         if(prodCodes.size() > 0) {
             GARP_MS_Shipping.shipOrderLineItem lineItem = shipOrder.lineItems[0];
 
-            List<Shipping_Charge__c> lstShip = [select id, Shipping_Charge__c, Product_Code__c, GL_Code__c 
-                                                from Shipping_Charge__c 
-                                                where 
-                                                Product_Code__c <> NULL AND
-                                                GL_Code__c <> NULL AND
-                                                Country_Code__r.LetterCode__c <> NULL AND
-                                                Product_Code__c in :prodCodes AND 
-                                                GL_Code__c in :glCodes AND 
-                                                Country_Code__r.LetterCode__c = :shipOrder.address.countrycode];
+            List<Shipping_Charge__c> lstShip = [select id, Shipping_Charge__c, Product_Code__c, GL_Code__c from Shipping_Charge__c where Product_Code__c in :prodCodes AND GL_Code__c in :glCodes AND Country_Code__r.LetterCode__c = :shipOrder.address.countrycode];
             System.debug('lstShip:' + lstShip);
             MAP<String,Shipping_Charge__c> mapShipCharges = new MAP<String,Shipping_Charge__c>();
                         

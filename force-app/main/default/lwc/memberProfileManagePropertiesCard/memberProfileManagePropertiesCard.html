@@ -207,25 +207,8 @@
                     >
                 </lightning-input>
     
-                <lightning-textarea 
-                    name="MailingStreet" 
-                    data-id="MailingStreet" 
-                    label="Street" 
-                    value={contact.MailingStreet} 
-                    onchange={handleFormInputChange} 
-                    data-customvalidation="WesternOnly" 
-                    data-customvalidationmsg="Your entry must only use western characters." 
-                    minlength="2" 
-                    message-when-too-short="Your entry must be at least 2 characters."
-                    maxlength="80"
-                    required
-                    data-customrequiredmsg="Mailing Street is a required field." 
-                    disabled={isSaving}
-                    class="slds-m-top--large"
-                >
-                </lightning-textarea>
-                <!-- lightning-input 
-                    type="textarea" 
+                <lightning-input 
+                    type="text" 
                     data-id="MailingStreet" 
                     label="Street" 
                     value={contact.MailingStreet} 
@@ -240,7 +223,7 @@
                     disabled={isSaving}
                     class="slds-m-top--large"
                     >
-                </lightning-input -->
+                </lightning-input>
     
                 <lightning-input 
                     type="text" 
@@ -361,22 +344,7 @@
                         >
                     </lightning-input>
         
-                    <lightning-textarea
-                        data-id="BillingStreet" 
-                        label="Street" 
-                        value={contact.Account.BillingStreet} 
-                        onchange={handleFormInputChange} 
-                        data-customvalidation="WesternOnly" 
-                        data-customvalidationmsg="Your entry must only use western characters." 
-                        minlength="10" 
-                        message-when-too-short="Your entry must be at least 10 characters."
-                        maxlength="80"
-                        required
-                        data-customrequiredmsg="Billing Street is a required field." 
-                        disabled={isSaving}
-                        class="slds-m-top--large">
-                    </lightning-textarea>
-                    <!-- lightning-input 
+                    <lightning-input 
                         type="text" 
                         data-id="BillingStreet" 
                         label="Street" 
@@ -392,7 +360,7 @@
                         disabled={isSaving}
                         class="slds-m-top--large"
                         >
-                    </lightning-input -->
+                    </lightning-input>
         
                     <lightning-input 
                         type="text" 

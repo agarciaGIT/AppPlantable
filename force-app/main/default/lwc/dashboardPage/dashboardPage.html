@@ -1,0 +1,60 @@
+<template>
+    <div class="col-md-12">
+        <div class="panel" style="border:none;">
+            <div class="formContainer panel-body" style="background-color:#0E6386;border-radius:2px;">
+                <div class="row" style="text-align:center">
+                    <div class="col-md-12 dash-profile-image">
+                        <img class="center-block img-responsive dash-profile-image" src={imageUrl}>
+                    </div>
+                </div>
+                <div class="row" style="text-align:center">
+                    <div class="col-md-12">
+                        <h4 id="profileName">{firstName} {lastName}</h4>
+                    </div>
+                </div>
+                <div>
+                    <span class="userEmail center-block">GARP ID</span>
+                    <div class="userEmail center-block">{garpMemberId}</div>
+                </div>
+            </div>    
+            <!--<div class="customPrgrs progress progress-striped">
+                <div class="progress-bar progress-bar-info progress-bar-striped" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" style="width: 50%;">
+                </div>
+            </div>
+            <div style="background:white;border-radius:5px;padding-bottom:13px;text-align:center;">
+                <a class="percentage ng-binding ng-scope">50% Complete</a>
+            </div>-->
+            <template if:true={boolMakeBothCertVisible}>
+                <div class="row ng-scope" style="text-align: center; padding-bottom: 15px;">
+                    <div class="col-md-6" style="width: 50%;float: left;margin-top: 11px;">
+                        <a target="_new" href={frmLink}>
+                            <img style="width: 130px; height: auto;" src={frmImageUrl}>
+                        </a>
+                    </div>
+                    <div class="col-md-6" style="width: 50%;float: left;margin-top: 11px;">
+                        <a target="_new" href={erpLink}>
+                            <img style="width: 130px; height: auto;" src={erpImageUrl}>
+                        </a>
+                    </div>
+                    <br>
+                </div>
+            </template>
+            <template if:false={boolMakeBothCertVisible}>
+                <template if:true={frmCertified}>
+                    <div class="col-md-12" style="text-align:center;margin-top: 11px;">
+                        <a target="_new" href={frmLink}>
+                            <img style="width: 130px; height: auto;" src={frmImageUrl}>
+                        </a>
+                    </div>
+                </template>
+                <template if:true={erpCertified}>
+                    <div class="col-md-12" style="text-align:center;margin-top: 11px;">
+                        <a target="_new" href={erpLink}>
+                            <img style="width: 130px; height: auto;" src={erpImageUrl}>
+                        </a>
+                    </div>
+                </template>
+            </template> 
+        </div> 
+    </div>                            
+</template>

@@ -1,0 +1,25 @@
+<template>
+  <!-- TODO: Add dynamic count for number of studies to display -->
+  <div class="studies-list-by-type-title-wrapper slds-page-header">
+    <div class="slds-page-header__row slds-align-content-center">
+      <!-- HEADER TITLE -->
+      <div class="slds-page-header__col-title">
+        <div class="slds-clearfix">
+          <div class="slds-float_left">
+            <div class="slds-media">
+              <div class="slds-media__body">
+                <div class="slds-page-header__name">
+                  <div class="slds-page-header__name-title">
+                    <h1 class="studies-list-by-type-title">{typeTitle} (5)</h1>
+                    <p class="studies-list-by-type-subtitle">{typeSubtitle}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <c-studies-list-by-type studies={allStudies}></c-studies-list-by-type>
+</template>

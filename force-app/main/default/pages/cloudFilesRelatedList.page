@@ -7,7 +7,7 @@
             setMyParam(delId);
         debugger;
 
-            var jsonData = JSON.parse('{"accessKeyId":"XXXX","secretAccessKey":"XXXX","region":"us-west-2","fileNames": {!jsonFileList} }');
+            var jsonData = JSON.parse('{"accessKeyId":"AKIAQLRNTC3ZRGBJSXME","secretAccessKey":"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","region":"us-west-2","fileNames": {!jsonFileList} }');
             var fileNamesList = jsonData.fileNames;
             var awsAccessKeyId = jsonData.accessKeyId;
             var awsSecretAccessKey = jsonData.secretAccessKey;

@@ -91,24 +91,7 @@ public class GBIDPAsPDF {
             signDateTime = dpSubmission.Signed_Date_Time__c;
             email = dpSubmission.Study_Account__r.Invoice_Email__c;
             studyAccountName = dpSubmission.Study_Account__r.Account__r.Name;
-            //billingAddress = dpSubmission.Study_Account__r.Account__r.BillingStreet + ' ' + dpSubmission.Study_Account__r.Account__r.BillingCity + ' ' + dpSubmission.Study_Account__r.Account__r.BillingState + ' ' + dpSubmission.Study_Account__r.Account__r.BillingPostalCode + ' ' + dpSubmission.Study_Account__r.Account__r.BillingCountry;
-            if(!String.isBlank(dpSubmission.Study_Account__r.Account__r.BillingStreet)){
-                billingAddress = dpSubmission.Study_Account__r.Account__r.BillingStreet;
-            }else{
-                billingAddress = '';
-            }
-            if(!String.isBlank(dpSubmission.Study_Account__r.Account__r.BillingCity)){
-                billingAddress += ' '+dpSubmission.Study_Account__r.Account__r.BillingCity;
-            }
-            if(!String.isBlank(dpSubmission.Study_Account__r.Account__r.BillingState)){
-                billingAddress += ' '+dpSubmission.Study_Account__r.Account__r.BillingState;
-            }
-            if(!String.isBlank(dpSubmission.Study_Account__r.Account__r.BillingPostalCode)){
-                billingAddress += ' '+dpSubmission.Study_Account__r.Account__r.BillingPostalCode;
-            }
-            if(!String.isBlank(dpSubmission.Study_Account__r.Account__r.BillingCountry)){
-                billingAddress += ' '+dpSubmission.Study_Account__r.Account__r.BillingCountry;
-            }
+            billingAddress = dpSubmission.Study_Account__r.Account__r.BillingStreet + ' ' + dpSubmission.Study_Account__r.Account__r.BillingCity + ' ' + dpSubmission.Study_Account__r.Account__r.BillingState + ' ' + dpSubmission.Study_Account__r.Account__r.BillingPostalCode + ' ' + dpSubmission.Study_Account__r.Account__r.BillingCountry;
             studyEndDate = dpSubmission.Study__r.End_Date__c;
             studyName = dpSubmission.Study__r.Name;
             paymentAgreedAmount = dpSubmission.Study_Account__r.Payment_Agreed_Amount__c ;

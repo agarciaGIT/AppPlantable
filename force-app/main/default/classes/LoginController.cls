@@ -93,7 +93,7 @@ global without sharing class LoginController {
             COUNTRIES.add(c.Country__c);
         }
         this.JOBFUNCTIONS = GARP_BC_MemberProfile.getPickListValues('Contact','Job_Function__c');
-        this.INDUSTRIES = GARP_BC_MemberProfile.getPickListValues('Contact','Area_of_Concentration__c');
+       	this.INDUSTRIES = GARP_BC_MemberProfile.getPickListValues('Contact','Area_of_Concentration__c');
         
         isGRA = 'false';
         String url = ApexPages.currentPage().getUrl();
@@ -501,10 +501,9 @@ global without sharing class LoginController {
                     // Assign Email Subscriptions
                     newCont.Email_Daily_News__c = True;
                     newCont.Email_The_Week_in_Risk__c = True;
-                    newCont.Company__c = company;
                     update newCont;
                     
-                    PageReference pr = new PageReference('/sfdcApp#!/membership/registration/affiliate/information/' + lstCont[0].Id);
+                    PageReference pr = new PageReference('/sfdcApp#!/registration_information/' + newCont.Id);
                     if(action != null) {
                         if(action == 'meeting'){                                
                             pr.getParameters().put('action', action);
@@ -549,11 +548,10 @@ global without sharing class LoginController {
                         
                         system.debug('convertedLead:'+convertedLead);
                         
-                        Contact cont = [select Id, Email_Daily_News__c, Email_The_Week_in_Risk__c, Company__c from Contact where id = :convertedLead.ConvertedContactId];
+                        Contact cont = [select Id, Email_Daily_News__c, Email_The_Week_in_Risk__c from Contact where id = :convertedLead.ConvertedContactId];
                         // Assign Email Subscriptions
                         cont.Email_Daily_News__c = True;
                         cont.Email_The_Week_in_Risk__c = True;
-                        cont.Company__c = company;
                         update cont;
                         
                         Cookie invoiceNumberCookie = new Cookie('invoiceNumber',order.invoiceNumber,null,500,false);
@@ -564,7 +562,7 @@ global without sharing class LoginController {
                         ApexPages.currentPage().setCookies(new Cookie[]{invoiceNumberCookie, opportunityIdCookie, companyCookie, garpIdCookie});
 
                         
-                        PageReference pr = new PageReference('/sfdcApp#!/membership/registration/affiliate/information/' + convertedLead.ConvertedContactId);
+                        PageReference pr = new PageReference('/sfdcApp?invoiceNumber=' + order.invoiceNumber + '#!/registration_information/' + convertedLead.ConvertedContactId);
                         if(action != null) {
                             if(action == 'meeting'){                                
                                 pr.getParameters().put('action', action);
@@ -917,16 +915,16 @@ global without sharing class LoginController {
     };   
         
     public static List<String> INDUSTRIES = new List<String> {
-        'Accounting/Audit',
-        'Agriculture, Forestry and Fishing',
-        'Asset or Capital Management',
-        'Commercial Banking',
-        'Consulting Firm',
-        'Credit Rating Agencies',
-        'Education Services',
-        'Environmental/Life Sciences/Pharmaceutical',
-        'Financial Market Regulator',
-        'FinTech and Payments Processing',
+    	'Accounting/Audit',
+		'Agriculture, Forestry and Fishing',
+		'Asset or Capital Management',
+		'Commercial Banking',
+		'Consulting Firm',
+		'Credit Rating Agencies',
+		'Education Services',
+		'Environmental/Life Sciences/Pharmaceutical',
+		'Financial Market Regulator',
+		'FinTech and Payments Processing',
         'Government',
         'Health Care',
         'Individual',

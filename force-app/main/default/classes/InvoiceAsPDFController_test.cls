@@ -57,7 +57,7 @@ public class InvoiceAsPDFController_test {
         Acc = new Account(Name = 'test');
         insert acc;
          
-        opp = new Opportunity(amount = 123,Name = 'Test',Eligible_for_Membership_Extension__c = true,company__c = 'Payment', accountId = acc.id,stageName = 'New Lead',Program__c = 'Print' ,closedate = system.today()+ 15, LEGACY_Purchase_Date__c  = system.today());        
+        opp = new Opportunity(amount = 123,Name = 'Test',Eligible_for_Membership_Extension__c = false,company__c = 'Payment', accountId = acc.id,stageName = 'New Lead',Program__c = 'Print' ,closedate = system.today()+ 15, LEGACY_Purchase_Date__c  = system.today());        
         insert opp;
         
         Schema.DescribeSObjectResult cfrSchema = Schema.SObjectType.Contract; 

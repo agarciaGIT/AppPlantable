@@ -18,10 +18,9 @@ public class IntegrationTriggerHandler {
                     }else{
                         methodToRecordIDSet.put(evt.Integration_Type__c,new Set<Id>{evt.Record_Id__c});
                     }
-                    if(evt.Integration_Type__c != 'ShipEdgeAdd' && evt.Integration_Type__c != 'ShipEdgeCancel'){
-                        Integration_Log__c log = createLogRecord(evt,'Success');
-                        logList.add(log);
-                    }
+                    
+                    Integration_Log__c log = createLogRecord(evt,'Success');
+                    logList.add(log);
                 }
             }
             //platform event bus
@@ -73,26 +72,12 @@ public class IntegrationTriggerHandler {
             ID jobID = System.enqueueJob(ebookQueue);
         }
         if(methodToRecordIDSet.containskey('FRREBookANDYardStick')){
-            WKT_Settings__mdt wkt = WKT_Settings__mdt.getInstance('ICBRR_Program');
-            provisionEBooks_Queueable ebookQueue = new provisionEBooks_Queueable('FRR',methodToRecordIDSet.get('FRREBookANDYardStick'),true,Integer.valueOf(wkt.Value__c));
+            provisionEBooks_Queueable ebookQueue = new provisionEBooks_Queueable('FRR',methodToRecordIDSet.get('FRREBookANDYardStick'),true,2737);
             ID jobID = System.enqueueJob(ebookQueue);
         }
         if(methodToRecordIDSet.containskey('FFREBook')){
-            WKT_Settings__mdt wkt = WKT_Settings__mdt.getInstance('FBR_Program');
-            provisionEBooks_Queueable ebookQueue = new provisionEBooks_Queueable('FFR',methodToRecordIDSet.get('FFREBook'),true,Integer.valueOf(wkt.Value__c));
+            provisionEBooks_Queueable ebookQueue = new provisionEBooks_Queueable('FFR',methodToRecordIDSet.get('FFREBook'),true,2560);
             ID jobID = System.enqueueJob(ebookQueue);
-        }
-        
-        if(methodToRecordIDSet.containskey('ShipEdgeAdd')){
-            system.debug('Check here');
-            ShipEdgeQueueableClass shipQueue = new ShipEdgeQueueableClass(methodToRecordIDSet.get('ShipEdgeAdd'),'AddOrder');
-            ID jobID = System.enqueueJob(shipQueue);
-        }
-        
-        if(methodToRecordIDSet.containskey('ShipEdgeCancel')){
-            system.debug('Check here');
-            ShipEdgeQueueableClass shipQueue = new ShipEdgeQueueableClass(methodToRecordIDSet.get('ShipEdgeCancel'),'CancelOrder');
-            ID jobID = System.enqueueJob(shipQueue);
         }
         
         if(!logList.isEmpty())

@@ -342,10 +342,12 @@ global without sharing class sfdcAppRemoter {
         return true;
     }
     
+    
     @RemoteAction
     public static string getSessionId() {
         return UserInfo.getSessionId();
     }
+    
     
     @RemoteAction
     public static void createON24EngagementHubRegistration(){
@@ -640,7 +642,7 @@ global without sharing class sfdcAppRemoter {
         public List < String  > allWebcastParticipantsMediaURLs { get; set; }
     } 
     
-    @RemoteAction
+     @RemoteAction
     public static GARP_BC_Webcasts.returnWebcastInformation getWebcastInformation(String webcastId){
         return GARP_BC_Webcasts.getWebcastInformation(webcastId);
     }
@@ -900,8 +902,7 @@ global without sharing class sfdcAppRemoter {
             RPT_Administration_Month__c,
             RPT_Administration_Year__c,
             RPT_Exam_Program__c,
-            RPT_Exam_Part__c,
-            Hide_Exam_Result__c
+            RPT_Exam_Part__c
             FROM Exam_Attempt__c 
             WHERE 
             Id = :examAttemptId AND 
@@ -1616,22 +1617,6 @@ global without sharing class sfdcAppRemoter {
         return EventRegistration.createContributorEventRegistration(objData);
     }    
     
-        /*
-    @RemoteAction
-    public static Registration.wrapperCreateWebcastRegistration createWebcastRegistration(TempAccount objData){
-    
-        String userId = UserInfo.getUserId();
-        String contactId = null;
-        List<User> lstUser = [Select u.Id,u.ContactId from User u where u.Id = :userId];
-        if( lstUser != null && lstUser.size() > 0 ) {
-            contactId = lstUser[0].ContactId;
-        }
-        
-        Registration.wrapperCreateWebcastRegistration wco = Registration.createWebcastRegistration(objData, contactId);    
-        return wco;
-    }
-    */
-    
     @RemoteAction
     public static GARP_BC_Webcasts.wrapperCreateWebcastRegistration createWebcastRegistration(TempAccount objData){
         String userId = UserInfo.getUserId();
@@ -1642,20 +1627,12 @@ global without sharing class sfdcAppRemoter {
         }
         GARP_BC_Webcasts.wrapperCreateWebcastRegistration wco = GARP_BC_Webcasts.createWebcastRegistration(objData, contactId);    
         return wco;
-    }          
-
-    @RemoteAction
-    public static createWebcastRegistrationFromMicrosites.Wrapper createWebcastRegistrationFromCalendar(String webcastId){
-        String userId = UserInfo.getUserId();
-        String contactId = null;
-        List<User> lstUser = [Select u.Id,u.ContactId from User u where u.Id = :userId];
-        if( lstUser != null && lstUser.size() > 0 ) {
-            contactId = lstUser[0].ContactId;
-        }
-        createWebcastRegistrationFromMicrosites.Wrapper wco = createWebcastRegistrationFromMicrosites.createWebcastRegistrationFromCalendar(contactId, webcastId);    
-        return wco;
     }
     
+    @RemoteAction
+    public static void createWebcastRegistrationFromCalendar(String webcastId){
+    
+    }
     
     @RemoteAction
     public static Id setLead(String email, String firstName, String LastName, String leadSource, String cta){
@@ -1689,8 +1666,9 @@ global without sharing class sfdcAppRemoter {
 
     @RemoteAction
     public static Map<String,Registration.wrapperProductInfo> getExamProductsTeams(String strExamName, String email, String teamCode) {            
-        return Registration.getProductInternal(strExamName, email, teamCode);
+        return Registration.getProductCodes1(strExamName, email);
     }
+
     
     @RemoteAction
     public static Map<String,Registration.wrapperProductInfo> getExamProducts(String strExamName, String email) {            
@@ -1971,33 +1949,7 @@ global without sharing class sfdcAppRemoter {
     
     @RemoteAction    
     public static String Charge(Id oppId,String cardMonth,String cardYear,String paymentType,String cardType,String cardSecurity,String cardNumber) {            
-        
-        List<Opportunity> lstOpp = [select id, Team_Registration__c from Opportunity where
-                                    Id = :oppId AND
-                                    Team_Registration__c != NULL AND
-                                    Team_Registration__r.Payment_Status__c = 'Paid' AND
-                                    Team_Registration__r.Start_Date__c <= TODAY AND Team_Registration__r.End_Date__c >= TODAY AND
-                                    Team_Registration__r.Exam_Type__c = 'FRR' AND Team_Registration__r.Discounted_Price__c = NULL AND
-                                    Team_Registration__r.Seats_Balance__c > 0
-                                   ];
-        if(!lstOpp.isEmpty()) {
-            ChargentSFA__Transaction__c trans = new ChargentSFA__Transaction__c();        
-            trans.ChargentSFA__Opportunity__c = lstOpp[0].Id;
-            trans.ChargentSFA__Amount__c = 0.00;
-            trans.ChargentSFA__Response_Message__c = 'Approved';
-            trans.ChargentSFA__Response_Status__c = 'Approved';
-            trans.ChargentSFA__Type__c = 'Charge';
-            trans.ChargentSFA__Gateway_Date__c =system.now();
-            
-            System.debug('free trans:' + trans);       
-            insert trans;     
-            
-            return 'Approved';
-        } else {
-            return Registration.Charge(oppId, cardMonth, cardYear, paymentType, cardType, cardSecurity, cardNumber);
-        }
-        
-        
+        return Registration.Charge(oppId, cardMonth, cardYear, paymentType, cardType, cardSecurity, cardNumber);
     }
     
     @RemoteAction
@@ -2068,7 +2020,7 @@ global without sharing class sfdcAppRemoter {
             Content__r.Event_End_Date_Time__c,
             Content__r.Form__r.Form_Name__c,
             ON24_URL__c,
-            ON24_Event_Id__c,          
+            ON24_Event_Id__c,
             Virtual_Start_DateTime__c,
             Virtual_End_DateTime__c,
             Virtual_Meeting_URL__c,
@@ -2466,8 +2418,8 @@ global without sharing class sfdcAppRemoter {
             
             String contactId = lstUser[0].ContactId;
             
-            List<Contact> srcContactlst = [SELECT Id, Name, FirstName, LastName, Email_URL__c, Email_WebSite_URL__c, Email, MailingCity, MailingCountry, MailingPostalCode, MailingState, MailingStreet, AccountId, GARP_Member_ID__c, Membership_Type__c, GARP_Directory_Connect_Send_Count__c, KPI_FRM_Certified__c, KPI_ERP_Certified__c, KPI_Membership_Payment_Status__c  FROM Contact WHERE Id = :contactId];
-            List<Contact> rcptContactlst = [SELECT Id, Name, FirstName, LastName, Email_URL__c, Email_WebSite_URL__c, Email, MailingCity, MailingCountry, MailingPostalCode, MailingState, MailingStreet, AccountId, GARP_Member_ID__c, Membership_Type__c, GARP_Directory_Connect_Recieve_Count__c, KPI_FRM_Certified__c, KPI_ERP_Certified__c, GARP_Directory_Invite_Opt_Out__c, GARP_Directory_Connect_Feature__c, KPI_Membership_Payment_Status__c FROM Contact WHERE Id = :recptContactId];
+            List<Contact> srcContactlst = [SELECT Id, Name, FirstName, LastName, Email_URL__c, Email_WebSite_URL__c, Email, MailingCity, MailingCountry, MailingPostalCode, MailingState, MailingStreet, AccountId, GARP_ID__c, Membership_Type__c, GARP_Directory_Connect_Send_Count__c, KPI_FRM_Certified__c, KPI_ERP_Certified__c, KPI_Membership_Payment_Status__c  FROM Contact WHERE Id = :contactId];
+            List<Contact> rcptContactlst = [SELECT Id, Name, FirstName, LastName, Email_URL__c, Email_WebSite_URL__c, Email, MailingCity, MailingCountry, MailingPostalCode, MailingState, MailingStreet, AccountId, GARP_ID__c, Membership_Type__c, GARP_Directory_Connect_Recieve_Count__c, KPI_FRM_Certified__c, KPI_ERP_Certified__c, GARP_Directory_Invite_Opt_Out__c, GARP_Directory_Connect_Feature__c, KPI_Membership_Payment_Status__c FROM Contact WHERE Id = :recptContactId];
             
             //System.assert(false, 'BOOM!'+ srcContactlst);
             
@@ -2479,14 +2431,14 @@ global without sharing class sfdcAppRemoter {
                 // New Rules 2019
                 if(templateName == 'Directory_Connect_Invite') {
                     
-                    if(srcContact.Membership_Type__c != 'Individual' || srcContact.KPI_Membership_Payment_Status__c != 'In Good Standing' || 
-                       rcptContact.GARP_Directory_Invite_Opt_Out__c == true) {
-                            throw new applicationException('Unauthorized Access1');
+                    if(srcContact.Membership_Type__c != 'Individual' || srcContact.KPI_Membership_Payment_Status__c != 'In Good Standing' || rcptContact.GARP_Directory_Invite_Opt_Out__c == true) {
+                        throw new applicationException('Unauthorized Access');
                     }
                     
-                } else if(srcContact.Membership_Type__c != 'Individual' || srcContact.KPI_Membership_Payment_Status__c != 'In Good Standing' ||
-                          rcptContact.GARP_Directory_Connect_Feature__c == false) {
-                              throw new applicationException('Unauthorized Access2');
+                } else if((srcContact.KPI_FRM_Certified__c == false && srcContact.KPI_ERP_Certified__c == false) ||             
+                          (rcptContact.KPI_FRM_Certified__c == false && rcptContact.KPI_ERP_Certified__c == false) ||
+                          (rcptContact.GARP_Directory_Connect_Feature__c == false)) {
+                              throw new applicationException('Unauthorized Access');
                           }
                 
                 
@@ -2501,7 +2453,7 @@ global without sharing class sfdcAppRemoter {
                 
                 system.debug('* * * HtmlValue Before ...'+ htmlBody);
                 
-                htmlBody = htmlBody.replace('{!Contact.GARP_ID__c}', rcptContact.GARP_Member_ID__c);
+                htmlBody = htmlBody.replace('{!Contact.GARP_ID__c}', rcptContact.GARP_ID__c);
                 htmlBody = htmlBody.replace('{!Contact.FirstName}', rcptContact.FirstName);
                 htmlBody = htmlBody.replace('{!Contact.LastName}', rcptContact.LastName);
                 
@@ -2525,7 +2477,7 @@ global without sharing class sfdcAppRemoter {
                 
                 system.debug('* * * plainBody Before ...'+ plainBody);
                 
-                plainBody = plainBody.replace('{!Contact.GARP_ID__c}', rcptContact.GARP_Member_ID__c);
+                plainBody = plainBody.replace('{!Contact.GARP_ID__c}', rcptContact.GARP_ID__c);
                 plainBody = plainBody.replace('{!Contact.FirstName}', rcptContact.FirstName);
                 plainBody = plainBody.replace('{!Contact.LastName}', rcptContact.LastName);
                 
@@ -2624,7 +2576,7 @@ global without sharing class sfdcAppRemoter {
             }
             
             //String likeClause = searchText;
-            String query = 'SELECT Id, Name, Email, MailingCity, MailingState, MailingPostalCode, MailingCountry, KPI_CPE_Current_Cycle__c, KPI_CPE_Last_Completed_Cycle__c, Job_Function__c, AccountId, GARP_ID__c, Membership_Type__c, Area_of_Concentration__c, GARP_Directory_Opt_In__c, GARP_Directory_Invite_Opt_Out__c, GARP_Dir_Privacy_Additional_Detail__c, GARP_Dir_Privacy_Job_Information__c, GARP_Dir_Privacy_Prof_Background__c, GARP_Directory_Connect_Feature__c, KPI_Membership_Payment_Status__c, KPI_FRM_Certified__c, KPI_FRM_Certified_Year__c, KPI_ERP_Certified__c, KPI_ERP_Certified_Year__c, KPI_Membership_Since__c, KPI_CPE_Requirement_Status__c, Professional_Designation_CA__c, Professional_Designation_CFA__c, Professional_Designation_CMA__c, Professional_Designation_CPA__c, Professional_Designation_Other__c, Other_Qualifications__c, Professional_Designation_PMP__c, Professional_Designation_ACCA__c, Company_Type__c, Corporate_Title__c, Company__c FROM Contact';
+            String query = 'SELECT Id, Name, Email, MailingCity, MailingState, MailingPostalCode, MailingCountry, KPI_CPE_Current_Cycle__c, KPI_CPE_Last_Completed_Cycle__c, Job_Function__c, AccountId, GARP_ID__c, Membership_Type__c, Area_of_Concentration__c, GARP_Directory_Opt_In__c, GARP_Directory_Invite_Opt_Out__c, GARP_Dir_Privacy_Additional_Detail__c, GARP_Dir_Privacy_Job_Information__c, GARP_Dir_Privacy_Prof_Background__c, GARP_Directory_Connect_Feature__c, KPI_Membership_Payment_Status__c, KPI_FRM_Certified__c, KPI_FRM_Certified_Year__c, KPI_ERP_Certified__c, KPI_ERP_Certified_Year__c, KPI_Membership_Since__c, KPI_CPE_Requirement_Status__c, Professional_Designation_CA__c, Professional_Designation_CFA__c, Professional_Designation_CMA__c, Professional_Designation_CPA__c, Professional_Designation_Other__c, Other_Qualificiations__c, Professional_Designation_PMP__c, Professional_Designation_ACCA__c, Company_Type__c, Corporate_Title__c, Company__c FROM Contact';
             String whereClause = 'WHERE GARP_Directory_Opt_In__c = true and (KPI_FRM_Certified__c = true or KPI_ERP_Certified__c = true)';
             if(industries != '') {
                 whereClause +=  ' and Area_of_Concentration__c in (' + industriesInClause + ')'; 
@@ -3335,7 +3287,13 @@ return lstExamAttempt;
                     
                     //opp.Product_Names__c = '';
                     //opp.Total_Package_Weight__c = 0;
+                    String shipProd;
                     if(foundProd != null) {
+                        
+                        if (foundProd.Product2.ProductCode != null && foundProd.Product2.ProductCode == 'SHIP'){
+                            system.debug('Ship!: '+ foundProd);
+                            continue;
+                        }
                         
                         if(foundProd.Product2.FRM_Exam__c==true) {
                             opp.Books_FRM_Practice_Exams__c=true;
@@ -3347,38 +3305,75 @@ return lstExamAttempt;
                         
                         if(foundProd.Product2.FRM_1_Book__c==true) {
                             opp.Books_FRM_I__c=true;
-                            if(foundProd.Product2.Weight__c > 0)
+                            if(foundProd.Product2.Weight__c > 0) {
                                 opp.Has_Books__c =true;
+                                shipProd='SHIPFRM1:4999';
+                            }
+                                
                         }
                         
                         if(foundProd.Product2.FRM_2_Book__c==true) {
                             opp.Books_FRM_II__c=true;
-                            if(foundProd.Product2.Weight__c > 0)
+                            if(foundProd.Product2.Weight__c > 0) {
                                 opp.Has_Books__c =true;
+                                shipProd='SHIPFRM2:4999';
+                            }
+                                
                         }
                         
-                        if(foundProd.Product2.ERP_Study_Center__c==true) {
-                            opp.Books_ERP__c=true;
-                            if(foundProd.Product2.Weight__c > 0)
-                                opp.Has_Books__c =true;
-                        }
+                        //if(foundProd.Product2.ERP_Study_Center__c==true) {
+                        //    opp.Books_ERP__c=true;
+                        //    if(foundProd.Product2.Weight__c > 0) {
+                        //        opp.Has_Books__c =true;
+                        //        shipProd='SHIPFRM1:4999';
+                        //    }        
+                        //}
                         
                         if(foundProd.Product2.ICBRR_Study_Center__c==true) {
                             opp.Books_ICBRR__c=true;
-                            if(foundProd.Product2.Weight__c > 0)
+                            if(foundProd.Product2.Weight__c > 0) {
                                 opp.Has_Books__c =true;
+                                shipProd='SHIPFRR:4999';
+                            }
+                                
                             
                         }
                         
                         if(foundProd.Product2.FBR_Study_Center__c==true) {
                             opp.Books_FBR__c=true;
-                            if(foundProd.Product2.Weight__c > 0)                            
+                            if(foundProd.Product2.Weight__c > 0) {
                                 opp.Has_Books__c =true;
+                                shipProd='SHIPFFR:4999';
+                            }                           
+                                
                         }
                         
                         if(foundProd.Product2.SCR_Study_Center__c == true) {
-                            if(foundProd.Product2.Weight__c > 0)
+                            if(foundProd.Product2.Weight__c > 0) {
                                 opp.Has_Books__c =true;
+                                shipProd='SHIPSCR:4999';
+                            }
+                                
+                        }
+                        
+                        system.debug('shipProd: '+ shipProd);
+                        
+                        if(shipProd!=NULL) {
+                            PricebookEntry fndShipProd = mapPrice.get(shipProd);
+                            system.debug('fndShipProd: '+ fndShipProd);
+                            if(fndShipProd != NULL) {
+                                OpportunityLineItem oli = new OpportunityLineItem( 
+                                    OpportunityId = opp.Id,
+                                    PricebookEntryId    = fndShipProd.Id,
+                                    Product2Id          = fndShipProd.Product2Id,
+                                    UnitPrice           = amtShip / numShipProds,
+                                    Quantity            = 1,
+                                    Description         = fndShipProd.Product2.Name
+                                );
+                                system.debug('ship oli: '+ oli);
+                                lstOppLineItems.add(oli);
+                            }
+                            
                         }
                         
                         OpportunityLineItem oppLineItem = new OpportunityLineItem();
@@ -4347,7 +4342,10 @@ return lstExamAttempt;
                 AccountId, GARP_ID__c, 
                 Membership_Type__c,
                 Name_As_it_Appears_On_ID__c, 
-                ID_Number__c, ID_Type__c, OSTA_ID_Location__c,
+                Job_Function__c,
+                Risk_Specialty__c,
+                Company__c,                 
+                ID_Number__c, ID_Type__c, 
                 GARP_Directory_Opt_In__c, 
                 First_Name_as_it_Appears_on_ID__c,
                 Middle_Name_as_it_Appears_on_ID__c,
@@ -4377,13 +4375,7 @@ return lstExamAttempt;
                 KPI_Chapter_Committee_Member__c,
                 KPI_Item_Writer__c,
                 KPI_Event_Speaker__c,
-                GARP_Business_Relationship__c, 
-                
-                Job_Function__c,
-                Risk_Specialty__c,
-                Area_of_Concentration__c, 
-                Corporate_Title__c, 
-                Company__c,                 
+                GARP_Business_Relationship__c,     
                 Professional_Designation_CA__c,
                 Professional_Designation_CFA__c,
                 Professional_Designation_CMA__c, 
@@ -4392,20 +4384,8 @@ return lstExamAttempt;
                 Professional_Designation_ACCA__c,
                 Professional_Designation_Other__c, 
                 Other_Qualifications__c, 
-                Years_of_Experience__c, 
-                Currently_in_School__c, 
-                Currently_Working__c,
-                Currently_in_School_Status__c,
-                Currently_Working_Status__c, 
-                School_Name__c, 
-                Degree_Program_Name__c, 
-                How_Did_You_Hear_About_Us__c,
-                How_Did_You_Hear_About_Us_Other__c,
-                Industry_Working_Year__c,
-                Risk_Management_Working_Year__c,
-                Highest_Degree__c,
-                Expected_Graduation_Date__c,
-                Expected_Graduation_Month__c,
+                Area_of_Concentration__c, 
+                Corporate_Title__c, 
                 GARP_Directory_Invite_Opt_Out__c,
                 GARP_Directory_Connect_Feature__c,
                 GARP_Dir_Privacy_Additional_Detail__c,
@@ -4414,6 +4394,13 @@ return lstExamAttempt;
                 Exam_Prep_Provider_Outreach__c,
                 KPI_FRM_Resume_Certificate_Sent_Date__c, 
                 KPI_ERP_Resume_Certificate_Sent_Date__c,
+                Years_of_Experience__c, 
+                Currently_in_School__c, 
+                Currently_Working__c,
+                Currently_in_School_Status__c,
+                Currently_Working_Status__c, 
+                School_Name__c, 
+                Degree_Program_Name__c, 
                 KPI_GARP_Committee_Member__c, 
                 Has_HL_Communities_Access__c,
                 GBI_Participant__c,
@@ -4427,6 +4414,8 @@ return lstExamAttempt;
                 GT_Account__c,
                 Block_Communities_Access__c,
                 Experience__c,
+                How_Did_You_Hear_About_Us__c,
+                How_Did_You_Hear_About_Us_Other__c,
                 Ambassador__c,
                 Student_Ambassador__c,
                 Corporate_Ambassador__c,
@@ -4438,18 +4427,18 @@ return lstExamAttempt;
                 Last_Date_Subscription_Changed__c,
                 SCR_Updates__c,
                 Can_Vote_on_Board__c,
-                OSTA_Street__c,
-                OSTA_Recipient_Name__c,
                 OSTA_ProvinceTerritory__c,
-                OSTA_Phone_Number__c,
                 OSTA_City__c,
+                OSTA_District_Country__c,
+                OSTA_Street__c,
                 OSTA_Building_Village__c,
-                OSTA_District_Country__c
+                OSTA_Recipient_Name__c,
+                OSTA_Phone_Number__c
                 FROM Contact 
                 WHERE Id = :contactId
             ];
             
-            rd.examAlerts = MemberNotificationClass.getMemberNotificationsExamAlerts(contactId);
+            rd.examAlerts = MemberNotificationClass.getMemberNotifications(contactId);
             System.debug('examAlerts:' + rd.examAlerts);
             
             if( lstContact != null && lstContact.size() > 0 ) {
@@ -4494,7 +4483,7 @@ return lstExamAttempt;
                 
                 List<Account> lstAccount = [
                     SELECT Id, Name, BillingCity, BillingCountry, BillingPostalCode, BillingState, BillingStreet, Billing_Address_Company__c, Phone,
-                    RecordType.Name , Block_Purchases_All_Types__c, Block_Purchases_Except_Wire__c
+                    RecordType.Name 
                     FROM Account 
                     WHERE Id = :accountId
                 ];
@@ -4503,7 +4492,9 @@ return lstExamAttempt;
                     
                     rd.accountData = lstAccount;
                     
-                    List<Experience__c> lstExperience = [SELECT Id,Start_Date__c, Name, Company__c,Title__c,Company__r.Name,CompanyOther__c, Type_of_Experience__c,Job_Description__c,End_Date__c,Manager_Name__c from Experience__c  where Contact__c = :contactId AND Status__c != 'To Be Deleted'];
+                    List<Experience__c> lstExperience = [SELECT Id,Start_Date__c, Name, Company__c,Title__c,Company__r.Name,CompanyOther__c, 
+                                                         Type_of_Experience__c,Job_Description__c,End_Date__c,Manager_Name__c 
+                                                         from Experience__c where Status__c != 'To Be Deleted' AND Contact__c = :contactId];
                     
                     rd.experienceData = new List<Experience>();
                     for(Experience__c exp : lstExperience){
@@ -5055,7 +5046,6 @@ rd.examRoomData = lstRoom;
                         Chapter_Meeting__r.Chapter_Meeting_Location__r.Address_Postal_Code__c 
                         FROM Chapter_Meeting_Registration__c 
                         WHERE Contact__c = :contactId
-                        AND Status__c != 'Cancelled'
                     ];
                     
                     rd.chapterMeetingRegistrationData = lstChapterMeetingRegistrations;     
@@ -5810,7 +5800,7 @@ rd.examRoomData = lstRoom;
         List<BOT_Compliance_Data_Set__c> lstComplianceData = [select Id, Name, Contact__c , Date_Signed__c, Vote__c from BOT_Compliance_Data_Set__c where Contact__c = :ContactId];
         return lstComplianceData;
     }
-    
+
     @RemoteAction
     public static Response.Detail submitProfileData(List<Experience> experiences, TempAccount tempAcc,string contactId,string progReqId) {
     
@@ -5927,7 +5917,7 @@ rd.examRoomData = lstRoom;
         }
   
     }   
-    
+
     global class Experience {
         global string managerName;
         global string jobTitle;

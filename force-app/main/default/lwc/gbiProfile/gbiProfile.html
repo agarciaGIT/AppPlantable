@@ -1,0 +1,130 @@
+<template>
+    <template if:true={isLoading}>
+        <div class="loader"></div>
+    </template>
+    <div class="page-content-wrapper">
+        <div id="mainspin" style="min-height:200px">
+        <div data-autoscroll="false" data-ui-view="" class="scale-fade ng-scope"><div class="full-width-title ng-scope">
+        <span>
+            <h2>Profile</h2>
+        </span>
+    </div>
+    <div class="row">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-9 col-lg-10 gbi-profile-main">
+                    <div class="gbi-profile-section">
+                        <div class="clearfix gbi-user-card">
+                            <div class="gbi-profile-image-widget">   
+                                <div id="formArea">
+                                    <div>
+                                        <!--<figure class="gbi-profile-image">
+                                            <div class="content img-circle gbi-profile-image__content" style="background-image: url('/resource/1647877728000/graApp/img/emptyhead.jpg'); background-size: cover;">
+                                            </div>
+                                        </figure>-->
+                                        <img src={imageUrl} class="img-circle"></img>
+                                        <template if:false={photoSectionVisible}>
+                                            <div class="gbi-small-text">
+                                                <a onclick={handlePhoto}>Update/Edit Photo</a>
+                                            </div>
+                                        </template>    
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="gbi-profile-cv">
+                                <h3 class="gbi-profile-cv__name">{contactName}</h3>
+                                <div>{contactTitle}</div>
+                                <div>{contactEmail}</div>
+                                <div>Tel: {contactPhone}</div>
+                                <div>Tel: {otherPhone}</div>
+                                <a class="gbi-profile-cv__edit gbi-small-text" onclick={handleEditInfo}>Edit Information</a>
+                            </div>
+                        </div>
+                        <template if:true={editSectionVisible}>
+                            <div class="gbi-profile-edit">
+                                <form name="userForm" class="css-form">
+                                    <div>
+                                        <div class="form-group">
+                                            <span class="in-input">First Name</span>
+                                            <input class="form-control form-control-wide" value={firstName} name="firstName" id="firstName" required="" maxlength="80" onchange={handleFormInputChange}>
+                                        </div>
+                                        <div class="form-group">
+                                            <span class="in-input">Last Name</span>
+                                            <input class="form-control form-control-wide" value={lastName} name="lastName" id="lastName" required="" maxlength="80" onchange={handleFormInputChange}>
+                                        </div>
+                                        <div class="form-group">
+                                            <span class="in-input">Title</span>
+                                            <input class="form-control form-control-wide" value={title} name="title" id="title" required="" maxlength="80" onchange={handleFormInputChange}>
+                                        </div>
+                                        <div class="form-group">
+                                            <span class="in-input">Phone Number</span>
+                                            <input class="form-control form-control-wide" value={phone} name="phone" id="phone" required="" maxlength="80" onchange={handleFormInputChange}>
+                                        </div>
+                                        <div class="form-group">
+                                            <span class="in-input">Secondary Phone Number</span>
+                                            <input class="form-control form-control-wide" value={altPhone} name="secondaryphone" id="secondaryphone" required="" maxlength="80" onchange={handleFormInputChange}>
+                                        </div>
+                                        <div class="form-group">
+                                            <span class="in-input">Email</span>
+                                            <input class="form-control form-control-wide" value={email} name="email" id="email" required="" maxlength="80" onchange={handleFormInputChange}>
+                                        </div>
+                                        <div style="text-align: right;">
+                                            <a  class="btn btn-secondary" onclick={handleCancel}><span class="angular-ripple animate" style="width: 156px;height: 156px;left: -31.4792px;top: -57.9375px;"></span>Cancel</a>
+                                            <a  class="btn" onclick={handleSave}><span class=" angular-ripple animate" style="width: 142px; height: 142px; left: -20.9688px; top: -36.9375px;"></span>Save</a>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </template>
+                        <template if:true={photoSectionVisible}>
+                            <div class="gbi-profile-image-edit">
+                                <div>
+                                    <div id="fieldSpin"></div>
+                                    <div class="gbi-file-controls">
+                                        <input type="file" 
+                                        accept="image/png, image/jpeg, image/jpg" onchange={onChangePhoto}></lightning-input>
+                                        <br>
+                                        <a name="upload" onclick={uploadPhoto}>Upload</a> |
+                                        <a name="remove" onclick={removePhoto}>Remove</a> |
+                                        <a name="done" onclick={donePhoto}>Done</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>    
+                        <div class="gbi-profile-edit">
+                            <form name="userForm" class="css-form" novalidate="">
+                            </form>
+                        </div>
+                        <div class="gbi-profile-bio">
+                            <div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="gbi-profile-section">
+                        <h3 class="gbi-profile-section__header">Representatives <template if:true={detailSectionVisible}> from {contactName} </template></h3>
+                        <div class="gbi-participant-list clearfix">
+                            <template if:true={detailSectionVisible}>
+                                <img src={imageUrl} class="mini-img-circle"></img>
+                                <div class="gbi-cv">
+                                    <span class="gbi-cv__name ng-binding">{contactName}</span>
+                                </div>
+                            </template>    
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-lg-2 gbi-profile-sidebar">
+                    <div class="gbi-profile-section">
+                        <h3 class="gbi-profile-section__header--sidebar">My Studies</h3>
+                        <ul class="gbi-sidebar-study-list">
+                            <template for:each={studies} for:item="study">
+                                <li key={study.Id}><a>{study.Name}</a></li>
+                            </template>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div></div>
+    </div>
+    </div>
+</template>

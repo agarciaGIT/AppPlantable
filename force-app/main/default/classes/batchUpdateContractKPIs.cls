@@ -77,6 +77,7 @@ global class batchUpdateContractKPIs implements Database.Batchable<sObject>{
     
          }
         
+        contractSyncUtil.bRecursive = True;
         update(updateContracts);
                 
     }

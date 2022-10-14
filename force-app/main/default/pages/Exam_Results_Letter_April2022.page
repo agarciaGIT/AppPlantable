@@ -23,8 +23,6 @@
              <div>
                 <span>GARP ID: {! memberGARPId }</span>
             </div>
-
-            <br/><br/>
             <div>
                 Dear {! candidateName }, <br/>
             </div>
@@ -40,14 +38,22 @@
                 <apex:outputPanel rendered="{! pass }">
                     <p><b>Congratulations! You passed the Sustainability and Climate Risk (SCR™) Exam!</b></p>
                     <p>
-                        On behalf of GARP and the GARP Board of Trustees, we congratulate you on the special achievement of earning your SCR Certificate. Because climate risk is still an emerging area of risk management, the SCR distinction makes you one of the area’s first subject matter experts, joining you with an elite network of thought leaders.  
+						On behalf of GARP and the GARP Board of Trustees, we congratulate you on the special achievement of earning your SCR Certificate.  Because climate risk is still an emerging area of risk management, you now join an elite network of thought leaders.  For a detailed analysis or your results, please log in to garp.com and go to “My Programs.”                      
+                    </p>
+                    <p><b>Stay Current</b></p>
+                    <p>
+                        SCR Certificate holders are strongly advised to participate in GARP’s Continuing Professional Development (CPD) program, which offers access to a broad range of accessible learning opportunities as well as the tools you need to track and document your activities.  The program is a great opportunity to stay up to date with industry trends and demonstrate commitment to the profession.               
+                    </p>
+                    <p><b>Promote Your Achievement</b></p>
+                    <p>
+                        In recognition of your achievement, GARP has issued you a digital badge which we encourage you to share on your favorite professional or social networks, blog, or website.  The badge will validate your achievement, as well as emphasize your knowledge and skills to employers, recruiters, and peers. To claim your badge, visit the “My Programs” section of your GARP portal, click "Share on LinkedIn" and follow the step-by-step instructions on how to properly display your status as an SCR Certificate holder.
+                    </p>
+                    <p><b>Volunteer to Support GARP and the Sustainability and Climate Risk Community</b></p>
+                    <p>
+						GARP works hard to keep pace with issues and trends in sustainability and climate risk, and to produce SCR examinations that effectively assess the knowledge and skills required of professionals dealing with sustainability and climate risk issues.  We achieve this, in part, through the volunteer efforts of professionals like you.  Volunteer work is rewarded with CPD credit and is a great way to network with other SCR Certificate holders. If you would like explore volunteer opportunities in support of the SCR program, please complete this <a href="https://survey.alchemer.com/s3/6787288/Volunteer-Survey" class="footnote-link">survey</a>                   
                     </p>
                     <p>
-                        For a detailed analysis of your results, please log in to garp.com and go to “My Programs.”
-                        SCR Certificate holders are also strongly advised to participate in GARP’s Continuing Professional Development (CPD) program, which offers access to a broad range of accessible learning opportunities as well as the tools you need to track and document your activities. While participation in CPD is voluntary, the program is a great opportunity to stay up to date with industry trends and demonstrate commitment to the profession. 
-                    </p>
-                    <p>
-                        We wish you success in your risk management career.
+						Again, congratulations on your achievement, and welcome to the SCR community!                  
                     </p>
                 </apex:outputPanel>
                 
@@ -76,7 +82,6 @@
                             <div id="sig1" style="float:left;">
                                 <apex:image style="height:80px; width:auto;" url="{!envPath}/img/Bill_May_signature.jpg" alt="Sig1" /><br/>
                                 William May<br/>
-                                Senior Vice President<br/>
                                 Global Head of Certifications and Educational Programs<br/>
                             </div>
                         </apex:outputPanel>

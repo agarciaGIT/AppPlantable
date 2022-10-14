@@ -1,4 +1,3 @@
-@isTest
 public class TestDataFactory {
     public static Boolean oneActive = True;
     
@@ -124,7 +123,7 @@ record.Active__c = false;*/
         List<Exam__c> results = new List<Exam__c>();
         Integer part=1;
         //String[] exams=new String[]{'ICBRR','ERP','FRM Part 1','FRM Part 2','FRM Full Program','Icbrr Part I','Icbrr Part II','ERP Exam Part I','ERP Exam Part II','SCR'};        
-        String[] exams=new String[]{'SCR','ERP Part I','ERP Part II','FRM Part 2','SCR','SCR','SCR','SCR','SCR','SCR','FRM Part 1'};        
+        String[] exams=new String[]{'SCR','ERP Part I','ERP Part II','FRM Part 2','SCR','ICBRR','SCR','SCR','SCR','SCR','FRM Part 1'};        
             for (Integer counter = 0; counter < numRecords; counter++) {
                 Integer randomNumber = Integer.valueof((Math.random() * 100));
                 String randomString = String.valueof(randomNumber);
@@ -201,8 +200,6 @@ record.Active__c = false;*/
             record.Renew_Membership__c=false;
             //record.Institutional_Sale_Stage__c='Draft';
             record.Institutional_Sale__c=false;
-            record.Frm1__c=false;
-            record.Erp1__c=true;
             //record.Exam_Registration_Modification__c='test';
             results.add(record);                                   
         }
@@ -239,7 +236,6 @@ record.Active__c = false;*/
             record.CustomerSignedId=contactresults[counter].id;
             record.Eligible_For_Scr_Discount_Date__c = System.Today().addMonths(12);
             record.Eligible_For_Scr_Discount__c = True;
-            record.StartDate = system.today();
             //record.Status = 'Expired';
             results.add(record);
         }
@@ -313,7 +309,6 @@ record.Active__c = false;*/
             record.ATA_Cert_id__c = 'Test'+counter;
             record.ATA_Cert_Type__c = 'TestType'+counter;
             record.ATA_Name_as_it_appears_on_ID__c = 'Test User';
-            //record.Other_Exam_Registrations__c=NULL;
             //record.ATA_region_name__c = 'null';
             //record.Exam_Administration__c = examAdminResults[counter].id;
             record.Exam_Administration__c = examPartResults[counter].Exam_Administration__c;
@@ -535,12 +530,11 @@ record.Active__c = false;*/
         return results;
     }
     
-    public static List<eBook_Key__c> createEbookKey(Integer numRecords,List<Opportunity>  OppResults){
+    public static List<eBook_Key__c> createEbookKey(Integer numRecords){
         List<eBook_Key__c> results=new List<eBook_Key__c>();
         for(Integer counter=0; counter < numRecords; counter++){
             eBook_Key__c record=new eBook_Key__c();
             record.Name= 'Test Key'+counter;
-            record.Opportunity__c = OppResults[counter].id;
             record.Key__c='23424refef1'+counter;
             record.Type__c = 'ERP Exam Part I';
             record.Access_Duration_in_Months__c=36;
@@ -552,21 +546,14 @@ record.Active__c = false;*/
     public static List<Candidate_Requirement__c> createCandidateCommitment(Integer numRecords,List<Opportunity> OppResults,List<Contract> contractResults){
         
         String[] recordtype = new String[]{'Exam','Job Experience','Attest','CPE'};
-        String[] exam = new String[]{'ERP','FRM Part I','FRM Part II','FRM Full','ICBRR Part I',
-            'ICBRR Part II','ICBRR,FBR','ERP Part I','ERP Part II'};
             List<Candidate_Requirement__c> results=new List<Candidate_Requirement__c>();
         Integer recordtypecounter = 0;
-        Integer examcounter=0;
         for(Integer counter=0; counter < numRecords ; counter ++){
             Candidate_Requirement__c record=new Candidate_Requirement__c();
             record.Candidate_Commitment__c = contractResults[counter].id;
             record.name = 'ERP1 test'+counter;   	
             record.Date_of_Completion__c = system.today() + 30+counter;
             record.Status__c = 'completed'; 
-             if(examcounter == 8){
-                examcounter = 0;
-            }
-            record.Exam__c=exam[examcounter];
             record.Certificate_Sent_Date__c=  system.today() ;
             
             if(recordtypecounter == 4){
@@ -574,7 +561,6 @@ record.Active__c = false;*/
             }
             record.RecordTypeId=RecordTypeHelper.GetRecordTypeId('Candidate_Requirement__c',recordtype[recordtypecounter]);
             recordtypecounter ++;
-            examcounter ++;
             results.add(record);
         }
         return results;	
@@ -634,7 +620,7 @@ record.Active__c = false;*/
             record.Opportunity__c = oppResults[0].id;
             record.event__C = eventResults[counter].id;
 			//record.Opportunity_Method_of_payment__c='test';
-			record.Status__c='Registered';
+			//record.Status__c='Registered';
             results.add(record);
         }
         return results;

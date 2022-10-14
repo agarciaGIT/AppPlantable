@@ -163,10 +163,6 @@ public class GARP_MS_MemberProfile {
     public static Boolean setMemberProfile(memberProfileUpdate profileUpdate){        
 		return GARP_BC_MemberProfile.setMemberProfile(profileUpdate);
     }
-
-    public static Boolean setMemberEmail(memberProfileUpdate profileUpdate){        
-		return GARP_BC_MemberProfile.setMemberEmail(profileUpdate);
-    }
     
     public static List<InstitutionSearchResult> searchInstitutions(String searchTerm, String institutionType) {
         return GARP_BC_MemberProfile.searchInstitutions(searchTerm, InstitutionType);

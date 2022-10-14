@@ -313,7 +313,7 @@ public class FBRICBRUtils
         System.debug('mapRates:' + mapRates);
         System.debug('mapDiscountRates:' + mapDiscountRates);
         
-        dTotalAmount = createOppLineItems(oppRecord.Id,mapProdDetails, mapRates, mapDiscountRates, objContact.Id, objData);
+        dTotalAmount = createOppLineItems(oppRecord.Id,mapProdDetails, mapRates, mapDiscountRates, objContact.Id);
         
         //Id paymentId = createPaymentDetails(oppRecord.Id,objContact.Id,oppRecord.AccountId);
         createExamAttempts(mapProdDetails,objContact.Id,oppRecord.AccountId,oppRecord.Id,true);
@@ -383,17 +383,6 @@ public class FBRICBRUtils
                 opp.Institutional_Sale__c = true;
                 opp.Inst_Sale_Opp__c = vbord.bord.oppData[0].Id;
             }
-            
-            if(objData.teamCode != NULL) {
-                Team_Registration__c teamReg;
-                LIST<Team_Registration__c> lstTeamRates = [select id, Discounted_Price__c, Attestation_Required__c, Attestation_Copy__c
-                                                           from Team_Registration__c where Payment_Status__c = 'Paid' AND Access_Code__c = :objData.teamCode];
-                System.debug('lstTeamRates:' + lstTeamRates);
-                if(!lstTeamRates.isEmpty()) {
-                	opp.Team_Registration__c = lstTeamRates[0].Id;    
-                }
-                
-            }
             insert opp;
             return opp;
         }catch(exception ex){
@@ -403,7 +392,7 @@ public class FBRICBRUtils
         
     }
     
-    public static decimal createOppLineItems(Id oppId,Map<String,String[]> mapProdDetails, MAP<String,Product_Rate_Offering__c> mapRates, MAP<String,Product_Rate_Offering__c> mapDiscountRates, String contactId, TempAccount objData){
+    public static decimal createOppLineItems(Id oppId,Map<String,String[]> mapProdDetails, MAP<String,Product_Rate_Offering__c> mapRates, MAP<String,Product_Rate_Offering__c> mapDiscountRates, String contactId){
         if(mapProdDetails == null) return null;
         Decimal dExamFee = 0;
         dTotalPrice = 0;
@@ -422,30 +411,6 @@ public class FBRICBRUtils
         }
         System.debug('productCodes:' + productCodes); 
         System.debug('glCodes:' + glCodes); 
-        
-		// Team Registrations
-		Team_Registration__c teamRegUsed;
-        String teamCode = objData.teamCode;
-        Team_Registration__c teamReg;
-        LIST<Team_Registration__c> lstTeamRates = [select id, Discounted_Price__c, Attestation_Required__c, Attestation_Copy__c
-                                                     from Team_Registration__c where Payment_Status__c = 'Paid' AND Access_Code__c = :teamCode];
-        System.debug('lstTeamRates:' + lstTeamRates);
-        
-        // Team Registration Custom Settings
-        Map<String, Team_Registration_Products__c> mapCustTeamProds = Team_Registration_Products__c.getAll();
-        Map<String, Team_Registration_Products__c> mapTeamProds = new Map<String, Team_Registration_Products__c>();            
-        if(!lstTeamRates.isEmpty()) {
-            teamReg = lstTeamRates[0];
-            
-            if(mapCustTeamProds != NULL) {
-                for(Team_Registration_Products__c trp :mapCustTeamProds.values()) {
-                    mapTeamProds.put(trp.Product_Code__c + '~' + trp.GL_Code__c, trp);
-                }
-            }
-            System.debug('mapCustTeamProds:' + mapCustTeamProds);
-            System.debug('mapTeamProds:' + mapTeamProds);            
-                
-        }        
         
         List<PriceBookEntry> lstPrice = [select unitprice,productcode,product2.Gl_Code__c from PriceBookEntry 
                                          where Pricebook2.IsActive = true AND
@@ -520,36 +485,6 @@ public class FBRICBRUtils
                     lstOppLineItems.add(oppLineItemRate);                    
                 }
             }
-            
-            // Team Registration discount 
-            System.debug('teamReg:' + teamReg); 
-            
-            if(teamReg != NULL) {                
-                System.debug('PricebookEntryId.ProductCode:' + PricebookEntryId.ProductCode); 
-                System.debug('PricebookEntryId.Product2.Gl_Code__c:' + PricebookEntryId.Product2.Gl_Code__c); 
-                
-                Team_Registration_Products__c findTrp = mapTeamProds.get(PricebookEntryId.ProductCode + '~' + PricebookEntryId.Product2.Gl_Code__c);
-                System.debug('findTrp:' + findTrp); 
-                
-                if(findTrp != NULL) {                
-                    teamRegUsed = teamReg;
-                    
-                    if(teamReg.Discounted_Price__c != NULL) {
-                        // Add Discount Product
-                        OpportunityLineItem oppLineItemRate = new OpportunityLineItem();
-                        oppLineItemRate.OpportunityId = oppId;
-                        oppLineItemRate.Product2Id = findTrp.Discount_Product_Id__c;
-                        oppLineItemRate.PricebookEntryId = findTrp.Discount_Product_Price_Id__c;
-                        oppLineItemRate.Quantity = 1; 
-                        oppLineItemRate.UnitPrice = (PricebookEntryId.UnitPrice - teamReg.Discounted_Price__c) * -1;
-                        dTotalPrice += oppLineItemRate.UnitPrice;
-                        
-                        System.debug('oppLineItemRate:' + oppLineItemRate);
-                        lstOppLineItems.add(oppLineItemRate);
-                    }
-                }
-            }
-            
             
             dTotalPrice += oppLineItem.UnitPrice;
             system.debug('&&&&:'+dTotalPrice);

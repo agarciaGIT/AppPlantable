@@ -1,5 +1,8 @@
 <apex:page standardStylesheets="false" sidebar="false" showHeader="false" controller="graAppRemoter" applyBodyTag="false" cache="false" applyHtmlTag="false" docType="html-5.0">
 
+  <apex:slds />
+  <apex:includeLightning />
+
   <apex:variable var="envPath" value="{!URLFOR($Resource.graApp)}" />
   <apex:variable var="envPathStyles" value="{!URLFOR($Resource.graAppStyles)}" />
     
@@ -56,8 +59,6 @@
         <script src="{!envPath}/js/services/utilities.js"></script>
         <script src="{!envPath}/js/services/panelField.js"></script>
         <script src="{!envPath}/js/services/remoteData.js"></script>
-        
-        <link rel="stylesheet" type="text/css" href="https://cloud.typography.com/7208894/7849972/css/fonts.css" />
             
         <link rel="stylesheet" href="{!envPath}/lib/pillar3/vanillaSelectBox.css"/>
         <link rel="stylesheet" href="{!envPath}/lib/pillar3/navMenu.css"/>
@@ -82,6 +83,7 @@
 
     </head>    
       <body ng-controller="mainCtrl">
+      
         <div id='wrapper' class=''>
             <div ng-controller="navController" ng-include="'{!envPath}/partials/nav.html'" id='sidebar-wrapper'>
                 
@@ -107,6 +109,7 @@
                     (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
                         m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
                                         })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+            
             var spinnerOptions = {
                 lines: 13, // The number of lines to draw
                 length: 20, // The length of each line

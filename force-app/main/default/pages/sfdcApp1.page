@@ -18,11 +18,10 @@
             
             <apex:stylesheet value="{!envPath}/img/favicon.ico"/>   
             
-            <apex:stylesheet value="https://cloud.typography.com/7208894/718528/css/fonts.css"/>
-            
-            <script src="https://my.garp.org/lightning/lightning.out.js"></script>
+            <script src="https://garp--devapr22.my.salesforce.com/lightning/lightning.out.js"></script>
             <script src="{!cometD}/cometd.js"></script>
-                        
+            
+            
             <style>
                 .restrict {
                     height: 200px;
@@ -30,14 +29,14 @@
                     margin-bottom: 10px;
                 }
             </style>        
-            
+            <script src="https://kit.fontawesome.com/cd857a7971.js" crossorigin="anonymous"></script>
             <!-- Loads amCharts 4 -->
             <script src="{!envPath}/lib/am-charts/core.js"></script>
             <script src="{!envPath}/lib/am-charts/charts.js"></script>
-            <script src="{!envPath}/lib/am-charts/animated.js"></script>   
+            <script src="{!envPath}/lib/am-charts/animated.js"></script>       
             
-            <!-- move -->
-            <link rel="stylesheet" type="text/css" href="{!envPathStyles}/build/styles.min.css"/>            
+            <link rel="stylesheet" href="{!envPathStyles}/build/styles.min.css" />
+            
         </head>
         <body style="background: #EEEFF0 url('https://www.garp.org/newmedia/design/GARP_background_NEW_50pct.png') repeat !important;" ng-controller="MainCtrl">    
             

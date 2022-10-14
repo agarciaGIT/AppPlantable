@@ -1,0 +1,34 @@
+.flex-wrapper {
+    height: 100%;
+    width: auto;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+}
+.fixed-header {
+    flex: 0 0 auto;
+    flex-direction: column;
+    margin-bottom: -1px;
+}
+.full-width-title {
+    background: #006c99;
+    color: #fff;
+    min-height: 95px;
+    line-height: 1px;
+}
+.full-width-title > span {
+    width: 100%;
+    display: inline-block;
+    padding-left: 32px;
+}
+.page-content {
+    flex: 1 1 auto;
+    position: relative;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+h2 {
+    font-size: 1.714em;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}

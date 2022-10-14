@@ -2,6 +2,7 @@
 public class CheckContactsBatchTest {
 	@TestSetup
     static void createTestData() {
+        TestClassUtil.isForNewTrigger();
         Integer totalCount = 5;
         
         List<Opportunity> OppResults =TestDataFactory.createOpportunity(totalCount);
@@ -10,7 +11,6 @@ public class CheckContactsBatchTest {
         List<Contact> ContactResults =TestDataFactory.createContacts(totalCount);
         for(Integer counter=0; counter < totalCount; counter++) {
             ContactResults[counter].AccountId = OppResults[counter].AccountId;
-            ContactResults[counter].KPI_CPE_Participation__c = true;
         }
         insert ContactResults;
         
@@ -44,9 +44,16 @@ public class CheckContactsBatchTest {
     }
     
     @isTest
-    static void testBatch(){
+    static void testFRM(){
         test.startTest();
-        CheckContactsBatch batch = new CheckContactsBatch();
+        CheckContactsBatch batch = new CheckContactsBatch('FRM');
+        database.executebatch(batch);
+        test.stopTest();
+    }
+    @isTest
+    static void testERP(){
+        test.startTest();
+        CheckContactsBatch batch = new CheckContactsBatch('ERP');
         database.executebatch(batch);
         test.stopTest();
     }

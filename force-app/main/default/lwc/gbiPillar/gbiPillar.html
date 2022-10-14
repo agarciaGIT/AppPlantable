@@ -1,0 +1,119 @@
+<template>
+<div class="page-content-wrapper">
+    <div id="mainspin" style="min-height:87px;width:983px;">
+    <div id="j_id0:j_id15" data-autoscroll="false" data-ui-view="" class="scale-fade ng-scope">
+    </div>
+    <nav class="navbar navbar-custom" id="toolbar" style="width: 100%; border: none; margin-bottom: 0;">
+    <div class="container-fluid">
+        <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" style="position: absolute; color: #fff; top: 15px; right: 0; background-color: transparent;" data-target="#navbar-collapse-2" aria-expanded="false">
+            <span class="sr-only">Toggle navigation</span>
+            <i class="fa fa-chevron-down fa-lg"></i>
+        </button>
+        </div>
+        <div class="collapse navbar-collapse" id="navbar-collapse-2" style="background-color: #081B31;">
+        <ul class="nav navbar-nav" style="margin: 45px -22px 0;">
+            <li class="active"><a data-id="pillar" class="header-nav-adjustments" onclick={handleSection}>Pillar 3 Home</a>
+            </li>
+            <li><a data-id="reports" class="header-nav-adjustments reports" onclick={handleSection}>Reports</a>
+            </li>
+        </ul>
+        </div>
+    </div>
+    </nav></div>
+    <div id="spin"></div>
+    <template if:true={isPillar}>
+        <div class="page-content">
+            <div class="container-fluid">
+                <div class="row welcome">
+                    <div class="col-md-12 welcome-title">Welcome to the GBI Pillar 3 Data Analytics Platform!</div>
+                    <div class="col-md-7 welcome-content">
+                        <ul>
+                            <li><span class="dot"></span>A repository of regulatory capital disclosure data from banks globally</li>
+                            <li><span class="dot"></span>Tools for monitoring and collecting new releases of regulatory data</li>
+                            <li><span class="dot"></span>Easy visualization and peer comparison of capital and liquidity ratios, risk weighted assets
+                                and detailed risk metrics</li>
+                        </ul>
+                        <div class="welcome-content-btn">
+                            <a class="btn" href="#pillar3Data">Get Started</a>
+                        </div>
+                    </div>
+                    <div class="col-md-5 hidden-xs">
+                        <img src="/resource/1647877728000/graApp/img/pillar3-chart.png" style="width: 100%;height: auto;">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="section">
+                            <div class="section-header">
+                                <i class="fa fa-exclamation-circle"></i> Notifications
+                            </div>
+                            <div class="section-content">
+                                <ul class="notifications">
+                                    <li style="color: green;">
+                                        <span class="type ng-binding">Updated Data:</span>
+                                        <span class="notif-title ng-binding" title="Title TESTING">Title TESTING</span><br>
+                                        <small class="ng-binding">09/19/2022</small>
+                                    </li><li style="color: red;">
+                                        <span class="type">New Report:</span>
+                                        <span class="notif-title" title="ANOTHER NOTIFICATION">ANOTHER NOTIFICATION</span><br>
+                                        <small >09/06/2022</small>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="section">
+                            <div class="section-header">
+                                <i class="fa fa-bullhorn"></i> Current Coverage
+                            </div>
+                            <div class="section-content panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="section">
+                            <div class="section-header">
+                                <i class="fa fa-lightbulb-o"></i> Relevant Resources
+                            </div>
+                            <div class="section-content">
+                                <ul class="relevant-resources">
+                                    <li>
+                                        <span class="dot"></span><a>Contact Us</a>
+                                    </li>
+                                    <li>
+                                        <span class="dot"></span><a>About Us</a>
+                                    </li>
+                                    <li>
+                                        <span class="dot"></span><a>Terms of Use</a>
+                                    </li>
+                                    <li>
+                                        <span class="dot"></span><a target="_blank" href="https://www.garp.org/about/privacy-notice">Privacy Notice</a>
+                                    </li>
+                                    <li>
+                                        <span class="dot"></span><a href="https://www.garp.org">GARP.org</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+    <template if:true={isReports}>
+        <div class="ng-scope">
+            <div style="height: 63px; background-color: #eee; display: flex; justify-content: center; align-items: center; border-bottom: 1px solid #ddd; color: #999;width: 980px;">
+                <div style="font-size: 20px; color: #000; text-align: center;">
+                Reports
+                </div>
+            </div>
+            <h2 style="padding:100px;display: flex;align-items: center;justify-content: center;">
+                <i class="fa fa-bullhorn fa-2x"></i>
+                <span style="padding: 15px;">Coming Soon!</span>
+            </h2>
+        </div>
+    </template>
+</div>    
+</template>

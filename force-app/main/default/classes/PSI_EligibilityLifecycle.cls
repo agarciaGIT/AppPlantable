@@ -24,7 +24,6 @@ public class PSI_EligibilityLifecycle{
                                                                  Email__c,First_Name__c,Phone_Number__c,Last_Name__c,
                                                                  Postal_Code__c,State__c,client_eligibility_id__c,PSI_eligibility_end_date__c,PSI_schedule_start_date__c From Integration_Data__c Where Id In:intDataId];
                 
-                
                 for(Integration_Data__c intdata:integrationDataList){
                     Api_Transaction__c  apirsp = new Api_Transaction__c();
                     PSIrequestResponse reqs = new PSIrequestResponse();
@@ -207,8 +206,16 @@ public class PSI_EligibilityLifecycle{
                             ex.Active_Integration_Data__c = intData.Id;
                         ex.Outbound_Type__c = null;
                         ex.Integration_Type__c = null;
+                        ex.Integration_Failed__c = true;
                         UpdateexamattemptMap.put(ex.Id,ex);
-                    } 
+                    }else{
+                        Exam_Attempt__c ex =  new Exam_Attempt__c();
+                        ex.Id = intData.Exam_Registrations__c;
+                        ex.Outbound_Type__c = null;
+                        ex.Integration_Type__c = null;
+                        ex.Integration_Failed__c = true;
+                        UpdateexamattemptMap.put(ex.Id,ex);
+                    }
                 } 
                 
                 if(apirspList.size()>0){

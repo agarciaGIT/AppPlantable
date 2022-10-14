@@ -7,11 +7,8 @@ private class reportsGARP_test{
     static Product2 prod3;
 
     static testMethod void myUnitTest_3() {
-        ChargentBase__Gateway__c chrgGtway = new ChargentBase__Gateway__c(Name = 'Test',ChargentBase__Active__c = true );
-        insert chrgGtway;
-        
-        insert new UpdateIds__c(Name = 'GARP', Record_Id__c = chrgGtway.id);
-        
+        insert new Updateids__c(Name='GARP',Record_id__c = 'a0A4000000uA1fU'); 
+        // a1lf000000045VS a0A4000000uA1fU 
         Account acc = new Account(name='Test Account');
         insert acc;
         
@@ -119,11 +116,8 @@ private class reportsGARP_test{
 
     
     static testMethod void myUnitTest_2() {
-        ChargentBase__Gateway__c chrgGtway = new ChargentBase__Gateway__c(Name = 'Test',ChargentBase__Active__c = true );
-        insert chrgGtway;
-        
-        insert new UpdateIds__c(Name = 'GARP', Record_Id__c = chrgGtway.id);
-        
+        insert new Updateids__c(Name='GARP',Record_id__c = 'a0A4000000uA1fU'); 
+        // a1lf000000045VS a0A4000000uA1fU 
         Account acc = new Account(name='Test Account');
         insert acc;
         
@@ -275,11 +269,8 @@ private class reportsGARP_test{
         
         //RecordType rt = [select id from RecordType where SobjectType='Opportunity' and IsActive=true limit 1];
         //insert rt;
-        ChargentBase__Gateway__c chrgGtway = new ChargentBase__Gateway__c(Name = 'Test',ChargentBase__Active__c = true );
-        insert chrgGtway;
-        
-        insert new UpdateIds__c(Name = 'GARP', Record_Id__c = chrgGtway.id);
-        
+        insert new Updateids__c(Name='GARP',Record_id__c = 'a0A4000000uA1fU'); 
+        // a1lf000000045VS a0A4000000uA1fU 
         Account acc = new Account(name='Test Account');
         insert acc;
         

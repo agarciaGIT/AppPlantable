@@ -1,0 +1,81 @@
+<template>
+  <div class="slds-grid slds-wrap study-card">
+    <!-- ROW -->
+    <div class="slds-col slds-size_1-of-1">
+      <!-- TODO: Add data -->
+      <span if:true={isInProgress} class="status-in-progress slds-badge slds-badge_lightest">
+        <p class="slds-align_absolute-center">In Progress</p>
+      </span>
+      <span if:true={isCompleted} class="status-completed slds-badge slds-badge_lightest">Completed</span>
+    </div>
+    <!-- ROW -->
+    <div class="slds-col slds-size_1-of-1 study-card-row">
+      <div class="slds-clearfix">
+        <div class="slds-float_left">
+          <p class="study-card-title">TOTAL CAPITAL IMPACT STUDY 2019</p>
+          <p class="study-card-subtitle">Regulatory</p>
+        </div>
+        <div class="slds-float_right">
+          <button class="study-card-button slds-button slds-button_brand">View Details</button>
+          <div class="slds-notify_container slds-is-relative">
+            <div class="study-card-button-alert slds-notify slds-notify_toast slds-theme_error" role="status">
+              <span class="slds-assistive-text">error</span>
+              <span
+                class="slds-icon_container slds-icon-utility-warning slds-input__icon slds-input__icon_left iconheight">
+                <lightning-icon class="slds-icon slds-icon slds-icon_small slds-icon-text-default"
+                  icon-name="utility:warning" size="small" alternative-text="warning-icon">
+                </lightning-icon>
+              </span>
+              <div class="slds-notify__content">
+                <p> 
+                  Please email GBI@garp.com for access.
+                </p>
+              </div>
+              <div class="slds-notify__close">
+                <button class="slds-button slds-button_icon slds-button_icon-inverse" title="Close">
+                  <svg class="slds-button__icon slds-button__icon_large" aria-hidden="true">
+                    <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#close"></use>
+                  </svg>
+                  <span class="slds-assistive-text">Close</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <!-- <section aria-label="Dialog title" aria-describedby="popover-body-id"
+          class="study-card-button-alert slds-popover" role="dialog">
+          <div id="popover-body-id" class="slds-popover__body">
+            <p> 
+              <span
+                class="slds-icon_container slds-icon-utility-warning slds-input__icon slds-input__icon_left iconheight">
+                <lightning-icon class="slds-icon slds-icon slds-icon_small slds-icon-text-default"
+                  icon-name="utility:warning" size="small" alternative-text="warning-icon">
+                </lightning-icon>
+              </span>
+              Please email GBI@garp.com for access.
+            </p>
+          </div>
+        </section> -->
+        </div>
+      </div>
+    </div>
+    <!-- ROW -->
+    <div class="slds-col slds-size_1-of-1 study-card-dates study-card-row">
+      <p>Start Date: July 29, 2019</p>
+      <p>End Date:</p>
+    </div>
+    <!-- ROW -->
+    <div class="slds-col slds-size_1-of-1 study-card-details study-card-row">
+      <p>Objective: Examine further refinements to the revised Basel framework, including parameter modifications to
+        the revised operational risk capital framework and alternate approaches to an aggregate capital floor.</p>
+    </div>
+    <!-- ROW -->
+    <div class="slds-col slds-size_1-of-1 study-card-details study-card-row">
+      <p>Data Provided: Basel III Monitoring Workbook for March 2016 QIS, workbook for 2016 CVA QIS, workbook for
+        2016 Ad Hoc QIS, ORX Operational Risk RWA Study</p>
+    </div>
+    <!-- ROW -->
+    <div class="slds-col slds-size_1-of-1 study-card-details study-card-row">
+      <p>Participating Institutions: 56</p>
+    </div>
+  </div>
+</template>

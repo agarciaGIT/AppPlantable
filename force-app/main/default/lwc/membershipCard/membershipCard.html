@@ -1,0 +1,58 @@
+<template>
+    <div class="col-md-12">
+        <div class="panel">
+          <div class="mbrPrflHead panel-heading">
+            <h3 class="panel-title">Membership</h3>
+          </div>
+          <div class="idArea">
+            <center>
+              <p id="profileId">GARP ID</p>
+              <p class="userMemId">{garpMemberId}</p>
+            </center>
+          </div>
+          <div class="panel-body">   
+            <center>
+              <span class="userMem">Member Type</span>
+              <br>
+              <span class="memTxt">{memberType}</span>
+              <br>
+              <br>
+              <span class="userMem">Joined</span>
+              <br>
+              <span class="memTxt"><lightning-formatted-date-time value={joinedDate}></lightning-formatted-date-time></span>
+              <br>
+              <br>
+              <template if:true={showMembershipStatus}>
+                <!--<span class="userMem">Membership Expiration</span>
+                <br>
+                <span class="memTxt"><lightning-formatted-date-time value={membershipExpiration}></lightning-formatted-date-time></span>
+                <br>
+                <br>-->
+                <span class="userMem">Membership Status</span>
+                <br>
+                <span class="memTxt">{status}</span>
+                <br>
+                <br>
+              </template>
+            </center>
+
+          <template if:true={showUpgradeButton}>
+            <div class="row ng-scope">
+              <div class="col-xs-12 col-xs-offset-0 col-sm-6 col-sm-offset-3 col-md-12 col-md-offset-0">
+                <a class="button full-width" analytics-on="" analytics-event="click_button" analytics-category="page_content" analytics-label="portal_dash_membership_upgrade">Upgrade</a>
+              </div>
+            </div>
+          </template>
+
+          <template if:true={showRenewButton}>
+            <div class="row ng-scope">
+              <div class="col-xs-12 col-xs-offset-0 col-sm-6 col-sm-offset-3 col-md-12 col-md-offset-0">
+                <a class="button full-width" analytics-on="" analytics-event="click_button" analytics-category="page_content" analytics-label="portal_dash_membership_upgrade">Renew</a>
+              </div>
+            </div>
+          </template>
+    
+          </div>
+        </div>
+      </div>
+</template>

@@ -1,0 +1,26 @@
+<template>
+  <div class="studies-list-panel">
+    <c-filter-bar></c-filter-bar>
+    <c-studies-header title="Search Results"></c-studies-header>
+    <c-studies-list-by-type-title 
+      type-title="My Studies" 
+      type-subtitle="See below for a list of all the studies you’re participating in."
+      type="userStudies"
+    ></c-studies-list-by-type-title>
+    <c-studies-list-by-type-title 
+      type-title="My Organization's Studies" 
+      type-subtitle="See below for a list of all the studies your organization is participating in."
+      type="orgStudies"
+    ></c-studies-list-by-type-title>
+    <c-studies-list-by-type-title 
+      type-title="All Other Studies" 
+      type-subtitle="See below for a list of all GBI studies."
+      type="allStudies"
+    ></c-studies-list-by-type-title>
+    <footer class="footer-expand-btn slds-card__footer">
+      <a class="slds-card__footer-action slds-align_absolute-center" href="#">View More Studies
+        <span class="slds-assistive-text">View More Studies</span>
+      </a>
+    </footer>
+  </div>
+</template>

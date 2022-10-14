@@ -1,0 +1,120 @@
+.sidebar-wrapper {
+    z-index: 1000;
+    position: fixed;
+    left: 295px;
+    height: 100%;
+    margin-left: -295px;
+    overflow-y: auto;
+    background: #000;
+    transition: all 0.5s ease;
+}
+.sidebar-nav {
+    top: 0;
+    width: 295px;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    background: #081A31;
+    background-image: linear-gradient(-180deg, rgba(9, 79, 137, 0.1) 0, rgba(49, 84, 101, 0.1) 100%), radial-gradient(53% 151%, rgba(0, 162, 221, 0.1) 51%, rgba(0, 0, 0, 0.1) 100%);
+}
+.sidebar-nav li.navbar-brand {
+    height: auto;
+    float: none;
+    padding: 30px 30px;
+}
+.sidebar-nav li.navbar-brand a {
+    padding-left: 15px;
+}
+.sidebar-nav li a {
+    display: block;
+    text-decoration: none;
+    color: #fff;
+    font-size: 1.286em;
+    font-weight: normal;
+    height: 100%;
+}
+.nav>li>a {
+    position: relative;
+    padding: 10px 15px;
+}
+.sidebar-nav li.navbar-brand a {
+    padding-left: 15px;
+}
+a, a:hover {
+    color: #00a2dd;
+}
+a {
+    color: #337ab7;
+    text-decoration: none;
+    background-color: transparent;
+}
+.sidebar-nav li {
+    line-height: 40px;
+}
+.navbar-brand {
+    float: left;
+    height: 50px;
+    padding: 15px 15px;
+}
+.sidebar-nav li.navbar-brand a img {
+    max-width: 169px;
+    margin: auto;
+    display: block;
+    cursor: pointer;
+}
+.sidebar-nav li a:hover .hover-bar, .sidebar-nav li a.active .hover-bar {
+    width: 8px;
+    background: #00a2dd;
+    display: block;
+    height: 61px;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+.btn {
+    border: 2px solid #00a2dd;
+    padding: 11px 52px;
+    border-radius: 2px;
+    background: #00a2dd;
+    color: #fff;
+    font-weight: 500;
+    box-shadow: 0 2px 5px 0px rgb(0 0 0 / 26%);
+    transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+}
+.angular-ripple {
+    display: block;
+    position: absolute;
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    transform: scale(0);
+}
+.signdiv {
+    position: absolute;
+    bottom: 52px;
+    width: 100%;
+    text-align: center;
+}
+.page-content-wrapper{
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+}
+.btn:hover {
+    background-image:none;
+    background-color:black;
+    border-color: transparent;
+}
+.sidebar-nav li a:hover, .sidebar-nav li a.active {
+    text-decoration: none;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.1);
+}
+.wrapper {
+    padding-left: 214px;
+    margin-top: -11px;
+}
+h2 {
+    font-size: 1.714em;
+}
