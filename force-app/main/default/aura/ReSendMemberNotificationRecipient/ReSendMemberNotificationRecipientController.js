@@ -9,10 +9,10 @@
             recpientId :recId
         });
         
-        //alert('recId:' + recId);
+        alert('recId:' + recId);
         action.setCallback(this, function (response) {
             var retVal = response.getReturnValue();
-            //alert('ret:' + retVal);
+            alert('ret:' + retVal);
             if(retVal == true) {
                 $A.get("e.force:closeQuickAction").fire();
                 $A.get('e.force:refreshView').fire();
