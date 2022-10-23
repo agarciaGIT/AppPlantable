@@ -480,10 +480,10 @@
         );            
     }
     
-    sfdcService.getExamRescheduleInformation= function(examGroupId, program, callback) {
+    sfdcService.getExamRescheduleInformation= function(examRegId, callback) {
         Visualforce.remoting.Manager.invokeAction(
             '{!$RemoteAction.ExamManagementRemoter.getExamRescheduleInformation}',
-            examGroupId,program,
+            examRegId,
             function(result, event){
                 callback(null, { result: result, event: event });               
             }, 
@@ -491,10 +491,10 @@
         );            
     }
 
-    sfdcService.getExamRescheduleFees = function(examGroupId, program, selectedAdminPartI, selectedAdminPartII, selectedSitePartI, selectedSitePartII, callback) {
+    sfdcService.getExamRescheduleFees = function(examRegId, selectedAdminPartI, selectedAdminPartII, selectedSitePartI, selectedSitePartII, callback) {
         Visualforce.remoting.Manager.invokeAction(
             '{!$RemoteAction.ExamManagementRemoter.getExamRescheduleFees}',
-            examGroupId, program, selectedAdminPartI, selectedAdminPartII, selectedSitePartI, selectedSitePartII,
+            examRegId, selectedAdminPartI, selectedAdminPartII, selectedSitePartI, selectedSitePartII,
             function(result, event){
                 callback(null, { result: result, event: event });               
             }, 
@@ -503,10 +503,10 @@
     }
     
     
-    sfdcService.createExamRescheduleFeesOrder = function(examGroupId, program, selectedAdminPartI, selectedAdminPartII, selectedSitePartI, selectedSitePartII, callback) {
+    sfdcService.createExamRescheduleFeesOrder = function(examRegId, selectedAdminPartI, selectedAdminPartII, selectedSitePartI, selectedSitePartII, callback) {
         Visualforce.remoting.Manager.invokeAction(
             '{!$RemoteAction.ExamManagementRemoter.createExamRescheduleFeesOrder}',
-            examGroupId, program, selectedAdminPartI, selectedAdminPartII, selectedSitePartI, selectedSitePartII,
+            examRegId, selectedAdminPartI, selectedAdminPartII, selectedSitePartI, selectedSitePartII,
             function(result, event){
                 callback(null, { result: result, event: event });               
             }, 

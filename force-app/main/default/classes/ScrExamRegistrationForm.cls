@@ -8,7 +8,7 @@ public class ScrExamRegistrationForm extends ExamRegistrationForm{
         Boolean isInProgram = False;        
         Boolean isOpenOrder = False;
         Boolean isPart1Passed = False;
-        Boolean isPart1RegisteredInActiveGroup = False;
+        Boolean isPart1RegisteredInActiveAdmin = False;
         Boolean isPart1RegisteredAwaitingResults = False;
         Boolean isPart1Deferred = False;
 
@@ -17,15 +17,27 @@ public class ScrExamRegistrationForm extends ExamRegistrationForm{
         
         Exam_Attempt__c part1EA;
                 
-        List<Exam_Group__c> lstExamGroup = [select Id, Name, Registration_Start_Date__c, Last_Date_For_Late_Registration__c from Exam_Group__c where SCR_Active__c = True];
-        if(lstExamGroup != NULL && lstExamGroup.size() > 0) {
-            Exam_Group__c eg = lstExamGroup[0];
-            Date tdy = Date.today();
-
-            if(tdy >= eg.Registration_Start_Date__c && tdy <= eg.Last_Date_For_Late_Registration__c) {
-                isRegistrationOpen = true;
+        List<Exam_Administration__c> lstAdmins = [select Id, Name, Registration_Start_Date__c, Registration_End_Date__c 
+                                                  from Exam_Administration__c
+                                                  where Exam_Type__c = 'SCR' AND Registration_Start_Date__c >= TODAY AND Registration_End_Date__c <= TODAY];
+        // Exam Admins where reg is open
+        Map<String,Exam_Administration__c> mapActiveExamAdmins = new Map<String,Exam_Administration__c>();
+        if(!lstAdmins.isEmpty()) {
+            isRegistrationOpen = true;
+            for(Exam_Administration__c ea :lstAdmins) {
+                mapActiveExamAdmins.put(ea.id, ea);
             }
+            
         }
+        
+        //List<Exam_Group__c> lstExamGroup = [select Id, Name, Registration_Start_Date__c, Last_Date_For_Late_Registration__c from Exam_Group__c where SCR_Active__c = True];
+        //if(lstExamGroup != NULL && lstExamGroup.size() > 0) {
+        //    Exam_Group__c eg = lstExamGroup[0];
+        //    Date tdy = Date.today();
+        //    if(tdy >= eg.Registration_Start_Date__c && tdy <= eg.Last_Date_For_Late_Registration__c) {
+        //        isRegistrationOpen = true;
+        //    }
+        //}
         if(isRegistrationOpen) {
             FINAL Id contactId;
             if(inContactId != NULL) {
@@ -91,8 +103,9 @@ public class ScrExamRegistrationForm extends ExamRegistrationForm{
                     } else if(objFRMEA.Candidate_Commitment__r.Status != 'Completed')  {
                         
                         if(part1EA==Null && objFRMEA.Exam_Site__r.Exam__r.Exam__c == 'SCR') {
-                            if(objFRMEA.Exam_Site__r.Exam__r.Exam_Group__r.SCR_Active__c == True) {
-                                isPart1RegisteredInActiveGroup = True;
+                            //if(objFRMEA.Exam_Site__r.Exam__r.Exam_Group__r.SCR_Active__c == True) {
+                            if(mapActiveExamAdmins.get(objFRMEA.Exam_Administration__c) != NULL) {
+                                isPart1RegisteredInActiveAdmin = True;
                                 isPart1RegisteredAwaitingResults = False;
                                 part1EA = objFRMEA;
                             }
@@ -102,9 +115,9 @@ public class ScrExamRegistrationForm extends ExamRegistrationForm{
                             }                            
                         }
                         
-                        if(part1EA==Null && objFRMEA.Exam_Site__r.Exam__r.Exam__c == 'SCR' && objFRMEA.Exam_Site__r.Exam__r.Exam_Group__r.SCR_Active__c == False && 
+                        if(part1EA==Null && objFRMEA.Exam_Site__r.Exam__r.Exam__c == 'SCR' && mapActiveExamAdmins.get(objFRMEA.Exam_Administration__c) == NULL && 
                            (objFRMEA.Defered__c == NULL || objFRMEA.Defered__c != 'Pending') &&
-                           (objFRMEA.Result__c == null || objFRMEA.Result__c == '' || objFRMEA.Exam_Site__r.Exam__r.Exam_Group__r.Loading_Exam_Results__c == True || objFRMEA.Exam_Administration__r.Exam_Results_Loading__c == True)) {
+                           (objFRMEA.Result__c == null || objFRMEA.Result__c == '' || objFRMEA.Exam_Administration__r.Exam_Results_Loading__c == True)) {
                                //System.debug('Rammi If Condition - Awaiting');
                                isPart1RegisteredAwaitingResults = True;
                                part1EA = objFRMEA;
@@ -113,14 +126,14 @@ public class ScrExamRegistrationForm extends ExamRegistrationForm{
                 }
             }   
             
-            System.debug('isPart1RegisteredInActiveGroup:' + isPart1RegisteredInActiveGroup);
+            System.debug('isPart1RegisteredInActiveAdmin:' + isPart1RegisteredInActiveAdmin);
             System.debug('isPart1RegisteredAwaitingResults:' + isPart1RegisteredAwaitingResults);
             
     
             System.debug('isPart1Deferred:' + isPart1Deferred);
             
             if(!isOpenOrder && !isPaymentBlocked) {            
-                if(!isPart1Passed && !isPart1RegisteredInActiveGroup && !isPart1RegisteredAwaitingResults && !isPart1Deferred) {
+                if(!isPart1Passed && !isPart1RegisteredInActiveAdmin && !isPart1RegisteredAwaitingResults && !isPart1Deferred) {
                     eligibleExams.add('SCR');
                 }   
             }
@@ -135,7 +148,7 @@ public class ScrExamRegistrationForm extends ExamRegistrationForm{
         reObj.isOpenOrder = isOpenOrder;
                 
         reObj.isPart1Passed = isPart1Passed;
-        reObj.isPart1RegisteredInActiveGroup = isPart1RegisteredInActiveGroup;
+        reObj.isPart1RegisteredInActiveAdmin = isPart1RegisteredInActiveAdmin;
         reObj.isPart1RegisteredAwaitingResults = isPart1RegisteredAwaitingResults;
         reObj.isPart1Deferred = isPart1Deferred;
                             

@@ -1,6 +1,11 @@
 public class GBI_MC_Studies {
 
     @AuraEnabled(cacheable = false)
+    public static GBI_MS_Studies.retStudiesInfo getListStudies(GBI_MS_Studies.reqStudiesList reqWrapper){
+        return  GBI_MS_Studies.getListStudies(reqWrapper);
+    }
+
+    @AuraEnabled(cacheable = false)
     public static GBI_MS_Studies.getSudiesReturnData getStudies(){
         return GBI_MS_Studies.getStudies();
     }

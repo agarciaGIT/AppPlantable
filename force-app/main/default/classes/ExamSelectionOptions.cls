@@ -6,7 +6,7 @@ public class ExamSelectionOptions {
     // Members defined as transient so they are not included in JSON serialization
     private transient Map<Id, Exam_Part__c> examPartsMap { get; set; }
     private transient Map<Id, Exam_Administration__c> examAdministrationMap { get; set; }
-    private transient Map<Id, Exam__c> examMap { get; set; }
+    private transient Map<Id, Exam__c> examMap { get; set; }    
     private transient Map<Id, Map<Id, Map<Id, Exam_Sites__c>>> examSiteByExamPartByExamMap { get; set; }
     private transient Map<Id, ExamPricebookEntry> examPriceBookEntriesMap { get; set; }
 
@@ -17,10 +17,12 @@ public class ExamSelectionOptions {
         public Exam_Sites__c examSite                       { get; set; }
     }
 
-    public class ExamPart{
+    public class ExamPart {
         public String id									{ get; set; }
+        public String labelNoPrice							{ get; set; }
         public String label									{ get; set; }
         public Exam_Part__c examPart       	                { get; set; }                   
+        public ExamPricebookEntry examPricebookEntry        { get; set; }
         public List<Site> sites                             { get; set; } 
     }
 
@@ -36,7 +38,7 @@ public class ExamSelectionOptions {
     public class Exam{
         public String id									    { get; set; }
         public String label									    { get; set; }  
-        public String labelNoPrice							    { get; set; }  
+        //public String labelNoPrice							    { get; set; }  
         public Integer numberOfCombinedExamParts                { get; set; }
         public Exam__c exam 								    { get; set; }
         public ExamPricebookEntry examPricebookEntry            { get; set; }
@@ -90,23 +92,26 @@ public class ExamSelectionOptions {
 
         this.exams = new List<Exam>();
 
-        if(!this.examMap.isEmpty() && !this.examPriceBookEntriesMap.isEmpty()){
+        //if(!this.examMap.isEmpty() && !this.examPriceBookEntriesMap.isEmpty()){
+        if(!this.examMap.isEmpty()){
 
             // Creates exams array
             for(Integer i = 0; i < examMap.values().size(); i++){          
    
                 Id examId = new List<Id>(examMap.keySet())[i];
                 Exam__c examObject = examMap.get(examId);
-                ExamPricebookEntry examPricebookEntry = this.examPriceBookEntriesMap.get(examId);
+                //ExamPricebookEntry examPricebookEntry = this.examPriceBookEntriesMap.get(examId);
 
                 Exam exam = new Exam(); 
 
                 if(i == 0){
 
-                    Decimal totalPrice = examPricebookEntry.pricebookEntry.UnitPrice;
+                    // AG 10/18/2022 - Exams 2023
+                    //Decimal totalPrice = examPricebookEntry.pricebookEntry.UnitPrice;
                     exam.id     = examObject.Id;
-                    exam.label  = examObject.Name + ' - USD ' + totalPrice;    
-                    exam.labelNoPrice = examObject.Name;
+                    exam.label  = examObject.Name;    
+                    //exam.label  = examObject.Name + ' - USD ' + totalPrice;    
+                    //exam.labelNoPrice = examObject.Name;
 
                 }else if(i == 1){
 
@@ -114,15 +119,16 @@ public class ExamSelectionOptions {
                     Exam__c lastExamObject = examMap.get(lastExamId);
                     ExamPricebookEntry lastExamPricebookEntry = this.examPriceBookEntriesMap.get(lastExamId);
 
-                    Decimal totalPrice = lastExamPricebookEntry.pricebookEntry.UnitPrice + examPricebookEntry.pricebookEntry.UnitPrice;
+                    //Decimal totalPrice = lastExamPricebookEntry.pricebookEntry.UnitPrice + examPricebookEntry.pricebookEntry.UnitPrice;
                     exam.id     = examObject.Id;
-                    exam.label  = lastExamObject.Name + ' and ' + examObject.Name + ' - USD ' + totalPrice;    
+                    //exam.label  = lastExamObject.Name + ' and ' + examObject.Name + ' - USD ' + totalPrice;    
+                    exam.label  = lastExamObject.Name + ' and ' + examObject.Name;    
 
                 }
 
                 exam.numberOfCombinedExamParts = i + 1;
                 exam.exam = examObject;
-                exam.examPricebookEntry = examPricebookEntry;
+                //exam.examPricebookEntry = examPricebookEntry;
 
                 this.exams.add(exam);   
 
@@ -147,7 +153,7 @@ public class ExamSelectionOptions {
                 exam.id     = examObject.Id;
                 exam.label  = examObject.Name;
                 exam.exam   = examObject;
-                exam.examPricebookEntry = this.examPriceBookEntriesMap.get(key);
+                //exam.examPricebookEntry = this.examPriceBookEntriesMap.get(key);
                 exam.examParts = new List<ExamPart>();              
 
                 Map<Id, Map<Id, Exam_Sites__c>> examSiteByExamPartMap = this.examSiteByExamPartByExamMap.get(examObject.Id);
@@ -159,19 +165,24 @@ public class ExamSelectionOptions {
                         examPart.id = examPartId;
                     
                         Exam_Part__c ep = this.examPartsMap.get(examPartId);
+                        
+                        // Lookup Price
+                        examPart.examPricebookEntry = this.examPriceBookEntriesMap.get(examPartId);
     
                         if(ep.Exam_Date__c != null){
                             Date d = ep.Exam_Date__c;
                             Time t = Time.newInstance(0, 0, 0, 0);
                             DateTime dt = DateTime.newInstance(d, t);
-                            examPart.label = dt.format('MMMM dd, yyyy');
+                            examPart.label = dt.format('MMMM dd, yyyy')  + ' - USD ' + examPart.examPricebookEntry.pricebookEntry.UnitPrice;
+                            examPart.labelNoPrice = dt.format('MMMM dd, yyyy');
                         }else if(ep.Exam_Start_Date__c != null && ep.Exam_End_Date__c != null){
                             Date startDate = ep.Exam_Start_Date__c;
                             Date endDate = ep.Exam_End_Date__c;
                             Time t = Time.newInstance(0, 0, 0, 0);
                             DateTime startDateTime = DateTime.newInstance(startDate, t);
                             DateTime endDateTime = DateTime.newInstance(endDate, t);
-                            examPart.label = startDateTime.format('MMMM dd, yyyy') + ' - ' + endDateTime.format('MMMM dd, yyyy');
+                            examPart.label = startDateTime.format('MMMM dd, yyyy') + ' - ' + endDateTime.format('MMMM dd, yyyy')  + ' - USD ' + examPart.examPricebookEntry.pricebookEntry.UnitPrice;
+                            examPart.labelNoPrice = startDateTime.format('MMMM dd, yyyy') + ' - ' + endDateTime.format('MMMM dd, yyyy');
                         }else{
                             examPart.label = 'Configure Exam_Administration__c Exam_Date__c or Exam_Start_Date__c and Exam_End_Date__c.';
                         }
@@ -188,7 +199,7 @@ public class ExamSelectionOptions {
                             site.examSite = examSite;
                             examPart.sites.add(site);
                         }
-    
+    					
                         exam.examParts.add(examPart);
     
                     }

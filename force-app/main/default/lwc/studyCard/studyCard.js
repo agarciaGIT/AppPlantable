@@ -1,7 +1,7 @@
 import { LightningElement } from 'lwc';
 
 export default class StudyCard extends LightningElement {
-  isInProgress = false;
+  isInProgress = true;
   isCompleted = false;
   isAccessAllowed = false;
 

@@ -1,21 +1,21 @@
 import { LightningElement, api } from 'lwc';
-import getStudies from '@salesforce/apex/GBI_MC_Studies.getStudies';
+import getListStudies from '@salesforce/apex/GBI_MC_Studies.getListStudies';
 
 export default class StudiesListByTypeTitle extends LightningElement {
   @api typeTitle;
   @api typeSubtitle;
   @api type;
   @api studies;
-  @api allStudies;
+  @api listStudies;
 
-  connectedCallback() {
-    getStudies().then(result => {
-      this.allStudies = result;
-      console.log("allStudies", this.allStudies);
-    })
-      .catch(error => {
-        this.errorMessage = error.body.message;
-        console.log(this.allSerrorMessagetudies);
-      })
-  }
+  // connectedCallback() {
+  //   getListStudies().then(result => {
+  //     this.listStudies = result;
+  //     console.log("getListStudies() => ", this.listStudies);
+  //   })
+  //     .catch(error => {
+  //       this.errorMessage = error.body.message;
+  //       console.log("getListStudies() => ERROR: ", this.allSerrorMessagetudies);
+  //     })
+  // }
 }

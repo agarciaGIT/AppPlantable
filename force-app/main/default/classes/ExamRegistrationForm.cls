@@ -55,13 +55,13 @@ public abstract class ExamRegistrationForm {
         
         public Boolean isPart1Passed { get; set; }
         public Boolean isPart1Offered { get; set; }
-        public Boolean isPart1RegisteredInActiveGroup { get; set; }
+        public Boolean isPart1RegisteredInActiveAdmin { get; set; }
         public Boolean isPart1RegisteredAwaitingResults { get; set; }
         public Boolean isPart1Deferred { get; set; }
         
         public Boolean isPart2Passed { get; set; }
         public Boolean isPart2Offered { get; set; }
-        public Boolean isPart2RegisteredInActiveGroup { get; set; }
+        public Boolean isPart2RegisteredInActiveAdmin { get; set; }
         public Boolean isPart2RegisteredAwaitingResults { get; set; }
         public Boolean isPart2Deferred { get; set; }       
     }
@@ -276,7 +276,9 @@ public abstract class ExamRegistrationForm {
     * @return the map of all Exam Sites in context
     */
     public Map<Id, Exam_Sites__c> getExamSitesMap(Set<String> examPartNames){
-        return new Map<Id, Exam_Sites__c>([                
+        
+        // AG - 10/17/2022 - Updated for Exams 2023
+        Map<Id, Exam_Sites__c> siteMap = new Map<Id, Exam_Sites__c>([                
             SELECT 
                 Id, 
                 Name,
@@ -302,16 +304,12 @@ public abstract class ExamRegistrationForm {
                 Exam_Part__r.Exam__r.Exam__c IN :examPartNames AND
                 Site__r.Active__c = TRUE AND 
                 Site__r.Non_Selectable__c = FALSE AND 
-                ((Exam__r.Exam_Group__r.Active__c = TRUE AND Exam__r.Exam_Group__r.RecordType.Name in ('FRM/ERP')) OR
-                 (Exam__r.Exam_Group__r.SCR_Active__c = TRUE AND Exam__r.Exam_Group__r.RecordType.Name in ('SCR'))) AND
-
-                // AG 2/17/2021
-                // Allow to hide Exam Admin by Date
-                (Exam_Part__r.Exam_Administration__r.Registration_Start_Date__c = NULL OR Exam_Part__r.Exam_Administration__r.Registration_Start_Date__c <= TODAY) AND
-                (Exam_Part__r.Exam_Administration__r.Registration_End_Date__c = NULL OR Exam_Part__r.Exam_Administration__r.Registration_End_Date__c >= TODAY)
-            
+            	Exam_Part__r.Exam_Administration__r.Registration_Start_Date__c <= TODAY AND 
+            	Exam_Part__r.Exam_Administration__r.Registration_End_Date__c >= TODAY
+                AND Exam_Part__r.Exam_Administration__r.Exam_Type__c in ('FRM','SCR')            
             ORDER BY Exam_Part__r.Exam_Part_Number__c, Site__r.Name ASC 
-        ]);
+        ]);        
+        return siteMap;
     }
 
     public Map<String, Item> createMap(List<PricebookEntry> items){
@@ -494,15 +492,14 @@ public abstract class ExamRegistrationForm {
                 userRateType = 'Retake';
             }
         }
-        
-        //system.assert(false, 'BOOM!'+ lstCont + userRateType);
-        
+                
         List<Exam_Rate__c> lstExamRates = [
-            SELECT Id, Name, Exam__c, Rate_Type__c, Exam_Administration__c, Exam__r.Exam__c, Exam__r.Name, Exam__r.Administration_Time_of_Day__c, Product__c, Product__r.Name, Product__r.ProductCode
+            SELECT Id, Name, Exam__c, Rate_Type__c, Exam_Administration__c, Exam_Part__c, Exam__r.Exam__c, Exam__r.Name, Exam__r.Administration_Time_of_Day__c, 
+            Product__c, Product__r.Name, Product__r.ProductCode
             FROM Exam_Rate__c 
             WHERE 
                 Exam__c IN :examIds AND
-                Exam_Registration_Window__r.Exam_Group__r.RecordType.Name in ('FRM/ERP','SCR') AND
+                Exam_Administration__r.Exam_Type__c in ('FRM','SCR') AND
                 Exam_Registration_Window__r.Exam_Registration_Window_Open__c <= TODAY AND
                 Exam_Registration_Window__r.Exam_Registration_Window_Close__c >= TODAY 
             ORDER BY Product__r.ProductCode ASC
@@ -583,7 +580,7 @@ public abstract class ExamRegistrationForm {
                 product2Ids.add(er.Product__c);
             }
 
-            System.debug(product2Ids);
+            System.debug('product2Ids:' + product2Ids);
 
             Map<Id, PriceBookEntry> pricebookEntryByProduct2Id = new Map<Id, PriceBookEntry>();
             for (PriceBookEntry PricebookEntryId: [
@@ -596,6 +593,8 @@ public abstract class ExamRegistrationForm {
             }
             
             for(Exam_Rate__c er: examRates){
+                
+                System.debug('ER:' + er);
                 
                 ExamSelectionOptions.ExamPricebookEntry examPricebookEntry = new ExamSelectionOptions.ExamPricebookEntry();
                 
@@ -627,13 +626,14 @@ public abstract class ExamRegistrationForm {
                         }
                     }
                 }
-                examPricebookEntries.put(er.Exam__c,examPricebookEntry);
-                
+                // AG - 10/18/2022 - Updated for Exams 2023
+                //examPricebookEntries.put(er.Exam__c,examPricebookEntry);
+                examPricebookEntries.put(er.Exam_Part__c,examPricebookEntry);
             }
             
         }
 
-        System.debug(examPricebookEntries);
+        System.debug('**examPricebookEntries:' + examPricebookEntries);
 
         return examPricebookEntries;
         

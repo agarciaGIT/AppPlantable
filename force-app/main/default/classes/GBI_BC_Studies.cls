@@ -1,5 +1,199 @@
 public class GBI_BC_Studies {
 
+    public static GBI_MS_Studies.retStudiesInfo getListStudies(GBI_MS_Studies.reqStudiesList reqWrapper) {
+        GBI_MS_Studies.retStudiesInfo retInfo = new GBI_MS_Studies.retStudiesInfo();
+        
+        Set<String> statuses = GBI_Common.getPickListValues('Study__c','Status__c');
+        Set<String> types = GBI_Common.getPickListValues('Study__c','Type__c');
+        Set<String> risktypes = GBI_Common.getPickListValues('Study__c','Risk_Type__c');
+        
+        if(reqWrapper.status != NULL && !statuses.contains(reqWrapper.status) ||
+           reqWrapper.riskBucket != NULL && !types.contains(reqWrapper.riskBucket) ||
+           reqWrapper.riskType != NULL && !risktypes.contains(reqWrapper.riskType)
+          ) {
+              retInfo.statusCode = 500;
+              retInfo.statusMsg = 'Invalid Filter';
+              return retInfo;
+          }
+        
+        String userId = UserInfo.getUserId();
+        //String userId = '00578000000imgx';
+        List<User> lstUser = [SELECT Id, ContactId FROM User WHERE Id = :userId];
+        
+        if(lstUser.isEmpty()) {
+            retInfo.statusCode = 500;
+            retInfo.statusMsg = 'Invalid user';
+            return retInfo;
+        }
+
+        String query =
+        	'SELECT Id, Name, Parent_Study__c, Parent_Study__r.Name, Type__c, Description__c, Status__c, ' +
+            'Start_Date__c, End_Date__c, Conference_Call_Status__c, Conference_Call_Details__c, FAQ_Category__c, ' +
+            'Document_Folder_Name__c, Risk_Type__c, Study_Objective__c, Data_Provided__c,  ' +
+            'Reference_Study__c, Number_of_Participants__c, Data_Types_Supported__c, Qualtrics_Survey_Integration_Status__c, ' +
+            'Payment_Required__c,Study_Fee__c, ' +
+            '(SELECT Id, Name, Account__c, Role__c, Status__c,Payment_Agreed_Date__c FROM Study_Accounts__r) ' +
+			'FROM Study__c WHERE ';
+
+/*  For Testing  
+        String query =
+        	'SELECT Id,' +
+            '(SELECT Id, Name, Account__c, Role__c, Status__c,Payment_Agreed_Date__c FROM Study_Accounts__r) ' +
+			'FROM Study__c WHERE Status__c not in (\'Draft\',\'Suspended\')';
+*/
+        
+        if(reqWrapper.status != NULL) {
+            query+= ' AND Status__c = ' + reqWrapper.status;
+        }
+        if(reqWrapper.riskBucket != NULL) {
+            query+= ' AND Type__c = ' + reqWrapper.riskBucket;
+        }
+        if(reqWrapper.riskType != NULL) {
+            query+= ' AND Risk_Type__c = ' + reqWrapper.riskType;
+        }
+        if(reqWrapper.year != NULL) {
+            query+= ' AND Start_Date__c >= ' + Date.newInstance(reqWrapper.year, 1, 1) + ' AND Start_Date__c <= ' + Date.newInstance(reqWrapper.year, 12, 31);
+        }
+        
+        System.debug('query:' + query);
+        List<Study__c> allStudies = Database.query(query);
+        System.debug('allStudies:' + allStudies);
+        
+        Contact cont = getUserContactData();
+        if(cont != NULL && !allStudies.isEmpty()) {
+            
+            String contactId  = cont.id;
+            String accountId = cont.AccountId;
+            Boolean isGARPEmployee = false;
+            
+            // Study Id to DP_Not_Required__c map. Used only for Non-GARP employee.
+            Map<Id, Boolean> mapDPNotRequired = new Map<Id, Boolean>();
+            // Study Id to Study Account Id map. Used only for Non-GARP employee.
+            Map<Id, Id> mapStudyIdToStudyAccountId = new Map<Id, Id>();
+            
+            // Direct Parent Account of Conatct
+            List<Account> lstAccount = [SELECT Id, Name, RecordTypeID, BillingCity, BillingCountry, BillingPostalCode, BillingState, BillingStreet, Billing_Address_Company__c, Phone FROM Account WHERE Id = :accountId];
+            if( lstAccount != null && lstAccount.size() > 0 ) {
+                Account acct = lstAccount[0];
+                if(acct.Name == 'GARP')
+                    isGARPEmployee = true;
+            }
+            
+            // If direct Parent Account not GARP, check AccountContactRole to see if they are GARP related
+            if(isGARPEmployee == false) {
+                List<AccountContactRelation> lstAcctContRoles = [select Id, AccountId, Account.Name, ContactId, IsDirect from AccountContactRelation where ContactId = :contactId];
+                if( lstAcctContRoles != null && lstAcctContRoles.size() > 0 ) {
+                    for(AccountContactRelation acr : lstAcctContRoles) {
+                        if(acr.Account.Name == 'GARP') {
+                            isGARPEmployee = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            System.debug('isGARPEmployee:' + isGARPEmployee);
+            retInfo.isGARPEmployee = isGARPEmployee;
+            
+            // Studies Contacts from Studies I participated In
+            List<Study_Contact__c> lstStudyContact;
+            if(isGARPEmployee) {
+                lstStudyContact = [SELECT Id, Name, Role__c, Status__c, Study__c, Contact__c, Contact__r.Name, Contact__r.Photo_URL__c, Contact__r.AccountId, Study_Account__r.Account__c, Study_Account__c, Study_Account__r.Status__c, Study_Account__r.Name, Study_Account__r.Id 
+                                   FROM Study_Contact__c WHERE Status__c IN ('Active','Confirmed') AND Study__c in :allStudies];
+                // Simulate GARP Employee are in all Studies
+                for(Study__c s :allStudies) {
+                    Study_Contact__c newSc = new Study_Contact__c();
+                    newSc.Study__c = s.Id;
+                    newSc.Contact__c = contactId;
+                    newSc.Study_Account__c = accountId;
+                    lstStudyContact.add(newSc);
+                }                    
+            }else {
+                lstStudyContact = [SELECT Id, Name, Role__c, Status__c, Study__c, Contact__c, Contact__r.Name, Contact__r.Photo_URL__c, Contact__r.AccountId, Study_Account__r.Account__c, Study_Account__c, Study_Account__r.Status__c, Study_Account__r.Name, Study_Account__r.Role__c, Study_Account__r.Id, Study_Account__r.DP_Not_Required__c
+                                   FROM Study_Contact__c WHERE Contact__c = :contactId AND Status__c IN ('Active','Confirmed') 
+                                   AND Study_Account__r.Status__c = 'Active'];
+                
+            }
+            System.debug('lstStudyContact:' + lstStudyContact);
+            
+            MAP<ID,Study_Contact__c> myStudiesAccounts = new MAP<ID,Study_Contact__c>(); // Study_Account__c Id
+            Set<ID> myStudiesAccountIds = new Set<ID>();    // Account Id on Study_Account__c
+
+            MAP<ID,Study_Contact__c> myOrgStudiesAccounts = new MAP<ID,Study_Contact__c>(); // Study_Account__c Id
+			Set<ID> myOrgsStudiesAccountIds = new Set<ID>();    // Account Id on Study_Account__c
+
+            MAP<ID,Study_Contact__c> otherStudiesAccounts = new MAP<ID,Study_Contact__c>(); // Study_Account__c Id
+			Set<ID> otherStudiesAccountIds = new Set<ID>();    // Account Id on Study_Account__c
+            
+            Set<ID> allStudyAccountIDs = new Set<ID>();
+            
+            for(Study_Contact__c sc :lstStudyContact) {
+                System.debug('sc:' + sc);
+                
+                allStudyAccountIDs.add(sc.Study_Account__r.Account__c);
+                if(sc.Contact__c == contactId) {
+                    myStudiesAccounts.put(sc.Study_Account__c, sc);
+                    myStudiesAccountIds.add(sc.Study_Account__r.Account__c);
+                } else if(sc.Study_Account__c == accountId) {
+                    myOrgStudiesAccounts.put(sc.Study_Account__c, sc);
+                    myOrgsStudiesAccountIds.add(sc.Study_Account__r.Account__c);                    
+                } else {
+                    otherStudiesAccounts.put(sc.Study_Account__c, sc);
+                    otherStudiesAccountIds.add(sc.Study_Account__r.Account__c);                                        
+                }
+            }
+            system.debug('allStudyAccountIDs:' + allStudyAccountIDs);
+            
+            system.debug('myStudiesAccounts:' + myStudiesAccounts);          
+            system.debug('myStudiesAccountIds:' + myStudiesAccountIds);          
+            system.debug('myOrgStudiesAccounts:' + myOrgStudiesAccounts);          
+            system.debug('myOrgsStudiesAccountIds:' + myOrgsStudiesAccountIds);          
+            system.debug('otherStudiesAccounts:' + otherStudiesAccounts);          
+            system.debug('otherStudiesAccountIds:' + otherStudiesAccountIds);          
+            
+            MAP<String, Study__c> mapMyStudies = new MAP<String, Study__c>();
+            MAP<String, Study__c> mapOrgStudies = new MAP<String, Study__c>();
+            MAP<String, Study__c> otherStudies = new MAP<String, Study__c>();
+            for(Study__c s :allStudies) {
+                for(Study_Account__c sa :s.Study_Accounts__r) {
+                    if(myStudiesAccountIds.contains(sa.Id)) {
+                        mapMyStudies.put(s.id, s);
+                        break;
+                    } else if(myOrgsStudiesAccountIds.contains(sa.Id)) {
+                        mapOrgStudies.put(s.id, s);
+                        break;
+                    }
+                }
+                if(mapMyStudies.get(s.id) == NULL && mapOrgStudies.get(s.id) == NULL) {
+                    otherStudies.put(s.id, s);
+                }
+            }
+            system.debug('mapMyStudies:' + mapMyStudies);    
+            system.debug('mapOrgStudies:' + mapOrgStudies);    
+            system.debug('otherStudies:' + otherStudies);    
+            
+            retInfo.myStudies = mapMyStudies.values();
+            retInfo.myOrgStudies = mapOrgStudies.values();
+            retInfo.otherStudies = otherStudies.values();
+            
+            retInfo.discloseProtocolSubmissions = [select Id, Study_Account__c, Study_Contact__c, Disclosure_Protocol__r.DP_Status__c 
+                                                   from Study_Disclose_Protocol_Submission__c
+                                                   WHERE Study__c in :allStudies];
+            
+            system.debug('retInfo.discloseProtocolSubmissions:' + retInfo.discloseProtocolSubmissions);
+         
+            retInfo.studyNDAs = [
+                    SELECT Id, Account__c, Status__c, Latest_NDA_Dated_Date__c, Next_NDA_Review_Date__c
+                    FROM Study_NDA__c 
+                    WHERE Account__c IN :allStudyAccountIDs and Status__c IN ('Signed','Expired')
+                    ORDER BY Latest_NDA_Dated_Date__c DESC NULLS LAST
+                ];
+            system.debug('retInfo.studyNDAs:' + retInfo.studyNDAs);
+            
+        }
+        
+        return retInfo;
+    }
+    
     public static List<Study__c> getAllActiveStudies() {
         return [SELECT Id, Name, Parent_Study__c, Parent_Study__r.Name, Type__c, Description__c, Status__c, 
                                                   Start_Date__c, End_Date__c, Conference_Call_Status__c, Conference_Call_Details__c, FAQ_Category__c, 
@@ -12,6 +206,7 @@ public class GBI_BC_Studies {
 
     public static Contact getUserContactData(){
         String userId = UserInfo.getUserId();
+        //String userId = '00578000000imgx';
         List<User> lstUser = [SELECT u.Id, u.ContactId, FullPhotoUrl FROM User u WHERE u.Id = :userId];
                 
         if( lstUser != null && lstUser.size() > 0 ) {

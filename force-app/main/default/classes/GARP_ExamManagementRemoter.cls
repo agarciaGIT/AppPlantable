@@ -1,5 +1,7 @@
 public class GARP_ExamManagementRemoter {
     
+    /*
+    
     @RemoteAction
     static public GARP_ExamManagement.programInfo getProgramInfo(String programType) {
         GARP_ExamManagement.programInfo pri = new GARP_ExamManagement.programInfo();
@@ -58,6 +60,6 @@ public class GARP_ExamManagementRemoter {
         String userId = UserInfo.getUserId();
         return GARP_ExamManagement.getExamRescheduleData(examGroupId, program, NULL, NULL, NULL, NULL,userId);
     }
-        
+ */       
     public GARP_ExamManagementRemoter(sfdcAppRemoter ctrl){}
 }

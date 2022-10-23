@@ -18,6 +18,29 @@ public class GBI_MS_Studies {
         @AuraEnabled public List<Disclosure_Protocol__c> disclosureProtocols { get; set; }
     }
     
+    public class reqStudiesList {
+        @AuraEnabled public String status;
+        @AuraEnabled public String riskBucket;
+        @AuraEnabled public String riskType;
+        @AuraEnabled public Boolean participtation;
+        @AuraEnabled public Integer year;
+    }
+    
+    public class retStudiesInfo {
+        @AuraEnabled public Integer statusCode;
+        @AuraEnabled public String statusMsg;
+        @AuraEnabled public Boolean isGARPEmployee;
+        @AuraEnabled public List<Study__c> myStudies;
+        @AuraEnabled public List<Study__c> myOrgStudies;
+        @AuraEnabled public List<Study__c> otherStudies;
+        @AuraEnabled public List<Study_Disclose_Protocol_Submission__c> discloseProtocolSubmissions;
+        @AuraEnabled public List<Study_NDA__c> studyNDAs;
+    }
+    
+    public static retStudiesInfo getListStudies(reqStudiesList reqWrapper) {
+        return GBI_BC_Studies.getListStudies(reqWrapper);
+    }
+    
     public static getSudiesReturnData getStudies(){
         return GBI_BC_Studies.getStudies();
     }

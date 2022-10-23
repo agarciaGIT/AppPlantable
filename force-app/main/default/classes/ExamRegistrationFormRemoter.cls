@@ -3,7 +3,7 @@ public class ExamRegistrationFormRemoter {
     @RemoteAction
     public static Response.Detail fetchExamRegistrationFormData(String registrationType, String teamRegistrationCode){
         
-        try{
+        //try{
 
             switch on registrationType.toUpperCase() {
                 when 'FRM' {
@@ -25,7 +25,8 @@ public class ExamRegistrationFormRemoter {
                     );
                 }
             }
-                
+       
+        /*
         }catch(Response.ResponseException e){
 
             return new Response.Detail(e.getMessage(), e.status, e.errors);
@@ -35,7 +36,7 @@ public class ExamRegistrationFormRemoter {
             return new Response.Detail(null, 400, new List<Object>{e.getMessage(),e.getLineNumber(),e.getStackTraceString()});
 
         } 
-        
+        */
     }
     
     @RemoteAction

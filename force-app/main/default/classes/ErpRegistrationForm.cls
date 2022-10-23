@@ -278,13 +278,13 @@ public class ErpRegistrationForm extends ExamRegistrationForm{
                 
         reObj.isPart1Passed = isPart1Passed;
         reObj.isPart1Offered = isPart1Offered;
-        reObj.isPart1RegisteredInActiveGroup = isPart1RegisteredInActiveGroup;
+        reObj.isPart1RegisteredInActiveAdmin = isPart1RegisteredInActiveGroup;
         reObj.isPart1RegisteredAwaitingResults = isPart1RegisteredAwaitingResults;
         reObj.isPart1Deferred = isPart1Deferred;
                 
         reObj.isPart2Passed = isPart2Passed;
         reObj.isPart2Offered = isPart2Offered;
-        reObj.isPart2RegisteredInActiveGroup = isPart2RegisteredInActiveGroup;
+        reObj.isPart2RegisteredInActiveAdmin = isPart2RegisteredInActiveGroup;
         reObj.isPart2RegisteredAwaitingResults = isPart2RegisteredAwaitingResults;
         reObj.isPart2Deferred = isPart2Deferred; 
             

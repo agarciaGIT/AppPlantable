@@ -201,6 +201,4 @@ public class GARP_Common {
         return retAddress;
     }
     
-    
-    
 }

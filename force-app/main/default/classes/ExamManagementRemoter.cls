@@ -19,8 +19,8 @@ public class ExamManagementRemoter {
     }
     
     @RemoteAction
-    static public void updateOSTAIDInfo(Id contactId, String idType, String idNumber, Date expDate) {
-        ExamManagementController.updateOSTAIDInfo(contactId, idType, idNumber, expDate);
+    static public void updateOSTAIDInfo(Id contactId, String idType, String idNumber, String idLocation, Date expDate) {
+        ExamManagementController.updateOSTAIDInfo(contactId, idType, idNumber, idLocation, expDate);
     }
     
     @RemoteAction
@@ -42,21 +42,21 @@ public class ExamManagementRemoter {
     }
     
     @RemoteAction 
-    static public ExamManagementController.examRescheduleData createExamRescheduleFeesOrder(String examGroupId, String program, String selectedAdminPartI, String selectedAdminPartII, String selectedSitePartI, String selectedSitePartII) {
+    static public ExamManagementController.examRescheduleData createExamRescheduleFeesOrder(String examRegId, String selectedAdminPartI, String selectedAdminPartII, String selectedSitePartI, String selectedSitePartII) {
         string userId = userinfo.getUserId();
-        return ExamManagementController.createExamRescheduleFeesOrderInternal(examGroupId, program, selectedAdminPartI, selectedAdminPartII, selectedSitePartI, selectedSitePartII, userId,false,'Deferral Standard');
+        return ExamManagementController.createExamRescheduleFeesOrderInternal(examRegId, selectedAdminPartI, selectedAdminPartII, selectedSitePartI, selectedSitePartII, userId,false,false,'Deferral Standard');
     }
     
     @RemoteAction 
-    static public ExamManagementController.examRescheduleData getExamRescheduleFees(String examGroupId, String program, String selectedAdminPartI, String selectedAdminPartII, String selectedSitePartI, String selectedSitePartII) {
+    static public ExamManagementController.examRescheduleData getExamRescheduleFees(String examRegId, String selectedAdminPartI, String selectedAdminPartII, String selectedSitePartI, String selectedSitePartII) {
         string userId = userinfo.getUserId();
-        return ExamManagementController.getExamRescheduleFeesInternal(examGroupId, program, selectedAdminPartI, selectedAdminPartII, selectedSitePartI, selectedSitePartII, userId,false);
+        return ExamManagementController.getExamRescheduleFeesInternal(examRegId, selectedAdminPartI, selectedAdminPartII, selectedSitePartI, selectedSitePartII, userId,false);
     }
     
     @RemoteAction 
-    static public ExamManagementController.examRescheduleData getExamRescheduleInformation(Id examGroupId, String program) {
+    static public ExamManagementController.examRescheduleData getExamRescheduleInformation(Id examRegId) {
         String userId = UserInfo.getUserId();
-        return ExamManagementController.getExamRescheduleData(examGroupId, program, NULL, NULL, NULL, NULL,userId);
+        return ExamManagementController.getExamRescheduleData(examRegId, NULL, NULL, NULL, NULL,userId);
     }
         
     public ExamManagementRemoter(sfdcAppRemoter ctrl){}

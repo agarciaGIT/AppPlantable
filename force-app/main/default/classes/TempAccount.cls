@@ -55,14 +55,14 @@ public class TempAccount {
     public String idMiddleName {get;set;}
     public String idLastName {get;set;}
     
-    public String howDidYouHear   			{ get; set; } //Contact.How_Did_You_Hear_About_Us__c
-    public String howDidYouHearOther   		{ get; set; } //Contact.How_Did_You_Hear_About_Us_Other__c
-    public String Experience 				{ get; set; } //Contact.Experience__c
-    public String Birthdate					{ get; set; } //Contact.Birthdate
-    public String Gender					{ get; set; } //Contact.Gender__c
-    public String ID_Expiration_Date 		{ get; set; } //Contact.ID_Expiration_Date__c
-    public String Full_Name_in_Chinese 		{ get; set; } //Contact.Full_Name_in_Chinese__c    
-    public String Alternate_Email_Address 	{ get; set; } //Event_Registration__r.Alternate_Email_Address__c
+    public String howDidYouHear             { get; set; } //Contact.How_Did_You_Hear_About_Us__c
+    public String howDidYouHearOther        { get; set; } //Contact.How_Did_You_Hear_About_Us_Other__c
+    public String Experience                { get; set; } //Contact.Experience__c
+    public String Birthdate                 { get; set; } //Contact.Birthdate
+    public String Gender                    { get; set; } //Contact.Gender__c
+    public String ID_Expiration_Date        { get; set; } //Contact.ID_Expiration_Date__c
+    public String Full_Name_in_Chinese      { get; set; } //Contact.Full_Name_in_Chinese__c    
+    public String Alternate_Email_Address   { get; set; } //Event_Registration__r.Alternate_Email_Address__c
     
     public String MailingStreet {get;set;}
     public String MailingStreetTwo {get;set;}
@@ -93,7 +93,7 @@ public class TempAccount {
     public String RiskManagementWorkingYear {get;set;}
     public String AttendanceMethod {get;set;}
     public String Industry {get;set;}
-	public String IndustryWorkingYear {get;set;}    
+    public String IndustryWorkingYear {get;set;}    
     public String garpMembership_Type {get;set;}
     public String Membership_Type {get; set;}
     public Boolean MembershipEligible {get; set;}
@@ -182,4 +182,5 @@ public class TempAccount {
     public String mailingZipPostalCode {get; set;}
     public String districtCountry {get; set;}
     public String teamCode {get; set;}
+    public String idLocation {get; set;}
 }
