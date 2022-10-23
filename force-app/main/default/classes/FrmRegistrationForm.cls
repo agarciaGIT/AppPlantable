@@ -159,12 +159,7 @@ public class FrmRegistrationForm extends ExamRegistrationForm {
         Boolean isInProgram = False;
         Boolean isRegistrationOpen = False; 
         Boolean isPaymentBlocked = False; 
-        
-        Boolean isERPRegistered = False;
-        Boolean isERPPart1AwaitingResults = False;
-        Boolean isERPPart2AwaitingResults = False;
-        Boolean isERPOpenOrder = False;
-        
+                
         Exam_Attempt__c part1ERP;
         Exam_Attempt__c part2ERP;
         
@@ -172,7 +167,7 @@ public class FrmRegistrationForm extends ExamRegistrationForm {
         
         Boolean isPart1Passed = False;
         Boolean isPart1Offered = False;
-        Boolean isPart1RegisteredInActiveGroup = False;
+        Boolean isPart1RegisteredInActiveAdmin = False;
         Boolean isPart1RegisteredAwaitingResults = False;
         Boolean isPart1Deferred = False;
 
@@ -181,19 +176,35 @@ public class FrmRegistrationForm extends ExamRegistrationForm {
         
         Boolean isPart2Passed = False;
         Boolean isPart2Offered = False;
-        Boolean isPart2RegisteredInActiveGroup = False;
+        Boolean isPart2RegisteredInActiveAdmin = False;
         Boolean isPart2RegisteredAwaitingResults = False;
         Boolean isPart2Deferred = False;
         
-        List<Exam_Group__c> lstExamGroup = [select Id, Name, Registration_Start_Date__c, Last_Date_For_Late_Registration__c from Exam_Group__c where Active__c = True];
-        if(lstExamGroup != NULL && lstExamGroup.size() > 0) {
-            Exam_Group__c eg = lstExamGroup[0];
-            Date tdy = Date.today();
-
-            if(tdy >= eg.Registration_Start_Date__c && tdy <= eg.Last_Date_For_Late_Registration__c) {
-                isRegistrationOpen = true;
+        
+        List<Exam_Administration__c> lstAdmins = [select Id, Name, Registration_Start_Date__c, Registration_End_Date__c 
+                                                  from Exam_Administration__c
+                                                  where Exam_Type__c = 'FRM' AND Registration_Start_Date__c >= TODAY AND Registration_End_Date__c <= TODAY];
+        
+        // Exam Admins where reg is open
+        Map<String,Exam_Administration__c> mapActiveExamAdmins = new Map<String,Exam_Administration__c>();
+        if(!lstAdmins.isEmpty()) {
+            isRegistrationOpen = true;
+            for(Exam_Administration__c ea :lstAdmins) {
+                mapActiveExamAdmins.put(ea.id, ea);
             }
+            
         }
+        
+        // AG - 10/17/2022 - Updated for Exams 2023
+        //List<Exam_Group__c> lstExamGroup = [select Id, Name, Registration_Start_Date__c, Last_Date_For_Late_Registration__c from Exam_Group__c where Active__c = True];
+        //if(lstExamGroup != NULL && lstExamGroup.size() > 0) {
+        //    Exam_Group__c eg = lstExamGroup[0];
+        //    Date tdy = Date.today();
+        //    if(tdy >= eg.Registration_Start_Date__c && tdy <= eg.Last_Date_For_Late_Registration__c) {
+        //        isRegistrationOpen = true;
+        //    }
+        //}
+        
         if(isRegistrationOpen) {       
             
             FINAL Id contactId;
@@ -229,18 +240,12 @@ public class FrmRegistrationForm extends ExamRegistrationForm {
                 isPaymentBlocked = lstAcct[0].Block_Purchases_All_Types__c;
             }
 
-            
+            // AG - 10/17/2022 - Updated for Exams 2023
             List<Exam_Part__c> parts = [select Id, Name, Exam_Part_Number__c, Exam__r.Exam__c,
                                         Exam_Administration__c, Exam_Date__c, Exam_Start_Date__c
-                                        from Exam_Part__c where Exam_Administration__r.Exam_Group__r.Active__c = True AND
+                                        from Exam_Part__c where Exam_Administration__c in :mapActiveExamAdmins.keyset() AND
                                         Exam__r.Exam__c in ('FRM Part 1','FRM Part 2') 
-                                        AND
-                                        
-                                        // AG 2/17/2021
-                                        // Allow to hide Exam Admin by Date
-                                        (Exam_Administration__r.Registration_Start_Date__c = NULL OR Exam_Administration__r.Registration_Start_Date__c <= TODAY) AND
-                                        (Exam_Administration__r.Registration_End_Date__c = NULL OR Exam_Administration__r.Registration_End_Date__c >= TODAY)
-                                        ];
+                                       ];
             
             MAP<String,Exam_Part__c> mapParts = new MAP<String,Exam_Part__c>();
             for(Exam_Part__c p :parts) {
@@ -257,7 +262,8 @@ public class FrmRegistrationForm extends ExamRegistrationForm {
             
             System.debug('isPart1Offered:' + isPart2Passed);
             System.debug('isPart2Offered:' + isPart2Passed);
-                        
+            
+            // AG - 10/17/2022 - Updated for Exams 2023
             List<Exam_Attempt__c> examRegistrations = [
                 SELECT Id, Candidate_Commitment__r.EndDate, Candidate_Commitment__r.Last_Exam_Registration_Date__c, 
                 Candidate_Commitment__r.RecordType.Name, Contract_End_Date__c, Defered__c, 
@@ -265,15 +271,15 @@ public class FrmRegistrationForm extends ExamRegistrationForm {
                 Exam_Administration__r.Exam_Results_Loading__c,
                 Exam_Site__r.Exam__r.Exam__c,
                 Exam_Part__c, Exam_Part__r.Exam_Part_Number__c, Exam_Part__r.Exam_Date__c, Exam_Part__r.Exam_Start_Date__c,
-                Opportunity_StageName__c, Member__c, Exam_Date__c, Exam_Site__c, Exam_Site__r.Exam__r.Exam_Group__r.Active__c, 
-                Exam_Site__r.Exam__r.Exam_Group__r.Loading_Exam_Results__c, Exam_Site__r.site__c, Section__c, Result__c, Candidate_Commitment__c, 
+                Opportunity_StageName__c, Member__c, Exam_Date__c, Exam_Site__c,                 
+                Exam_Site__r.site__c, Section__c, Result__c, Candidate_Commitment__c, 
                 Candidate_Commitment__r.Status
                 FROM Exam_Attempt__c 
                 WHERE 
                 (Candidate_Commitment__r.Status LIKE '%Activated%' OR Candidate_Commitment__r.Status = : 'Completed' OR Candidate_Commitment__r.Status = : 'Draft') AND 
                 Member__c = :contactId AND 
                 (Opportunity_StageName__c = 'Closed' OR Opportunity_StageName__c = 'New Lead') AND 
-                Candidate_Commitment__r.RecordType.Name in ('FRM Program','ERP Program') AND 
+                Candidate_Commitment__r.RecordType.Name in ('FRM Program') AND 
                 Cancelled__c != true 
                 ORDER BY Exam_Date__c DESC
             ];
@@ -287,93 +293,59 @@ public class FrmRegistrationForm extends ExamRegistrationForm {
                 
                 System.debug('objFRMEA:' + objFRMEA);
                 
-                if(objFRMEA.Candidate_Commitment__r.RecordType.Name == 'ERP Program') {
+                if(objFRMEA.Candidate_Commitment__r.Status == 'Draft' || objFRMEA.Opportunity_StageName__c == 'New Lead')  {
+                    isOpenOrder = True;
                     
-                    if(objFRMEA.Candidate_Commitment__r.Status == 'Draft')  {
-                        isERPOpenOrder = True;
-                        
-                    } else if(objFRMEA.Candidate_Commitment__r.Status != 'Completed')  {
-                        
-                        if(objFRMEA.Exam_Site__r.Exam__r.Exam_Group__r.Active__c == True && (objFRMEA.Defered__c == NULL || objFRMEA.Defered__c != 'Pending')) {
-                            isERPRegistered = True;
-                            part1ERP=objFRMEA;
-                            part2ERP=objFRMEA;
-                        }
-                        
-                        if(part1ERP==NULL && objFRMEA.Exam_Site__r.Exam__r.Exam__c == 'ERP Exam Part I' && objFRMEA.Exam_Site__r.Exam__r.Exam_Group__r.Active__c == False && 
-                           (objFRMEA.Defered__c == NULL || objFRMEA.Defered__c != 'Pending') &&
-                           (objFRMEA.Result__c == null || objFRMEA.Result__c == '' || objFRMEA.Exam_Site__r.Exam__r.Exam_Group__r.Loading_Exam_Results__c == True || objFRMEA.Exam_Administration__r.Exam_Results_Loading__c == True)) {
-                               isERPPart1AwaitingResults = True;
-                               part1ERP=objFRMEA;
-                           } 
-                        
-                        if(part2ERP==NULL && objFRMEA.Exam_Site__r.Exam__r.Exam__c == 'ERP Exam Part II' && objFRMEA.Exam_Site__r.Exam__r.Exam_Group__r.Active__c == False && 
-                           (objFRMEA.Defered__c == NULL || objFRMEA.Defered__c != 'Pending') &&
-                           (objFRMEA.Result__c == null|| objFRMEA.Result__c == '' || objFRMEA.Exam_Site__r.Exam__r.Exam_Group__r.Loading_Exam_Results__c == True || objFRMEA.Exam_Administration__r.Exam_Results_Loading__c == True)) {
-                               isERPPart2AwaitingResults = True;
-                               part2ERP=objFRMEA;
-                           }
-                    }
-                }
-                
-                if(objFRMEA.Candidate_Commitment__r.RecordType.Name == 'FRM Program') {
+                } else if(objFRMEA.Candidate_Commitment__r.Status != 'Completed')  { 
                     
-                    if(objFRMEA.Candidate_Commitment__r.Status == 'Draft' || objFRMEA.Opportunity_StageName__c == 'New Lead')  {
-                        isOpenOrder = True;
-                        
-                    } else if(objFRMEA.Candidate_Commitment__r.Status != 'Completed')  { 
-                        
-                        if(part1EA==Null && objFRMEA.Exam_Site__r.Exam__r.Exam__c == 'FRM Part 1') {
-                            if(objFRMEA.Exam_Site__r.Exam__r.Exam_Group__r.Active__c == True) {
-                                isPart1RegisteredInActiveGroup = True;
-                                isPart1RegisteredAwaitingResults = False;  
-                                part1EA = objFRMEA;
-                            }
-                            if(objFRMEA.Defered__c == 'Pending') {
-                                isPart1Deferred = True;
-                                part1EA = objFRMEA;
-                            }                            
+                    if(part1EA==Null && objFRMEA.Exam_Site__r.Exam__r.Exam__c == 'FRM Part 1') {
+                        // AG - 10/17/2022 - Updated for Exams 2023
+                        //if(objFRMEA.Exam_Site__r.Exam__r.Exam_Group__r.Active__c == True) {
+                        if(mapActiveExamAdmins.get(objFRMEA.Exam_Administration__c) != NULL) {
+                            isPart1RegisteredInActiveAdmin = True;
+                            isPart1RegisteredAwaitingResults = False;  
+                            part1EA = objFRMEA;
                         }
-                        if(part2EA==Null && objFRMEA.Exam_Site__r.Exam__r.Exam__c == 'FRM Part 2') {
-                            if(objFRMEA.Exam_Site__r.Exam__r.Exam_Group__r.Active__c == True) {
-                                isPart2RegisteredInActiveGroup = True;
-                                isPart2RegisteredAwaitingResults = False;
-                                part2EA = objFRMEA;
-                            }
-                            if(objFRMEA.Defered__c == 'Pending') {
-                                isPart2Deferred = True;
-                                part2EA = objFRMEA;
-                            }
-                        }
-                        
-                        
-                        
-                        if(part1EA==Null && objFRMEA.Exam_Site__r.Exam__r.Exam__c == 'FRM Part 1' && objFRMEA.Exam_Site__r.Exam__r.Exam_Group__r.Active__c == False && 
-                           (objFRMEA.Defered__c == NULL || objFRMEA.Defered__c != 'Pending') &&
-                           (objFRMEA.Result__c == null || objFRMEA.Result__c == '' || objFRMEA.Exam_Site__r.Exam__r.Exam_Group__r.Loading_Exam_Results__c == True || objFRMEA.Exam_Administration__r.Exam_Results_Loading__c == True)) {
-                               isPart1RegisteredAwaitingResults = True;
-                               part1EA = objFRMEA;
-                           }
-                        
-                       
-                        if(part2EA==Null && objFRMEA.Exam_Site__r.Exam__r.Exam__c == 'FRM Part 2' && objFRMEA.Exam_Site__r.Exam__r.Exam_Group__r.Active__c == False && 
-                           (objFRMEA.Defered__c == NULL || objFRMEA.Defered__c != 'Pending') &&
-                           (objFRMEA.Result__c == null|| objFRMEA.Result__c == '' || objFRMEA.Exam_Site__r.Exam__r.Exam_Group__r.Loading_Exam_Results__c == True || objFRMEA.Exam_Administration__r.Exam_Results_Loading__c == True)) {
-                               isPart2RegisteredAwaitingResults = True;
-                               part2EA = objFRMEA;
-                           }
+                        if(objFRMEA.Defered__c == 'Pending') {
+                            isPart1Deferred = True;
+                            part1EA = objFRMEA;
+                        }                            
                     }
+                    if(part2EA==Null && objFRMEA.Exam_Site__r.Exam__r.Exam__c == 'FRM Part 2') {
+                        //if(objFRMEA.Exam_Site__r.Exam__r.Exam_Group__r.Active__c == True) {
+                        if(mapActiveExamAdmins.get(objFRMEA.Exam_Administration__c) != NULL) {
+                            isPart2RegisteredInActiveAdmin = True;
+                            isPart2RegisteredAwaitingResults = False;
+                            part2EA = objFRMEA;
+                        }
+                        if(objFRMEA.Defered__c == 'Pending') {
+                            isPart2Deferred = True;
+                            part2EA = objFRMEA;
+                        }
+                    }
+                    
+                    if(part1EA==Null && objFRMEA.Exam_Site__r.Exam__r.Exam__c == 'FRM Part 1' && mapActiveExamAdmins.get(objFRMEA.Exam_Administration__c) == NULL && 
+                       (objFRMEA.Defered__c == NULL || objFRMEA.Defered__c != 'Pending') &&
+                       (objFRMEA.Result__c == null || objFRMEA.Result__c == '' || objFRMEA.Exam_Administration__r.Exam_Results_Loading__c == True)) {
+                           isPart1RegisteredAwaitingResults = True;
+                           part1EA = objFRMEA;
+                       }
+                    
+                    
+                    if(part2EA==Null && objFRMEA.Exam_Site__r.Exam__r.Exam__c == 'FRM Part 2' && mapActiveExamAdmins.get(objFRMEA.Exam_Administration__c) == NULL && 
+                       (objFRMEA.Defered__c == NULL || objFRMEA.Defered__c != 'Pending') &&
+                       (objFRMEA.Result__c == null|| objFRMEA.Result__c == '' || objFRMEA.Exam_Administration__r.Exam_Results_Loading__c == True)) {
+                           isPart2RegisteredAwaitingResults = True;
+                           part2EA = objFRMEA;
+                       }
                 }
-            }    
-            System.debug('isPart1RegisteredInActiveGroup:' + isPart1RegisteredInActiveGroup);
+            }
+            
+            System.debug('isPart1RegisteredInActiveAdmin:' + isPart1RegisteredInActiveAdmin);
             System.debug('isPart1RegisteredAwaitingResults:' + isPart1RegisteredAwaitingResults);
-            System.debug('isPart2RegisteredInActiveGroup:' + isPart2RegisteredInActiveGroup);
+            System.debug('isPart2RegisteredInActiveAdmin:' + isPart2RegisteredInActiveAdmin);
             System.debug('isPart2RegisteredAwaitingResults:' + isPart2RegisteredAwaitingResults);
-            
-            System.debug('isERPRegistered:' + isERPRegistered);
-            System.debug('isERPPart1AwaitingResults:' + isERPPart1AwaitingResults);
-            System.debug('isERPPart2AwaitingResults:' + isERPPart2AwaitingResults);
-            
+                        
             System.debug('isPart1Deferred:' + isPart1Deferred);
             System.debug('isPart2Deferred:' + isPart2Deferred);        
             
@@ -381,15 +353,15 @@ public class FrmRegistrationForm extends ExamRegistrationForm {
             
             // Per Vivek allow Awaiting Results for FRM to reg
             // && !isERPPart1AwaitingResults && !isERPPart2AwaitingResults
-            if(!isERPRegistered && !isERPOpenOrder && !isOpenOrder && !isPaymentBlocked) {
-                if(!isPart1Passed && isPart1Offered && !isPart1RegisteredInActiveGroup && !isPart1RegisteredAwaitingResults && !isPart2RegisteredAwaitingResults && !isPart1Deferred && !isPart2Deferred) {
+            if(!isOpenOrder && !isPaymentBlocked) {
+                if(!isPart1Passed && isPart1Offered && !isPart1RegisteredInActiveAdmin && !isPart1RegisteredAwaitingResults && !isPart2RegisteredAwaitingResults && !isPart1Deferred && !isPart2Deferred) {
                     eligibleExams.add('FRM Part 1');
                 }   
                 
-                if(!isPart2Passed && isPart2Offered && !isPart2RegisteredInActiveGroup && !isPart1RegisteredAwaitingResults && !isPart2RegisteredAwaitingResults && !isPart1Deferred && !isPart2Deferred) {
+                if(!isPart2Passed && isPart2Offered && !isPart2RegisteredInActiveAdmin && !isPart1RegisteredAwaitingResults && !isPart2RegisteredAwaitingResults && !isPart1Deferred && !isPart2Deferred) {
                                     
                     // If already registered for Part I is Part II available in the same Admin on of after Part I
-                    if(part1EA != NULL && isPart1RegisteredInActiveGroup) {
+                    if(part1EA != NULL && isPart1RegisteredInActiveAdmin) {
                         String key1 = part1EA.Exam_Administration__c + ':' + part1EA.Exam_Part__r.Exam_Part_Number__c;
                         Exam_Part__c fndPart1 = mapParts.get(key1);
                         System.debug('fndPart1:' + fndPart1);
@@ -436,21 +408,17 @@ public class FrmRegistrationForm extends ExamRegistrationForm {
         reObj.isRegistrationOpen = isRegistrationOpen;
         reObj.isPaymentBlocked = isPaymentBlocked;
         reObj.isInProgram = isInProgram;
-        reObj.isOtherRegistered = isERPRegistered;
-        reObj.isOtherPart1AwaitingResults = isERPPart1AwaitingResults;
-        reObj.isOtherPart2AwaitingResults = isERPPart2AwaitingResults;
-        reObj.isOtherOpenOrder = isERPOpenOrder;               
         reObj.isOpenOrder = isOpenOrder;
                 
         reObj.isPart1Passed = isPart1Passed;
         reObj.isPart1Offered = isPart1Offered;
-        reObj.isPart1RegisteredInActiveGroup = isPart1RegisteredInActiveGroup;
+        reObj.isPart1RegisteredInActiveAdmin = isPart1RegisteredInActiveAdmin;
         reObj.isPart1RegisteredAwaitingResults = isPart1RegisteredAwaitingResults;
         reObj.isPart1Deferred = isPart1Deferred;
                 
         reObj.isPart2Passed = isPart2Passed;
         reObj.isPart2Offered = isPart2Offered;
-        reObj.isPart2RegisteredInActiveGroup = isPart2RegisteredInActiveGroup;
+        reObj.isPart2RegisteredInActiveAdmin = isPart2RegisteredInActiveAdmin;
         reObj.isPart2RegisteredAwaitingResults = isPart2RegisteredAwaitingResults;
         reObj.isPart2Deferred = isPart2Deferred; 
             
@@ -709,9 +677,14 @@ public class FrmRegistrationForm extends ExamRegistrationForm {
             exams.add(es.Exam__c);
         }
 
+        // AG 10/18/2022 - Exams 2023
+        // getExamPricebookEntries is not Exam Part to PriceBookEntry
         Map<Id, ExamSelectionOptions.ExamPricebookEntry> examPricebookEntries = super.getExamPricebookEntries(exams);
 
         System.debug('***examPricebookEntries:' + examPricebookEntries);
+        
+        
+system.assert(false, 'BOOM!'+ examPricebookEntries);
         
         ExamSelectionOptions eso = new ExamSelectionOptions(examSitesMap, examPricebookEntries);
         
