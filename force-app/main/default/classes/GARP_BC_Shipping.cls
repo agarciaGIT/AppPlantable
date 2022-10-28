@@ -21,14 +21,19 @@ public class GARP_BC_Shipping {
         Set<String> glCodes = new Set<String>();
         
         Integer totalQuantity = 0;
+        Integer cntNeedShipping = 0;
         for(GARP_MS_Shipping.shipOrderLineItem lineItem :shipOrder.lineItems) {
             prodCodes.add(lineItem.productCode);
             glCodes.add(lineItem.glCode);
+            if(lineItem.needsShipping != NULL && lineItem.needsShipping == True) {
+                cntNeedShipping++;
+            }
         }
         
         System.debug('prodCodes:' + prodCodes);
         System.debug('glCodes:' + glCodes);
         
+        Integer cntShipping=0;
         if(prodCodes.size() > 0) {
             GARP_MS_Shipping.shipOrderLineItem lineItem = shipOrder.lineItems[0];
 
@@ -45,7 +50,8 @@ public class GARP_BC_Shipping {
                 for(GARP_MS_Shipping.shipOrderLineItem li :shipOrder.lineItems) {
                     Shipping_Charge__c fndShipCharge = mapShipCharges.get(li.productCode + '~' + li.glCode);
                     if(fndShipCharge != NULL) {
-                        totalQuantity += li.quantity;                    
+                        totalQuantity += li.quantity; 
+                        cntShipping++;                   
                     }
                 }
                 
@@ -64,6 +70,13 @@ public class GARP_BC_Shipping {
                     ret = lstShip[0];    
                 }
             }
+        }
+        
+        // If the number of products that need shipping
+        // does not match the number shipped
+        // do not send response, some products cannot be shipped
+        if(cntShipping != cntNeedShipping) {
+            ret=null;
         }
         
         return ret;

@@ -2,5 +2,5 @@
 <StaticResource xmlns="http://soap.sforce.com/2006/04/metadata">
     <cacheControl>Public</cacheControl>
     <contentType>application/octet-stream</contentType>
-    <description>US-53890</description>
+    <description>Exams 2023 + UI</description>
 </StaticResource>

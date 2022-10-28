@@ -25,6 +25,7 @@ public class RegistrationFormShippingHelper {
                 soli.productCode = pbe.Product2.ProductCode;
                 soli.glCode = pbe.Product2.GL_Code__c;
                 soli.quantity = 1;
+                soli.needsShipping = True;
                 shipOrder.lineItems.add(soli);
             }
         } 

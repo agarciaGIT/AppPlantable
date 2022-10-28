@@ -3,7 +3,7 @@
     showHeader="false"
     id="visualForceServices"
     controller="sfdcAppRemoter" 
-    extensions="RegistrationFormLeadRemoter,RegistrationFormShippingRemoter,JobController,ConventionController,EventController,EventContentRestController,EventSponsorData,ExamManagementRemoter,PolicyController,SurveyRegistrationController,TagManagerController,ExamRegistrationFormRemoter,CertRegistrationFormRemoter,GARP_MS_Membership,GARP_MS_Courses"
+    extensions="RegistrationFormLeadRemoter,RegistrationFormShippingRemoter,JobController,ConventionController,EventController,EventContentRestController,EventSponsorData,ExamManagementRemoter,PolicyController,SurveyRegistrationController,TagManagerController,ExamRegistrationFormRemoter,CertRegistrationFormRemoter,GARP_MS_Membership,GARP_MS_Courses,GARP_MS_Shipping"
 >
     <script type="text/javascript">
     
@@ -118,6 +118,19 @@
         Visualforce.remoting.Manager.invokeAction(
             '{!$RemoteAction.RegistrationFormShippingRemoter.fetchShippingOptions}',
             countryCode, postalCode, productIds,
+            function(result, event){
+                if(event.status) callback(null, { result: result, event: event });    
+                else callback(event.message, null);              
+            }, 
+            {escape: true}
+        );            
+    }
+    
+    // Universal Registration Form Remote Methods
+    sfdcService.getShippingRate = function(shipOrder, callback){
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.GARP_MS_Shipping.getShippingRate}',
+            shipOrder,
             function(result, event){
                 if(event.status) callback(null, { result: result, event: event });    
                 else callback(event.message, null);              

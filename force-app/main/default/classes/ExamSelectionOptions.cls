@@ -20,7 +20,9 @@ public class ExamSelectionOptions {
     public class ExamPart {
         public String id									{ get; set; }
         public String labelNoPrice							{ get; set; }
+        public String labelPrice							{ get; set; }
         public String label									{ get; set; }
+        public String windowType							{ get; set; }
         public Exam_Part__c examPart       	                { get; set; }                   
         public ExamPricebookEntry examPricebookEntry        { get; set; }
         public List<Site> sites                             { get; set; } 
@@ -32,6 +34,7 @@ public class ExamSelectionOptions {
         public String examAdminID							        { get; set; }
         public PricebookEntry pricebookEntry 				        { get; set; }
         public String rateType				 				        { get; set; }
+        public String windowType			 				        { get; set; }
         public List<ExamPricebookEntry> otherRates					{ get; set; }
     }
 
@@ -173,16 +176,18 @@ public class ExamSelectionOptions {
                             Date d = ep.Exam_Date__c;
                             Time t = Time.newInstance(0, 0, 0, 0);
                             DateTime dt = DateTime.newInstance(d, t);
-                            examPart.label = dt.format('MMMM dd, yyyy')  + ' - USD ' + examPart.examPricebookEntry.pricebookEntry.UnitPrice;
-                            examPart.labelNoPrice = dt.format('MMMM dd, yyyy');
+                            examPart.label = dt.format('MMMM dd, yyyy');
+                            examPart.labelPrice = 'USD ' + examPart.examPricebookEntry.pricebookEntry.UnitPrice;
+                            examPart.windowType = examPart.examPricebookEntry.windowType;
                         }else if(ep.Exam_Start_Date__c != null && ep.Exam_End_Date__c != null){
                             Date startDate = ep.Exam_Start_Date__c;
                             Date endDate = ep.Exam_End_Date__c;
                             Time t = Time.newInstance(0, 0, 0, 0);
                             DateTime startDateTime = DateTime.newInstance(startDate, t);
                             DateTime endDateTime = DateTime.newInstance(endDate, t);
-                            examPart.label = startDateTime.format('MMMM dd, yyyy') + ' - ' + endDateTime.format('MMMM dd, yyyy')  + ' - USD ' + examPart.examPricebookEntry.pricebookEntry.UnitPrice;
-                            examPart.labelNoPrice = startDateTime.format('MMMM dd, yyyy') + ' - ' + endDateTime.format('MMMM dd, yyyy');
+                            examPart.label = startDateTime.format('MMMM dd, yyyy');
+                            examPart.labelPrice = 'USD ' + examPart.examPricebookEntry.pricebookEntry.UnitPrice;
+                            examPart.windowType = examPart.examPricebookEntry.windowType;
                         }else{
                             examPart.label = 'Configure Exam_Administration__c Exam_Date__c or Exam_Start_Date__c and Exam_End_Date__c.';
                         }

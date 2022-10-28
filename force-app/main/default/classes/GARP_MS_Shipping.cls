@@ -12,6 +12,7 @@ public class GARP_MS_Shipping {
         @AuraEnabled Public String productCode {get;set;}
         @AuraEnabled Public String glCode {get;set;}
         @AuraEnabled Public Integer quantity {get;set;}
+        @AuraEnabled Public Boolean needsShipping {get;set;}
     }
     
     public class shipOrder {
@@ -25,8 +26,10 @@ public class GARP_MS_Shipping {
         return GARP_BC_Shipping.getShippingRate(productCode, glCode, countryCode);
     }
 
+    @RemoteAction
     public static Shipping_Charge__c getShippingRate(GARP_MS_Shipping.shipOrder shipOrder){
         return GARP_BC_Shipping.getShippingRate(shipOrder);
     }
 
+    public GARP_MS_Shipping(sfdcAppRemoter ctrl){}
 }

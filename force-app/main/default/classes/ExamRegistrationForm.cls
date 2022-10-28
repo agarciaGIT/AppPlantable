@@ -494,7 +494,9 @@ public abstract class ExamRegistrationForm {
         }
                 
         List<Exam_Rate__c> lstExamRates = [
-            SELECT Id, Name, Exam__c, Rate_Type__c, Exam_Administration__c, Exam_Part__c, Exam__r.Exam__c, Exam__r.Name, Exam__r.Administration_Time_of_Day__c, 
+            SELECT Id, Name, Exam__c, Rate_Type__c, Exam_Registration_Window__r.Type__c,
+            Exam_Administration__c, Exam_Part__c, Exam__r.Exam__c, Exam__r.Name, 
+            Exam__r.Administration_Time_of_Day__c, 
             Product__c, Product__r.Name, Product__r.ProductCode
             FROM Exam_Rate__c 
             WHERE 
@@ -508,11 +510,16 @@ public abstract class ExamRegistrationForm {
         System.debug('lstExamRates:' + lstExamRates);
         
         MAP<String,String> mapRateTypes = new MAP<String,String>();
+        MAP<String,String> mapWindowTypes = new MAP<String,String>();
         MAP<String,Set<Exam_Rate__c>> otherRatesProdMap = new MAP<String,Set<Exam_Rate__c>>();
         List<Exam_Rate__c> examRates = new List<Exam_Rate__c>();
         Set<Id> product2Ids = new Set<Id>();
         
         for(Exam_Rate__c er:lstExamRates) {           
+            
+            if(er.Exam_Registration_Window__r != NULL && er.Exam_Registration_Window__r.Type__c != NULL) {
+                mapWindowTypes.put(er.Product__c, er.Exam_Registration_Window__r.Type__c);
+            }
             
             if(er.Rate_Type__c != NULL) {                
                 mapRateTypes.put(er.Product__c, er.Rate_Type__c);
@@ -601,7 +608,8 @@ public abstract class ExamRegistrationForm {
                 examPricebookEntry.id                       = er.Id;
                 examPricebookEntry.exam                     = er.Exam__r;
                 examPricebookEntry.priceBookEntry           = pricebookEntryByProduct2Id.get(er.Product__c);
-                examPricebookEntry.rateType                 =  mapRateTypes.get(er.Product__c);
+                examPricebookEntry.rateType                 = mapRateTypes.get(er.Product__c);
+                examPricebookEntry.windowType				= mapWindowTypes.get(er.Product__c);
                 
                 Set<Exam_Rate__c> otherProducts = otherRatesProdMap.get(er.Exam__r.Exam__c);
                 System.debug('otherProducts:' + otherProducts);
