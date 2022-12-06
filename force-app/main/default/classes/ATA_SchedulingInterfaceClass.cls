@@ -237,6 +237,14 @@ public class ATA_SchedulingInterfaceClass {
                     ex.Outbound_Type__c = null;
                     ex.Integration_Type__c = null;
                     ex.ATA_PSI_Is_Override__c = false;
+                    ex.Integration_Failed__c = false;
+                    UpdateexamattemptMap.put(ex.Id,ex);
+                }else{
+                    Exam_Attempt__c ex =  new Exam_Attempt__c();
+                    ex.Id = intData.Exam_Registrations__c;
+                    ex.Outbound_Type__c = null;
+                    ex.Integration_Type__c = null;
+                    ex.Integration_Failed__c = true;
                     UpdateexamattemptMap.put(ex.Id,ex);
                 }
             }

@@ -68,7 +68,7 @@ global class chargemodificationsonopp implements Database.Batchable<SObject>
                 objUpdate.ChargentSFA__Charge_Amount__c = 195;
                 lstUpdateOpps.add(objUpdate);
             }
-            else if(objUpdate.ChargentSFA__Charge_Amount__c != 195)
+            else if(objUpdate.ChargentSFA__Charge_Amount__c != 195 && objUpdate.ChargentSFA__Charge_Amount__c != 150)
             {
                 if(memContractsMap.containsKey(objUpdate.accountID)){
                 	objUpdate.ChargentSFA__Payment_Start_Date__c = memContractsMap.get(objUpdate.accountID).EndDate;

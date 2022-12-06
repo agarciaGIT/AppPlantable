@@ -15,6 +15,7 @@ global with sharing class RESTDataSyncService {
         public String title           { get; set; }
         public String industry        { get; set; }       
         public String professionalLevel  { get; set; } 
+        public String jobfunction     { get; set; }         
     }
     
     public static Boolean setTeamRegistration(teamRegistrationData data){
@@ -42,6 +43,7 @@ global with sharing class RESTDataSyncService {
             Form_Title__c = data.title,
             Form_Professional_Level__c = data.professionalLevel,
             Form_Industry__c = data.industry,
+            Form_Job_Function__c = data.jobfunction,
             RecordTypeId = recordtypehelper.getrecordtypeidfromschema('Team_Registration__c','Team_Registration_Prospect')
         );
         insert tr;

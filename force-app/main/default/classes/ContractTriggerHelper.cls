@@ -69,7 +69,7 @@ public class ContractTriggerHelper {
                                        FROM Contract  
                                        WHERE AccountId IN :currentContractAndAccountIds.keySet() 
                                        AND RecordTypeId =: CPETypeId];
-        
+        System.debug('lstContract-->'+lstContract);
         for( contract c : lstContract) {
             if((c.Status == 'Activated ( Auto-Renew )' || c.Status == 'Completed') && 
                (c.StartDate == lastStartDt || c.StartDate == ThisStartDt || c.StartDate == NextStartDt)) {
@@ -82,6 +82,10 @@ public class ContractTriggerHelper {
             {
                 Contract cpe = accountToCPEContractMap.get(c.AccountId);
                 Candidate_Requirement__c cr = cpe.Candidate_Requirements__r[0];
+                System.debug('accountToCPEContractMap-->'+accountToCPEContractMap);
+                System.debug('Candidate_Requirement__c-->cr-->'+cr);
+                System.debug('contract-->c '+c);
+                System.debug('Contract-->cpe '+cpe);
                 if(c.RecordTypeID == SCRExamTypeId && (cpe.Status == 'Activated ( Auto-Renew )' || cpe.Status == 'Activated') ){
                     CPE_Claim__c  cpeClaim = new CPE_Claim__c ();
                     cpeClaim.Candidate_Requirement__c = cr.id;

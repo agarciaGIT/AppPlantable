@@ -1,6 +1,6 @@
 public class GARP_BC_Webcasts {
     
-	public class returnWebcastInformation {
+  public class returnWebcastInformation {
         public List < Webcast__c > webcastInformation { get; set; }
         public List < Presenter__c > presentersAtWebcast { get; set; }
         public List < String  > allWebcastParticipantsMediaURLs { get; set; }
@@ -61,15 +61,18 @@ public class GARP_BC_Webcasts {
             if(contactId != null){
                 // PORTAL
                 userContactId = contactId;
+                System.Debug('***insertWebcastRegistration :'+objData );
                 insertWebcastRegistration(objData, contactId);
             } else if(contactId == null){
                 // PUBLIC
                 if(objData.Membership_Type == 'Affiliate') {
                     newAffiliateOrder = Registration.CreateOrder(objData);
                     userContactId = newAffiliateOrder.contactId;
+                    System.Debug('***Affiliate insertWebcastRegistration :'+objData );
                     insertWebcastRegistration(objData, newAffiliateOrder.contactId);
                 } else {
-                    Response.Detail ret = (Response.Detail)GARP_BC_Webcasts.createNonMemberWebcastRegistration(objData);
+                    System.Debug('***createNonMemberWebcastRegistration :'+objData );
+                    Response.Detail ret = (Response.Detail)createNonMemberWebcastRegistration(objData);
                     if(ret != NULL && ret.data != NULL) {
                         Webcast_Registration__c wcr = (Webcast_Registration__c)ret.data;
                         userContactId = wcr.Contact__c;
@@ -105,7 +108,19 @@ public class GARP_BC_Webcasts {
         newWebcastRegistration.Contact__c = contactId;
         newWebcastRegistration.Status__c = 'Registered';
         newWebcastRegistration.Webcast__c = objData.webcastId;       
-        newWebcastRegistration.Agree_To_Sponsor_Contact__c = objData.sponsorInformationExchangeAttestation ? DateTime.Now() : NULL;
+        //newWebcastRegistration.Agree_To_Sponsor_Contact__c = objData.sponsorInformationExchangeAttestation ? DateTime.Now() : NULL;
+        
+        if(objData.sponsorInformationExchangeAttestation != null && objData.sponsorInformationExchangeAttestation){
+            newWebcastRegistration.Agree_To_Sponsor_Contact__c = System.now();
+        }
+        
+        if(objData.garpInformationExchangeAttestation != null && objData.garpInformationExchangeAttestation){
+            newWebcastRegistration.Agree_To_GARP_Content__c = System.now();
+        }
+        
+        if(objData.privacyPolicyAttestation != null && objData.privacyPolicyAttestation){
+            newWebcastRegistration.Privacy_Policy_Attestation__c = System.now();
+        }        
         
         System.debug('newWebcastRegistratione:' + newWebcastRegistration);
         
@@ -267,9 +282,17 @@ public class GARP_BC_Webcasts {
                 webcastRegistration.Webcast_Registration_Date__c = Date.today();     
                 webcastRegistration.Status__c = 'Registered';
                 
-                system.debug('wrapper.sponsorInformationExchangeAttestation:' + wrapper.sponsorInformationExchangeAttestation);
+                if(wrapper.sponsorInformationExchangeAttestation != null && wrapper.sponsorInformationExchangeAttestation){
+                    webcastRegistration.Agree_To_Sponsor_Contact__c = System.now();
+                }
+
+                if(wrapper.garpInformationExchangeAttestation != null && wrapper.garpInformationExchangeAttestation){
+                    webcastRegistration.Agree_To_GARP_Content__c = System.now();
+                }
                 
-                webcastRegistration.Agree_To_Sponsor_Contact__c = wrapper.sponsorInformationExchangeAttestation ? DateTime.Now() : NULL;
+                if(wrapper.privacyPolicyAttestation != null && wrapper.privacyPolicyAttestation){
+                    webcastRegistration.Privacy_Policy_Attestation__c = System.now();
+                }
                 
                 system.debug('webcastRegistration:' + webcastRegistration);
                 

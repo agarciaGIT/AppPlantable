@@ -201,9 +201,9 @@ public class RegistrationFormShippingRemoterTest {
 
         Test.startTest();
         
-        Response.Detail response = RegistrationFormShippingHelper.validateShippingSelection(shipping, lead, new Set<Id>{pbe.Id});
+        Response.Collection response = RegistrationFormShippingHelper.validateShippingSelection(shipping, lead, new Set<Id>{pbe.Id});
                 
-        OpportunityLineItem shippingOli = (OpportunityLineItem)response.data;
+        OpportunityLineItem shippingOli = (OpportunityLineItem)response.data[0];
         
         System.assertEquals(200, response.status, 'It should be a successful request.');
         System.assertEquals(14.74, shippingOli.UnitPrice, shippingOli);
@@ -237,7 +237,7 @@ public class RegistrationFormShippingRemoterTest {
                 
         Response.ResponseException actualResponse = null;
         try{
-        	Response.Detail response = RegistrationFormShippingHelper.validateShippingSelection(shipping, lead, new Set<Id>{pbe.Id});
+        	Response.Collection response = RegistrationFormShippingHelper.validateShippingSelection(shipping, lead, new Set<Id>{pbe.Id});
         }catch(Response.ResponseException e){
             actualResponse = e;
         }
@@ -269,9 +269,9 @@ public class RegistrationFormShippingRemoterTest {
 
         Test.startTest();
         
-        Response.Detail response = RegistrationFormShippingHelper.validateShippingSelection(shipping, lead, new Set<Id>{pbe.Id});
+        Response.Collection response = RegistrationFormShippingHelper.validateShippingSelection(shipping, lead, new Set<Id>{pbe.Id});
                 
-        OpportunityLineItem shippingOli = (OpportunityLineItem)response.data;
+        OpportunityLineItem shippingOli = (OpportunityLineItem)response.data[0];
         
         System.assertEquals(200, response.status, 'It should be a successful request.');
         System.assertEquals(14.00, shippingOli.UnitPrice, 'It should be USD 14.00 after the discount is applied.');
@@ -303,9 +303,9 @@ public class RegistrationFormShippingRemoterTest {
 
         Test.startTest();
         
-        Response.Detail response = RegistrationFormShippingHelper.validateShippingSelection(shipping, lead, new Set<Id>{pbe.Id});
+        Response.Collection response = RegistrationFormShippingHelper.validateShippingSelection(shipping, lead, new Set<Id>{pbe.Id});
                 
-        OpportunityLineItem shippingOli = (OpportunityLineItem)response.data;
+        OpportunityLineItem shippingOli = (OpportunityLineItem)response.data[0];
         
         System.assertEquals(200, response.status, 'It should be a successful request.');
         System.assertEquals(14.00, shippingOli.UnitPrice, 'It should be USD 14.00 after the discount is applied.');

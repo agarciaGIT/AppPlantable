@@ -51,6 +51,7 @@ public class testFreeInvoiceController {
                                                         ChargentSFA__Payment_Method__c='Credit Card', 
                                                        ChargentSFA__Gateway__c = gate.id);
         insert chargentTrans;
+        ChargentSFATransactionTriggerHandler.OppListToUpdate.clear();
         Opportunity opp1 = [select Id, ChargentSFA__Invoice_Number__c from Opportunity];
         system.debug('opp1==========>'+opp1);
         system.debug('oppli3=======>'+oppli3);

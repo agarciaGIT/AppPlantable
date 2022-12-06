@@ -31,7 +31,7 @@ public class CreateRecurringOpps
         mapContractToOpp.put(ct.Opportunity__c,ct);
     }
     Map<Id,Id> mapOppCloneIds = new Map<Id,Id>();
-    for(Opportunity objOpp : [select id,name,accountId , Cross_Check__c ,ChargentSFA__Billing_Zip__c,ChargentSFA__Billing_State__c,ChargentSFA__Billing_Postcode__c,ChargentSFA__Billing_Phone__c,ChargentSFA__Billing_First__c,ChargentSFA__Billing_Last__c,ChargentSFA__Billing_Email__c,ChargentSFA__Billing_Fax__c,ChargentSFA__Billing_Company__c,ChargentSFA__Billing_Country__c,ChargentSFA__Billing_Address__c,ChargentSFA__Billing_City__c,ChargentSFA__Payment_Status__c,Cloned_From__c,account.Billing_Address_Company__c, account.BillingCity, account.BillingCountry, account.BillingState, account.BillingStreet, account.BillingPostalCode,Account.Member_Email__c, Account.Member_First_Name__c, Account.Member_Last_Name__c,CloseDate,StageName,Auto_Renew__c,Eligible_for_Membership_Extension__c,ChargentSFA__Charge_Amount__c,ChargentSFA__Tokenization__c from Opportunity where id in : oppIds])
+    for(Opportunity objOpp : [select id,name,accountId , Cross_Check__c ,ChargentSFA__Billing_Zip__c,ChargentSFA__Billing_State__c,ChargentSFA__Billing_Postcode__c,ChargentSFA__Billing_Phone__c,ChargentSFA__Billing_First__c,ChargentSFA__Billing_Last__c,ChargentSFA__Billing_Email__c,ChargentSFA__Billing_Fax__c,ChargentSFA__Billing_Company__c,ChargentSFA__Billing_Country__c,ChargentSFA__Billing_Address__c,ChargentSFA__Billing_City__c,ChargentSFA__Payment_Status__c,Cloned_From__c,account.Billing_Address_Company__c, account.BillingCity, account.BillingCountry, account.BillingState, account.BillingStreet, account.BillingPostalCode,Account.Member_Email__c, Account.Member_First_Name__c, Account.Member_Last_Name__c,CloseDate,StageName,Auto_Renew__c,Eligible_for_Membership_Extension__c,ChargentSFA__Charge_Amount__c,ChargentSFA__Tokenization__c,ChargentSFA__Payment_Method__c,ChargentSFA__Card_Type__c from Opportunity where id in : oppIds])
     {
        
         
@@ -39,7 +39,7 @@ public class CreateRecurringOpps
         {
             Opportunity objClone = objOpp.Clone();
             objClone.Eligible_for_Membership_Extension__c = true;
-             objClone.name = 'Garp Membership';
+            objClone.name = 'Garp Membership';
             objClone.Cross_Check__c = true;
             objClone.Auto_Renew__c = true;
             objClone.ChargentSFA__Payment_Status__c = '';
@@ -61,6 +61,8 @@ public class CreateRecurringOpps
             objClone.ChargentSFA__Billing_Postcode__c= objOpp.account.BillingPostalCode;
             objClone.ChargentSFA__Billing_State__c   = objOpp.account.BillingState;
             objClone.ChargentSFA__Billing_Zip__c     = objOpp.account.BillingPostalCode;
+            objClone.ChargentSFA__Payment_Method__c = objOpp.ChargentSFA__Payment_Method__c;
+            objClone.ChargentSFA__Card_Type__c = objOpp.ChargentSFA__Card_Type__c;
             
             lstNewOpps.add(objClone);
             

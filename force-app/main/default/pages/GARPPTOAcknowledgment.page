@@ -1,0 +1,3 @@
+<apex:page standardController="GARP_Time_Off_Request__c">
+  <p>I acknowledge that if the time I have requested off exceeds my vacation accrual balance to date and agree that if I resign prior to accruing sufficient vacation time to satisfy my current vacation request, GARP may deduct the amount of vacation time taken, but not yet accrued from my final paycheck.</p>
+</apex:page>

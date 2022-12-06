@@ -82,7 +82,7 @@ global without sharing class EventRegistration {
         List<Id> idsOfParentEventsForMasterClass = new List<Id>();
         
         List < Event__c > allEventInformation = [
-            SELECT Id, ON24_Event_Id__c, ON24_URL__c, Online_Meeting_URL__c, Online_Meeting_Notes__c, Short_Title__c,Hide_Address_fields__c,Overview__c, Is_GDPR_Compliant_Event__c, Is_Sponsored_Event__c, RecordType.Name, Certified_get_Member_Rate__c, VenueName__c, Invite_Only__c, Content__r.Form__r.Form_Name__c, Content__r.Custom_Header__c, Content__r.Custom_Footer__c, Title__c, Parent_Event__r.Id, Name, Alumni_Product__r.GL_Code__c, Alumni_Product__r.ProductCode, Alumni_Discount_Percentage__c, Can_Pay_By_wire__c, Event_Background_Image__c, Registration_Type__c, Event_Color_Palette__c, Sub_Title__c, Can_Register__c, Description__c, Cancellation_Policy__c, Program_Change__c, Events_Photography_Release__c, Last_Date_For_Registration__c, Last_Date_for_Wire_Check_Registration__c, Chapter_Meeting__c, Start_Date__c, End_Date__c, Address__c, AddressMap_Image_URL__c, RSVP_Copy__c, Approval_Required__c, Time_Zone__c, Max_Capacity_Met__c, RSVP_Waitlist_Copy__c, Time_Zone__r.Name, Time_Zone__r.Abbreviation__c, Time_Zone__r.Add_This_Event_Zone__c ,Delivery_Method__c,
+            SELECT Id, Delivery_Method__c, ON24_Event_Id__c, ON24_URL__c, Online_Meeting_URL__c, Online_Meeting_Notes__c, Short_Title__c,Hide_Address_fields__c,Overview__c, Is_GDPR_Compliant_Event__c, Is_Sponsored_Event__c, RecordType.Name, Certified_get_Member_Rate__c, VenueName__c, Invite_Only__c, Content__r.Form__r.Form_Name__c, Content__r.Custom_Header__c, Content__r.Custom_Footer__c, Title__c, Parent_Event__r.Id, Name, Alumni_Product__r.GL_Code__c, Alumni_Product__r.ProductCode, Alumni_Discount_Percentage__c, Can_Pay_By_wire__c, Event_Background_Image__c, Registration_Type__c, Event_Color_Palette__c, Sub_Title__c, Can_Register__c, Description__c, Cancellation_Policy__c, Program_Change__c, Events_Photography_Release__c, Last_Date_For_Registration__c, Last_Date_for_Wire_Check_Registration__c, Chapter_Meeting__c, Start_Date__c, End_Date__c, Address__c, AddressMap_Image_URL__c, RSVP_Copy__c, Approval_Required__c, Time_Zone__c, Max_Capacity_Met__c, RSVP_Waitlist_Copy__c, Time_Zone__r.Name, Time_Zone__r.Abbreviation__c, Time_Zone__r.Add_This_Event_Zone__c ,
             (SELECT Id, Name, Start_Date__c, Product_Member_Code__r.GL_Code__c, Product_Non_Member_Code__r.GL_Code__c, Product_Member_Code__r.ProductCode, Product_Non_Member_Code__r.ProductCode, Product_Alumni_Code__r.GL_Code__c, Product_Alumni_Code__r.ProductCode, End_Date__c, Member_Rate__c, Non_Member_Rate__c, Alumni_Rate__c from Event_Rates__r WHERE (Start_Date__c <= TODAY and End_Date__c >= TODAY)), 
             (SELECT Name, Combo_Event__c, Is_Membership_Combo__c, Combo_Member_Product_Code__r.Id, Combo_Member_Product_Code__r.ProductCode, Combo_Non_Member_Product_Code__r.ProductCode, Combo_Member_Product_Code__r.GL_Code__c, Combo_Non_Member_Product_Code__r.GL_Code__c, Combo_Member_Product_Code__c, Combo_Non_Member_Product_Code__c, Main_Event_Rate__r.Event__c, Member_Rate__c, Non_Member_Rate__c, Status__c FROM Event_Combo_Rates__r WHERE Main_Event_Rate__r.Start_Date__c <= TODAY and Main_Event_Rate__r.End_Date__c >= TODAY) 
             FROM Event__c 
@@ -371,6 +371,9 @@ global without sharing class EventRegistration {
                 if(event.Max_Capacity_Met__c){
                     eventRegistration.Status__c = 'Waitlisted';
                 }
+                if(wrapper.AttendanceMethod != null){
+                    eventRegistration.Attendance_Method__c = wrapper.AttendanceMethod;
+                }
                 
                 INSERT eventRegistration;     
                 
@@ -578,6 +581,10 @@ global without sharing class EventRegistration {
                     eventRegistration.Registration_Type__c = registrationType;
                 }
                 eventRegistration.Status__c = 'Registered and Paid';
+                
+                if(wrapper.AttendanceMethod != null){
+                    eventRegistration.Attendance_Method__c = wrapper.AttendanceMethod;
+                }
                 
                 INSERT eventRegistration;     
                 

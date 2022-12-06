@@ -16,7 +16,7 @@ public class calcMembershipExpirationDate_Test{
             opportunity opp = new Opportunity(ChargentSFA__Gateway__c = chrgGtway.id, Name = 'Test', accountId = acc.id, amount = 123, closedate = system.today(),  LEGACY_Purchase_Date__c = system.today() - 15, StageName = 'Closed');        
             insert opp;
          
-            Product2 prod = new Product2(Name = 'New York Convention', Product_ID__c= '6', GL_Code__c = '4040');
+            Product2 prod = new Product2(Name = 'New York Convention', Product_ID__c= '6', GL_Code__c = '4040',ProductCode = 'CHLF');
             insert prod;
          
             Id pricebookId = Test.getStandardPricebookId();

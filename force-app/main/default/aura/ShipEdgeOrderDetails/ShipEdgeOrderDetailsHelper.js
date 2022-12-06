@@ -24,7 +24,7 @@
             }
             else{
                 component.set("v.errorMsg",  'Error in getting Order Details');
-                component.set("v.showError",tru);
+                component.set("v.showError",true);
             }
         });
         $A.enqueueAction(action);

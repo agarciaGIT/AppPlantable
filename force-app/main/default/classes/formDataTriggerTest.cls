@@ -1,11 +1,11 @@
 @isTest
 public class formDataTriggerTest {
     public static testmethod void formDataTriggerCoverage(){
-        
+        //TestClassUtil.isForOldTrigger();
         SubscriptionManagement__c fdSetting = new SubscriptionManagement__c();
         fdSetting.Name ='FRM Exam Updates'; // form.Subscriptions value
         fdSetting.Contact_Field_Mapping__c = 'test1__c,test2__c'; 
-        fdSetting.Lead_Field_Maapping__c = 'Email_FRM__c';	 
+        fdSetting.Lead_Field_Maapping__c = 'Email_FRM__c';   
         insert fdSetting;
         
          account acc = new account(Name ='test');

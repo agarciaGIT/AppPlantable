@@ -916,8 +916,8 @@ public without sharing class PortalClass {
                 WHERE Pricebook2.IsActive = true and ProductCode = :'MEMR'
             ];
             oppLineItem.PricebookEntryId = PricebookEntry.Id;
-            oppLineItem.TotalPrice = 100.00;
-            oppLineItem.Quantity = 12;
+            oppLineItem.UnitPrice = 100.00;
+            oppLineItem.Quantity = 1;
             INSERT oppLineItem;          
         }      
 

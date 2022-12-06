@@ -7,7 +7,10 @@ private class CreateRecurringOpps_test{
 
          //RecordType rt = [select id from RecordType where SobjectType='Opportunity' and IsActive=true limit 1];
          //insert rt;
-         insert new Updateids__c(Name='GARP',Record_id__c = 'a0A4000000uA1fU'); 
+         ChargentBase__Gateway__c chrgGtway = new ChargentBase__Gateway__c(Name = 'Test',ChargentBase__Active__c = true );
+        insert chrgGtway;
+        
+         insert new Updateids__c(Name='GARP',Record_id__c = chrgGtway.id); 
           Account acc = new Account(name='Test Account');
           insert acc;
         Opportunity opp = new Opportunity(accountId = acc.id,Auto_Renew__c = true,ChargentSFA__Payment_Status__c='Recurring',Company__c = 'GARP',ChargentSFA__Payment_Frequency__c='Once',name='Test Name',StageName='New',CloseDate=system.today().addDays(2),ChargentSFA__Charge_Amount__c=195);

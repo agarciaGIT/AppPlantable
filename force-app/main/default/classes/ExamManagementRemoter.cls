@@ -2,20 +2,13 @@ public class ExamManagementRemoter {
     
     @RemoteAction
     static public ExamManagementController.programInfo getProgramInfo(String programType) {
-        ExamManagementController.programInfo pri = new ExamManagementController.programInfo();
-        
-        return ExamManagementController.getProgramData(programType);
+    	return ExamManagementController.getProgramData(programType);
     }
 
     
     @RemoteAction
     static public ExamManagementController.allProgramData getAllProgramInfo() {
-        ExamManagementController.allProgramData apd = new ExamManagementController.allProgramData();
-        apd.frm = ExamManagementController.getProgramData('frm');
-        apd.erp = ExamManagementController.getProgramData('erp');
-        apd.scr = ExamManagementController.getProgramData('scr');
-        
-        return apd;
+        return ExamManagementController.getAllProgramInfo();
     }
     
     @RemoteAction
@@ -25,8 +18,7 @@ public class ExamManagementRemoter {
     
     @RemoteAction
     static public void logFailedAuthorization(String examRegId) {
-        AppError__c ae = new AppError__c(Name='CBT Auth Failed',Message__c=examRegId);
-        insert ae;
+        ExamManagementController.logFailedAuthorization(examRegId);
     }
     
     @RemoteAction
@@ -58,6 +50,11 @@ public class ExamManagementRemoter {
         String userId = UserInfo.getUserId();
         return ExamManagementController.getExamRescheduleData(examRegId, NULL, NULL, NULL, NULL,userId);
     }
-        
+    
+    @RemoteAction 
+    public static Response.Envelope changeExamSiteOnExamRegistrations(Id examRegistrationId, Id targetExamSiteId){
+        return ExamManagementController.changeExamSiteOnExamRegistrations(examRegistrationId, targetExamSiteId);
+    }
+    
     public ExamManagementRemoter(sfdcAppRemoter ctrl){}
 }

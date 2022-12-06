@@ -1055,8 +1055,13 @@ public class ExamManagementController {
         Boolean isCertified { get; set; }
         
         Boolean isRegistrationOpen { get; set; }
+        String registrationOpenName { get; set; }
         String  currentWindow { get; set; }
-        Date    currentWindowEndDate{ get; set; }
+        Date    currentWindowEndDate { get; set; }
+        Date    nextAdminRegistrationOpenDate { get; set; }
+        String  nextAdminRegistrationOpenName { get; set; }
+        
+        Date    nextWindowEndDate{ get; set; }
                         
         Date registrationCloseDate { get; set; }
         
@@ -1069,9 +1074,7 @@ public class ExamManagementController {
         //DateTime adminAvailableStartDate { get; set; }
         //Date adminAvailableEndDate { get; set; }
         
-        Date nextRegistrationOpenDate { get; set; }
-        
-        
+        Date nextRegistrationOpenDate { get; set; }        
         Date programExpireDate  { get; set; }  
 
         String currentExamYear  { get; set; }
@@ -1094,6 +1097,10 @@ public class ExamManagementController {
         String ostaSchool { get; set; }
         String ostaDegree { get; set; }
         String phone { get; set; }
+        
+        // AG 11/2/2022 - SCR BenchPrep
+        // If null does not have access
+        String eLearningSSOLink { get; set; }  
         
         public partInfo part1 { get; set; }
         public partInfo part2 { get; set; }
@@ -1152,18 +1159,18 @@ public class ExamManagementController {
         
         Boolean allowSchedulingOverride { get; set; }
         
-        // AG 2/17/2022        	
-        // Scheduling is Choose Exam Site and visit provider to schedule	
-        // Uses Exam_Administration__r.Exam_Scheduling_Start_Date__c and Exam_Scheduling_End_Date__c	
-        Boolean isSchedulingOpen { get; set; }	
-        DateTime schedulingStartDate { get; set; }	
+        // AG 2/17/2022         
+        // Scheduling is Choose Exam Site and visit provider to schedule    
+        // Uses Exam_Administration__r.Exam_Scheduling_Start_Date__c and Exam_Scheduling_End_Date__c    
+        Boolean isSchedulingOpen { get; set; }  
+        DateTime schedulingStartDate { get; set; }  
         DateTime schedulingEndDate { get; set; } 
         
         // Exam Admin Modification (Deferral) is seperate, but can only happen within the Scheduling window
         // Exam Admin Modification uses Exam_Administration__r.Exam_Admin_Modifications_Start_Date__c and Exam_Admin_Modifications_End_Date__c        
         Boolean isAdminModOpen { get; set; }
         DateTime adminModStartDate { get; set; }
-        DateTime adminModEndDate { get; set; }  
+        DateTime adminModEndDate { get; set; }          
     }
     
     // AG 8/23/2020 - New Exam Reschedule Logic
@@ -1212,13 +1219,13 @@ public class ExamManagementController {
         public Integer statusCode { get; set; }
         public Integer errorCode { get; set; }
         
-        // AG 2/17/2022	
-        // These are now by Part	
-        // Setup uses Exam_Administration__r.Exam_Scheduling_Start_Date__c and Exam_Scheduling_End_Date__c	
-        // Deferral uses Exam_Administration__r.Exam_Admin_Modifications_Start_Date__c and Exam_Admin_Modifications_End_Date__c	
-        public Boolean allowSchedulingPartI { get; set; }	
-        public Boolean allowAdminModPartI { get; set; }	
-        public Boolean allowSchedulingPartII { get; set; }	
+        // AG 2/17/2022 
+        // These are now by Part    
+        // Setup uses Exam_Administration__r.Exam_Scheduling_Start_Date__c and Exam_Scheduling_End_Date__c  
+        // Deferral uses Exam_Administration__r.Exam_Admin_Modifications_Start_Date__c and Exam_Admin_Modifications_End_Date__c 
+        public Boolean allowSchedulingPartI { get; set; }   
+        public Boolean allowAdminModPartI { get; set; } 
+        public Boolean allowSchedulingPartII { get; set; }  
         public Boolean allowAdminModPartII { get; set; }
     }
     
@@ -1265,7 +1272,8 @@ public class ExamManagementController {
                 
         // Old Exam Setup
         if(ea.Exam_Part__r == NULL) {
-            
+            //return null;
+
             DateTime dt;
             
             if(programType == 'scr') {
@@ -1356,7 +1364,7 @@ public class ExamManagementController {
                 
             }
             part.isSetupComplete = true;
-            
+
         } else { // New Setup
             
             DateTime dt;
@@ -1452,7 +1460,7 @@ public class ExamManagementController {
             
             //Date amet =  ea.Exam_Site__r.Exam__r.Exam_Group__r.Last_Date_To_Request_Exam_Change__c;
             //if(ea.Exam_Administration__r.Exam_Admin_Modifications_End_Date__c != NULL) {
-            //	amet = ea.Exam_Administration__r.Exam_Admin_Modifications_End_Date__c;    
+            //  amet = ea.Exam_Administration__r.Exam_Admin_Modifications_End_Date__c;    
             //}                
             
             if(part.isDeferred) {
@@ -1500,11 +1508,11 @@ public class ExamManagementController {
                 //DateTime st = ea.Exam_Site__r.Exam__r.Exam_Group__r.Exam_Change_Start_Date_Time__c;
                 //Date esdt = Date.newInstance(st.year(), st.month(), st.day());
                 //if(ea.Exam_Administration__r.Exam_Scheduling_Start_Date__c != NULL) {
-                //	esdt = ea.Deferred_Exam_Administration__r.Exam_Scheduling_Start_Date__c;
+                //  esdt = ea.Deferred_Exam_Administration__r.Exam_Scheduling_Start_Date__c;
                 //}
                     
                 Date examChangeSt = ea.Deferred_Exam_Administration__r.Exam_Admin_Modifications_Start_Date__c;
-                DateTime dtm = DateTime.newInstance(examChangeSt.year(), examChangeSt.month(), examChangeSt.day(), 0, 0, 0);
+                DateTime dtm = DateTime.newInstance(examChangeSt.year(), examChangeSt.month(), examChangeSt.day());
                 part.nextAdminOpenDate = dtm;
                 
             } else {
@@ -1516,8 +1524,8 @@ public class ExamManagementController {
                 //if(ea.Exam_Administration__r.Exam_Scheduling_Start_Date__c != NULL) {
                 //    esdt = ea.Exam_Administration__r.Exam_Scheduling_Start_Date__c;
                 //}
-                part.schedulingStartDate = ea.Exam_Administration__r.Exam_Scheduling_Start_Date__c;	
-                    	
+                part.schedulingStartDate = ea.Exam_Administration__r.Exam_Scheduling_Start_Date__c; 
+                        
                 //Date eedt = ea.Exam_Site__r.Exam__r.Exam_Group__r.Last_Date_To_Request_Exam_Change__c;
                 //if(ea.Exam_Administration__r.Exam_Scheduling_End_Date__c != NULL) {
                 //    eedt = ea.Exam_Administration__r.Exam_Scheduling_End_Date__c;
@@ -1528,14 +1536,14 @@ public class ExamManagementController {
                 if(now >= part.schedulingStartDate && now <= part.schedulingEndDate) {
                     part.isSchedulingOpen = true;
                 }
-                //part.schedulingEndDate = DateTime.newInstance(eedt.year(), eedt.month(), eedt.day(), 23, 59, 59);	
-                //if(now >= part.schedulingStartDate && now <= part.schedulingEndDate) {	
-                //    part.isSchedulingOpen = true;	
+                //part.schedulingEndDate = DateTime.newInstance(eedt.year(), eedt.month(), eedt.day(), 23, 59, 59); 
+                //if(now >= part.schedulingStartDate && now <= part.schedulingEndDate) {    
+                //    part.isSchedulingOpen = true; 
                 //}
                
                 part.isScheduled = (ea.Exam_Part__r.Delivery_Method__c == 'CBT' && ea.Integration_Data_Exam_Scheduled_Date__c != NULL);
-                // AG Modify for Deadline Changes	
-                part.isSchedulingLapsed = !ea.Allow_Scheduling_Override__c && ea.Integration_Data_Exam_Scheduled_Date__c == NULL && ea.Exam_Part__r.Delivery_Method__c == 'CBT'&& tdy > part.schedulingEndDate;	
+                // AG Modify for Deadline Changes   
+                part.isSchedulingLapsed = !ea.Allow_Scheduling_Override__c && ea.Integration_Data_Exam_Scheduled_Date__c == NULL && ea.Exam_Part__r.Delivery_Method__c == 'CBT'&& tdy > part.schedulingEndDate; 
                 //part.isSchedulingLapsed = !ea.Allow_Scheduling_Override__c && ea.Integration_Data_Exam_Scheduled_Date__c == NULL && ea.Exam_Part__r.Delivery_Method__c == 'CBT'&& tdy > ea.Exam_Site__r.Exam__r.Exam_Group__r.Last_Date_To_Request_Exam_Change__c;
                 part.isPassed = (!ea.Exam_Administration__r.Exam_Results_Loading__c && ea.Result__c != NULL && ea.Result__c == 'Pass');        
                 
@@ -1557,7 +1565,7 @@ public class ExamManagementController {
                 
                 part.lastDateForADA = ea.Exam_Administration__r.Last_Date_For_ADA__c;
                 part.lastDateForRAD = ea.Exam_Administration__r.Last_Date_For_RAD__c;
-				
+                
                 // Results
                 if(ea.Exam_Administration__r.Exam_Results_Release_Date__c != NULL) {
                     //DateTime erad = ea.Exam_Administration__r.Exam_Results_Release_Date__c;
@@ -1712,6 +1720,19 @@ public class ExamManagementController {
         return true;
     }
     
+    static public programInfo getProgramInfo(String programType) {
+        return getProgramData(programType);
+    }
+    
+    static public allProgramData getAllProgramInfo() {
+        allProgramData apd = new allProgramData();
+        apd.frm = ExamManagementController.getProgramData('frm');
+        apd.erp = ExamManagementController.getProgramData('erp');
+        apd.scr = ExamManagementController.getProgramData('scr');
+        
+        return apd;
+    }
+    
     static public programInfo getProgramData(String programType) {
         programInfo pri = new programInfo();
         
@@ -1756,7 +1777,7 @@ public class ExamManagementController {
             pi1.allowSchedulingOverride = False;
             pi1.isSchedulingOpen = False;
             pi1.isAdminModOpen = False;
-			pi1.showRAD = False;
+            pi1.showRAD = False;
             
             partInfo pi2 = new partInfo();
             pi2.name = programType == 'frm' ? 'FRM Exam Part II' : 'ERP Exam Part II';
@@ -1773,7 +1794,7 @@ public class ExamManagementController {
             pi2.isScheduleWindowAvailable = False;
             pi2.isActiveExamAdmin = False;
             pi2.hasViloation = False;
-            pi2.allowSchedulingOverride = False;	
+            pi2.allowSchedulingOverride = False;    
             pi2.isSchedulingOpen = False;
             pi2.isAdminModOpen = False;
             pi2.showRAD = False;
@@ -1912,7 +1933,7 @@ public class ExamManagementController {
             if(programs != NULL && programs.size() > 0) {
                 Contract program = programs[0];
                 
-                if(program.Status == 'Expired'&& programType != 'scr') {
+                if(program.Status == 'Expired' && programType != 'scr') {
                     pri.isLapsed = True;
                 } else if(program.Status == 'Completed') {
                     pri.isCertified = True;   
@@ -1972,17 +1993,25 @@ public class ExamManagementController {
             // Get Active Exam Admin Info
             List<Exam_Administration__c> lstAdmins = [select Id, Name, Registration_Start_Date__c, Registration_End_Date__c,  
                                                       Exam_Admin_Modifications_Start_Date__c, Exam_Admin_Modifications_End_Date__c,
-                                                      Exam_Scheduling_Start_Date__c, Exam_Scheduling_End_Date__c
+                                                      Exam_Scheduling_Start_Date__c, Exam_Scheduling_End_Date__c,
+                                                      Exam_Type__c, Month__c, Year__c
                                                       from Exam_Administration__c
                                                       where Exam_Type__c = :programType.toUpperCase() AND 
-                                                      Registration_Start_Date__c <= TODAY AND Registration_End_Date__c >= TODAY
+                                                      ((Registration_Start_Date__c <= TODAY AND 
+                                                      Registration_End_Date__c >= TODAY) OR Registration_Start_Date__c > TODAY) AND
+                                                      Contingency_Administration__c = False
                                                       ORDER BY Registration_Start_Date__c
                                                      ];
                       
             if(!lstAdmins.isEmpty()) {
                 for(Exam_Administration__c ea :lstAdmins) {
+                    
                     if(ea.Registration_Start_Date__c <= tdy && ea.Registration_End_Date__c >= tdy) {
                         pri.isRegistrationOpen = True;
+                        pri.registrationOpenName = ea.Month__c + ' ' + String.valueOf(ea.Year__c);
+                    } else if(pri.nextAdminRegistrationOpenDate == NULL && ea.Registration_Start_Date__c > tdy) {
+                        pri.nextAdminRegistrationOpenDate = ea.Registration_Start_Date__c;
+                        pri.nextAdminRegistrationOpenName = ea.Month__c + ' ' + String.valueOf(ea.Year__c);
                     }
                 }
             }
@@ -2047,7 +2076,7 @@ public class ExamManagementController {
                 }
                 List<Exam_Part__c> lstExamParts = [Select Id, Exam_Date__c, Exam_Start_Date__c from Exam_Part__c where Exam__r.Exam__c in :parts];
             }
-			*/
+            */
             
             System.debug('priX:' + pri);
             
@@ -2089,6 +2118,9 @@ public class ExamManagementController {
                 if(ee != NULL && ee.eligibleExams != NULL && ee.eligibleExams.contains('SCR')) {
                     pri.isPartIAvailableForRegistration = True;
                 }
+                
+                // AG 11/2/2022 - BenchPrep
+                pri.eLearningSSOLink = GARP_BC_ExamStudyMaterials.getSCRBenchPrepSSOLink(contact.Id);
             }
             
             System.debug('pri:' + pri);
@@ -2106,7 +2138,7 @@ public class ExamManagementController {
             System.debug('examName:' + examName);
             
             List<Exam_Attempt__c> lstExamReg = [select Id, Exam_Site__c, Defered__c, Deferral_Status__c, Deferred_Exam_Administration__c,
-                                                Deferred_Exam_Administration__r.Exam_Scheduling_Start_Date__c,	
+                                                Deferred_Exam_Administration__r.Exam_Scheduling_Start_Date__c,  
                                                 Deferred_Exam_Administration__r.Exam_Scheduling_End_Date__c,
                                                 Deferred_Exam_Administration__r.Exam_Admin_Modifications_Start_Date__c,
                                                 Deferred_Exam_Administration__r.Exam_Admin_Modifications_End_Date__c,
@@ -2127,9 +2159,9 @@ public class ExamManagementController {
                                                 Exam_Administration__r.Exam_Results_Loading__c,
                                                 Exam_Administration__r.Exam_Results_Release_Date__c,
                                                 Exam_Administration__r.Exam_Results_Available_Statement__c,
-                                                Exam_Administration__r.Registration_Start_Date__c,	
+                                                Exam_Administration__r.Registration_Start_Date__c,  
                                                 Exam_Administration__r.Registration_End_Date__c,
-                                                Exam_Administration__r.Exam_Scheduling_Start_Date__c,	
+                                                Exam_Administration__r.Exam_Scheduling_Start_Date__c,   
                                                 Exam_Administration__r.Exam_Scheduling_End_Date__c,
                                                 Exam_Administration__r.Exam_Admin_Modifications_Start_Date__c,
                                                 Exam_Administration__r.Exam_Admin_Modifications_End_Date__c,
@@ -2141,26 +2173,26 @@ public class ExamManagementController {
                                                 Exam_Part__r.Exam_Date__c,
                                                 Exam_Part__r.Exam_Start_Date__c,                                                
                                                 Exam_Part__r.Exam_End_Date__c,
-												//Exam_Site__r.Exam__r.Exam_Group__r.Exam_Change_Start_Date_Time__c,                                                
-                                                //Exam_Site__r.Exam__r.Exam_Group__r.Last_Date_To_Request_Exam_Change__c,
-                                                //Exam_Site__r.Exam__r.Exam_Group__r.Last_Date_To_Apply_For_Deferral__c,
-                                                //Exam_Site__r.Exam__r.Exam_Group__r.Exam_Ticket_Available_Date__c,
-                                                //Exam_Site__r.Exam__r.Exam_Group__r.Exam_Results_Available_Date__c,
-                                                //Exam_Site__r.Exam__r.Exam_Group__r.Exam_Date__c,
-                                                //Exam_Site__r.Exam__r.Exam_Group__r.Loading_Exam_Results__c,
-                                                //Exam_Site__r.Exam__r.Exam_Group__r.Last_Date_For_ADA__c,
-                                                //Exam_Site__r.Exam__r.Exam_Group__r.Religious_Alternative_Last_Date__c,
+                                                Exam_Site__r.Exam__r.Exam_Group__r.Exam_Change_Start_Date_Time__c,                                                
+                                                Exam_Site__r.Exam__r.Exam_Group__r.Last_Date_To_Request_Exam_Change__c,
+                                                Exam_Site__r.Exam__r.Exam_Group__r.Last_Date_To_Apply_For_Deferral__c,
+                                                Exam_Site__r.Exam__r.Exam_Group__r.Exam_Ticket_Available_Date__c,
+                                                Exam_Site__r.Exam__r.Exam_Group__r.Exam_Results_Available_Date__c,
+                                                Exam_Site__r.Exam__r.Exam_Group__r.Exam_Date__c,
+                                                Exam_Site__r.Exam__r.Exam_Group__r.Loading_Exam_Results__c,
+                                                Exam_Site__r.Exam__r.Exam_Group__r.Last_Date_For_ADA__c,
+                                                Exam_Site__r.Exam__r.Exam_Group__r.Religious_Alternative_Last_Date__c,
                                                 Exam_Site__r.Exam_Provider__r.Name,
-                                                //Exam_Site__r.Exam__r.Exam_Group__r.Active__c,
-                                                //Exam_Site__r.Exam__r.Exam_Group__r.SCR_Active__c,
-                                                //Exam_Site__r.Exam__r.Exam_Group__r.Next_Exam_Group__r.Registration_Start_Date__c,
-                                                //Exam_Site__r.Exam__r.Exam_Group__r.Next_Exam_Group__r.Exam_Change_Start_Date_Time__c,
-                                                //Exam_Site__r.Exam__r.Exam_Group__r.Next_Exam_Group__r.Exam_Date__c,
+                                                Exam_Site__r.Exam__r.Exam_Group__r.Active__c,
+                                                Exam_Site__r.Exam__r.Exam_Group__r.SCR_Active__c,
+                                                Exam_Site__r.Exam__r.Exam_Group__r.Next_Exam_Group__r.Registration_Start_Date__c,
+                                                Exam_Site__r.Exam__r.Exam_Group__r.Next_Exam_Group__r.Exam_Change_Start_Date_Time__c,
+                                                Exam_Site__r.Exam__r.Exam_Group__r.Next_Exam_Group__r.Exam_Date__c,
                                                 Exam_Site__r.Site__r.Is_OSTA_Information_Required__c,
                                                 Exam_Site__r.Site__r.Is_Gender_Required__c
                                                 from Exam_Attempt__c where 
                                                 Member__c = :contact.Id AND Cancelled__c = False AND
-                                                Exam_Site__r.Exam__r.Exam__c in :examName ORDER BY Exam_Site__r.Exam__r.Exam_Group__r.Exam_Date__c, Exam_Part__r.Exam_Date__c, Registered_On__c DESC];         
+                                                Exam_Site__r.Exam__r.Exam__c in :examName ORDER BY RPT_Exam_Date__c DESC];         
             
             System.debug('lstExamReg:' + lstExamReg);
             
@@ -2211,7 +2243,7 @@ public class ExamManagementController {
     static public void updateOSTAIDInfo(Id contactId, String idType, String idNumber, String idLocation, Date expDate) {
         
         DateTime now = DateTime.now();
-        List<Contact> lstCont = [select Id, ID_Type__c, ID_Number__c, ID_Expiration_Date__c, OSTA_Consent__c, OSTA_Full_ID__c from Contact where id = :contactId];
+        List<Contact> lstCont = [select Id, ID_Type__c, ID_Number__c, ID_Expiration_Date__c, OSTA_Consent__c, OSTA_Full_ID__c, OSTA_ID_Location__c from Contact where id = :contactId];
         if(lstCont != NULL && lstCont.size() > 0) {
             Contact contact = lstCont[0];
             if(idType.indexOf('Driver') > -1) {
@@ -2255,10 +2287,6 @@ public class ExamManagementController {
         if(lstEA != NULL && lstEA.size() > 0) {
             Exam_Attempt__c ea = lstEA[0];
             
-            //ea.Outbound_Type__c = NULL;
-            //ea.Integration_Type__c = NULL;
-            //update lstEA;
-            
             if(ea.RPT_Exam_Provider__c == 'PSI') {
                 ea.Outbound_Type__c = lstEA[0].RPT_Exam_Provider__c;
                 ea.Integration_Type__c = 'Eligibility Lifecycle';
@@ -2272,7 +2300,12 @@ public class ExamManagementController {
         }
 
     }
- 
+
+    static public void logFailedAuthorization(String examRegId) {
+        AppError__c ae = new AppError__c(Name='CBT Auth Failed',Message__c=examRegId);
+        insert ae;
+    }
+    
     static public Opportunity findRefundOpp(Exam_Attempt__c ea) {
       
         System.debug('findRefundOpp In:' + ea);
@@ -2760,7 +2793,7 @@ public class ExamManagementController {
                         er1.Exam_Part__c = es1t.Exam_Part__c;
                         er1.Exam_Part__c = es1t.Exam_Part__c;
                     } else {
-	                    er1.Deferred_Exam_Administration__c = ea1t.Id;                        
+                        er1.Deferred_Exam_Administration__c = ea1t.Id;                        
                     }
                     
                     updateER1=True;
@@ -2776,7 +2809,7 @@ public class ExamManagementController {
                         er2.Exam_Part__c = es2t.Exam_Part__c;
                         er2.Exam_Part__c = es2t.Exam_Part__c;
                     } else { 
-	                    er2.Deferred_Exam_Administration__c = ea2t.Id;                        
+                        er2.Deferred_Exam_Administration__c = ea2t.Id;                        
                     }
                     
                     updateER2=True;
@@ -3035,7 +3068,7 @@ public class ExamManagementController {
 
         
         examRescheduleData erd = getExamRescheduleFeesInternal(examRegId, selectedAdminPartI, selectedAdminPartII, selectedSitePartI, selectedSitePartII, userId,freeDeferral);
-		String program = erd.programType;
+        String program = erd.programType;
         
         system.debug('fees:' + erd.fees);
         
@@ -3120,12 +3153,15 @@ public class ExamManagementController {
             }
             erd.opp.Exam_Emails__c = examParts;
             erd.opp.Deferral_SubType__c = subType;            
-            // Needs chargent Upgrade
-            //if(subType == 'Deferral Postponement'){
-            //    erd.opp.ia_crm__Intacct_Transaction__c = 'Postponement';
-            //}else{
-            //    erd.opp.ia_crm__Intacct_Transaction__c = 'Deferral';
-            //}
+            if(partIMoved || partIIMoved){
+                if(subType == 'Deferral Postponement'){
+                    erd.opp.ia_crm__Intacct_Transaction__c = 'Salesforce - Postponed';
+                }else{
+                    erd.opp.ia_crm__Intacct_Transaction__c = 'Salesforce - Deferral';
+                }
+            }else{
+                erd.opp.ia_crm__Intacct_Transaction__c = 'Salesforce - Sales Invoice';
+            }
             
             if(!Test.isRunningTest()){
                 update erd.opp;
@@ -3199,8 +3235,8 @@ public class ExamManagementController {
         Date tdy = Date.today();
         DateTime now = DateTime.now();
         
-        // AG Change for new deadlines	
-        //if(erd.selectedAdminPartI != NULL && (tdy < erd.examRegPartI.Exam_Administration__r.Exam_Scheduling_Start_Date__c || tdy > erd.examRegPartI.Exam_Administration__r.Exam_Scheduling_End_Date__c)) {	
+        // AG Change for new deadlines  
+        //if(erd.selectedAdminPartI != NULL && (tdy < erd.examRegPartI.Exam_Administration__r.Exam_Scheduling_Start_Date__c || tdy > erd.examRegPartI.Exam_Administration__r.Exam_Scheduling_End_Date__c)) {    
         //if(tdy > erd.examGroup.Last_Date_To_Request_Exam_Change__c || now < erd.examGroup.Exam_Change_Start_Date_Time__c) {           
         //if(erd.allowAdminModPartI == FALSE
         //        erd.errMsg = 'Exam changes are currently not available';
@@ -3223,7 +3259,7 @@ public class ExamManagementController {
         // AG - 10/19/2022 - Exams 2023 
         // Any Move from Admin to new Admnin is now a deferral
         //if(erd.examRegPartI != NULL && erd.currentAdminPartI.Exam_Group__c != erd.selectedAdminPartI.Exam_Group__c && erd.currentSitePartI != NULL && erd.selectedSitePartI == NULL) {
-		if(erd.examRegPartI != NULL && erd.currentAdminPartI.Id != erd.selectedAdminPartI.Id) {            
+        if(erd.examRegPartI != NULL && erd.currentAdminPartI.Id != erd.selectedAdminPartI.Id) {            
             
             system.debug('Part 1 moved');
             //system.assert(false, 'BOOM!3'+ program);
@@ -3355,21 +3391,21 @@ public class ExamManagementController {
                    if(freeDeferral){
                        pc.amount = 0;
                    }else{
-                       pc.amount = 200;
+                       pc.amount = 250;
                    }
                } else if(program == 'erp') {
                    pc.prodCode = 'ENC';
                    if(freeDeferral){
                        pc.amount = 0;
                    }else{
-                       pc.amount = 200;
+                       pc.amount = 250;
                    }
                } else {
                    pc.prodCode = 'SCR';
                    if(freeDeferral){
                        pc.amount = 0;
                    }else{
-                       pc.amount = 50;
+                       pc.amount = 100;
                    }
                }
                
@@ -3616,9 +3652,9 @@ public class ExamManagementController {
         system.debug('GET selectedSitePartI' + selectedSitePartI);
         system.debug('GET selectedSitePartII' + selectedSitePartII);
         
-        erd.allowSchedulingPartI = FALSE;	
-        erd.allowAdminModPartI = FALSE;	
-        erd.allowSchedulingPartII = FALSE;	
+        erd.allowSchedulingPartI = FALSE;   
+        erd.allowAdminModPartI = FALSE; 
+        erd.allowSchedulingPartII = FALSE;  
         erd.allowAdminModPartII = FALSE;
         
         erd.ExamRegMod = new Exam_Registration_Modification__c();
@@ -3640,7 +3676,7 @@ public class ExamManagementController {
         Exam_Attempt__c examReg = examRegs[0];
         program = erd.programType = examReg.Exam_Administration__r.Exam_Type__c.toLowerCase();
         examGroupId = examReg.Exam_Administration__r.Exam_Group__c;
-		
+        
         if(program == 'frm') {
             examPartNames = new Set<String>{'FRM Part 1', 'FRM Part 2'};
             otherExamPartNames = new Set<String>{'ERP Exam Part I', 'ERP Exam Part II'};
@@ -3661,7 +3697,7 @@ public class ExamManagementController {
         List<User> lstUser = [Select u.Id,u.ContactId, FullPhotoUrl from User u where u.Id = :userId];
         if( lstUser != null && lstUser.size() > 0 ) {   
             List<Contact> lstCont ;
-            if(test.isRunningTest()) {
+            if(test.isRunningTest() && userId == NULL) {
               
                 lstCont = [Select Id, Name, AccountId,
                                          Email, FirstName, LastName, HomePhone,
@@ -3723,14 +3759,14 @@ public class ExamManagementController {
                 erd.nextExamGroup = lstExamGroup[0].Next_Exam_Group__r;
             }
             
-            // AG modify for Deadlines	
-            //Date tdy = Date.today();	
-            //DateTime now = DateTime.now();	
-            //if(now >= erd.examGroup.Exam_Change_Start_Date_Time__c && tdy <= erd.examGroup.Last_Date_To_Request_Exam_Change__c) {	
-            //    erd.allowSetup = TRUE;	
-            //}	
-            //if(now >= erd.examGroup.Exam_Change_Start_Date_Time__c && tdy <= erd.examGroup.Last_Date_To_Apply_For_Deferral__c) {	
-            //     erd.allowDeferral = TRUE;	
+            // AG modify for Deadlines  
+            //Date tdy = Date.today();  
+            //DateTime now = DateTime.now();    
+            //if(now >= erd.examGroup.Exam_Change_Start_Date_Time__c && tdy <= erd.examGroup.Last_Date_To_Request_Exam_Change__c) { 
+            //    erd.allowSetup = TRUE;    
+            //} 
+            //if(now >= erd.examGroup.Exam_Change_Start_Date_Time__c && tdy <= erd.examGroup.Last_Date_To_Apply_For_Deferral__c) {  
+            //     erd.allowDeferral = TRUE;    
             //}             
         }
         
@@ -3741,10 +3777,12 @@ public class ExamManagementController {
         erd.examAdmins = [select Id, Name, Exam_Group__c, Exam_Type__c, Month__c, Year__c,
                           Registration_Start_Date__c, Registration_End_Date__c,
                           Exam_Admin_Modifications_Start_Date__c, Exam_Admin_Modifications_End_Date__c,
-                          Exam_Scheduling_Start_Date__c, Exam_Scheduling_End_Date__c
+                          Exam_Scheduling_Start_Date__c, Exam_Scheduling_End_Date__c, Contingency_Administration__c
                           from Exam_Administration__c 
                           where Exam_Group__c in :lstExamGroupIDs AND
-                                 Exam_Type__c in :examAdminTypeNames ORDER BY Registration_Start_Date__c limit 3];
+                                Exam_Type__c in :examAdminTypeNames AND
+                                (Contingency_Administration__c = False OR Id = :examReg.Exam_Administration__c)
+                          ORDER BY Registration_Start_Date__c limit 3];
 
         
         system.debug('GET erd.examAdmins:' + erd.examAdmins);
@@ -3777,9 +3815,9 @@ public class ExamManagementController {
             Exam_Administration__c,
             Original_Exam_Administration__c,
             Deferred_Exam_Administration__c,
-            Exam_Administration__r.Exam_Scheduling_Start_Date__c,	
-            Exam_Administration__r.Exam_Scheduling_End_Date__c,	
-            Exam_Administration__r.Exam_Admin_Modifications_Start_Date__c,	
+            Exam_Administration__r.Exam_Scheduling_Start_Date__c,   
+            Exam_Administration__r.Exam_Scheduling_End_Date__c, 
+            Exam_Administration__r.Exam_Admin_Modifications_Start_Date__c,  
             Exam_Administration__r.Exam_Admin_Modifications_End_Date__c,
             Original_Exam_Administration__r.Exam_Scheduling_Start_Date__c,
             Original_Exam_Administration__r.Exam_Scheduling_End_Date__c,
@@ -3832,7 +3870,7 @@ public class ExamManagementController {
                 erd.examRegPartI = ea;
                 
                 if(ea.Deferred_Exam_Administration__c == NULL) { 
-                	erd.currentAdminPartI = mapAdmin.get(ea.Exam_Administration__c);    
+                    erd.currentAdminPartI = mapAdmin.get(ea.Exam_Administration__c);    
                     erd.originalAdminPartI = mapAdmin.get(ea.Exam_Administration__c);
                     erd.currentSitePartI = ea.Exam_Site__r;
                     erd.originalSitePartI = ea.Exam_Site__r;
@@ -3919,7 +3957,7 @@ public class ExamManagementController {
                      }
                 }
             }
-		*/
+        */
 
         System.debug('erd.examRegPartI:' + erd.examRegPartI);
         System.debug('erd.examRegPartII:' + erd.examRegPartII);
@@ -3949,6 +3987,7 @@ public class ExamManagementController {
             SELECT 
             Id, 
             Name,
+            Country__c,
             Exam_Part__c,
             Exam_Part__r.Exam_Administration__c, 
             Exam_Part__r.Exam__r.Exam__c,
@@ -3996,32 +4035,32 @@ public class ExamManagementController {
                 
         erd.ExamRegMod.User__c = lstUser[0].Id;
         
-        Date tdy = Date.today();	
-        DateTime now = DateTime.now();	
+        Date tdy = Date.today();    
+        DateTime now = DateTime.now();  
 
         
-        if(erd.examRegPartI != NULL) {	
-            erd.ExamRegMod.Part_I_Exam_Registration__c = erd.examRegPartI.Id;	
+        if(erd.examRegPartI != NULL) {  
+            erd.ExamRegMod.Part_I_Exam_Registration__c = erd.examRegPartI.Id;   
             
-            if(tdy >= erd.examRegPartI.Exam_Administration__r.Exam_Scheduling_Start_Date__c &&	
-               tdy <= erd.examRegPartI.Exam_Administration__r.Exam_Scheduling_End_Date__c)	
-                erd.allowSchedulingPartI = TRUE;	
+            if(tdy >= erd.examRegPartI.Exam_Administration__r.Exam_Scheduling_Start_Date__c &&  
+               tdy <= erd.examRegPartI.Exam_Administration__r.Exam_Scheduling_End_Date__c)  
+                erd.allowSchedulingPartI = TRUE;    
             
-            if(tdy >= erd.examRegPartI.Exam_Administration__r.Exam_Admin_Modifications_Start_Date__c &&	
-               tdy <= erd.examRegPartI.Exam_Administration__r.Exam_Admin_Modifications_End_Date__c)            	
-                erd.allowAdminModPartI = TRUE;	
+            if(tdy >= erd.examRegPartI.Exam_Administration__r.Exam_Admin_Modifications_Start_Date__c && 
+               tdy <= erd.examRegPartI.Exam_Administration__r.Exam_Admin_Modifications_End_Date__c)             
+                erd.allowAdminModPartI = TRUE;  
         }
         
-        if(erd.examRegPartII != NULL) {	
-            erd.ExamRegMod.Part_II_Exam_Registration__c = erd.examRegPartII.Id;	
+        if(erd.examRegPartII != NULL) { 
+            erd.ExamRegMod.Part_II_Exam_Registration__c = erd.examRegPartII.Id; 
                             
-            if(tdy >= erd.examRegPartII.Exam_Administration__r.Exam_Scheduling_Start_Date__c &&	
-               tdy <= erd.examRegPartII.Exam_Administration__r.Exam_Scheduling_End_Date__c)	
-                erd.allowSchedulingPartII = TRUE;	
+            if(tdy >= erd.examRegPartII.Exam_Administration__r.Exam_Scheduling_Start_Date__c && 
+               tdy <= erd.examRegPartII.Exam_Administration__r.Exam_Scheduling_End_Date__c) 
+                erd.allowSchedulingPartII = TRUE;   
             
-            if(tdy >= erd.examRegPartII.Exam_Administration__r.Exam_Admin_Modifications_Start_Date__c &&	
-               tdy <= erd.examRegPartII.Exam_Administration__r.Exam_Admin_Modifications_End_Date__c)            	
-                erd.allowAdminModPartII = TRUE;	
+            if(tdy >= erd.examRegPartII.Exam_Administration__r.Exam_Admin_Modifications_Start_Date__c &&    
+               tdy <= erd.examRegPartII.Exam_Administration__r.Exam_Admin_Modifications_End_Date__c)                
+                erd.allowAdminModPartII = TRUE; 
                 
         }
         
@@ -4077,7 +4116,83 @@ public class ExamManagementController {
         return erd;
     }
     
+    /**
+     * @description Entry point for performing the exam site switch, and creates a refund if applicable.
+     * @param examRegistrationId the Exam Registration which the user is attempting to switch Exam Sites for.
+     * @param targetExamSiteId the Exam Site ID the user would like to switch into.
+     * @return a Response.Envelope containing the status of the transaction
+     */
+    public static Response.Envelope changeExamSiteOnExamRegistrations(Id examRegistrationId, Id targetExamSiteId){
+        
+        Exam_Attempt__c examRegistrationInContext = fetchExamRegistrationInContext(examRegistrationId);
+        
+        Id siteId = examRegistrationInContext.Exam_Site__r.Site__c;
+        Id contactId = examRegistrationInContext.Member__c;
 
+        Exam_Sites__c sourceExamSite = examRegistrationInContext.Exam_Site__r;
+        Exam_Sites__c targetExamSite = getNewExamSite(targetExamSiteId);
+        
+        String sourceExamSiteName = sourceExamSite.Name.toUpperCase();
+        String targetExamSiteName = targetExamSite.Name.toUpperCase();
+        
+        System.Debug('changeExamSiteOnExamRegistrations sourceExamSiteName :' + sourceExamSiteName );
+        System.Debug('changeExamSiteOnExamRegistrations targetExamSiteName :' + targetExamSiteName );
+        
+        
+        Map<Id, Exam_Attempt__c> examRegistrations = getExamRegistrationByContactIdAndTestSiteId(contactId, siteId);
+                
+        switchExamSites(examRegistrationId, targetExamSiteId);
+       
+        Set<Id> opportunityIds = getAllOpportunityIdsByExamRegistrations(examRegistrations.values());
+
+        List<Product_Refunds__c> toInsert = new List<Product_Refunds__c>();
+        
+        if(sourceExamSite.Site__r.Is_OSTA_Information_Required__c && !targetExamSite.Site__r.Is_OSTA_Information_Required__c){
+            
+            List<Product_Refunds__c> chinaLocationFeeProductRefunds = createChinaLocationFeeProductRefunds(examRegistrations, opportunityIds); 
+            List<Product_Refunds__c> chinaDataFeeProductRefunds = createChinaDataFeeProductRefunds(contactId);
+            
+            toInsert.addAll(chinaLocationFeeProductRefunds);
+            toInsert.addAll(chinaDataFeeProductRefunds);
+            
+        }
+        
+        System.Debug('toInsert :' + toInsert);
+
+
+        Decimal totalPrice = 0.00;        
+        for(Product_Refunds__c productRefund: toInsert){
+            totalPrice += productRefund.Refund_Amount__c; 
+        }
+        
+        if(!toInsert.isEmpty()){
+            
+            Response.Detail response = new Response.Detail();
+            
+            response.status = 200;                    
+            
+            response.message = 'This is a confirmation of your ' + sourceExamSite.Exam__r.Exam__c + ' exam site location change from ' + sourceExamSite.Site__r.Display_Address__c + ' to ' + targetExamSite.Site__r.Display_Address__c + '.  '; 
+            response.message+= 'Due to the Location Fee and Data Fee charge, the member services team will be processing a refund for you in the amount of USD ' + totalPrice + '.  This will take up to (7) seven business days before it will appear within your account.';
+            
+            INSERT toInsert;
+            
+            return response;
+            
+        }else{
+            
+            Response.Detail response = new Response.Detail();
+            
+            response.status = 200;                    
+            
+            response.message = 'This is a confirmation of your ' + sourceExamSite.Exam__r.Exam__c + ' exam site location change from ' + sourceExamSite.Site__r.Display_Address__c + ' to ' + targetExamSite.Site__r.Display_Address__c + '.';
+            
+            return response;   
+            
+        }
+        
+    }
+
+    
     public static ChargentSFA__Transaction__c createTransaction(String oppId) {
         
         ChargentSFA__Transaction__c trans = new ChargentSFA__Transaction__c();
@@ -4103,8 +4218,8 @@ public class ExamManagementController {
             insert dmlList.contractsToInsert;
             insertedContractList = [Select Id,Status,AccountId,RecordTypeId from Contract where Id IN: dmlList.contractsToInsert];
         }
-		
-		for(Contract cont : insertedContractList){
+        
+        for(Contract cont : insertedContractList){
             cont.Status = 'Activated ( Auto-Renew )';
             contractsToUpdate.add(cont);
         }
@@ -4114,19 +4229,19 @@ public class ExamManagementController {
         
         if(!contractsToUpdate.isEmpty()){
             update contractsToUpdate;
-			
-			
+            
+            
         }
         
         if(dmlList.examRegToUpdate != null && !dmlList.examRegToUpdate.isEmpty()){
             update dmlList.examRegToUpdate;
-			
+            
         }
     }
     
     public static dmlListWrapper processExamRegModsBulk(Set<Id> setExamRegMods, boolean doNotCountOneTimeDefrl, boolean freeDeferral){
-			
-		Id OSTARecTypeId = RecordTypeHelper.getRecordTypeIdFromSchema('Contract', 'OSTA_Program');
+            
+        Id OSTARecTypeId = RecordTypeHelper.getRecordTypeIdFromSchema('Contract', 'OSTA_Program');
         Id frmRecordTypeID = RecordTypeHelper.getRecordTypeIdFromSchema('Contract', 'FRM_Program');
         List<Exam_Attempt__c> eaUpdates = new List<Exam_Attempt__c>();
         List<Product_Refunds__c> productRefunds = new List<Product_Refunds__c>();
@@ -4162,8 +4277,8 @@ public class ExamManagementController {
                                                                   (select Id, AccountId from Opportunities__r)
                                                                   FROM Exam_Registration_Modification__c 
                                                                   WHERE Id = :setExamRegMods AND Status__c = 'Pending'];
-		
-		for(Exam_Registration_Modification__c erm : examRegModList){
+        
+        for(Exam_Registration_Modification__c erm : examRegModList){
             if(erm.Part_I_Exam_Registration__c != NULL){
                 setAccounts.add(erm.Part_I_Exam_Registration__r.Candidate_Commitment__r.AccountId);
                 examRegIds.add(erm.Part_I_Exam_Registration__c);
@@ -4183,8 +4298,8 @@ public class ExamManagementController {
                                                                             FROM Opportunity_Line_Items__r WHERE (ProductCode = 'CHLF' OR ProductCode = 'CHNDF') AND Opportunity.StageName = 'Closed'
                                                                             ORDER BY CreatedDate DESC)  
                                                                           from Exam_Attempt__c where Id IN: examRegIds]);
-		
-		for(Exam_Attempt__c ea : examRegMap.values()){
+        
+        for(Exam_Attempt__c ea : examRegMap.values()){
             oppIds.add(ea.Opportunity__c);
             if(!ea.Opportunity_Line_Items__r.isEmpty()) {
                 for(OpportunityLineItem oli :ea.Opportunity_Line_Items__r) {
@@ -4192,7 +4307,7 @@ public class ExamManagementController {
                 }
             }
         }
-		
+        
         LIST<Contract> ostaPrograms = [
             SELECT Id, Name, Status, RecordType.Name, AccountId, OSTA_Last_Upload_Date__c,Opportunity__c
             FROM Contract
@@ -4201,7 +4316,7 @@ public class ExamManagementController {
             ((RecordTypeId =: OSTARecTypeId AND Status LIKE 'Activated%') OR
               (RecordTypeId =: frmRecordTypeID AND (Status LIKE 'Activated%' OR Status = 'Draft')))
         ];
-		
+        
         for(Contract cont : ostaPrograms){
             if(cont.RecordTypeId == frmRecordTypeID){
                 accIdToFRMPrgMap.put(cont.AccountId,cont);
@@ -4223,7 +4338,7 @@ public class ExamManagementController {
             Boolean updateER2 = false;
             Opportunity opp = !erm.Opportunities__r.isEmpty()?erm.Opportunities__r[0]:null;
             String AccountId = (erm.Part_I_Exam_Registration__c != NULL) ? erm.Part_I_Exam_Registration__r.Candidate_Commitment__r.AccountId : erm.Part_II_Exam_Registration__r.Candidate_Commitment__r.AccountId;
-        	Id contactId = (erm.Part_I_Exam_Registration__c != NULL) ? erm.Part_I_Exam_Registration__r.Member__c : erm.Part_II_Exam_Registration__r.Member__c;
+            Id contactId = (erm.Part_I_Exam_Registration__c != NULL) ? erm.Part_I_Exam_Registration__r.Member__c : erm.Part_II_Exam_Registration__r.Member__c;
             Exam_Attempt__c er1 = new Exam_Attempt__c(Id = erm.Part_I_Exam_Registration__c);
             Exam_Attempt__c er2 = new Exam_Attempt__c(Id = erm.Part_II_Exam_Registration__c);
             if((erm.Part_I_Exam_Registration__c != NULL && (erm.Part_I_Exam_Admin_From__c == NULL || erm.Part_I_Exam_Admin_To__c == NULL)) 
@@ -4233,30 +4348,29 @@ public class ExamManagementController {
             }
             
             // AG - 10/19/2022 - Exams 2023
-            if((erm.Part_I_Exam_Registration__c != null && (erm.Part_I_Exam_Registration__r.Exam_Administration__r.Exam_Group__r.Active__c || erm.Part_I_Exam_Registration__r.Exam_Administration__r.Exam_Group__r.SCR_Active__c))
-               || (erm.Part_II_Exam_Registration__c != null && (erm.Part_II_Exam_Registration__r.Exam_Administration__r.Exam_Group__r.Active__c || erm.Part_II_Exam_Registration__r.Exam_Administration__r.Exam_Group__r.SCR_Active__c))){                   
+            if(erm.Part_I_Exam_Registration__c != null || erm.Part_II_Exam_Registration__c != null){                   
                    if(erm.Part_II_Exam_Registration__c != null && doNotCountOneTimeDefrl){
                        er1.Selected_To_Allow_Future_Deferral__c = true;
                        if(erm.Part_I_Exam_Registration__r.Result__c != null && erm.Part_I_Exam_Registration__r.Result__c == 'No-Show')
-                       	  er1.Result__c = null;
+                          er1.Result__c = null;
                        updateER1 = True;
                    }
                    if(erm.Part_I_Exam_Registration__c != null && freeDeferral){
                        er1.Future_Free_Deferral__c = true;
                        if(erm.Part_I_Exam_Registration__r.Result__c != null && erm.Part_I_Exam_Registration__r.Result__c == 'No-Show')
-                       	  er1.Result__c = null;
+                          er1.Result__c = null;
                        updateER1 = True;
                    }
                    if(erm.Part_II_Exam_Registration__c != null && doNotCountOneTimeDefrl){
                        er2.Selected_To_Allow_Future_Deferral__c = true;
                        if(erm.Part_II_Exam_Registration__r.Result__c != null && erm.Part_II_Exam_Registration__r.Result__c == 'No-Show')
-                       	  er2.Result__c = null;
+                          er2.Result__c = null;
                        updateER2 = True;
                    }
                    if(erm.Part_II_Exam_Registration__c != null && freeDeferral){
                        er2.Future_Free_Deferral__c = true;
                        if(erm.Part_II_Exam_Registration__r.Result__c != null && erm.Part_II_Exam_Registration__r.Result__c == 'No-Show')
-                       	  er2.Result__c = null;
+                          er2.Result__c = null;
                        updateER2 = True;
                    }
                    
@@ -4364,6 +4478,40 @@ public class ExamManagementController {
                       ((erm.Part_I_Exam_Site_From__c == NULL && erm.Part_I_Exam_Site_To__c != NULL) ||
                        (erm.Part_I_Exam_Site_From__c != NULL && erm.Part_I_Exam_Site_To__c != NULL && erm.Part_I_Exam_Site_From__c != erm.Part_I_Exam_Site_To__c))) {
                            er1.Exam_Site__c = erm.Part_I_Exam_Site_To__c;
+                           //er1.Exam_Administration__c = erm.Part_I_Exam_Admin_To__c;
+                           //er1.Exam_Part__c = erm.Part_I_Exam_Site_To__r.Exam_Part__c;
+                           updateER1=True;
+                       }
+                   
+                   if(erm.Part_II_Exam_Registration__c != NULL && erm.Part_II_Exam_Site_From__c != NULL && erm.Part_II_Exam_Site_To__c != NULL 
+                      && erm.Part_II_Exam_Site_From__c != erm.Part_II_Exam_Site_To__c) {
+                          er2.Exam_Site__c = erm.Part_II_Exam_Site_To__c;
+                          //er2.Exam_Administration__c = erm.Part_II_Exam_Admin_To__c;
+                          //er2.Exam_Part__c = erm.Part_II_Exam_Site_To__r.Exam_Part__c;
+                          updateER2=True;
+                      }
+                   
+                   erm.Status__c = 'Completed';
+                   if(erm.Part_I_Exam_Registration__c != NULL) {
+                       erm.Customer_Email__c = erm.Part_I_Exam_Registration__r.Member_Email__c;    
+                   } else if(erm.Part_II_Exam_Registration__c != NULL) {
+                       erm.Customer_Email__c = erm.Part_II_Exam_Registration__r.Member_Email__c;    
+                   }   
+                   if(updateER1)
+                       eaUpdates.add(er1);
+                   if(updateER2)
+                       eaUpdates.add(er2);
+               }
+            
+            //Added this else if for Exam Site change when Group is Inactgive but scheduling is still open
+            /*
+            else if( !erm.Created_from_MS_Tool__c && (erm.Part_I_Exam_Registration__c != null
+               || (erm.Part_II_Exam_Registration__c != null && (erm.Part_II_Exam_Registration__r.Exam_Administration__r.Exam_Group__r.Active__c != true && erm.Part_II_Exam_Registration__r.Exam_Administration__r.Exam_Group__r.SCR_Active__c != true)))){
+                   // Site Change for Inactive group
+                   if(erm.Part_I_Exam_Registration__c != NULL && 
+                      ((erm.Part_I_Exam_Site_From__c == NULL && erm.Part_I_Exam_Site_To__c != NULL) ||
+                       (erm.Part_I_Exam_Site_From__c != NULL && erm.Part_I_Exam_Site_To__c != NULL && erm.Part_I_Exam_Site_From__c != erm.Part_I_Exam_Site_To__c))) {
+                           er1.Exam_Site__c = erm.Part_I_Exam_Site_To__c;
                            er1.Exam_Administration__c = erm.Part_I_Exam_Admin_To__c;
                            er1.Exam_Part__c = erm.Part_I_Exam_Site_To__r.Exam_Part__c;
                            updateER1=True;
@@ -4388,37 +4536,7 @@ public class ExamManagementController {
                    if(updateER2)
                        eaUpdates.add(er2);
                }
-            //Added this else if for Exam Site change when Group is Inactgive but scheduling is still open
-            else if( !erm.Created_from_MS_Tool__c && ((erm.Part_I_Exam_Registration__c != null && (erm.Part_I_Exam_Registration__r.Exam_Administration__r.Exam_Group__r.Active__c != true && erm.Part_I_Exam_Registration__r.Exam_Administration__r.Exam_Group__r.SCR_Active__c != true))
-               || (erm.Part_II_Exam_Registration__c != null && (erm.Part_II_Exam_Registration__r.Exam_Administration__r.Exam_Group__r.Active__c != true && erm.Part_II_Exam_Registration__r.Exam_Administration__r.Exam_Group__r.SCR_Active__c != true)))){
-                   // Site Change for Inactive group
-                   if(erm.Part_I_Exam_Registration__c != NULL && 
-                      ((erm.Part_I_Exam_Site_From__c == NULL && erm.Part_I_Exam_Site_To__c != NULL) ||
-                       (erm.Part_I_Exam_Site_From__c != NULL && erm.Part_I_Exam_Site_To__c != NULL && erm.Part_I_Exam_Site_From__c != erm.Part_I_Exam_Site_To__c))) {
-                           er1.Exam_Site__c = erm.Part_I_Exam_Site_To__c;
-                           er1.Exam_Administration__c = erm.Part_I_Exam_Admin_To__c;
-                           er1.Exam_Part__c = erm.Part_I_Exam_Site_To__r.Exam_Part__c;
-                           updateER1=True;
-                       }
-                   
-                   if(erm.Part_II_Exam_Registration__c != NULL && erm.Part_II_Exam_Site_From__c != NULL && erm.Part_II_Exam_Site_To__c != NULL 
-                      && erm.Part_II_Exam_Site_From__c != erm.Part_II_Exam_Site_To__c) {
-                          er2.Exam_Site__c = erm.Part_II_Exam_Site_To__c;
-                          er2.Exam_Administration__c = erm.Part_II_Exam_Admin_To__c;
-                          er2.Exam_Part__c = erm.Part_II_Exam_Site_To__r.Exam_Part__c;
-                          updateER2=True;
-                      }
-                   
-                   if(erm.Part_I_Exam_Registration__c != NULL) {
-                       erm.Customer_Email__c = erm.Part_I_Exam_Registration__r.Member_Email__c;    
-                   } else if(erm.Part_II_Exam_Registration__c != NULL) {
-                       erm.Customer_Email__c = erm.Part_II_Exam_Registration__r.Member_Email__c;    
-                   }   
-                   if(updateER1)
-                       eaUpdates.add(er1);
-                   if(updateER2)
-                       eaUpdates.add(er2);
-               }
+            */
             
             if((erm.Part_I_Exam_Registration__c != NULL && erm.Part_I_Exam_Registration__r.RPT_Exam_Program__c == 'FRM') 
                || (erm.Part_II_Exam_Registration__c != NULL && erm.Part_II_Exam_Registration__r.RPT_Exam_Program__c == 'FRM')){
@@ -4529,12 +4647,12 @@ public class ExamManagementController {
         
         if(!productRefunds.isEmpty()){
             insert productRefunds;
-	    }
+        }
         if(!appErrors.isEmpty()){
-        	insert appErrors;
+            insert appErrors;
         }
         if(!examRegModList.isEmpty()){
-        	update examRegModList;
+            update examRegModList;
         }
         
         dmlListWrapper dmls = new dmlListWrapper();
@@ -4604,7 +4722,7 @@ public class ExamManagementController {
         }
         
         for(Id oppId :opIDs) {
-			Opportunity fndOpp = mapOpp.containsKey(oppId)?mapOpp.get(oppId):null;
+            Opportunity fndOpp = mapOpp.containsKey(oppId)?mapOpp.get(oppId):null;
             if(fndOpp != NULL) {
                 for(OpportunityLineItem oli : fndOpp.OpportunityLineItems){
                     if(oli.ProductCode == 'CHLF' && fndOpp.Product_Refunds__r.isEmpty()){

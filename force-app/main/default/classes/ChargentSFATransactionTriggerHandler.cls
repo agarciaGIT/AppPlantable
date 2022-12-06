@@ -6,12 +6,12 @@
 */
 public without sharing class ChargentSFATransactionTriggerHandler implements TriggerAbstract {
     
-    static List<Opportunity> OppListToUpdate = new List<Opportunity>();
+    public static List<Opportunity> OppListToUpdate = new List<Opportunity>();
     static List<Product_Refunds__c> ProductRefundsListToUpdate = new List<Product_Refunds__c>();
     static Set<String> VoidTypeOppSet = new Set<String>();
-    static Set<String> ChargeTypeOppSet = new Set<String>();
+    static Map<String,ChargentSFA__Transaction__c> ChargeTypeOppSet = new Map<String,ChargentSFA__Transaction__c>();
     static Set<String> RefundOppSet = new Set<String>();
-    static Map<String,String> oppTransactionMap = new Map<String,String>();
+    static Map<String,ChargentSFA__Transaction__c> oppTransactionMap = new Map<String,ChargentSFA__Transaction__c>();
     static List<Transaction_Event__e> eventList = new List<Transaction_Event__e>();
     
     
@@ -75,7 +75,7 @@ public without sharing class ChargentSFATransactionTriggerHandler implements Tri
                 system.debug(newTransaction.ChargentSFA__Recurring__c+'   :::    '+newTransaction.Opportunity_Stage__c);
                 if(newTransaction.ChargentSFA__Response_Status__c== 'Approved' && newTransaction.ChargentSFA__Type__c =='Charge' && 
                    newTransaction.ChargentSFA__Recurring__c != true && newTransaction.Opportunity_Stage__c =='New Lead'){
-                       ChargeTypeOppSet.add(newTransaction.ChargentSFA__Opportunity__c); 
+                       ChargeTypeOppSet.put(newTransaction.ChargentSFA__Opportunity__c,newTransaction); 
                       
                    }
                 
@@ -84,7 +84,7 @@ public without sharing class ChargentSFATransactionTriggerHandler implements Tri
                    (newTransaction.ChargentSFA__Type__c =='Refund'|| newTransaction.ChargentSFA__Type__c =='Charge Back Accepted' || newTransaction.ChargentSFA__Type__c =='Charge Back Loss')){
                        RefundOppSet.add(newTransaction.ChargentSFA__Opportunity__c); 
                        
-                       oppTransactionMap.put(newTransaction.id,newTransaction.ChargentSFA__Opportunity__c);    
+                       oppTransactionMap.put(newTransaction.ChargentSFA__Opportunity__c,newTransaction);    
                    }
             }
         }
@@ -117,18 +117,38 @@ public without sharing class ChargentSFATransactionTriggerHandler implements Tri
         if(!trigger.isDelete && stopRecurssion){
             if(trigger.isafter && trigger.isinsert){
                 if(ChargeTypeOppSet.size() > 0){
-                    for(Opportunity opp : [SELECT Id,StageName FROM Opportunity WHERE Id IN: ChargeTypeOppSet]){
+                    for(Opportunity opp : [SELECT Id,StageName FROM Opportunity WHERE Id IN: ChargeTypeOppSet.keyset()]){
                         opp.StageName = 'Closed';
                         opp.CloseDate = system.today();
+                        opp.ChargentSFA__Payment_Method__c = ChargeTypeOppSet.get(opp.Id).ChargentSFA__Payment_Method__c;
+                        opp.ChargentSFA__Card_type__c = ChargeTypeOppSet.get(opp.Id).ChargentSFA__Credit_Card_Type__c;
                         OppListToUpdate.add(opp);
                     }
                 }
-            
+            	
+                Map<Id,Set<Id>> oppToRefundProdsMap = new Map<Id,Set<Id>>();
+                Map<Id,Id> switchTransactionMap = new Map<Id,Id>();
                 if(RefundOppSet.size() > 0 && oppTransactionMap.size() > 0){
-                    for(Product_Refunds__c pr : [SELECT Id,status__C,Opportunity__c FROM Product_Refunds__c WHERE Opportunity__c IN: RefundOppSet and status__c ='Approved']){
+                    for(Product_Refunds__c pr : [SELECT Id,status__C,Opportunity__c,Reason__c,Product__c,Take_Membership__c FROM Product_Refunds__c WHERE Opportunity__c IN: RefundOppSet and status__c ='Approved']){
                         pr.Status__c  ='Completed';
-                        pr.Payment_Transaction__c = oppTransactionMap.get(pr.Opportunity__c);
-                        ProductRefundsListToUpdate.add(pr);  
+                        pr.Payment_Transaction__c = oppTransactionMap.get(pr.Opportunity__c).Id;
+                        ProductRefundsListToUpdate.add(pr);
+                        if(pr.Reason__c != 'Switch'){
+                            if(oppToRefundProdsMap.containsKey(pr.Opportunity__c)){
+                                Set<Id> prodIds = oppToRefundProdsMap.get(pr.Opportunity__c);
+                                prodIds.add(pr.Product__c);
+                                oppToRefundProdsMap.put(pr.Opportunity__c,prodIds);
+                            }else{
+                                oppToRefundProdsMap.put(pr.Opportunity__c,new Set<Id>{pr.Product__c});
+                            }
+                        }else if(pr.Reason__c == 'Switch'){
+                            switchTransactionMap.put(oppTransactionMap.get(pr.Opportunity__c).Id,pr.Opportunity__c);
+                        }
+                    }
+                    
+                    if(oppToRefundProdsMap != null || switchTransactionMap != null){
+                        SageRefundProcessQueueable sageQueue = new SageRefundProcessQueueable(oppToRefundProdsMap,oppTransactionMap,switchTransactionMap);
+                        ID jobID = System.enqueueJob(sageQueue);
                     }
                 }
         	}

@@ -5,11 +5,11 @@ trigger onCPEActivityInsertUpdate on CPE_Activity__c (before insert, before upda
         Map<String, String> providerMap = new Map<String, String>();
         Map<String, String> activityTypeMap = new Map<String, String>();
     
-    	Map<String, CPE_Activity__c> activityMap = new Map<String, CPE_Activity__c>();
+        Map<String, CPE_Activity__c> activityMap = new Map<String, CPE_Activity__c>();
     
         for(CPE_Activity__c obj : trigger.New) {
                         
-           	String objId = obj.Title__c;
+            String objId = obj.Title__c;
                 
             if(obj.Provider__c != null) {
                 providerMap.put(objId, obj.Provider__c);
@@ -27,7 +27,7 @@ trigger onCPEActivityInsertUpdate on CPE_Activity__c (before insert, before upda
         }
         
         List<Account> lstAccount = [select Id, Name from Account where Name in :providerMap.values()];
-    	List<CPE_Activity_Type__c> lstActType = [select Id, Name from CPE_Activity_Type__c where Name in :activityTypeMap.values()];
+        List<CPE_Activity_Type__c> lstActType = [select Id, Name from CPE_Activity_Type__c where Name in :activityTypeMap.values()];
         
         for(String actId : providerMap.keySet()) {
             String prov = providerMap.get(actId);
@@ -39,9 +39,9 @@ trigger onCPEActivityInsertUpdate on CPE_Activity__c (before insert, before upda
             }            
         }
 
-    	system.debug('* * * activityMap ...'+ activityMap);
-    	system.debug('* * * activityTypeMap ...'+ activityTypeMap);
-    	system.debug('* * * lstActType ...'+ lstActType);
+        system.debug('* * * activityMap ...'+ activityMap);
+        system.debug('* * * activityTypeMap ...'+ activityTypeMap);
+        system.debug('* * * lstActType ...'+ lstActType);
     
         for(String actId : activityTypeMap.keySet()) {
             String actTypeName = activityTypeMap.get(actId);

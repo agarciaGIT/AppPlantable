@@ -1,0 +1,57 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,force:lightningQuickAction" 
+                controller="AccountingToolClass" access="global" >
+    <aura:attribute name="optionSelected" type="String" />
+    <aura:attribute name="GARPId" type="String" />
+    <aura:attribute name="navigateNext" type="Boolean" />
+    <aura:attribute name="InvoiceNumber" type="String" /> 
+    <aura:attribute name="selectedValue" type="String" /> 
+    <aura:attribute name="selectedComponent" type="String" default=""/>
+    <aura:attribute name="ErrorMessage" type="String" /> 
+
+    <div class="slds-card">
+        <aura:if isTrue="{! !v.navigateNext}">
+            <div class="slds-page-header">
+                <div class="slds-align_absolute-center">
+                    <div class="slds-text-heading_large">
+                        <div class="slds-m-top_xx-large">
+                            Accounting Services Administration
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slds-box slds-theme_default">
+                <div class="slds-grid">
+                    <div class="slds-col slds-size_3-of-12"> 
+                    </div>
+                    <div class="slds-size_6-of-12">
+                        <span class="slds-text-body–regular" style="color:red;">{!v.ErrorMessage}</span>
+                        <lightning:select value="{!v.optionSelected}" aura:id="ActionSelect" name="ActionSelect" 
+                                          label="Action" required="true" 
+                                          onchange="{!c.onOptionSelect}">
+                            <option value="">Select one...</option>
+                            <option value="EBookDiscount">E Book Discount</option>
+                        </lightning:select>
+                    </div>
+                </div>
+                <aura:if isTrue="{!v.optionSelected != ''}">
+                    <div class="slds-grid">
+                        <div class="slds-col slds-size_3-of-12"> 
+                        </div>
+                        <div class="slds-col slds-size_6-of-12">                         
+                            <lightning:input type="text" name="text" value="{!v.InvoiceNumber}" label="Invoice Number" 
+                                             aura:id="invoice"  required="true"/>
+                            
+                            <div class="slds-p-top_large" style="float:right">
+                                <lightning:button variant="brand" label="Next" class="slds-button slds-button_brand" 
+                                                  onclick="{!c.OnclickOfNextButton}"/>
+                            </div>
+                        </div>
+                    </div>
+                </aura:if>
+            </div>
+        </aura:if>
+        <aura:if isTrue="{!v.navigateNext}">
+            <c:AccountingTool_HelperCMP invNum="{!v.InvoiceNumber}" navigateNext="{!v.navigateNext}"/>
+        </aura:if>
+    </div>
+</aura:component>

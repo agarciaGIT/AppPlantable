@@ -3,6 +3,8 @@ public class ExamManagementControllerTest {
     
     public static Account account;
     public static Contact contact;
+    public static Profile profileId ;
+    public static User user;
     static set<id> setOpportunities=new Set<id>();
     public static Exam_Sites__c examSiteChinaExamPart1;
     public static Exam_Sites__c examSiteChinaExamPart2;
@@ -42,6 +44,36 @@ public class ExamManagementControllerTest {
     public static PricebookEntry ERPRET1PBE;
     public static PricebookEntry ERPRET2PBE;
     
+    
+    @TestSetup static void setupData() {
+        
+        Id profileId1 = [select id from profile where name=: 'Customer Community'].id;
+        Account ac = new Account(name = 'Test Customer Community') ;
+        insert ac;
+        
+        Contact con = new Contact(LastName = 'Test_Contact_Community' ,
+                                  AccountId = ac.Id, 
+                                  First_Name_as_it_Appears_on_ID__c = 'Test',
+                                  Middle_Name_as_it_Appears_on_ID__c = 'T',
+                                  Last_Name_as_it_Appears_on_ID__c = 'Test');
+        insert con;
+        
+        System.debug('@mal-CON-ID'+con.Id);
+        
+        User communityUser = new User(alias = 'comUser'
+                                      ,email = 'testCommunityUsermig123@test.com'
+                                      ,emailencodingkey='UTF-8'
+                                      ,lastname = 'Batman'
+                                      ,languagelocalekey='en_US'
+                                      ,localesidkey='en_US'
+                                      ,profileid = profileId1
+                                      ,country = 'France'
+                                      ,IsActive = true
+                                      ,ContactId = con.Id
+                                      ,timezonesidkey='America/Los_Angeles'
+                                      ,username = 'testCommunityUsermig123@test.com');
+        insert communityUser;
+    }
     public static void setup(){
         
         Pricebook2 activePricebook = new Pricebook2(
@@ -86,6 +118,7 @@ public class ExamManagementControllerTest {
         nextExamGroup = new Exam_Group__c();
         nextExamGroup.Name = '21-Nov';
         nextExamGroup.Active__c = false;
+        nextExamGroup.SCR_Active__c = false;
         nextExamGroup.Registration_Start_Date__c = Date.today().addDays(20);
         nextExamGroup.Exam_Date__c = Date.today().addDays(-5);
         nextExamGroup.Exam_Change_Start_Date_Time__c= DateTime.now().addDays(30);
@@ -126,21 +159,49 @@ public class ExamManagementControllerTest {
         frmPart2.Exam__c = 'FRM Part 2';
         frmPart2.Exam_Date__c = Date.today().addDays(10);
         INSERT frmPart2;
-        
         account = new Account();
-        account.Name = 'TEST CO';
-        INSERT account;
-        
+        account = [Select Id,Name From Account Where Name =:'Test Customer Community' limit 1];
         contact = new Contact();
-        contact.Email = 'TEST@TEST.com';
-        contact.FirstName = 'TEST';
-        contact.LastName = 'TEST';
+        contact = [Select Id,Name From Contact Where LastName =:'Test_Contact_Community' limit 1];
+        /* account = new Account();
+account.Name = 'TEST CO';
+INSERT account;
+
+contact = new Contact();
+contact.Email = 'TEST@TEST.com';
+contact.FirstName = 'TEST';
+contact.LastName = 'TEST';
+
+contact.AccountId = account.Id;
+contact.First_Name_as_it_Appears_on_ID__c = 'Test';
+contact.Middle_Name_as_it_Appears_on_ID__c = 'T';
+contact.Last_Name_as_it_Appears_on_ID__c = 'Test';
+INSERT contact;*/
         
-        contact.AccountId = account.Id;
-        contact.First_Name_as_it_Appears_on_ID__c = 'Test';
-        contact.Middle_Name_as_it_Appears_on_ID__c = 'T';
-        contact.Last_Name_as_it_Appears_on_ID__c = 'Test';
-        INSERT contact;
+        
+        profileid = [Select Id from profile where Name='Customer Community']; //System Administrator
+        String orgId=UserInfo.getOrganizationId(); 
+        String dateString=String.valueof(Datetime.now()).replace(' ','').replace(':','').replace('-','') ;
+        Integer RandomId=Integer.valueOf(Math.rint(Math.random()*1000000)); 
+        String uniqueName=orgId+dateString+RandomId; 
+        user = new User(firstname = 'ABC', lastName = 'XYZ', email = uniqueName + '@test' + orgId + '.org',ContactId = contact.Id, 
+                        Username = uniqueName + '@test' + orgId + '.org', EmailEncodingKey = 'ISO-8859-1',IsActive =true, 
+                        Alias = uniqueName.substring(18, 23), TimeZoneSidKey = 'America/Los_Angeles', 
+                        LocaleSidKey = 'en_US', LanguageLocaleKey = 'en_US', ProfileId = profileId.Id);
+        /*insert user;
+user = new User(LastName = 'testLIVESTON',
+FirstName='testJASON',
+ContactId = contact.id,
+Alias = 'test',
+Email = 'test.liveston@asdf.com',
+Username = 'testliveston@asdf.com',
+ProfileId = profileId.id,
+TimeZoneSidKey = 'GMT',
+LanguageLocaleKey = 'en_US',
+EmailEncodingKey = 'UTF-8',
+LocaleSidKey = 'en_US'
+);
+insert user;*/
         
         testSiteChina = new Site__c();
         testSiteChina.Name = 'China, Guangzhou';
@@ -234,14 +295,36 @@ public class ExamManagementControllerTest {
         examRegList.add(examRegistration2);
         INSERT examRegList;
         
+        Exam_Administration__c examAdmin1 = new Exam_Administration__c();
+        examAdmin1.Exam_Group__c = examGroup.id;
+        examAdmin1.Exam_Date__c = system.today();
+        examAdmin1.Exam_Type__c = 'FRM' ;
+        examAdmin1.Exam_Results_Release_Date__c = DateTime.now().addDays(90);
+        examAdmin1.Exam_Admin_Modifications_Start_Date__c = system.today()+4;   
+        examAdmin1.Exam_Admin_Modifications_End_Date__c = system.today().adddays(30);   
+        examAdmin1.Exam_Scheduling_Start_Date__c = system.today()+4;    
+        examAdmin1.Exam_Scheduling_End_Date__c = system.today().adddays(30);
+        insert examAdmin1;
+        
+        Exam_Part__c expart1 = new Exam_Part__c();
+        expart1.Exam__c = frmPart2.Id;
+        expart1.Exam_Administration__c = examAdmin1.Id ;
+        expart1.Exam__c=frmPart1.id;
+        expart1.Delivery_Method__c = 'CBT';
+        
+        expart1.Exam_Start_Date__c = Date.today();
+        expart1.Exam_Date__c = Date.today();
+        expart1.Exam_End_Date__c = Date.today().addDays(10);
+        
+        insert expart1;
         
         Exam_Attempt__c examRegistration = new Exam_Attempt__c();
         examRegistration.Member__c = contact.Id;
-        
+        examRegistration.Exam_Part__c = expart1.Id;
         examRegistration.Opportunity__c = opportunity.Id;
         examRegistration.Exam_Site__c = examSiteNonChinaExamPart2.Id;
         examRegistration.Cloned_From__c = examRegList[0].Id;
-        
+        examRegistration.Exam_Administration__c  = examAdmin1.Id ;
         INSERT examRegistration;
         
         OpportunityLineItem oppli1 = new OpportunityLineItem();
@@ -253,11 +336,12 @@ public class ExamManagementControllerTest {
         
         
         Test.startTest();
-        ExamManagementController.changeExamSiteOnExamRegistrations(examRegistration.Id, examSiteChinaExamPart1.Id);
+        ExamManagementRemoter.changeExamSiteOnExamRegistrations(examRegistration.Id, examSiteChinaExamPart1.Id);
         
         Date tdy = Date.today();
-        ExamManagementController.updateOSTAIDInfo(contact.Id, 'Passport', '12345657', 'China', tdy);
+        ExamManagementRemoter.updateOSTAIDInfo(contact.Id, 'Passport', '12345657', 'China', tdy);
         ExamManagementController.computeNumberOfDeferredOutExamRegistrationsInActiveCycle(examRegList);       
+        
         Test.stopTest();
     }
     
@@ -370,6 +454,7 @@ insert OstaExamRegData;*/
         Test.stopTest();
     } 
     
+    
     @isTest
     public static void deferAndUndeferChinaExamRegistrations(){
         
@@ -393,16 +478,33 @@ insert OstaExamRegData;*/
         opportunity.CloseDate = Date.today();
         INSERT opportunity;
         
+		Exam_Attempt__c examRegistration = new Exam_Attempt__c();
+        examRegistration.Member__c = contact.Id;
+        examRegistration.Opportunity__c = opportunity.Id;
+        examRegistration.Exam_Site__c = examSiteNonChinaExamPart1.Id;
+        examRegList.add(examRegistration);
+        
+		Exam_Attempt__c examReg = new Exam_Attempt__c();
+        examReg.Member__c = contact.Id;
+        examReg.Opportunity__c = opportunity.Id;
+        examReg.Exam_Site__c = examSiteChinaExamPart2.Id;
+        examRegList.add(examReg);
+        INSERT examRegList;
+			
         Exam_Attempt__c examRegistrationPart1 = new Exam_Attempt__c();
         examRegistrationPart1.Member__c = contact.Id;
         examRegistrationPart1.Opportunity__c = opportunity.Id;
+		examRegistrationPart1.Cancelled__c = FALSE;
         examRegistrationPart1.Exam_Site__c = examSiteChinaExamPart1.Id;
+		examRegistrationPart1.Cloned_From__c = examRegList[0].Id;
         INSERT examRegistrationPart1;
         
         Exam_Attempt__c examRegistrationPart2 = new Exam_Attempt__c();
         examRegistrationPart2.Member__c = contact.Id;
         examRegistrationPart2.Opportunity__c = opportunity.Id;
+		examRegistrationPart2.Cancelled__c = FALSE;
         examRegistrationPart2.Exam_Site__c = examSiteChinaExamPart2.Id;
+		examRegistrationPart1.Cloned_From__c = examRegList[1].Id;
         INSERT examRegistrationPart2;
         
         OpportunityLineItem oli = new OpportunityLineItem();
@@ -487,7 +589,7 @@ insert OstaExamRegData;*/
         retabulationRequestFeesMapByOpportunityId.put(opportunity.Id, opportunityLineItem);
         
         ExamManagementController.setExamRegistionReScoreStatusForReview(retabulationRequestExamRegistrationIds, retabulationRequestFeesMapByOpportunityId);
-                   
+        
         Test.stopTest();        
         
     }
@@ -517,7 +619,7 @@ insert OstaExamRegData;*/
         setup();
         Test.startTest();
         
-        ExamManagementController.getAllProgramInfo();
+        ExamManagementRemoter.getAllProgramInfo();
         
         Test.stopTest(); 
     }
@@ -525,13 +627,29 @@ insert OstaExamRegData;*/
     @isTest
     public static void getProgramData(){
         setup();
-        Profile p = [SELECT Id FROM Profile WHERE Name='Standard User' limit 1]; 
-        User user = new User(Alias = 'nUser', Email='newuser@testorg.com', 
-                             contactId = contact.id,EmailEncodingKey='UTF-8', 
-                             LastName='Testing', LanguageLocaleKey='en_US',
-                             LocaleSidKey='en_US', ProfileId = p.Id, 
-                             TimeZoneSidKey='America/Los_Angeles', 
-                             UserName='nuser123@testorg.com');
+        // Profile p = [SELECT Id FROM Profile WHERE Name='Standard User' limit 1]; 
+        /*User user = new User(Alias = 'nUser', Email='newuser@testorg.com', 
+contactId = contact.id,EmailEncodingKey='UTF-8', 
+LastName='Testing', LanguageLocaleKey='en_US',
+LocaleSidKey='en_US', ProfileId = p.Id, 
+TimeZoneSidKey='America/Los_Angeles', 
+UserName='nuser123@testorg.com');*/
+        
+        
+        Contact con = new Contact();
+        con.Email = 'TEST@TESabcT.com';
+        con.FirstName = 'TEST';
+        con.LastName = 'TEST';
+        con.AccountId = account.Id;
+        con.First_Name_as_it_Appears_on_ID__c = 'Test';
+        con.Middle_Name_as_it_Appears_on_ID__c = 'T';
+        con.Last_Name_as_it_Appears_on_ID__c = 'Test';
+        con.OSTA_Full_ID__c = Null;
+        con.OSTA_ID_Location__c = 'China';
+        con.ID_Type__c = 'Passport';
+        con.OSTA_Full_ID__c = '';
+        INSERT con;
+        
         system.debug('user.id=============>'+user.id);
         system.debug('user.contactId=============>'+user.contactId);
         Contract Program = new Contract(
@@ -543,6 +661,19 @@ insert OstaExamRegData;*/
         
         Program.Status = 'Activated';
         update Program;
+        
+         Contract OSTAProgram = new Contract(
+            AccountId = account.Id,
+            RecordTypeId = RecordTypeHelper.GetRecordTypeId('Contract', 'OSTA Program'),
+            Status = 'Draft',
+            Name = 'OSTA Program',
+            StartDate = Date.today(),
+            ContractTerm = 9999
+        );
+        
+        INSERT OSTAProgram;
+        OSTAProgram.Status = 'Activated';
+        UPDATE OSTAProgram; 
         
         Candidate_Requirement__c canReq = new Candidate_Requirement__c();
         canReq.Candidate_Commitment__c = Program.id;
@@ -561,7 +692,25 @@ insert OstaExamRegData;*/
         examAdmin1.Exam_Scheduling_Start_Date__c = system.today();  
         examAdmin1.Exam_Scheduling_End_Date__c = system.today().adddays(30);
         examAdmin1.Exam_Results_Release_Date__c = DateTime.now().addDays(90);
+        examAdmin1.Registration_Start_Date__c = system.today().adddays(-30);
+        examAdmin1.Registration_End_Date__c = system.today().adddays(30);
+        examAdmin1.Contingency_Administration__c = False;
         insert examAdmin1;
+        
+        Exam_Administration__c examAdmin2 = new Exam_Administration__c();
+        examAdmin2.Exam_Group__c = examGroup.id;
+        examAdmin2.Exam_Date__c = system.today();
+        examAdmin2.Exam_Start_Date__c = system.today().addDays(5);
+        examAdmin2.Exam_Type__c = 'FRM' ;
+        examAdmin2.Exam_Admin_Modifications_Start_Date__c = system.today(); 
+        examAdmin2.Exam_Admin_Modifications_End_Date__c = system.today().adddays(30);   
+        examAdmin2.Exam_Scheduling_Start_Date__c = system.today();  
+        examAdmin2.Exam_Scheduling_End_Date__c = system.today().adddays(30);
+        examAdmin2.Exam_Results_Release_Date__c = DateTime.now().addDays(90);
+        examAdmin2.Registration_Start_Date__c = system.today().adddays(-30);
+        examAdmin2.Registration_End_Date__c = system.today().adddays(30);
+        examAdmin2.Contingency_Administration__c = False;
+        insert examAdmin2;
         
         Exam_Part__c expart1 = new Exam_Part__c();
         expart1.Exam__c = frmPart2.Id;
@@ -621,12 +770,12 @@ insert OstaExamRegData;*/
         Test.startTest();
         
         ExamManagementController.getProgramData('frm');
-        Program.Status = 'Completed';
-        update Program;
-        
         ExamManagementController.getProgramData('erp');
         ExamManagementController.getProgramData('SCR');
         
+        ExamManagementController.validateIDFormat('A897c78fd', con.OSTA_ID_Location__c, con.ID_Type__c);
+        ExamManagementController.validateIDFormat('A897c7', 'china2', con.ID_Type__c);
+        ExamManagementController.validateIDFormat('A897c7', 'china2', 'passport2');
         Test.stopTest(); 
     }
     
@@ -634,9 +783,9 @@ insert OstaExamRegData;*/
     public static void getProgramInfo(){
         setup();
         
-        ExamManagementController.getProgramInfo('frm');
-        ExamManagementController.getProgramInfo('erp');
-        
+        ExamManagementRemoter.getProgramInfo('frm');
+        ExamManagementRemoter.getProgramInfo('erp');
+        ExamManagementRemoter.getProgramInfo('erp');
         
         Opportunity opportunity = new Opportunity();
         opportunity.Amount = 700.00;
@@ -649,18 +798,74 @@ insert OstaExamRegData;*/
         examRegistration.Member__c = contact.Id;
         examRegistration.Opportunity__c = opportunity.Id;
         examRegistration.Exam_Site__c = examSiteChinaExamPart1.Id;
+        //examRegistration.RPT_Exam_Provider__c = 'PSI';
         INSERT examRegistration;
+        
+        Exam_Provider__c ep = new Exam_Provider__c();
+        ep.Name = 'PSI';
+        insert ep;
+        
+        Exam_Sites__c examSite1 = new Exam_Sites__c();
+        examSite1.Name = 'May 2018 FRM Exam Part I, China, Guangzhou';
+        examSite1.Site__c = testSiteChina.Id;
+        examSite1.Exam__c = frmPart1.Id;
+        examSite1.Exam_Provider__c = ep.id;
+        examSite1.Exam_Part__c = exampart.Id;
+        INSERT examSite1;
+        
+        Exam_Attempt__c examRegistration1 = new Exam_Attempt__c();
+        examRegistration1.Member__c = contact.Id;
+        examRegistration1.Opportunity__c = opportunity.Id;
+        examRegistration1.Exam_Site__c = examSite1.Id;
+        INSERT examRegistration1;
+        
         Test.startTest();
         
-        ExamManagementController.createCBTIntegrationAuthorization(examRegistration.Id);
-        ExamManagementController.logFailedAuthorization(examRegistration.Id);
+        ExamManagementController.createCBTIntegrationAuthorization(examRegistration1.Id);
+        ep.Name = 'ATA';
+        update ep;
+        ExamManagementRemoter.createCBTIntegrationAuthorization(examRegistration1.Id);
+        ExamManagementRemoter.logFailedAuthorization(examRegistration.Id);
         
         Test.stopTest(); 
     }
     
+    
     @isTest
     public static void processExamRegMods() {
         setup();
+        
+        Account acc = new Account(name = 'test');
+        insert acc;
+        
+        Contract ostaProgram = new Contract(
+            AccountId = acc.Id,
+            RecordTypeId = RecordTypeHelper.GetRecordTypeId('Contract', 'OSTA Program'),
+            Status = 'Draft',
+            Name = 'OSTA Program',
+            OSTA_Last_Upload_Date__c = Null,
+            StartDate = Date.today(),
+            ContractTerm = 9999
+        );
+        
+        INSERT ostaProgram;
+        ostaProgram.Status = 'Activated';
+        UPDATE ostaProgram;
+        
+        Contract frmProgram = new Contract(
+            AccountId = account.Id,
+            RecordTypeId = RecordTypeHelper.GetRecordTypeId('Contract', 'FRM Program'),
+            Status = 'Draft',
+            Name = 'FRM Program'
+        );
+        INSERT frmProgram ;
+       
+        Exam_Administration__c examAdmin0 = new Exam_Administration__c();
+        examAdmin0.Exam_Group__c = nextExamGroup.id;
+        examAdmin0.Exam_Date__c = system.today().addDays(-5);
+        examAdmin0.Exam_Results_Release_Date__c = DateTime.now().addDays(90);
+        insert examAdmin0;
+        
         Exam_Administration__c examAdmin1 = new Exam_Administration__c();
         examAdmin1.Exam_Group__c = examGroup.id;
         examAdmin1.Exam_Date__c = system.today().addDays(-5);
@@ -676,10 +881,27 @@ insert OstaExamRegData;*/
         insert examAdmin2;
         
         List<Exam_Attempt__c> attemptList = new List<Exam_Attempt__c>();
+        Exam_Attempt__c examRegistration0 = new Exam_Attempt__c();
+        examRegistration0.Member__c = contact.Id;
+        examRegistration0.Exam_Part__c = exampart.Id;
+        examRegistration0.Exam_Administration__c = examAdmin0.Id;
+        examRegistration0.Candidate_Commitment__c = frmProgram.id;
+        examRegistration0.Exam_Site__c = examSiteChinaExamPart1.Id;
+        attemptList.add(examRegistration0);
+        
+        Exam_Attempt__c examRegistration00 = new Exam_Attempt__c();
+        examRegistration00.Member__c = contact.Id;
+        examRegistration00.Exam_Part__c = exampart.Id;
+        examRegistration00.Candidate_Commitment__c = frmProgram.id;
+        examRegistration00.Exam_Administration__c = examAdmin0.Id;
+        examRegistration00.Exam_Site__c = examSiteChinaExamPart1.Id;
+        attemptList.add(examRegistration00);
+        
         Exam_Attempt__c examRegistration = new Exam_Attempt__c();
         examRegistration.Member__c = contact.Id;
         examRegistration.Exam_Part__c = exampart.Id;
         examRegistration.Exam_Administration__c = examAdmin1.Id;
+        examRegistration.Candidate_Commitment__c = ostaProgram.id;
         examRegistration.Exam_Site__c = examSiteChinaExamPart1.Id;
         attemptList.add(examRegistration);
         
@@ -688,8 +910,23 @@ insert OstaExamRegData;*/
         examRegistration2.Exam_Part__c = exampart2.Id;
         examRegistration2.Exam_Administration__c = examAdmin1.Id;
         examRegistration2.Exam_Site__c = examSiteNonChinaExamPart2.Id;
+        examRegistration2.Candidate_Commitment__c = ostaProgram.id;
         attemptList.add(examRegistration2);
         INSERT attemptList;
+        
+        Exam_Registration_Modification__c examRegMod0 = new Exam_Registration_Modification__c();
+        examRegMod0.Part_I_Exam_Admin_From__c = examadmin1.id;
+        examRegMod0.Part_II_Exam_Admin_From__c  = examAdmin0.id;
+        examRegMod0.Part_I_Exam_Registration__c = examRegistration00.id;
+        examRegMod0.Part_II_Exam_Registration__c = examRegistration0.id;
+        examRegMod0.Part_I_Exam_Admin_To__c  = examAdmin0.id;
+        examRegMod0.Part_II_Exam_Admin_To__c  = examadmin1.id ;
+        examRegMod0.Part_I_Exam_Site_From__c=NULL; 
+        examRegMod0.Part_I_Exam_Site_To__c=examSiteChinaExamPart1.id;
+        examRegMod0.Part_II_Exam_Site_From__c=examSiteChinaExamPart2.id;
+        examRegMod0.Part_II_Exam_Site_To__c=examSiteChinaExamPart1.id;
+        examRegMod0.Status__c = 'Pending';
+        insert examRegMod0 ;
         
         Exam_Registration_Modification__c examRegMod = new Exam_Registration_Modification__c();
         
@@ -699,38 +936,41 @@ insert OstaExamRegData;*/
         examRegMod.Part_II_Exam_Registration__c = examRegistration2.id;
         examRegMod.Part_I_Exam_Admin_To__c  = examAdmin2.id;
         examRegMod.Part_II_Exam_Admin_To__c  = examAdmin2.id ;
+        examRegMod.Created_from_MS_Tool__c = false;
+        
         examRegMod.Status__c = 'Pending';
         insert examRegMod ;
-        
-        Contract frmProgram = new Contract(
-            AccountId = account.Id,
-            RecordTypeId = RecordTypeHelper.GetRecordTypeId('Contract', 'OSTA Program'),
-            Status = 'Draft',
-            Name = 'FRM Program',
-            StartDate = Date.today(),
-            ContractTerm = 9999
-        );
-        
-        INSERT frmProgram;
-        frmProgram.Status = 'Activated';
-        UPDATE frmProgram; 
-        
+     
         Opportunity opportunity = new Opportunity();
         opportunity.AccountId = account.Id;
         opportunity.Amount = 700.00;
         opportunity.Name = 'TEST';
         opportunity.StageName = 'New Lead';
         opportunity.CloseDate = Date.today();
+        opportunity.Exam_Registration_Modification__c = examRegMod0.id;
         INSERT opportunity;
         
-        Set<Id> setId = new Set<Id>();
-        setId.add(examRegMod.Id);
+        
+        Opportunity opportunity1 = new Opportunity();
+        opportunity1.AccountId = acc.Id;
+        opportunity1.Amount = 700.00;
+        opportunity1.Name = 'TEST';
+        opportunity1.StageName = 'New Lead';
+        opportunity1.CloseDate = Date.today();
+        opportunity1.Exam_Registration_Modification__c = examRegMod.id;
+        INSERT opportunity1;
+        
         Test.startTest();
         
-        ExamManagementController.processExamRegMods(setId,false,false);
+        ExamManagementController.processExamRegMods(new set<id>{examRegMod.id},false,false);
+        ExamManagementController.processExamRegMods(new set<id>{examRegMod0.id},true,true);
+        //ExamManagementController.processExamRegModsBulk(new set<id>{examRegMod0.id},true,true);
         
         Test.stopTest(); 
     }
+    
+    
+    
     
     @isTest
     public static void processExamRegModsFromClient(){
@@ -750,7 +990,7 @@ insert OstaExamRegData;*/
         INSERT examRegistration;
         Test.startTest();
         
-        ExamManagementController.processExamRegModsFromClient(examRegistration.Id);
+        ExamManagementRemoter.processExamRegModsFromClient(examRegistration.Id);
         
         Test.stopTest(); 
     }
@@ -797,6 +1037,10 @@ insert OstaExamRegData;*/
         opportunity.CloseDate = Date.today();
         Insert opportunity;
         
+        ChargentSFA__Transaction__c Chargent = new ChargentSFA__Transaction__c(ChargentSFA__Opportunity__c=opportunity.Id,
+                                                                          ChargentSFA__Type__c='Charge',
+                                                                          ChargentSFA__Response_Status__c='Approved');
+        insert Chargent;
         
         Exam_Attempt__c examRegistration = new Exam_Attempt__c();
         examRegistration.Member__c = contact.Id;
@@ -975,13 +1219,31 @@ examSiteChinaExamPart2, examAdmin1, examAdmin1);
     public static void getExamRescheduleData(){
         setup();
         
-        Profile p = [SELECT Id FROM Profile WHERE Name='Standard User' limit 1]; 
-        User user = new User(Alias = 'nUser', Email='newuser@testorg.com', 
-                             contactId = contact.id,EmailEncodingKey='UTF-8', 
-                             LastName='Testing', LanguageLocaleKey='en_US',
-                             LocaleSidKey='en_US', ProfileId = p.Id, 
-                             TimeZoneSidKey='America/Los_Angeles', 
-                             UserName='nuser123@testorg.com');
+        //Profile p = [SELECT Id FROM Profile WHERE Name='Standard User']; 
+        //Profile p= [Select Id from profile where Name='Customer Community'];
+        /*User user = new User(Alias = 'nUser', Email='newuser@testorg.com', 
+contactId = contact.id,EmailEncodingKey='UTF-8', 
+LastName='Testing', LanguageLocaleKey='en_US',
+LocaleSidKey='en_US', ProfileId = p.Id, 
+TimeZoneSidKey='America/Los_Angeles', 
+UserName='nuser123@testorg.com');*/
+        
+        //Profile p= [SELECT Id,Name FROM Profile WHERE Name = 'Customer Community' limit 1];
+        /*Profile profileId = [SELECT Id FROM Profile WHERE Name = 'Standard User' LIMIT 1];
+
+User user = new User(LastName = 'testLIVESTON',
+FirstName='testJASON',
+ContactId = contact.id,
+Alias = 'test',
+Email = 'test.liveston@asdf.com',
+Username = 'testliveston@asdf.com',
+ProfileId = profileId.id,
+TimeZoneSidKey = 'GMT',
+LanguageLocaleKey = 'en_US',
+EmailEncodingKey = 'UTF-8',
+LocaleSidKey = 'en_US'
+);
+insert user;*/
         system.debug('user.id=============>'+user.id);
         system.debug('user.contactId=============>'+user.contactId);
         Contract Program = new Contract(
@@ -1005,6 +1267,121 @@ examSiteChinaExamPart2, examAdmin1, examAdmin1);
         examAdmin1.Exam_Scheduling_End_Date__c = system.today().adddays(30);
         insert examAdmin1;
         
+        Exam_Administration__c examAdmin2 = new Exam_Administration__c();
+        examAdmin2.Exam_Group__c = examGroup.id;
+        examAdmin2.Exam_Date__c = system.today();
+        examAdmin2.Exam_Type__c = 'erp' ;
+        examAdmin2.Exam_Results_Release_Date__c = DateTime.now().addDays(90);
+        insert examAdmin2;
+        
+        
+        Opportunity opportunity = new Opportunity();
+        opportunity.Amount = 700.00;
+        opportunity.Name = 'TEST';
+        opportunity.StageName = 'Closed';
+        opportunity.CloseDate = Date.today();
+        Insert opportunity;
+        
+        
+        Exam_Part__c expart1 = new Exam_Part__c();
+        expart1.Exam__c = frmPart2.Id;
+        expart1.Exam_Administration__c = examAdmin1.Id ;
+        expart1.Exam__c=frmPart1.id;
+        expart1.Delivery_Method__c = 'CBT';
+        expart1.Exam_Start_Date__c = Date.today();
+        expart1.Exam_Date__c = Date.today();
+        expart1.Exam_End_Date__c = Date.today().addDays(10);
+        
+        insert expart1;
+        
+        
+        Exam_Part__c expart2 = new Exam_Part__c();
+        expart2.Exam__c = frmPart2.Id;
+        expart2.Exam_Administration__c = examAdmin2.Id ;
+        expart2.Exam__c=frmPart1.id;
+        expart2.Delivery_Method__c = 'CBT';
+        expart2.Exam_Start_Date__c = Date.today();
+        expart2.Exam_Date__c = Date.today();
+        expart2.Exam_End_Date__c = Date.today().addDays(10);
+        
+        insert expart2;
+        
+        Exam_Attempt__c examRegistration = new Exam_Attempt__c();
+        examRegistration.Member__c = contact.Id;
+        examRegistration.Opportunity__c = opportunity.Id;
+        examRegistration.Defered__c = 'Pending';
+        examRegistration.Exam_Site__c = examSiteChinaExamPart1.Id;
+        examRegistration.Exam_Administration__c = examAdmin1.Id ; 
+        examRegistration.Exam_Part__c = expart1.Id;
+        INSERT examRegistration;
+        
+        Exam_Attempt__c examRegistration1 = new Exam_Attempt__c();
+        examRegistration1.Member__c = contact.Id;
+        examRegistration1.Opportunity__c = opportunity.Id;
+        examRegistration1.Exam_Site__c = examSiteChinaExamPart2.Id;
+        examRegistration1.Exam_Administration__c = examAdmin2.Id ;
+        examRegistration1.Exam_Part__c = expart2.Id; 
+        INSERT examRegistration1;
+        
+        
+        Test.startTest();  
+        List<User> lstUsers = [SELECT Id,ContactId FROM 
+                               User WHERE username =: 'testCommunityUsermig123@test.com' LIMIT 1];
+        String userId = lstUsers[0].Id;
+        
+                
+        ExamManagementController.createExamRescheduleFeesOrderInternal(examRegistration.Id, examAdmin1.Id, examAdmin2.Id, examSiteChinaExamPart1.Id, examSiteChinaExamPart2.Id,userId,false,false,null);
+        ExamManagementController.createExamRescheduleFeesOrderInternal(examRegistration1.Id, examAdmin2.Id, examAdmin2.Id, examSiteChinaExamPart2.Id, examSiteChinaExamPart2.Id,userId,false,false,null);
+        
+        ExamManagementController.createExamRescheduleFeesOrderInternal(examRegistration1.Id, examAdmin2.Id, examAdmin1.Id, examSiteChinaExamPart2.Id, examSiteChinaExamPart1.Id,userId,false,false,null);
+		
+        
+        Test.stopTest(); 
+        
+    }
+    
+    @isTest
+    public static void getExamRescheduleInformation(){
+        setup();
+        
+        // Profile p = [SELECT Id FROM Profile WHERE Name='Standard User' limit 1]; 
+        /*User user = new User(Alias = 'nUser', Email='newuser@testorg.com', 
+contactId = contact.id,EmailEncodingKey='UTF-8', 
+LastName='Testing', LanguageLocaleKey='en_US',
+LocaleSidKey='en_US', ProfileId = p.Id, 
+TimeZoneSidKey='America/Los_Angeles', 
+UserName='nuser123@testorg.com');*/
+        system.debug('user.id=============>'+user.id);
+        system.debug('user.contactId=============>'+user.contactId);
+        Contract Program = new Contract(
+            AccountId = account.Id,
+            RecordTypeId = RecordTypeHelper.GetRecordTypeId('Contract', 'FRM Program'),
+            Name = 'Test Contract'
+        );
+        INSERT Program ;
+        
+        Program.Status = 'Activated';
+        update Program;
+        
+        Exam_Administration__c examAdmin1 = new Exam_Administration__c();
+        examAdmin1.Exam_Group__c = examGroup.id;
+        examAdmin1.Exam_Date__c = system.today();
+        examAdmin1.Exam_Type__c = 'FRM' ;
+        examAdmin1.Exam_Results_Release_Date__c = DateTime.now().addDays(90);
+        examAdmin1.Exam_Admin_Modifications_Start_Date__c = system.today()+4;   
+        examAdmin1.Exam_Admin_Modifications_End_Date__c = system.today().adddays(30);   
+        examAdmin1.Exam_Scheduling_Start_Date__c = system.today()+4;    
+        examAdmin1.Exam_Scheduling_End_Date__c = system.today().adddays(30);
+        insert examAdmin1;
+        
+        Exam_Administration__c examAdmin2 = new Exam_Administration__c();
+        examAdmin2.Exam_Group__c = nextExamGroup.id;
+        examAdmin2.Exam_Date__c = system.today().addDays(10);
+        examAdmin2.Exam_Start_Date__c = system.today().addDays(5);
+        examAdmin2.Exam_Type__c = 'ERP' ;
+        examAdmin2.Exam_Results_Release_Date__c = DateTime.now().addDays(90);
+        insert examAdmin2;
+        
         Opportunity opportunity = new Opportunity();
         opportunity.Amount = 700.00;
         opportunity.Name = 'TEST';
@@ -1025,40 +1402,50 @@ examSiteChinaExamPart2, examAdmin1, examAdmin1);
         
         insert expart1;
         
+		List<Exam_Attempt__c> attemptList = new List<Exam_Attempt__c>();
         Exam_Attempt__c examRegistration = new Exam_Attempt__c();
         examRegistration.Member__c = contact.Id;
         examRegistration.Opportunity__c = opportunity.Id;
         examRegistration.Defered__c = 'Pending';
         examRegistration.Exam_Site__c = examSiteChinaExamPart1.Id;
-        
-        INSERT examRegistration;
+        examRegistration.Exam_Administration__c = examAdmin1.Id;
+        attemptList.add(examRegistration);
         
         Exam_Attempt__c examRegistration1 = new Exam_Attempt__c();
         examRegistration1.Member__c = contact.Id;
         examRegistration1.Opportunity__c = opportunity.Id;
         examRegistration1.Exam_Site__c = examSiteChinaExamPart2.Id;
-        INSERT examRegistration1;
-        Test.startTest();  
-        String userId = UserInfo.getUserId();
-        ExamManagementController.getExamRescheduleData(examGroup.id, 'FRM', examAdmin1.Id, examAdmin1.Id, examSiteChinaExamPart1.Id, examSiteChinaExamPart1.Id,userId);
-        ExamManagementController.getExamRescheduleData(examGroup.id, 'ERP', examAdmin1.Id, examAdmin1.Id, examSiteChinaExamPart1.Id, examSiteChinaExamPart1.Id,userId);
-        ExamManagementController.getExamRescheduleData(examGroup.id, 'ABC', examAdmin1.Id, examAdmin1.Id, examSiteChinaExamPart1.Id, examSiteChinaExamPart1.Id,userId);
-        ExamManagementController.createExamRescheduleFeesOrder(examGroup.id, 'FRM', examAdmin1.Id, examAdmin1.Id, examSiteChinaExamPart1.Id, examSiteChinaExamPart1.Id);
-        Test.stopTest(); 
+        examRegistration1.Exam_Administration__c = examAdmin2.Id;
+        attemptList.add(examRegistration1);
+        INSERT attemptList;
         
+        Exam_Registration_Modification__c examRegMod = new Exam_Registration_Modification__c();
+        examRegMod.Part_I_Exam_Admin_From__c = examAdmin1.id ;
+        examRegMod.Part_II_Exam_Admin_From__c  = examAdmin1.id ;
+        examRegMod.Part_I_Exam_Registration__c = examRegistration.id;
+        examRegMod.Part_II_Exam_Registration__c = examRegistration1.id;
+        examRegMod.Part_I_Exam_Admin_To__c  = examAdmin1.id;
+        examRegMod.Part_II_Exam_Admin_To__c  = examAdmin2.id ;
+        examRegMod.Status__c = 'Pending';
+        insert examRegMod ;
+		
+		Set<Id> setId = new Set<Id>();
+        setId.add(examRegMod.Id);
+		
+        List<User> lstUsers = [SELECT Id,ContactId FROM 
+                               User WHERE username =: 'testCommunityUsermig123@test.com' LIMIT 1];
+        system.runAs(lstUsers[0]){
+            
+            Test.startTest();
+            ExamManagementController.processExamRegModsBulk(setId,false,false);
+            ExamManagementRemoter.getExamRescheduleInformation(examRegistration.id);
+        	//ExamManagementRemoter.getExamRescheduleInformation(examRegistration1.id);
+            //ExamManagementRemoter.getExamRescheduleInformation(examRegistration1.id);
+            
+            Test.stopTest();
+        }
     }
     
-    @isTest
-    public static void getExamRescheduleInformation(){
-        setup();
-        Test.startTest();
-        
-        ExamManagementController.getExamRescheduleInformation(examGroup.id, 'FRM');
-        ExamManagementController.getExamRescheduleInformation(examGroup.id, 'ERP');
-        ExamManagementController.getExamRescheduleInformation(examGroup.id, 'ABC');
-        
-        Test.stopTest();
-    }
     @isTest
     public static void testTransaction() {
         setup();
@@ -1151,6 +1538,7 @@ examSiteChinaExamPart2, examAdmin1, examAdmin1);
         ERM1.Part_I_Exam_Registration__c=examRegistration1.ID;
         ERM1.Part_I_Exam_Admin_From__c=examAdmin1.Id;
         ERM1.Part_I_Exam_Admin_To__c=examAdmin1.Id;
+        ERM1.Created_from_MS_Tool__c = false;
         ERM1.Status__c = 'Pending';
         INSERT ERM1;
         
@@ -1255,10 +1643,13 @@ examSiteChinaExamPart2, examAdmin1, examAdmin1);
         examAdmin1.Exam_Group__c = examGroup.id;
         examAdmin1.Exam_Date__c = system.today();
         examAdmin1.Exam_Type__c = 'FRM' ;
+        examAdmin1.Exam_Admin_Modifications_Start_Date__c = system.today().adddays(-30);    
+        examAdmin1.Exam_Admin_Modifications_End_Date__c = system.today().adddays(29);   
+        examAdmin1.Exam_Scheduling_Start_Date__c = system.today().adddays(-30);    
+        examAdmin1.Exam_Scheduling_End_Date__c = system.today().adddays(30);
         examAdmin1.Exam_Results_Release_Date__c = DateTime.now().addDays(90);
         insert examAdmin1;
-        
-        
+                
         Opportunity opportunity = new Opportunity();
         opportunity.AccountId = account.Id;
         opportunity.Amount = 700.00;
@@ -1266,8 +1657,9 @@ examSiteChinaExamPart2, examAdmin1, examAdmin1);
         opportunity.StageName = 'Closed';
         opportunity.CloseDate = Date.today();
         INSERT opportunity;
+        
         Exam_Part__c expart1 = new Exam_Part__c();
-        expart1.Exam__c = frmPart2.Id;
+        expart1.Exam__c = frmPart1.Id;
         expart1.Exam_Administration__c = examAdmin1.Id ;
         expart1.Delivery_Method__c = 'CBT';
         expart1.Exam_Start_Date__c = Date.today();
@@ -1280,40 +1672,58 @@ examSiteChinaExamPart2, examAdmin1, examAdmin1);
         examRegistration11.Member__c = contact.Id;
         examRegistration11.Opportunity__c = opportunity.Id;
         examRegistration11.Exam_Site__c = examSiteChinaExamPart1.Id;
+        examRegistration11.Exam_Administration__c = examAdmin1.Id ;
         attemptList.add(examRegistration11);
-        
-        Exam_Attempt__c examRegistration1 = new Exam_Attempt__c();
-        examRegistration1.Member__c = contact.Id;
-        examRegistration1.Opportunity__c = opportunity.Id;
-        examRegistration1.Exam_Site__c = examSiteChinaExamPart2.Id;
-        INSERT examRegistration1;
-        
-        String userId = UserInfo.getUserId();
-        ExamManagementController.getExamRescheduleData(examGroup.id, 'FRM', examAdmin1.Id, examAdmin1.Id, examSiteChinaExamPart1.Id, examSiteChinaExamPart1.Id,userId);
-        ExamManagementController.getExamRescheduleData(examGroup.id, 'ERP', examAdmin1.Id, examAdmin1.Id, examSiteChinaExamPart1.Id, examSiteChinaExamPart1.Id,userId);
-        ExamManagementController.getExamRescheduleData(examGroup.id, 'ABC', examAdmin1.Id, examAdmin1.Id, examSiteChinaExamPart1.Id, examSiteChinaExamPart1.Id,userId);
-        
         
         Exam_Administration__c examAdmin2 = new Exam_Administration__c();
         examAdmin2.Exam_Group__c = nextExamGroup.id;
         examAdmin2.Exam_Date__c = system.today().addDays(10);
         examAdmin2.Exam_Start_Date__c = system.today().addDays(5);
         examAdmin2.Exam_Type__c = 'FRM' ;
+        examAdmin2.Exam_Admin_Modifications_Start_Date__c = system.today().adddays(-30);    
+        examAdmin2.Exam_Admin_Modifications_End_Date__c = system.today().adddays(29);   
+        examAdmin2.Exam_Scheduling_Start_Date__c = system.today().adddays(-30);    
+        examAdmin2.Exam_Scheduling_End_Date__c = system.today().adddays(30);
         examAdmin2.Exam_Results_Release_Date__c = DateTime.now().addDays(90);
         insert examAdmin2;
         
+        Exam_Attempt__c examRegistration1 = new Exam_Attempt__c();
+        examRegistration1.Member__c = contact.Id;
+        examRegistration1.Opportunity__c = opportunity.Id;
+        examRegistration1.Exam_Site__c = examSiteChinaExamPart2.Id;
+        examRegistration1.Deferred_Exam_Administration__c = examAdmin2.Id ;
+        examRegistration1.Exam_Administration__c = examAdmin1.Id ;
+        INSERT examRegistration1;
+        
+        Exam_Administration__c examAdmin3 = new Exam_Administration__c();
+        examAdmin3.Exam_Group__c = examGroup.id;
+        examAdmin3.Exam_Date__c = system.today();
+        examAdmin3.Exam_Type__c = 'ERP' ;
+        examAdmin3.Exam_Results_Release_Date__c = DateTime.now().addDays(90);
+        insert examAdmin3;
+        
+        Exam_Administration__c examAdmin4 = new Exam_Administration__c();
+        examAdmin4.Exam_Group__c = nextExamGroup.id;
+        examAdmin4.Exam_Date__c = system.today().addDays(10);
+        examAdmin4.Exam_Start_Date__c = system.today().addDays(5);
+        examAdmin4.Exam_Type__c = 'ERP' ;
+        examAdmin4.Exam_Results_Release_Date__c = DateTime.now().addDays(90);
+        insert examAdmin4;
+        
         Exam_Attempt__c examRegistration = new Exam_Attempt__c();
         examRegistration.Member__c = contact.Id;
-        examRegistration.Exam_Part__c = exampart.Id;
+        examRegistration.Exam_Part__c = expart1.Id;
         examRegistration.Exam_Administration__c = examAdmin1.Id;
         examRegistration.Exam_Site__c = examSiteChinaExamPart1.Id;
+        examRegistration.Opportunity__c = opportunity.Id;
         attemptList.add(examRegistration);
         
         Exam_Attempt__c examRegistration111 = new Exam_Attempt__c();
         examRegistration111.Member__c = contact.Id;
-        examRegistration111.Exam_Part__c = exampart.Id;
+        examRegistration111.Exam_Part__c = expart1.Id;
         examRegistration111.Exam_Administration__c = examAdmin1.Id;
         examRegistration111.Exam_Site__c = examSiteChinaExamPart1.Id;
+        examRegistration111.Opportunity__c = opportunity.Id;
         attemptList.add(examRegistration111);
         
         Exam_Attempt__c examRegistration2 = new Exam_Attempt__c();
@@ -1321,16 +1731,18 @@ examSiteChinaExamPart2, examAdmin1, examAdmin1);
         examRegistration2.Exam_Part__c = exampart2.Id;
         examRegistration2.Exam_Administration__c = examAdmin1.Id;
         examRegistration2.Exam_Site__c = examSiteNonChinaExamPart2.Id;
+        examRegistration2.Opportunity__c = opportunity.Id;
         attemptList.add(examRegistration2);
         INSERT attemptList;
         
         Exam_Registration_Modification__c examRegMod = new Exam_Registration_Modification__c();
         examRegMod.Part_I_Exam_Admin_From__c = examAdmin1.id ;
         examRegMod.Part_II_Exam_Admin_From__c  = examAdmin1.id ;
-        examRegMod.Part_I_Exam_Registration__c = examRegistration.id;
+        examRegMod.Part_I_Exam_Registration__c = examRegistration1.id;
         examRegMod.Part_II_Exam_Registration__c = examRegistration2.id;
         examRegMod.Part_I_Exam_Admin_To__c  = examAdmin2.id;
         examRegMod.Part_II_Exam_Admin_To__c  = examAdmin2.id ;
+        examRegMod.Created_from_MS_Tool__c = false;
         examRegMod.Status__c = 'Pending';
         insert examRegMod ;
         
@@ -1340,10 +1752,22 @@ examSiteChinaExamPart2, examAdmin1, examAdmin1);
         examRegMod1.Part_I_Exam_Admin_To__c  = examAdmin2.id;
         examRegMod1.Part_I_Exam_Site_From__c  = examSiteChinaExamPart1.id ;
         examRegMod1.Part_I_Exam_Site_To__c  = examSiteNonChinaExamPart1.id ;
+        examRegMod1.Created_from_MS_Tool__c = false;
         examRegMod1.Status__c = 'Pending';
         insert examRegMod1 ;
         
-        Contract frmProgram = new Contract(
+        Exam_Registration_Modification__c examRegMod2 = new Exam_Registration_Modification__c();
+        examRegMod2.Part_I_Exam_Admin_From__c = examAdmin1.id ;
+        examRegMod2.Part_II_Exam_Admin_From__c  = examAdmin3.id ;
+        examRegMod2.Part_I_Exam_Registration__c = examRegistration.id;
+        examRegMod2.Part_II_Exam_Registration__c = examRegistration2.id;
+        examRegMod2.Part_I_Exam_Admin_To__c  = examAdmin2.id;
+        examRegMod2.Part_II_Exam_Admin_To__c  = examAdmin4.id ;
+        examRegMod2.Created_from_MS_Tool__c = false;
+        examRegMod2.Status__c = 'Pending';
+        insert examRegMod2 ;
+        
+        Contract OSTAProgram = new Contract(
             AccountId = account.Id,
             RecordTypeId = RecordTypeHelper.GetRecordTypeId('Contract', 'OSTA Program'),
             Status = 'Draft',
@@ -1352,22 +1776,34 @@ examSiteChinaExamPart2, examAdmin1, examAdmin1);
             ContractTerm = 9999
         );
         
-        INSERT frmProgram;
-        frmProgram.Status = 'Activated';
-        UPDATE frmProgram; 
+        INSERT OSTAProgram;
+        OSTAProgram.Status = 'Activated';
+        UPDATE OSTAProgram; 
         
         Set<Id> setId = new Set<Id>();
         setId.add(examRegMod.Id);
-        setId.add(examRegMod1.Id);
-        Test.startTest();
+        setId.add(examRegMod1.Id); 
+        setId.add(examRegMod2.Id); 
         
+        List<User> lstUsers = [SELECT Id,ContactId FROM 
+                               User WHERE username =: 'testCommunityUsermig123@test.com' LIMIT 1];
+        String userId = lstUsers[0].Id;
+        
+        system.runAs(lstUsers[0]){
+        Test.startTest(); 
         ExamManagementController.processExamRegMods(setId,true,false);
         ExamManagementController.processExamRegMods(setId,false,true);
-        ExamManagementController.getExamRescheduleFees(examGroup.id, 'FRM', examAdmin1.Id, examAdmin2.id, examSiteChinaExamPart1.Id, examSiteChinaExamPart2.Id);
-        ExamManagementController.createExamRescheduleFeesOrderInternal(examGroup.id, 'FRM', examAdmin1.Id, examAdmin1.Id, examSiteChinaExamPart1.Id, examSiteChinaExamPart1.Id,userinfo.getUserId(),true,true,'Deferral Standard');
-        ExamManagementController.createExamRescheduleFeesOrderInternal(examGroup.id, 'erp', examAdmin1.Id, examAdmin1.Id, examSiteChinaExamPart1.Id, examSiteChinaExamPart1.Id,userinfo.getUserId(),true,true,'Deferral Standard');
+		ExamManagementController.processExamRegModsBulk(setId,true,true);
+        
+		ExamManagementController.createExamRescheduleFeesOrderInternal(examRegistration1.id, examAdmin1.Id, examAdmin1.Id, examSiteChinaExamPart1.Id, examSiteChinaExamPart1.Id,userId,true,true,'Deferral Standard');
+        ExamManagementController.createExamRescheduleFeesOrderInternal(examRegistration1.id, examAdmin1.Id, examAdmin2.Id, examSiteChinaExamPart1.Id, examSiteChinaExamPart2.Id,userId,true,true,'Deferral Standard');    
+        
+        ExamManagementController.getExamRescheduleData(examRegistration2.id, examAdmin1.Id, examAdmin2.Id, examSiteChinaExamPart2.Id, examSiteChinaExamPart2.Id,userId);    
+        
+        ExamManagementRemoter.getExamRescheduleFees(examRegistration1.id, examAdmin1.Id, examAdmin2.id, examSiteChinaExamPart1.Id, examSiteChinaExamPart2.Id);
         
         Test.stopTest();
+        }
     }
     
     @isTest
@@ -1391,16 +1827,30 @@ examSiteChinaExamPart2, examAdmin1, examAdmin1);
         Product2 p2 = new Product2(Name = ' Test Product2',Description='Test Product Entry2 For Product',productCode = 'CHLF',isActive = true,Is_Shippable__c = true,
                                    Customs_Cost__c = '6',Weight__c=6,GL_Code__c='4011');
         Product2List.add(p2);
+        Product2 p3 = new Product2(Name = ' Test Product2',Description='Test Product Entry2 For Product',productCode = 'CHNDF',isActive = true,Is_Shippable__c = true,
+                                   Customs_Cost__c = '6',Weight__c=6,GL_Code__c='4011');
+        Product2List.add(p3);
         insert Product2List;
         
         Pricebook2 standardPricebook = new Pricebook2(Id = Test.getStandardPricebookId(),IsActive = true);
         Update standardPricebook;
+        
+        Pricebook2 customPB = new Pricebook2(Name='GARP 2015/2016', isActive=true);
+        insert customPB;
+        PricebookEntry standardPrice1 = new PricebookEntry(Pricebook2Id = standardPricebook.Id,Product2Id = Product2List[0].Id,UnitPrice = 250,IsActive = true,UseStandardPrice = false);
+        insert standardPrice1;
+        PricebookEntry standardPrice2 = new PricebookEntry(Pricebook2Id = standardPricebook.Id,Product2Id = Product2List[1].Id,UnitPrice = 250,IsActive = true,UseStandardPrice = false);
+        insert standardPrice2;
+        PricebookEntry standardPrice3 = new PricebookEntry(Pricebook2Id = standardPricebook.Id,Product2Id = Product2List[2].Id,UnitPrice = 250,IsActive = true,UseStandardPrice = false);
+        insert standardPrice3;
         //List<PricebookEntry> lstPriceBookEntry = [SELECT Id, Name, Product2Id, ProductCode, Unitprice from PriceBookEntry where Pricebook2.Name = 'GARP 2015/2016' AND Product2Id in :lstProducts];
         List<PricebookEntry> PricebookEntryList = new List<PricebookEntry>();
-        PricebookEntry standardPrice1 = new PricebookEntry(Pricebook2Id = standardPricebook.Id,Product2Id = Product2List[0].Id,UnitPrice = 250,IsActive = true,UseStandardPrice = false);
-        PricebookEntryList.add(standardPrice1);
-        PricebookEntry standardPrice2 = new PricebookEntry(Pricebook2Id = standardPricebook.Id,Product2Id = Product2List[1].Id,UnitPrice = 250,IsActive = true,UseStandardPrice = false);
-        PricebookEntryList.add(standardPrice2);
+        PricebookEntry CustPrice1 = new PricebookEntry(Pricebook2Id = customPB.Id,Product2Id = Product2List[0].Id,UnitPrice = 250,IsActive = true,UseStandardPrice = false);
+        PricebookEntryList.add(CustPrice1);
+        PricebookEntry CustPrice2 = new PricebookEntry(Pricebook2Id = customPB.Id,Product2Id = Product2List[1].Id,UnitPrice = 250,IsActive = true,UseStandardPrice = false);
+        PricebookEntryList.add(CustPrice2);
+        PricebookEntry CustPrice3 = new PricebookEntry(Pricebook2Id = customPB.Id,Product2Id = Product2List[2].Id,UnitPrice = 250,IsActive = true,UseStandardPrice = false);
+        PricebookEntryList.add(CustPrice3);
         insert PricebookEntryList ;
         
         
@@ -1447,6 +1897,7 @@ examSiteChinaExamPart2, examAdmin1, examAdmin1);
         List<Exam_Attempt__c> attemptList = new List<Exam_Attempt__c>();
         Exam_Administration__c examAdmin1 = new Exam_Administration__c();
         examAdmin1.Exam_Group__c = examGroup.id;
+        //examAdmin1.Exam_Group__c = nextExamGroup.id;
         examAdmin1.Exam_Date__c = system.today();
         examAdmin1.Exam_Start_Date__c = system.today().addDays(5);
         examAdmin1.Exam_Type__c = 'FRM' ;
@@ -1506,7 +1957,6 @@ examSiteChinaExamPart2, examAdmin1, examAdmin1);
         examRegistration0.Exam_Site__c = examSiteChinaExamPart1.Id;
         INSERT examRegistration0;
         
-        
         Exam_Attempt__c examRegistration = new Exam_Attempt__c();
         examRegistration.Member__c = contact.Id;
         examRegistration.Cancelled__c=False;
@@ -1519,7 +1969,6 @@ examSiteChinaExamPart2, examAdmin1, examAdmin1);
         examRegistration.Exam_Administration__c = examAdmin1.Id;
         examRegistration.Exam_Site__c = examSiteChinaExamPart1.Id;
         insert examRegistration;
-        
         
         Exam_Attempt__c examRegistration2 = new Exam_Attempt__c();
         examRegistration2.Member__c = contact.Id;
@@ -1540,6 +1989,13 @@ examSiteChinaExamPart2, examAdmin1, examAdmin1);
         examRegMod0.Status__c = 'Pending';
         insert examRegMod0;
         
+        Exam_Registration_Modification__c examRegMod00 = new Exam_Registration_Modification__c();
+        examRegMod00.Part_II_Exam_Admin_From__c = Null;
+        examRegMod00.Part_II_Exam_Registration__c = examRegistration.id;
+        examRegMod00.Part_II_Exam_Admin_To__c  = Null;
+        examRegMod00.Status__c = 'Pending';
+        insert examRegMod00;
+        
         
         Exam_Registration_Modification__c examRegMod = new Exam_Registration_Modification__c();
         examRegMod.Customer_Email__c='TEST@TEST.com'; 
@@ -1549,10 +2005,10 @@ examSiteChinaExamPart2, examAdmin1, examAdmin1);
         examRegMod.Part_II_Exam_Registration__c = examRegistration2.id;
         examRegMod.Part_I_Exam_Admin_To__c  = examAdmin1.id;
         examRegMod.Part_II_Exam_Admin_To__c  = examAdmin2.id ;
+        examRegMod.Created_from_MS_Tool__c = false;
         
         examRegMod.Status__c = 'Pending';
         insert examRegMod ;
-        
         
         Exam_Registration_Modification__c examRegMod1 = new Exam_Registration_Modification__c();
         examRegMod1.Customer_Email__c='TEST@TEST.com'; 
@@ -1562,10 +2018,10 @@ examSiteChinaExamPart2, examAdmin1, examAdmin1);
         examRegMod1.Part_II_Exam_Registration__c = examRegistration2.id;
         examRegMod1.Part_I_Exam_Admin_To__c  = examAdmin1.id;
         examRegMod1.Part_II_Exam_Admin_To__c  = examAdmin1.id ;
+        examRegMod1.Created_from_MS_Tool__c = false;
         
         examRegMod1.Status__c = 'Pending';
         insert examRegMod1 ;
-        
         
         Exam_Registration_Modification__c examRegMod2 = new Exam_Registration_Modification__c();
         examRegMod2.Customer_Email__c='TEST@TEST.com';
@@ -1578,7 +2034,10 @@ examSiteChinaExamPart2, examAdmin1, examAdmin1);
         examRegMod2.Part_II_Exam_Admin_From__c  = examAdmin1.id ;
         examRegMod2.Part_II_Exam_Site_From__c=examSiteChinaExamPart2.id;
         examRegMod2.Part_II_Exam_Site_To__c=examSiteChinaExamPart1.id;
-        examRegMod2.Part_II_Exam_Admin_To__c  = dupexamAdmin2.id ; 
+        //examRegMod2.Part_II_Exam_Admin_To__c  = dupexamAdmin2.id ; 
+        examRegMod2.Part_II_Exam_Admin_To__c  = examAdmin2.id ;
+        examRegMod2.Created_from_MS_Tool__c = false;
+        
         examRegMod2.Status__c = 'Pending';
         insert examRegMod2 ;
         
@@ -1590,6 +2049,9 @@ examSiteChinaExamPart2, examAdmin1, examAdmin1);
         OpportunityLineItem oppLineItem2 = new OpportunityLineItem(OpportunityId = OppResults[1].Id,PricebookEntryId = PricebookEntryList[1].Id,UnitPrice = 7000,Description='test',
                                                                    Quantity = 5,Product_company__c='GRA Test',Exam_Registration__c = examRegistration2.Id,Scholarship_Application__c = sa.Id);
         OpportunityLineItemList.add(oppLineItem2);
+        OpportunityLineItem oppLineItem3 = new OpportunityLineItem(OpportunityId = OppResults[0].Id,PricebookEntryId = PricebookEntryList[2].Id,UnitPrice = 7000,Description='test',
+                                                                   Quantity = 5,Product_company__c='GRA Test',Exam_Registration__c = examRegistration2.Id,Scholarship_Application__c = sa.Id);
+        OpportunityLineItemList.add(oppLineItem3);
         insert OpportunityLineItemList;       
         
         ChargentSFA__Transaction__c payment = new ChargentSFA__Transaction__c(ChargentSFA__Opportunity__c = OppResults[0].id,ChargentSFA__Type__c = 'Charge',
@@ -1615,19 +2077,30 @@ examSiteChinaExamPart2, examAdmin1, examAdmin1);
         setId.add(examRegMod1.Id);
         setId.add(examRegMod2.Id);
         setId.add(examRegMod0.Id);
-        String userId = UserInfo.getUserId();
-        Test.startTest();
-        ExamManagementController.getExamRescheduleFeesInternal(examGroup.id, 'frm', examAdmin1.Id, examAdmin2.Id, examSiteChinaExamPart1.Id, examSiteChinaExamPart2.Id,userId,true);
-        ExamManagementController.processExamRegModsBulk(setId,true,true);
+        setId.add(examRegMod00.Id);
         
+        Test.startTest();
+        List<User> lstUsers = [SELECT Id,ContactId FROM 
+                               User WHERE username =: 'testCommunityUsermig123@test.com' LIMIT 1];
+        String userId = lstUsers[0].Id;
+        
+        ExamManagementController.createExamRescheduleFeesOrderInternal(examRegistration.id, examAdmin1.Id, examAdmin2.Id, examSiteChinaExamPart1.Id, examSiteChinaExamPart2.Id,userId,true,true,'Deferral Standard');
+        //ExamManagementController.createExamRescheduleFeesOrderInternal(examRegistration1.id, examAdmin1.Id, examAdmin2.Id, examSiteChinaExamPart1.Id, examSiteChinaExamPart2.Id,userId,true,true,'Deferral Standard');
+        
+        //ExamManagementController.getExamRescheduleFeesInternal(examRegistration.id, examAdmin1.Id, examAdmin2.Id, examSiteChinaExamPart1.Id, examSiteChinaExamPart2.Id,userId,true);
+        ExamManagementController.processExamRegModsBulk(setId,true,true);
+        ExamManagementController.findRefundOpp(examRegistration);
+        ExamManagementController.findRefundOpp(examRegistration2);
+    
         ExamManagementController.validateIDFormat('E12345678','Passport','China');
         ExamManagementController.validateIDFormat('E1234567','Passport','China');
         ExamManagementController.validateIDFormat('EA2345678','Passport','China');
         ExamManagementController.validateIDFormat('E123I5678','Passport','China');
         ExamManagementController.validateIDFormat('EA23I5678','Passport','China');
-
+        
         ExamManagementController.validateIDFormat('123456789012345678','Driver\'s License','China');
         ExamManagementController.validateIDFormat('12345678901234567','Driver\'s License','China');
+        
         
         Test.stopTest();     
     }   

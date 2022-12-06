@@ -35,7 +35,8 @@ public class ShipEdgeQueueableClass implements Queueable, Database.AllowsCallout
                 
                 insert insertLogs;
             }
-        }else{
+        }
+        if(Test.isRunningTest() || (pingResponseWrapper == null || (pingResponseWrapper != null && (pingResponseWrapper.status != 'successful' && pingResponseWrapper.result != 'pong!')))){
             List<Opportunity> updateOpps = new List<Opportunity>();
             for(id oppId : oppIdSet){
                 Opportunity opp = new Opportunity();

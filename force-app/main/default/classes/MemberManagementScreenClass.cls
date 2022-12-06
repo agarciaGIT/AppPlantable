@@ -31,8 +31,8 @@ public class MemberManagementScreenClass {
         }
         return retval;
     }
-   
-     @AuraEnabled
+    
+    @AuraEnabled
     Public Static String GARPIdMergeRequest(String GARPId){
         String retval ='';
         
@@ -41,37 +41,37 @@ public class MemberManagementScreenClass {
             retval = 'Error' ; 
         }else if(conList[0].Account.BillingState == null || conList[0].Account.BillingStreet == null || conList[0].Account.BillingCountry == null || conList[0].Account.BillingPostalCode == null || 
                  conList[0].Account.BillingCity == null || conList[0].Middle_Name_as_it_Appears_on_ID__c == null || conList[0].First_Name_as_it_Appears_on_ID__c == null || conList[0].Last_Name_as_it_Appears_on_ID__c == null || conList[0].RA_Phone__c == null || conList[0].Email == null){
-            retval = 'Error Info';
-        }else{
-             Id SCRRecId = Schema.SObjectType.Contract.getRecordTypeInfosByDeveloperName().get('SCR_Program').getRecordTypeId();
-             List<Contract> contractList = [Select Id From Contract Where AccountId=:conList[0].AccountId and Status ='Activated' and RecordTypeId =:SCRRecId];
-            if(contractList.isEmpty()){                 
-                retval = 'Error Contract';
-            }else{
-                try{
-                    Contract program = new Contract();
-                    program.Id = contractList[0].Id; 
-                    program.Pearson_Member_First_Name__c = conList[0].First_Name_as_it_Appears_on_ID__c;
-                    program.Pearson_Member_Middle_Name__c = conList[0].Middle_Name_as_it_Appears_on_ID__c;
-                    program.Pearson_Member_Last_Name__c = conList[0].Last_Name_as_it_Appears_on_ID__c;
-                    program.Member_Email__c = conList[0].Email;
-                    program.Pearson_Phone_No__c = conList[0].RA_Phone__c;
-                    program.BillingState = conList[0].Account.BillingState;
-                    program.BillingCity=conList[0].Account.BillingCity;
-                    program.BillingPostalCode = conList[0].Account.BillingPostalCode;
-                    program.BillingStreet = conList[0].Account.BillingStreet;
-                    program.BillingCountry = conList[0].Account.BillingCountry; 
-                    Update program; 
-                    retval = 'Updated Pearson Merge Request';
-                }Catch(Exception ex){
-                    retval = ex.getMessage();
-                }
-                
-            }
-        }
+                     retval = 'Error Info';
+                 }else{
+                     Id SCRRecId = Schema.SObjectType.Contract.getRecordTypeInfosByDeveloperName().get('SCR_Program').getRecordTypeId();
+                     List<Contract> contractList = [Select Id From Contract Where AccountId=:conList[0].AccountId and Status ='Activated' and RecordTypeId =:SCRRecId];
+                     if(contractList.isEmpty()){                 
+                         retval = 'Error Contract';
+                     }else{
+                         try{
+                             Contract program = new Contract();
+                             program.Id = contractList[0].Id; 
+                             program.Pearson_Member_First_Name__c = conList[0].First_Name_as_it_Appears_on_ID__c;
+                             program.Pearson_Member_Middle_Name__c = conList[0].Middle_Name_as_it_Appears_on_ID__c;
+                             program.Pearson_Member_Last_Name__c = conList[0].Last_Name_as_it_Appears_on_ID__c;
+                             program.Member_Email__c = conList[0].Email;
+                             program.Pearson_Phone_No__c = conList[0].RA_Phone__c;
+                             program.BillingState = conList[0].Account.BillingState;
+                             program.BillingCity=conList[0].Account.BillingCity;
+                             program.BillingPostalCode = conList[0].Account.BillingPostalCode;
+                             program.BillingStreet = conList[0].Account.BillingStreet;
+                             program.BillingCountry = conList[0].Account.BillingCountry; 
+                             Update program; 
+                             retval = 'Updated Pearson Merge Request';
+                         }Catch(Exception ex){
+                             retval = ex.getMessage();
+                         }
+                         
+                     }
+                 }
         return retval;
     }
-  
+    
     @AuraEnabled
     Public Static String GARPIdValidation(String GARPId){
         String retval ='';
@@ -95,7 +95,7 @@ public class MemberManagementScreenClass {
         boolean isvalidate = false;  
         String section = '%ERP%';
         List<Exam_Attempt__c> examAttemptList = new List<Exam_Attempt__c>();  
-                examAttemptList = [select id,Section__c,Defered__c from Exam_Attempt__c where Member__c =:ContactId and Opportunity_StageName__c ='closed' And Cancelled__c = false and result__c =null and Section__c like:section order by Exam_Date__c];
+        examAttemptList = [select id,Section__c,Defered__c from Exam_Attempt__c where Member__c =:ContactId and Opportunity_StageName__c ='closed' And Cancelled__c = false and result__c =null and Section__c like:section order by Exam_Date__c];
         if(examAttemptList.size()>0){
             isvalidate = true;
         }
@@ -171,7 +171,7 @@ public class MemberManagementScreenClass {
         return RegistrationMap;
     }
     
-   public Static String newoppId;
+    public Static String newoppId;
     @AuraEnabled
     public Static List<ExamRegistationstatus> CreateExamRegistrations(String contactId,String examGroupId,String selectedSite,String payType,String selexamPart,Map<String,List<String>> examRegistredMap){
         system.debug('examRegistredMap=========>'+examRegistredMap);
@@ -247,7 +247,7 @@ public class MemberManagementScreenClass {
                 m.accid = con.AccountId;  
                 createproductList(m); 
                 if(newoppId != null){
-                 Opportunity opp = getoppobj(newoppId);
+                    Opportunity opp = getoppobj(newoppId);
                     regstatus = new ExamRegistationstatus();
                     regstatus.defType ='New Opportunity';
                     regstatus.defStatus = 'Success';
@@ -268,7 +268,7 @@ public class MemberManagementScreenClass {
         return regstatusList;
     }
     
-     public class ExamRegistationstatus{
+    public class ExamRegistationstatus{
         @AuraEnabled
         public String defType{get;set;}
         @AuraEnabled
@@ -284,7 +284,7 @@ public class MemberManagementScreenClass {
         Opportunity opp = new Opportunity();
         List<Opportunity> opplst = [Select Id,Display_Invoice_Number__c,Name,Amount,Customer_Secure_Checkout_Link__c from Opportunity where Id =:oppId]; 
         if(!opplst.isEmpty()){
-           opp = opplst[0];
+            opp = opplst[0];
         }
         return opp;
     }
@@ -321,7 +321,7 @@ public class MemberManagementScreenClass {
     
     public static Set <String> getFRMExams(string  objUser,Date ExamFRMDate) {
         // this date needs to be dynamic.
-       system.debug('ExamFRMDate=='+ExamFRMDate);
+        system.debug('ExamFRMDate=='+ExamFRMDate);
         Date ExamDate = ExamFRMDate;
         Set < String > setExamToRegister = new Set < String > ();
         boolean bhasRecords = false;
@@ -336,17 +336,17 @@ public class MemberManagementScreenClass {
         
         Id frmRecordTypeId = RecordTypeHelper.GetRecordTypeId('Contract', 'FRM Program');
         List<Exam_Attempt__c> examAtmps = [select id, Candidate_Commitment__r.EndDate,Candidate_Commitment__r.Last_Exam_registration_Date__c, Contract_End_Date__c, Defered__c, Opportunity_StageName__c, Member__c, Exam_Date__c, Exam_Site__c, Exam_Site__r.Exam__r.Exam_Group__r.Active__c, Exam_Site__r.site__c, Section__c, Result__c, Candidate_Commitment__c, Candidate_Commitment__r.Status 
-            from Exam_Attempt__c 
-            where
-            (
-                Candidate_Commitment__r.Status like '%Activated%' or 
-                Candidate_Commitment__r.Status = : 'Completed'
-            ) and 
-            Member__c = : objUser and 
-            Opportunity_StageName__c ='closed' and 
-            Candidate_Commitment__r.recordTypeID = : frmRecordTypeId and 
-            Cancelled__c != true 
-            order by Exam_Date__c DESC ];
+                                           from Exam_Attempt__c 
+                                           where
+                                           (
+                                               Candidate_Commitment__r.Status like '%Activated%' or 
+                                               Candidate_Commitment__r.Status = : 'Completed'
+                                           ) and 
+                                           Member__c = : objUser and 
+                                           Opportunity_StageName__c ='closed' and 
+                                           Candidate_Commitment__r.recordTypeID = : frmRecordTypeId and 
+                                           Cancelled__c != true 
+                                           order by Exam_Date__c DESC ];
         system.debug('examAtmps============>'+examAtmps);
         for (Exam_Attempt__c objFRMEA:examAtmps) {
             if(objFRMEA.Candidate_Commitment__r.Last_Exam_registration_Date__c != null){
@@ -412,7 +412,7 @@ public class MemberManagementScreenClass {
         system.debug('iDefferedCount == '+iDefferedCount);
         system.debug('iActiveEA == '+iActiveEA);
         if(iDefferedCount == 1)
-       // return null;
+            // return null;
             setExamToRegister.clear();
         system.debug('*********:'+bhasFrm12);
         if (bhasFrm12 && (iDefferedCount != iActiveEA) ) return new set<String>();
@@ -764,6 +764,25 @@ public class MemberManagementScreenClass {
         }
         
         
-    }  
+    }
+    
+    
+    
+    @AuraEnabled
+    Public Static String OnclickMembershipSwitch(String InvoiceNumber){
+        
+        String retval ='Success';
+        List<Opportunity> oppList = [Select Id,Display_Invoice_Number__c,AccountId From Opportunity where Display_Invoice_Number__c =:InvoiceNumber LIMIT 1];
+        system.debug(InvoiceNumber+'    <<::   InvoiceNumber   oppList::>>   '+oppList); 
+        if(!oppList.IsEmpty()){
+            Opportunity opp = oppList[0];
+            for(Opportunity existingOPP : [SELECT Id,Display_Invoice_Number__c FROM Opportunity WHERE Refund_Opportunity__c =: Opp.Id ]){
+                system.debug('existingOPP::>>   '+existingOPP);
+                return 'Refund Opportunity Exists:- '+existingOPP.Display_Invoice_Number__c;
+            }
+        }
+        return retval;
+    }
+    
     
 }

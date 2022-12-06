@@ -1,0 +1,20 @@
+<apex:page sidebar="false" showHeader="false" standardController="Exam_Attempt__c">
+    <apex:includeLightning />
+    <!--Lightning Container-->
+    <div  id="LightningContainer"/>
+    
+    <script type="text/javascript">
+    //get recprdId from URL 
+    var recprdId = "{!$CurrentPage.parameters.Id}";
+    var UITheme = "{!$User.UIThemeDisplayed}"; 
+    //Create Lightning Component
+    $Lightning.use("c:AccountingDailyReportApp", function() {
+        $Lightning.createComponent("c:AccountingDailyReport",
+                                   { "recordId" : recprdId, 
+                                    "UITheme":UITheme}, //Pass Parameter
+                                   "LightningContainer", function(component) {
+                                       console.log('Component created');
+                                   });
+    });
+    </script>
+</apex:page>

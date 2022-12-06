@@ -3,7 +3,7 @@
  */
 global class CreateFreeOppEBookAndPracExams implements Database.Batchable<sObject>,Database.StateFul,Database.AllowsCallouts{
 	private string examType;
-    private string examGroupId = System.Label.Free_Ebooks_Batch_Record_Id;
+    private string examAdminId = System.Label.Free_Ebooks_Batch_Record_Id;
     private string recordId;
     public CreateFreeOppEBookAndPracExams(string examTypeStr){
         examType = examTypeStr;
@@ -23,7 +23,7 @@ global class CreateFreeOppEBookAndPracExams implements Database.Batchable<sObjec
         //Set<String> id =new Set<String>{'a1a1W000008ijQ5'};
         Set<String> strSection = new Set<String>{examType};
             
-        string strQuery = 'select id,Section__c,Exam_Site__r.Exam_Site_Code_idetifier__c,Opportunity__c,Deferral_Status__c,Candidate_Commitment__c,Member__c,Candidate_Requirement__c,Exam_Site__c,Defered__c from Exam_Attempt__c where  Defered__c =: StrDefered  and Opportunity_StageName__c =:oppstatus and cancelled__c !=true and EBooks_Created__c != true and Section__c in: strSection and Exam_Site__r.Exam__r.Exam_Group__c =:examGroupId';
+        string strQuery = 'select id,Section__c,Exam_Site__r.Exam_Site_Code_idetifier__c,Opportunity__c,Deferral_Status__c,Candidate_Commitment__c,Member__c,Candidate_Requirement__c,Exam_Site__c,Defered__c from Exam_Attempt__c where  Defered__c =: StrDefered  and Opportunity_StageName__c =:oppstatus and cancelled__c !=true and EBooks_Created__c != true and Section__c in: strSection and Exam_Administration__c =:examAdminId';
         if(String.isNotBlank(recordId)) {
             strQuery += ' AND Id=: recordId';
         }
@@ -57,6 +57,7 @@ global class CreateFreeOppEBookAndPracExams implements Database.Batchable<sObjec
         }else if(examType == 'SCR'){
             productCodeSet.add('SCRX');
             productCodeSet.add('SCRCN');
+            productCodeSet.add('SCRBP');
             eBookType = 'SCR';
         }
         Set<Id> Conids = new Set<Id>();
@@ -103,12 +104,18 @@ global class CreateFreeOppEBookAndPracExams implements Database.Batchable<sObjec
             insert lstNewOpps;
             if(lstNewOpps.size() > 0){
                
-                List<PriceBookEntry> PricebookEntryList = [select Id,unitprice, productcode, product2.Gl_Code__c from PriceBookEntry where Pricebook2.IsActive = true and Pricebook2.IsActive = true and productcode IN: productCodeSet and product2.Gl_Code__c = '4030' and isActive = true];
+                List<PriceBookEntry> PricebookEntryList = [select Id,unitprice, productcode, product2.Gl_Code__c,Product2.Product_Id__c from PriceBookEntry where Pricebook2.IsActive = true and Pricebook2.IsActive = true and productcode IN: productCodeSet and product2.Gl_Code__c = '4030' and isActive = true];
                 List<OpportunityLineItem> lstOppLines = new List<OpportunityLineItem>();
                 for(Opportunity opp : lstNewOpps)
                 {
                     for(PriceBookEntry pbe : PricebookEntryList){
-                        OpportunityLineItem oppLine = new OpportunityLineItem(OpportunityId = opp.id,PricebookEntryId  = pbe.Id,Quantity =1,TotalPrice =0);
+                        OpportunityLineItem oppLine = new OpportunityLineItem();
+                        oppline.OpportunityId = opp.id;
+                        oppline.PricebookEntryId  = pbe.Id;
+                        oppline.Quantity =1;
+                        oppline.TotalPrice =0;
+                        oppline.Product_Id__c = pbe.Product2.Product_Id__c;
+                        oppLine.Description = 'Extension Complimentary';
                         lstOppLines.add(oppLine);
                     }
                 }
@@ -122,6 +129,7 @@ global class CreateFreeOppEBookAndPracExams implements Database.Batchable<sObjec
                 trans.ChargentSFA__Response_Message__c = 'Approved';
                 trans.ChargentSFA__Response_Status__c = 'Approved';
                 trans.ChargentSFA__Type__c = 'Charge';
+                trans.ChargentSFA__Payment_Method__c ='Free';
                 trans.ChargentSFA__Gateway_Date__c =system.now();
                 insert trans;
             }

@@ -192,7 +192,7 @@ public class processRegModfAndDeferralsBatches_Test {
     static testMethod void testOpportunityCreation(){
         testData();
         test.startTest();
-        Id batchInstanceId = Database.executeBatch(new processRegModifications_Batch('October 24,2020','January 16,2021'),1);
+        Id batchInstanceId = Database.executeBatch(new processRegModifications_Batch('October 24,2020','January 16,2021',modification.Id),1);
         
         test.stopTest();
     }
@@ -213,6 +213,17 @@ public class processRegModfAndDeferralsBatches_Test {
         modification.Status__c = 'Opportunity Created';
         update modification;
         Id batchInstanceId = Database.executeBatch(new processExamRegModificationToPndngBatch(),1);
+        
+        test.stopTest();
+    }
+    
+    static testMethod void testDefSameGrp_Batch(){
+        testData();
+        test.startTest();
+        modification.Part_I_Exam_Group_To__c = objExamGrp.Id;
+        modification.Status__c = 'Opportunity Created';
+        update modification;
+        Id batchInstanceId = Database.executeBatch(new processRefDefSameGrp_Batch(),1);
         
         test.stopTest();
     }

@@ -2,8 +2,18 @@ public class OpportunityTriggerHelper_New {
     
     public static Map<String,Opportunity_Product_Mapping__mdt> getOppProductMethodMap(){
         Map<String,Opportunity_Product_Mapping__mdt> oppProductToMethodMap = new Map<String,Opportunity_Product_Mapping__mdt>();
-        List<Opportunity_Product_Mapping__mdt> oppsMetadata = [Select DeveloperName,MasterLabel,Map_Key__c,Price_Check__c from Opportunity_Product_Mapping__mdt where Map_Key__c != null];
-       
+        List<Opportunity_Product_Mapping__mdt> oppsMetadata = [Select DeveloperName,MasterLabel,Map_Key__c,Price_Check__c,Product_Category__c,Product_Sub_Category__c from Opportunity_Product_Mapping__mdt where Map_Key__c != null];
+        
+        for(Opportunity_Product_Mapping__mdt opm : oppsMetadata){
+            oppProductToMethodMap.put(opm.DeveloperName,opm);
+        }
+        return oppProductToMethodMap;
+    }
+    
+    public static Map<String,Opportunity_Product_Mapping__mdt> getOppProductMethodMapAllProducts(){
+        Map<String,Opportunity_Product_Mapping__mdt> oppProductToMethodMap = new Map<String,Opportunity_Product_Mapping__mdt>();
+        List<Opportunity_Product_Mapping__mdt> oppsMetadata = [Select DeveloperName,MasterLabel,Map_Key__c,Price_Check__c,Product_Category__c,Product_Sub_Category__c from Opportunity_Product_Mapping__mdt];
+        
         for(Opportunity_Product_Mapping__mdt opm : oppsMetadata){
             oppProductToMethodMap.put(opm.DeveloperName,opm);
         }
@@ -86,7 +96,7 @@ public class OpportunityTriggerHelper_New {
         Id fbrRecordTypeID = RecordTypeHelper.getRecordTypeIdFromSchema('Contract','FBR_Program');
         Id fbraRecordTypeID = RecordTypeHelper.getRecordTypeIdFromSchema('Contract','FBRA_Program');
         Id SCRRecordTypeID = RecordTypeHelper.getRecordTypeIdFromSchema('Contract','SCR_Program');
-                
+        
         if(ostaContractsInsert != null && !ostaContractsInsert.isEmpty())
             lstContractsToInsert.addAll(ostaContractsInsert);
         if(ostaContractsUpdate != null && !ostaContractsUpdate.isEmpty())
@@ -193,7 +203,7 @@ public class OpportunityTriggerHelper_New {
                     foundMemPrgsForAccounts.add(objContr.AccountId);
                 }else if((objContr.status.contains('Activated')) && accIdToMemberTypeMap.containskey(objContr.AccountId) 
                          && objContr.Membership_Type__c != accIdToMemberTypeMap.get(objContr.AccountId)
-                         )
+                        )
                 {
                     system.debug('Inside Membership loop 3:'+objContr.Membership_type__c);
                     objContr.status = 'Canceled';
@@ -249,7 +259,7 @@ public class OpportunityTriggerHelper_New {
         }
         
         if(!lstContractsToInsert.isEmpty()){
-        	insert lstContractsToInsert;
+            insert lstContractsToInsert;
             insertedContractList = [Select Id,Status,AccountId,RecordTypeId from Contract where Id IN: lstContractsToInsert];
         }
         
@@ -287,7 +297,7 @@ public class OpportunityTriggerHelper_New {
         if(!oliToUpdate.isEmpty()){
             update oliToUpdate;        
         }
-                
+        
     }
     
     public static void updateExamAttempts(Map<String,Set<Id>> examRegUpdateToRecordIdMap,List<Exam_Attempt__c> deferralRegToUpdate){
@@ -409,188 +419,188 @@ public class OpportunityTriggerHelper_New {
     }
     
     /*public static void closeBulkOrders(Map<Id, Opportunity> masterOrdersMap) {
-        
-        if(!masterOrdersMap.isEmpty()) {
-            
-            List<ChargentSFA__Transaction__c> transactions = [
-                SELECT Id, Name, ChargentSFA__Opportunity__c, ChargentSFA__Amount__c, ChargentSFA__Gateway_ID__c, ChargentSFA__Gateway_Date__c, ChargentSFA__Type__c, ChargentSFA__Response_Status__c, ChargentSFA__Payment_Method__c 
-                FROM ChargentSFA__Transaction__c 
-                WHERE ChargentSFA__Opportunity__c in :masterOrdersMap.keyset()
-            ];
-            Map<Id, ChargentSFA__Transaction__c> transactionByMasterOrderId = new Map<Id, ChargentSFA__Transaction__c>();
-            for(ChargentSFA__Transaction__c t: transactions){
-                transactionByMasterOrderId.put(t.ChargentSFA__Opportunity__c, t);
-            }
-            
-            List<Opportunity> childOpportunities = [SELECT Id, Name, StageName, Inst_Sale_Opp__c 
-                                                    FROM Opportunity 
-                                                    WHERE Inst_Sale_Opp__c in :masterOrdersMap.keyset()];
-                                                     
-            
-            List<Opportunity> childOppportunitiesToClose = new List<Opportunity>();
-            Map<Id, ChargentSFA__Transaction__c> childOppportunityTransactionsByOpportunityId = new Map<Id, ChargentSFA__Transaction__c>();        
-            
-            for(Opportunity childOpportunity : childOpportunities) {
-                
-                if(childOpportunity.StageName != 'Closed Lost'){
-                    
-                    Opportunity masterOpportunity = masterOrdersMap.get(childOpportunity.Inst_Sale_Opp__c);
-                    
-                    childOpportunity.StageName =  'Closed';
-                    
-                    if(transactionByMasterOrderId.containsKey(masterOpportunity.Id)){
-                        
-                        ChargentSFA__Transaction__c masterOrderTransaction = transactionByMasterOrderId.get(masterOpportunity.Id);
-                        
-                        ChargentSFA__Transaction__c childOppportunityTransaction = new ChargentSFA__Transaction__c();
-                        
-                        childOppportunityTransaction.ChargentSFA__Amount__c         = masterOrderTransaction.ChargentSFA__Amount__c;
-                        childOppportunityTransaction.ChargentSFA__Gateway_Date__c   = masterOrderTransaction.ChargentSFA__Gateway_Date__c;
-                        childOppportunityTransaction.ChargentSFA__Type__c           = masterOrderTransaction.ChargentSFA__Type__c;
-                        childOppportunityTransaction.ChargentSFA__Payment_Method__c = masterOrderTransaction.ChargentSFA__Payment_Method__c;
-                        childOppportunityTransaction.ChargentSFA__Gateway_ID__c     = masterOrderTransaction.ChargentSFA__Gateway_ID__c;
-                        childOppportunityTransaction.ChargentSFA__Opportunity__c    = childOpportunity.Id;
-                        
-                        childOppportunityTransactionsByOpportunityId.put(childOpportunity.Id, childOppportunityTransaction);
-                        
-                    }
-                    
-                    childOppportunitiesToClose.add(childOpportunity);
-                    
-                }
-                
-            }
-            
-            database.executeBatch(new BulkCloseInstitutionalSaleOrdersBatch(childOppportunitiesToClose, childOppportunityTransactionsByOpportunityId), 1);
-        }          
-    }*/
+
+if(!masterOrdersMap.isEmpty()) {
+
+List<ChargentSFA__Transaction__c> transactions = [
+SELECT Id, Name, ChargentSFA__Opportunity__c, ChargentSFA__Amount__c, ChargentSFA__Gateway_ID__c, ChargentSFA__Gateway_Date__c, ChargentSFA__Type__c, ChargentSFA__Response_Status__c, ChargentSFA__Payment_Method__c 
+FROM ChargentSFA__Transaction__c 
+WHERE ChargentSFA__Opportunity__c in :masterOrdersMap.keyset()
+];
+Map<Id, ChargentSFA__Transaction__c> transactionByMasterOrderId = new Map<Id, ChargentSFA__Transaction__c>();
+for(ChargentSFA__Transaction__c t: transactions){
+transactionByMasterOrderId.put(t.ChargentSFA__Opportunity__c, t);
+}
+
+List<Opportunity> childOpportunities = [SELECT Id, Name, StageName, Inst_Sale_Opp__c 
+FROM Opportunity 
+WHERE Inst_Sale_Opp__c in :masterOrdersMap.keyset()];
+
+
+List<Opportunity> childOppportunitiesToClose = new List<Opportunity>();
+Map<Id, ChargentSFA__Transaction__c> childOppportunityTransactionsByOpportunityId = new Map<Id, ChargentSFA__Transaction__c>();        
+
+for(Opportunity childOpportunity : childOpportunities) {
+
+if(childOpportunity.StageName != 'Closed Lost'){
+
+Opportunity masterOpportunity = masterOrdersMap.get(childOpportunity.Inst_Sale_Opp__c);
+
+childOpportunity.StageName =  'Closed';
+
+if(transactionByMasterOrderId.containsKey(masterOpportunity.Id)){
+
+ChargentSFA__Transaction__c masterOrderTransaction = transactionByMasterOrderId.get(masterOpportunity.Id);
+
+ChargentSFA__Transaction__c childOppportunityTransaction = new ChargentSFA__Transaction__c();
+
+childOppportunityTransaction.ChargentSFA__Amount__c         = masterOrderTransaction.ChargentSFA__Amount__c;
+childOppportunityTransaction.ChargentSFA__Gateway_Date__c   = masterOrderTransaction.ChargentSFA__Gateway_Date__c;
+childOppportunityTransaction.ChargentSFA__Type__c           = masterOrderTransaction.ChargentSFA__Type__c;
+childOppportunityTransaction.ChargentSFA__Payment_Method__c = masterOrderTransaction.ChargentSFA__Payment_Method__c;
+childOppportunityTransaction.ChargentSFA__Gateway_ID__c     = masterOrderTransaction.ChargentSFA__Gateway_ID__c;
+childOppportunityTransaction.ChargentSFA__Opportunity__c    = childOpportunity.Id;
+
+childOppportunityTransactionsByOpportunityId.put(childOpportunity.Id, childOppportunityTransaction);
+
+}
+
+childOppportunitiesToClose.add(childOpportunity);
+
+}
+
+}
+
+database.executeBatch(new BulkCloseInstitutionalSaleOrdersBatch(childOppportunitiesToClose, childOppportunityTransactionsByOpportunityId), 1);
+}          
+}*/
     
     /*public static Map<String,List<Product_Refunds__c>> getOppProductRefundsMap(Set<Id> oppIds){
-        Map<String,List<Product_Refunds__c>> oppProductRefundsMap = new Map<String,List<Product_Refunds__c>>();
-        List<Product_Refunds__c> refundList = [select Id, Refund_amount__c, Opportunity__c, Opportunity__r.AccountId,
-                                                Product__r.ProductCode, Product__r.Product_ID__c, Product__r.GL_Code__c from Product_Refunds__c where
-                                                Status__c = 'Completed'
-                                                and Opportunity__c in : oppIds];
-        
-        for(Product_Refunds__c pr : refundList){
-            List <Product_Refunds__c> lst = oppProductRefundsMap.get(pr.Opportunity__c);
-            if (lst == null) {
-                List <Product_Refunds__c> newlst = new List <Product_Refunds__c> ();
-                newlst.add(pr);
-                oppProductRefundsMap.put(pr.Opportunity__c, newlst);
-            } else {
-                lst.add(pr);
-                oppProductRefundsMap.put(pr.Opportunity__c, lst);
-            }
-        }
-        return oppProductRefundsMap;
-    }
-    
-    public static void updateAmtFields(Opportunity newOpp,Map<Id,List<OpportunityLineItem>> oppToProductsMap,Map<String,List<Product_Refunds__c>> oppProductRefundsMap){
-        Decimal frm1total = 0;
-        Decimal frm2total = 0;
-        Decimal erp1total = 0;
-        Decimal erp2total = 0;
-        Decimal erptotal = 0;
-        Decimal memtotal = 0;
-        Decimal wtotal = 0;
-        
-        Decimal frmEnrollTotal = 0;
-        Decimal erpEnrollTotal = 0;
-        
-        Map<String,Product_Refunds__c> lExamPR = new Map<String,Product_Refunds__c>();
-        Map<String,Product_Refunds__c> lMemPR = new Map<String,Product_Refunds__c>();
-        Map<String,Product_Refunds__c> lWileyPR = new Map<String,Product_Refunds__c>();
-        Map<String,Product_Refunds__c> lEnrollPR = new Map<String,Product_Refunds__c>();
-        
-        if(oppProductRefundsMap.containsKey(newOpp.Id)){
-            for(Product_Refunds__c pr: oppProductRefundsMap.get(newOpp.Id)){
-                String productId = pr.Product__r.Product_ID__c.isNumeric() ? 'X'+pr.Product__r.Product_ID__c : pr.Product__r.Product_ID__c;
-                Opportunity_Product_Mapping__mdt productCodeMapping = Opportunity_Product_Mapping__mdt.getInstance(pr.Product__r.productCode);
-                Opportunity_Product_Mapping__mdt productIdMapping = Opportunity_Product_Mapping__mdt.getInstance(productId);
-                if((productCodeMapping != null && productCodeMapping.Product_Category__c == 'MemberShip') || (productIdMapping != null && productIdMapping.Product_Category__c == 'MemberShip')){
-                    lMemPR.put(pr.Product__r.productCode,pr);
-                }
-                
-                if((productCodeMapping != null && productCodeMapping.Product_Category__c == 'Enroll') || (productIdMapping != null && productIdMapping.Product_Category__c == 'Enroll')){
-                    lEnrollPR.put(pr.Product__r.productCode,pr);
-                }
-                
-                if((productCodeMapping != null && productCodeMapping.Product_Category__c == 'Exam') || (productIdMapping != null && productIdMapping.Product_Category__c == 'Exam')){
-                    lExamPR.put(pr.Product__r.productCode,pr);
-                }
-                
-                if(pr.Product__r.GL_Code__c == '2007' && ((productCodeMapping != null && productCodeMapping.Product_Category__c == 'Wiley') || (productIdMapping != null && productIdMapping.Product_Category__c == 'Wiley'))){
-                    lWileyPR.put(pr.Product__r.productCode,pr);
-                }
-            }
-            
-        }
-        
-        if(oppToProductsMap.containskey(newOpp.Id)){
-            for(OpportunityLineItem ol: oppToProductsMap.get(newOpp.Id)){
-                String productId = (ol.Product2.Product_ID__c != null && ol.Product2.Product_ID__c.isNumeric()) ? 'X'+ol.Product2.Product_ID__c : ol.Product2.Product_ID__c;
-                Opportunity_Product_Mapping__mdt productCodeIdMapping = Opportunity_Product_Mapping__mdt.getInstance(ol.Product2.productCode) != null ? Opportunity_Product_Mapping__mdt.getInstance(ol.Product2.productCode) : Opportunity_Product_Mapping__mdt.getInstance(productId);
-                
-                if(productCodeIdMapping != null && productCodeIdMapping.Product_Category__c == 'MemberShip'){
-                    if(!lMemPR.containskey(ol.Product2.ProductCode)){
-                        memtotal += ol.TotalPrice; 
-                    }
-                }
-                
-                if(ol.Product2.GL_Code__c == '2007' && (productCodeIdMapping != null && productCodeIdMapping.Product_Category__c == 'Wiley')){
-                    
-                    if(!lWileyPR.containskey(ol.Product2.ProductCode)){
-                        wtotal += ol.TotalPrice;
-                    }
-                }
-                
-                if(productCodeIdMapping != null && productCodeIdMapping.Product_Category__c == 'Enroll'){
-                    if(productCodeIdMapping.Product_Sub_Category__c == 'FRM'){
-                        if(!lEnrollPR.containskey(ol.Product2.ProductCode)){
-                            frmEnrollTotal += ol.TotalPrice; 
-                        } 
-                    }else if(productCodeIdMapping.Product_Sub_Category__c == 'ERP'){
-                        if(!lEnrollPR.containskey(ol.Product2.ProductCode)){
-                            erpEnrollTotal += ol.TotalPrice; 
-                        }
-                    }
-                }
-                
-                if(productCodeIdMapping != null && productCodeIdMapping.Product_Category__c == 'Exam'){
-                    if(productCodeIdMapping.Product_Sub_Category__c == 'FRM1'){
-                        if(!lExamPR.containskey(ol.Product2.ProductCode)){
-                            frm1total += ol.TotalPrice; 
-                        } 
-                    }else if(productCodeIdMapping.Product_Sub_Category__c == 'FRM2'){
-                        if(!lExamPR.containskey(ol.Product2.ProductCode)){
-                            frm2total += ol.TotalPrice; 
-                        }
-                    }else if(productCodeIdMapping.Product_Sub_Category__c == 'ERP1'){
-                        if(!lExamPR.containskey(ol.Product2.ProductCode)){
-                            erp1total += ol.TotalPrice; 
-                        }
-                    }else if(productCodeIdMapping.Product_Sub_Category__c == 'ERP2'){
-                        if(!lExamPR.containskey(ol.Product2.ProductCode)){
-                            erp2total += ol.TotalPrice; 
-                        }
-                    }else if(productCodeIdMapping.Product_Sub_Category__c == 'ERP'){
-                        if(!lExamPR.containskey(ol.Product2.ProductCode)){
-                            erptotal += ol.TotalPrice; 
-                        }
-                    }
-                }
-            }
-        }
-        
-        newOpp.FRM_1_Registration_Fee__c = frm1total;
-        newOpp.FRM_2_Registration_Fee__c = frm2total;
-        newOpp.ERP_Registration_Fee__c = erptotal;
-        newOpp.ERP_1_Registration_Fee__c = erp1total;
-        newOpp.ERP_2_Registration_Fee__c = erp2total;
-        newOpp.ERP_Enrollment_Fee__c = erpEnrollTotal;
-        newOpp.FRM_Enrollment_Fee__c = frmEnrollTotal;
-        newOpp.Membership_Fee__c = memtotal;
-        newOpp.Risk_net_fee__c = wtotal;
-    }*/
+Map<String,List<Product_Refunds__c>> oppProductRefundsMap = new Map<String,List<Product_Refunds__c>>();
+List<Product_Refunds__c> refundList = [select Id, Refund_amount__c, Opportunity__c, Opportunity__r.AccountId,
+Product__r.ProductCode, Product__r.Product_ID__c, Product__r.GL_Code__c from Product_Refunds__c where
+Status__c = 'Completed'
+and Opportunity__c in : oppIds];
+
+for(Product_Refunds__c pr : refundList){
+List <Product_Refunds__c> lst = oppProductRefundsMap.get(pr.Opportunity__c);
+if (lst == null) {
+List <Product_Refunds__c> newlst = new List <Product_Refunds__c> ();
+newlst.add(pr);
+oppProductRefundsMap.put(pr.Opportunity__c, newlst);
+} else {
+lst.add(pr);
+oppProductRefundsMap.put(pr.Opportunity__c, lst);
+}
+}
+return oppProductRefundsMap;
+}
+
+public static void updateAmtFields(Opportunity newOpp,Map<Id,List<OpportunityLineItem>> oppToProductsMap,Map<String,List<Product_Refunds__c>> oppProductRefundsMap){
+Decimal frm1total = 0;
+Decimal frm2total = 0;
+Decimal erp1total = 0;
+Decimal erp2total = 0;
+Decimal erptotal = 0;
+Decimal memtotal = 0;
+Decimal wtotal = 0;
+
+Decimal frmEnrollTotal = 0;
+Decimal erpEnrollTotal = 0;
+
+Map<String,Product_Refunds__c> lExamPR = new Map<String,Product_Refunds__c>();
+Map<String,Product_Refunds__c> lMemPR = new Map<String,Product_Refunds__c>();
+Map<String,Product_Refunds__c> lWileyPR = new Map<String,Product_Refunds__c>();
+Map<String,Product_Refunds__c> lEnrollPR = new Map<String,Product_Refunds__c>();
+
+if(oppProductRefundsMap.containsKey(newOpp.Id)){
+for(Product_Refunds__c pr: oppProductRefundsMap.get(newOpp.Id)){
+String productId = pr.Product__r.Product_ID__c.isNumeric() ? 'X'+pr.Product__r.Product_ID__c : pr.Product__r.Product_ID__c;
+Opportunity_Product_Mapping__mdt productCodeMapping = Opportunity_Product_Mapping__mdt.getInstance(pr.Product__r.productCode);
+Opportunity_Product_Mapping__mdt productIdMapping = Opportunity_Product_Mapping__mdt.getInstance(productId);
+if((productCodeMapping != null && productCodeMapping.Product_Category__c == 'MemberShip') || (productIdMapping != null && productIdMapping.Product_Category__c == 'MemberShip')){
+lMemPR.put(pr.Product__r.productCode,pr);
+}
+
+if((productCodeMapping != null && productCodeMapping.Product_Category__c == 'Enroll') || (productIdMapping != null && productIdMapping.Product_Category__c == 'Enroll')){
+lEnrollPR.put(pr.Product__r.productCode,pr);
+}
+
+if((productCodeMapping != null && productCodeMapping.Product_Category__c == 'Exam') || (productIdMapping != null && productIdMapping.Product_Category__c == 'Exam')){
+lExamPR.put(pr.Product__r.productCode,pr);
+}
+
+if(pr.Product__r.GL_Code__c == '2007' && ((productCodeMapping != null && productCodeMapping.Product_Category__c == 'Wiley') || (productIdMapping != null && productIdMapping.Product_Category__c == 'Wiley'))){
+lWileyPR.put(pr.Product__r.productCode,pr);
+}
+}
+
+}
+
+if(oppToProductsMap.containskey(newOpp.Id)){
+for(OpportunityLineItem ol: oppToProductsMap.get(newOpp.Id)){
+String productId = (ol.Product2.Product_ID__c != null && ol.Product2.Product_ID__c.isNumeric()) ? 'X'+ol.Product2.Product_ID__c : ol.Product2.Product_ID__c;
+Opportunity_Product_Mapping__mdt productCodeIdMapping = Opportunity_Product_Mapping__mdt.getInstance(ol.Product2.productCode) != null ? Opportunity_Product_Mapping__mdt.getInstance(ol.Product2.productCode) : Opportunity_Product_Mapping__mdt.getInstance(productId);
+
+if(productCodeIdMapping != null && productCodeIdMapping.Product_Category__c == 'MemberShip'){
+if(!lMemPR.containskey(ol.Product2.ProductCode)){
+memtotal += ol.TotalPrice; 
+}
+}
+
+if(ol.Product2.GL_Code__c == '2007' && (productCodeIdMapping != null && productCodeIdMapping.Product_Category__c == 'Wiley')){
+
+if(!lWileyPR.containskey(ol.Product2.ProductCode)){
+wtotal += ol.TotalPrice;
+}
+}
+
+if(productCodeIdMapping != null && productCodeIdMapping.Product_Category__c == 'Enroll'){
+if(productCodeIdMapping.Product_Sub_Category__c == 'FRM'){
+if(!lEnrollPR.containskey(ol.Product2.ProductCode)){
+frmEnrollTotal += ol.TotalPrice; 
+} 
+}else if(productCodeIdMapping.Product_Sub_Category__c == 'ERP'){
+if(!lEnrollPR.containskey(ol.Product2.ProductCode)){
+erpEnrollTotal += ol.TotalPrice; 
+}
+}
+}
+
+if(productCodeIdMapping != null && productCodeIdMapping.Product_Category__c == 'Exam'){
+if(productCodeIdMapping.Product_Sub_Category__c == 'FRM1'){
+if(!lExamPR.containskey(ol.Product2.ProductCode)){
+frm1total += ol.TotalPrice; 
+} 
+}else if(productCodeIdMapping.Product_Sub_Category__c == 'FRM2'){
+if(!lExamPR.containskey(ol.Product2.ProductCode)){
+frm2total += ol.TotalPrice; 
+}
+}else if(productCodeIdMapping.Product_Sub_Category__c == 'ERP1'){
+if(!lExamPR.containskey(ol.Product2.ProductCode)){
+erp1total += ol.TotalPrice; 
+}
+}else if(productCodeIdMapping.Product_Sub_Category__c == 'ERP2'){
+if(!lExamPR.containskey(ol.Product2.ProductCode)){
+erp2total += ol.TotalPrice; 
+}
+}else if(productCodeIdMapping.Product_Sub_Category__c == 'ERP'){
+if(!lExamPR.containskey(ol.Product2.ProductCode)){
+erptotal += ol.TotalPrice; 
+}
+}
+}
+}
+}
+
+newOpp.FRM_1_Registration_Fee__c = frm1total;
+newOpp.FRM_2_Registration_Fee__c = frm2total;
+newOpp.ERP_Registration_Fee__c = erptotal;
+newOpp.ERP_1_Registration_Fee__c = erp1total;
+newOpp.ERP_2_Registration_Fee__c = erp2total;
+newOpp.ERP_Enrollment_Fee__c = erpEnrollTotal;
+newOpp.FRM_Enrollment_Fee__c = frmEnrollTotal;
+newOpp.Membership_Fee__c = memtotal;
+newOpp.Risk_net_fee__c = wtotal;
+}*/
 }

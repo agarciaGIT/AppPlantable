@@ -56,7 +56,7 @@ public class contactExtn_test {
         PricebookEntry customPrice3 = new PricebookEntry(Pricebook2Id = customPB.Id, Product2Id = prod3.Id, UnitPrice = 12000, IsActive = true);
         insert customPrice3;
         
-        chrgGtway = new ChargentBase__Gateway__c(Name = 'Test',ChargentBase__Merchant_ID__c = 'dasghjtru548709-4',ChargentBase__Active__c = true );
+        chrgGtway = new ChargentBase__Gateway__c(Name = 'Test'/*,ChargentBase__Merchant_ID__c = 'dasghjtru548709-4'*/,ChargentBase__Active__c = true );
         insert chrgGtway;
         
         insert new UpdateIds__c(Name = 'GARP', Record_Id__c = chrgGtway.id);

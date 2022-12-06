@@ -769,7 +769,7 @@ public class ErpRegistrationForm extends ExamRegistrationForm{
             opportunityLineItems.addAll(studyMaterials);
         }
         
-        List<OpportunityLineItem> taxesAndDuty = super.addTaxAndDuty(opportunityLineItems, registrationRequest.lead);
+        List<OpportunityLineItem> taxesAndDuty = super.addTaxAndDuty(opportunityLineItems, registrationRequest.lead,0);
         if(taxesAndDuty != null && !taxesAndDuty.isEmpty()){
             opportunityLineItems.addAll(taxesAndDuty);
         }  
@@ -806,7 +806,7 @@ public class ErpRegistrationForm extends ExamRegistrationForm{
                 FROM Exam_Rate_Offering__c
                 WHERE 
                 Exam_Rate__r.Exam__c IN :examIds AND
-            	Exam_Rate__r.Exam_Administration__c IN :adminIds AND
+                Exam_Rate__r.Exam_Administration__c IN :adminIds AND
                 Contact__c = :super.validatedUser.user.ContactId AND
                 Start_Date__c <= TODAY AND
                 End_Date__c >= TODAY

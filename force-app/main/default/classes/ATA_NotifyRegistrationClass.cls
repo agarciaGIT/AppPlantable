@@ -52,7 +52,7 @@ global class ATA_NotifyRegistrationClass {
                         intdata.ATA_Seat_number__c = reg.client_id;
                         intdata.Call_out_Type__c = 'In-bound';
                         if(reg.start_time != null){
-                        	intdata.ATA_Booking_Local_Time__c = ataDateTimeConverter(reg.start_time);
+                            intdata.ATA_Booking_Local_Time__c = ataDateTimeConverter(reg.start_time);
                         }
                     }
                 }else if(ataevent.event_type == 'cancel_reservation'){
@@ -163,7 +163,7 @@ global class ATA_NotifyRegistrationClass {
         return isVerified;
     }
     
-    public static datetime ataDateTimeConverter(String datetimezone){
+   public static datetime ataDateTimeConverter(String datetimezone){
         DateTime dta;
         //datetimezone = '2021-11-17T08:00:00+07:00';
         try{ 
@@ -190,12 +190,13 @@ global class ATA_NotifyRegistrationClass {
             } 
             List<String> lststrsplit = TimeZones.substring(12,TimeZones.length()).split('\\(',2);
             string strTimeZone = lststrsplit[1].substring(0,lststrsplit[1].length()-1); 
-            String myDate = DateTime.newInstance(timeComponent[0], timeComponent[1], timeComponent[2], timeComponent[3], timeComponent[4], timeComponent[5]).format('YYYY-MM-dd hh:mm:ss a',strTimeZone);
-            dta = datetime.valueOfGMT(myDate);
+            String myDate = DateTime.newInstance(timeComponent[0], timeComponent[1], timeComponent[2], timeComponent[3], timeComponent[4], timeComponent[5]).format('YYYY-MM-dd HH:mm:ss a');
+            dta = datetime.valueOf(myDate);
         }catch(exception e){
             system.debug(e.getMessage() +''+ e.getLineNumber());
         }
         return dta;
     }
+    
     
 }

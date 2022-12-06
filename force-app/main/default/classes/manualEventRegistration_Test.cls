@@ -81,6 +81,14 @@ public class manualEventRegistration_Test {
         evReg.actionId = 'sample action Id';
         evReg.manualEventRegistration();
         
+        test.stopTest();
+        
+    }
+    
+    private static testmethod void evRegistrationTest2 (){
+        setupData ();
+        test.startTest();
+        
         manualEventRegistration evRegmem = new manualEventRegistration ();
         evRegmem.eventObject.Event__c = ev.Id;
         evRegmem.firstName = 'test name';
@@ -92,6 +100,13 @@ public class manualEventRegistration_Test {
         evRegmem.actionId = 'sample action Id';
         evRegmem.membership = true;
         evRegmem.manualEventRegistration();
+        test.stopTest();
+        
+    }
+    
+    private static testmethod void evRegistrationTest3 (){
+        setupData ();
+        test.startTest();
         
         manualEventRegistration evRegDisc = new manualEventRegistration ();
         evRegDisc.eventObject.Event__c = ev.Id;

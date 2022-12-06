@@ -25,12 +25,11 @@ public class RegistrationFormShippingHelper {
                 soli.productCode = pbe.Product2.ProductCode;
                 soli.glCode = pbe.Product2.GL_Code__c;
                 soli.quantity = 1;
-                soli.needsShipping = True;
                 shipOrder.lineItems.add(soli);
             }
         } 
         
-        system.debug('validateShippingSelection shippingInfo:' + shipOrder.lineItems);
+        //system.debug('validateShippingSelection shippingInfo:' + shipOrder.lineItems);
         system.debug('shippableProductIds:' + shippableProductIds);
         
         FINAL String postalCode = (lead.Shipping_Address_Same_as_Billing_Address__c) ? lead.Billing_Postal_Code__c : lead.Shipping_Postal_Code__c;
@@ -69,8 +68,8 @@ public class RegistrationFormShippingHelper {
             System.Debug('response.data:' + oli);
             
             // New Sage Logic
-            //response.data = GARP_BC_Shipping.stageShippingOpportunityLineItems(shipOrder);
-            //system.debug('stageShippingOpportunityLineItems response.data:' + response.data);
+            response.data = GARP_BC_Shipping.stageShippingOpportunityLineItems(shipOrder);
+            system.debug('stageShippingOpportunityLineItems response.data:' + response.data);
             
         } else {
             throw new Response.ResponseException('Shipping option was not selected.', 400, new List<String>{'Shipping option was not selected.'});
@@ -86,8 +85,8 @@ public class RegistrationFormShippingHelper {
         Response.Collection response = new Response.Collection();
         
         // New Sage Logic
-        GARP_MS_Shipping.shipOrder shipOrder = new GARP_MS_Shipping.shipOrder();
-        shipOrder.lineItems = new List<GARP_MS_Shipping.shipOrderLineItem>();
+        //GARP_MS_Shipping.shipOrder shipOrder = new GARP_MS_Shipping.shipOrder();
+        //shipOrder.lineItems = new List<GARP_MS_Shipping.shipOrderLineItem>();
         
         //Create a set of all shippable study material IDs
         Set<String> shippableProductIds = new Set<String>();
@@ -100,11 +99,11 @@ public class RegistrationFormShippingHelper {
                 shippableProductIds.add(pbe.Product2.Id);
                 
                 // New Sage Logic
-                GARP_MS_Shipping.shipOrderLineItem soli = new GARP_MS_Shipping.shipOrderLineItem();
-                soli.productCode = pbe.Product2.ProductCode;
-                soli.glCode = pbe.Product2.GL_Code__c;
-                soli.quantity = 1;
-                shipOrder.lineItems.add(soli);
+                //GARP_MS_Shipping.shipOrderLineItem soli = new GARP_MS_Shipping.shipOrderLineItem();
+                //soli.productCode = pbe.Product2.ProductCode;
+                //soli.glCode = pbe.Product2.GL_Code__c;
+                //soli.quantity = 1;
+                //shipOrder.lineItems.add(soli);
             }
         } 
         
@@ -147,21 +146,21 @@ public class RegistrationFormShippingHelper {
                     Description         = ratedShippingMap.get(shipping.serviceCode).label
                 );
                 
-                ////response.status = 200;
-                ////response.data = oli;
-                //response.status = 200;
-                //response.data = new List<Object>();
-                //response.data.add(oli);
+                response.status = 200;
+                //response.data = oli;
+                
+                response.data = new List<Object>();
+                response.data.add(oli);
 
                 
                 // New Sage Logic
-                shipOrder.address = new GARP_MS_Shipping.shipOrderAddress();
-                shipOrder.address.countryCode = isoCode;
+                //shipOrder.address = new GARP_MS_Shipping.shipOrderAddress();
+                //shipOrder.address.countryCode = isoCode;
                                 
-                response.data = GARP_BC_Shipping.stageShippingOpportunityLineItems(shipOrder);
-                system.debug('stageShippingOpportunityLineItems response.data:' + response.data);
+                //response.data = GARP_BC_Shipping.stageShippingOpportunityLineItems(shipOrder);
+                //system.debug('stageShippingOpportunityLineItems response.data:' + response.data);
                 
-                System.Debug('shipOrder:' + shipOrder);
+                //System.Debug('shipOrder:' + shipOrder);
 
                                 
                 System.Debug('response.data:' + response.data);

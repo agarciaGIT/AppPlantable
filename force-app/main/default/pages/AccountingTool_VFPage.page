@@ -1,0 +1,17 @@
+<apex:page Name="AccountingTool_VFPage" sidebar="false" standardStylesheets="false">    
+    <apex:includeLightning />
+    
+    <div id="lghtDiv" />
+    
+    <script>
+        // Use Lightning App
+        $Lightning.use("c:AccountingTool_ParentApp", function() {
+            // String type, Object attributes, String domLocator, function callback
+            $Lightning.createComponent("c:AccountingTool_Parent", {}, "lghtDiv",
+                function(cmp) {
+                    console.log("Component was created.");
+                }
+            );
+        });
+    </script> 
+</apex:page>

@@ -17,10 +17,10 @@ public class GARP_MemberProfile_test {
         insert acct;
         
         cont = new Contact(AccountId = acct.id, FirstName='Cont', LastName='Last', Email='a@a.com',
-                                   Corporate_Title__c='Analyst Quantitative',
-                                   Job_Function__c='treasury',
+                                   Corporate_Title__c='Entry Level',
+                                   Job_Function__c='Consulting',
                                    How_Did_You_Hear_About_Us__c='advertisement',
-                                   Area_of_Concentration__c='banking'
+                                   Area_of_Concentration__c='Education Services'
                                   );
         insert cont;
 		

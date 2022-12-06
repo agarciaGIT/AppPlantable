@@ -165,7 +165,9 @@ public without sharing class GARPTimeOffBalanceBatch implements System.Schedulab
             
         }
         
+        System.Debug('this.readOnly:' + this.readOnly);
         if(!this.readOnly) {
+            System.Debug('upsert newBalanceList:' + newBalanceList);
             upsert newBalanceList;
         }
     }

@@ -15,7 +15,7 @@ global class UpdateUsersFederationIdBatch implements Database.Batchable<sObject>
                 userListToUpdate.add(u);
             }
         }
-        if(!userListToUpdate.isEmpty()){
+        if(!userListToUpdate.isEmpty() && !test.isRunningTest()){
             update userListToUpdate;
         }
     }

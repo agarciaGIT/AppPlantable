@@ -87,11 +87,13 @@ public without sharing class ProductRefundsTriggerHandler implements TriggerAbst
         if(stopRecurssion){
             for(MembershipRefundCodes__c ref : MembershipRefundCodeList){
                 if(ref.Product_Code__c == newProductRefund.Product_Code__c){
-                    if(newProductRefund.Status__c == 'Completed' && (newProductRefund.Take_Membership__c || newProductRefund.Charge_Back__c)){
+                    if(newProductRefund.Status__c == 'Approved' && (newProductRefund.Take_Membership__c || newProductRefund.Charge_Back__c)){
+                        system.debug('Test here here here');
                         lstProdRefunds.add(newProductRefund);
                         setOpps.add(newProductRefund.Opportunity__c);
                     }
                 }
+                
             }
             
             
@@ -112,15 +114,15 @@ public without sharing class ProductRefundsTriggerHandler implements TriggerAbst
                     system.debug('toRefund=======>'+toRefund);                
                     //if FRM 1 or FRM 2 ebook 
                     if(newProductRefund.Product_Code__c == 'FRM1X'){
-                        OpportunityTriggerUtils.unprovisionMobiuseBook(toRefund, 'FRM', 'I');
+                        opportunityTriggerUtils_New.unprovisionMobiuseBook(toRefund, 'FRM', 'I');
                     } else if(newProductRefund.Product_Code__c == 'FRM2X'){
-                        OpportunityTriggerUtils.unprovisionMobiuseBook(toRefund, 'FRM', 'II');
+                        opportunityTriggerUtils_New.unprovisionMobiuseBook(toRefund, 'FRM', 'II');
                     } else if(newProductRefund.Product_Code__c == 'SCRX'){
-                        OpportunityTriggerUtils.unprovisionMobiuseBook(toRefund, 'SCR', 'I');
+                        opportunityTriggerUtils_New.unprovisionMobiuseBook(toRefund, 'SCR', 'I');
                     } else if(newProductRefund.Product_Code__c == 'ENC1X'){
-                        OpportunityTriggerUtils.unprovisionMobiuseBook(toRefund, 'ERP', 'I');
+                        opportunityTriggerUtils_New.unprovisionMobiuseBook(toRefund, 'ERP', 'I');
                     } else if(newProductRefund.Product_Code__c == 'ENC2X'){
-                        OpportunityTriggerUtils.unprovisionMobiuseBook(toRefund, 'ERP', 'II');
+                        opportunityTriggerUtils_New.unprovisionMobiuseBook(toRefund, 'ERP', 'II');
                     } 
                 }
                 
@@ -209,8 +211,9 @@ public without sharing class ProductRefundsTriggerHandler implements TriggerAbst
         if(stopRecurssion){
             for(MembershipRefundCodes__c ref : MembershipRefundCodeList){
                 if(ref.Product_Code__c == newProductRefund.Product_Code__c){
-                    if((newProductRefund.Status__c != oldProductRefund.Status__c) && newProductRefund.Status__c == 'Completed' && 
+                    if((newProductRefund.Status__c != oldProductRefund.Status__c) && newProductRefund.Status__c == 'Approved' && 
                        (newProductRefund.Take_Membership__c || newProductRefund.Charge_Back__c)){
+                           system.debug('Test here here here');
                            lstProdRefunds.add(newProductRefund);
                            setOpps.add(newProductRefund.Opportunity__c);
                        }
@@ -236,15 +239,15 @@ public without sharing class ProductRefundsTriggerHandler implements TriggerAbst
                     system.debug('toRefund=======>'+toRefund);                
                     //if FRM 1 or FRM 2 ebook 
                     if(newProductRefund.Product_Code__c == 'FRM1X'){
-                        OpportunityTriggerUtils.unprovisionMobiuseBook(toRefund, 'FRM', 'I');
+                        opportunityTriggerUtils_New.unprovisionMobiuseBook(toRefund, 'FRM', 'I');
                     } else if(newProductRefund.Product_Code__c == 'FRM2X'){
-                        OpportunityTriggerUtils.unprovisionMobiuseBook(toRefund, 'FRM', 'II');
+                        opportunityTriggerUtils_New.unprovisionMobiuseBook(toRefund, 'FRM', 'II');
                     } else if(newProductRefund.Product_Code__c == 'SCRX'){
-                        OpportunityTriggerUtils.unprovisionMobiuseBook(toRefund, 'SCR', 'I');
+                        opportunityTriggerUtils_New.unprovisionMobiuseBook(toRefund, 'SCR', 'I');
                     } else if(newProductRefund.Product_Code__c == 'ENC1X'){
-                        OpportunityTriggerUtils.unprovisionMobiuseBook(toRefund, 'ERP', 'I');
+                        opportunityTriggerUtils_New.unprovisionMobiuseBook(toRefund, 'ERP', 'I');
                     } else if(newProductRefund.Product_Code__c == 'ENC2X'){
-                        OpportunityTriggerUtils.unprovisionMobiuseBook(toRefund, 'ERP', 'II');
+                        opportunityTriggerUtils_New.unprovisionMobiuseBook(toRefund, 'ERP', 'II');
                     } 
                 }
             }
@@ -366,17 +369,28 @@ public without sharing class ProductRefundsTriggerHandler implements TriggerAbst
             if(!setOpps.isEmpty())
             {
                 Set<Id> setAccs = new Set<Id>();
-                for(Opportunity opp: [select id,accountId,ChargentSFA__Payment_Status__c from opportunity where id in: setOpps]){
+                for(Opportunity opp: [select id,accountId,ChargentSFA__Payment_Status__c,ChargentSFA__Payment_Frequency__c,
+                                      ChargentSFA__Payment_Stop__c,ChargentSFA__Charge_Amount__c,
+                                      ChargentSFA__Payment_Start_Date__c 
+                                      from opportunity where id in: setOpps]){
+                    system.debug('Test here here here 22');
                     setAccs.add(opp.accountId);
                     if(opp.ChargentSFA__Payment_Status__c == 'Recurring'){
+                        system.debug('Test here here here 44');
                         opp.ChargentSFA__Payment_Status__c = 'Stopped';
+                        opp.ChargentSFA__Payment_Frequency__c = null;
+                		opp.ChargentSFA__Payment_Stop__c = null;
+                        opp.ChargentSFA__Charge_Amount__c = null;
+                        opp.ChargentSFA__Payment_Start_Date__c = null;
                         oppsToUpdate.add(opp);
                     }
                 }
+                
                 if(!updateContractByRefunds.bRecursive)
                     updateContractByRefunds.updateContractTerm(setAccs);
                 
                 if(!oppsToUpdate.isEmpty()){
+                    system.debug('Test here here here 33');
                     update oppsToUpdate;
                 }
                 
@@ -521,7 +535,7 @@ public without sharing class ProductRefundsTriggerHandler implements TriggerAbst
                 {
                     ct.Status = 'Canceled';
                     lstContracts.add(ct);
-                    opportunityTriggerUtils.cancelFFRA(setCancelFFRAoppIds2);
+                    opportunityTriggerUtils_New.cancelFFRA(setCancelFFRAoppIds2);
                 }
                 if(!lstContracts.isEmpty()){
                     update lstContracts;

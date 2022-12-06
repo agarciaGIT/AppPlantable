@@ -15,7 +15,7 @@ trigger venue2TestSite on Venue__c (after insert,after update) {
     {
       /*  if(Trigger.isInsert && Trigger.isAfter)
         {
-            		if(testSite.RPT_Venue_Address__c == NULL)
+                    if(testSite.RPT_Venue_Address__c == NULL)
                     {
                         testSite.RPT_Venue_Address__c = mapVenues.get(testSite.ID);
                     }

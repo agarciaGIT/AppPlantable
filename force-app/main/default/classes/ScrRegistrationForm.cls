@@ -576,8 +576,6 @@ public class ScrRegistrationForm extends CertRegistrationForm {
         contact.DO_NOT_FIRE__c = FALSE;
         contact.RecordTypeId = RecordTypeHelper.GetRecordTypeId('Contact', 'Member');
 
-        //Set Recursion Flag to FALSE to allow member creation 
-        CommunityUtils.bIsRecusrsive = FALSE;
 
         UPDATE contact;
         

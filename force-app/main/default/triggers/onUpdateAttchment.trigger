@@ -2,7 +2,7 @@ trigger onUpdateAttchment on Attachment (before insert) {
     
     List<Id> ids = new List<Id>();
     
-	for(Attachment obj : trigger.New) {
+    for(Attachment obj : trigger.New) {
         ids.add(obj.ParentId);
     }
     

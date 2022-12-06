@@ -14,10 +14,8 @@ export default class ShippingRateCard extends LightningElement {
 
     connectedCallback() {
         util_console('initialize ship rate', this.order);
-        if(util_isDefined(this,"order.address")) {
-            this.getShippingRates(this.order)
-        }
-        util_subscribeToMessages(this,'shippingchange',this.handleMessage);    
+        this.getShippingRates(this.order)
+        util_subscribeToMessages(this,'shippingchange',this.handleMessage);
     }
 
     handleMessage(message){

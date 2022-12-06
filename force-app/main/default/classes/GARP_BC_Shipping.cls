@@ -3,11 +3,12 @@ public class GARP_BC_Shipping {
     public static Shipping_Charge__c getShippingRate(String productCode, String glCode, String countryCode){
         Shipping_Charge__c ret;
         
-        List<Shipping_Charge__c> lstShip = [select id, Shipping_Charge__c from Shipping_Charge__c where Product_Code__c = :productCode AND GL_Code__c = :glCode AND Country_Code__r.LetterCode__c = :countryCode];
-        if(!lstShip.isEmpty()) {
-            ret = lstShip[0];
+        if(countryCode != NULL && glCode != NULL && countryCode.length() > 0 && glCode.length() > 0) {
+            List<Shipping_Charge__c> lstShip = [select id, Shipping_Charge__c from Shipping_Charge__c where Product_Code__c = :productCode AND GL_Code__c = :glCode AND Country_Code__r.LetterCode__c = :countryCode];
+            if(!lstShip.isEmpty()) {
+                ret = lstShip[0];
+            }
         }
-        
         return ret;
     }
     
@@ -15,29 +16,38 @@ public class GARP_BC_Shipping {
     public static Shipping_Charge__c getShippingRate(GARP_MS_Shipping.shipOrder shipOrder){
         Shipping_Charge__c ret;
         
+        
+        if(shipOrder == NULL || shipOrder.lineItems == NULL || shipOrder.address == NULL || shipOrder.address.countrycode == NULL) {
+            return ret;
+        }
+
         System.debug('shipOrder:' + shipOrder);
 
+        
         Set<String> prodCodes = new Set<String>();
         Set<String> glCodes = new Set<String>();
         
         Integer totalQuantity = 0;
-        Integer cntNeedShipping = 0;
         for(GARP_MS_Shipping.shipOrderLineItem lineItem :shipOrder.lineItems) {
             prodCodes.add(lineItem.productCode);
             glCodes.add(lineItem.glCode);
-            if(lineItem.needsShipping != NULL && lineItem.needsShipping == True) {
-                cntNeedShipping++;
-            }
         }
         
         System.debug('prodCodes:' + prodCodes);
         System.debug('glCodes:' + glCodes);
         
-        Integer cntShipping=0;
         if(prodCodes.size() > 0) {
             GARP_MS_Shipping.shipOrderLineItem lineItem = shipOrder.lineItems[0];
 
-            List<Shipping_Charge__c> lstShip = [select id, Shipping_Charge__c, Product_Code__c, GL_Code__c from Shipping_Charge__c where Product_Code__c in :prodCodes AND GL_Code__c in :glCodes AND Country_Code__r.LetterCode__c = :shipOrder.address.countrycode];
+            List<Shipping_Charge__c> lstShip = [select id, Shipping_Charge__c, Product_Code__c, GL_Code__c 
+                                                from Shipping_Charge__c 
+                                                where 
+                                                Product_Code__c <> NULL AND
+                                                GL_Code__c <> NULL AND
+                                                Country_Code__r.LetterCode__c <> NULL AND
+                                                Product_Code__c in :prodCodes AND 
+                                                GL_Code__c in :glCodes AND 
+                                                Country_Code__r.LetterCode__c = :shipOrder.address.countrycode];
             System.debug('lstShip:' + lstShip);
             MAP<String,Shipping_Charge__c> mapShipCharges = new MAP<String,Shipping_Charge__c>();
                         
@@ -50,8 +60,7 @@ public class GARP_BC_Shipping {
                 for(GARP_MS_Shipping.shipOrderLineItem li :shipOrder.lineItems) {
                     Shipping_Charge__c fndShipCharge = mapShipCharges.get(li.productCode + '~' + li.glCode);
                     if(fndShipCharge != NULL) {
-                        totalQuantity += li.quantity; 
-                        cntShipping++;                   
+                        totalQuantity += li.quantity;                    
                     }
                 }
                 
@@ -70,13 +79,6 @@ public class GARP_BC_Shipping {
                     ret = lstShip[0];    
                 }
             }
-        }
-        
-        // If the number of products that need shipping
-        // does not match the number shipped
-        // do not send response, some products cannot be shipped
-        if(cntShipping != cntNeedShipping) {
-            ret=null;
         }
         
         return ret;
@@ -150,8 +152,7 @@ public class GARP_BC_Shipping {
                                 PricebookEntryId    = fndPrice.Id,
                                 Product2Id          = fndPrice.Product2Id,
                                 UnitPrice           = totalShippingCost / numberOfShippableProducts,
-                                Quantity            = 1,
-                                Description         = fndPrice.Product2.Name
+                                Quantity            = 1
                             );
                             system.debug('oli:' + oli);
                             oppLineItems.add(oli);
@@ -163,8 +164,7 @@ public class GARP_BC_Shipping {
                                 PricebookEntryId    = fndPrice.Id,
                                 Product2Id          = fndPrice.Product2Id,
                                 UnitPrice           = totalShippingCost / numberOfShippableProducts,
-                                Quantity            = 1,
-                                Description         = fndPrice.Product2.Name
+                                Quantity            = 1
                             );
                             oppLineItems.add(oli);
                         }
@@ -175,20 +175,18 @@ public class GARP_BC_Shipping {
                                 PricebookEntryId    = fndPrice.Id,
                                 Product2Id          = fndPrice.Product2Id,
                                 UnitPrice           = totalShippingCost / numberOfShippableProducts,
-                                Quantity            = 1,
-                                Description         = fndPrice.Product2.Name
+                                Quantity            = 1
                             );
                             oppLineItems.add(oli);
                         }
-                    } else if(li.productCode == 'CBRHI') {
+                    } else if(li.productCode == 'CBRHB') {
                         PricebookEntry fndPrice = mapShipPrices.get('SHIPFRR');
                         if(fndPrice != NULL) {                        
                             OpportunityLineItem oli = new OpportunityLineItem(                               
                                 PricebookEntryId    = fndPrice.Id,
                                 Product2Id          = fndPrice.Product2Id,
                                 UnitPrice           = totalShippingCost / numberOfShippableProducts,
-                                Quantity            = 1,
-                                Description         = fndPrice.Product2.Name
+                                Quantity            = 1
                             );
                             oppLineItems.add(oli);
                         }
@@ -199,8 +197,7 @@ public class GARP_BC_Shipping {
                                 PricebookEntryId    = fndPrice.Id,
                                 Product2Id          = fndPrice.Product2Id,
                                 UnitPrice           = totalShippingCost / numberOfShippableProducts,
-                                Quantity            = 1,
-                                Description         = fndPrice.Product2.Name
+                                Quantity            = 1
                             );
                             oppLineItems.add(oli);
                         }

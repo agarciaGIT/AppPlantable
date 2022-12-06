@@ -14,7 +14,7 @@ public class ExamRegistrationFormHelper {
             vm.teamRegistration = form.getTeamRegistration(teamRegistrationCode);
             form.teamRegistration = vm.teamRegistration;
             if(teamRegistrationCode != NULL && vm.teamRegistration == NULL) {
-                res.status = 500;
+                res.status = 501;
                 res.message = vm.registrationType + ' Exam Registration Form not available for this team registration code.';
                 res.data = vm;            
                 return res;
@@ -26,6 +26,22 @@ public class ExamRegistrationFormHelper {
             Id contactId = form.validatedUser.user.ContactId;
             Id accountId = form.validatedUser.user.AccountId;
 
+            // Check for existing Team Reg Order
+            if(teamRegistrationCode != NULL) {
+                Map<String,String> mapTeamOpps = new Map<String,String>();
+                for(Opportunity opp :form.teamRegistration.Opportunities__r) {
+                    if(opp.StageName == 'Closed') {
+                        mapTeamOpps.put(opp.AccountId,opp.id);
+                    }
+                }
+                if(mapTeamOpps.get(accountId) != NULL) {
+                    res.status = 502;
+                    res.message = vm.registrationType + ' Exam Registration Form not available for this team registration code.';
+                    res.data = vm;            
+                    return res;
+                }
+            }
+            
             vm.isAuthenticated = true;
 
             ExamRegistrationForm.RegistrationEligibility ee = form.getEligibileExams(NULL);
@@ -42,9 +58,21 @@ public class ExamRegistrationFormHelper {
                 vm.feesByProductCode.putAll(form.getFeesMapAuthenticated(vm.examSelectionOptions.options));
             }
             
+            // Check Team Registration is allowed
+            if(teamRegistrationCode != NULL) {
+                if(vm.examSelectionOptions.exams.size() == 1) {
+                    if(form.teamRegistration.Exam_Type__c == 'FRM' && vm.examSelectionOptions.exams[0].exam.Exam__c == 'FRM Part 2') {
+                        res.status = 503;
+                        res.message = vm.registrationType + ' Exam Registration Form not available for this team registration code.';
+                        res.data = vm;            
+                        return res;
+                    }
+                }
+            }
+            
             Contact contact = [
                 SELECT Id, Name, FirstName, LastName, MailingAddress, MailingStreet, MailingCity, MailingState, MailingCountry, MailingPostalCode,
-                       Email, ID_Type__c, ID_Number__c, Name_As_it_Appears_On_ID__c, ID_Expiration_Date__c, 
+                       Email, ID_Type__c, ID_Number__c, Name_As_it_Appears_On_ID__c, ID_Expiration_Date__c, OSTA_ID_Location__c,
                        Full_Name_in_Chinese__c, Birthdate, Gender__c, Phone, OtherPhone, Currently_Working_Status__c,  
                        Company__c, Currently_in_School_Status__c, KPI_Membership_Auto_Renew_Status__c, School_Name__c, 
                        Degree_Program_Name__c, Membership_Type__c, KPI_Membership_Payment_Status__c
@@ -78,6 +106,7 @@ public class ExamRegistrationFormHelper {
             }            
             
             vm.lead.ID_Number__c = contact.ID_Number__c;
+            vm.lead.OSTA_ID_Location__c = contact.OSTA_ID_Location__c;
             vm.lead.ID_Expiration_Date__c = contact.ID_Expiration_Date__c;
             vm.lead.Name_as_it_Appears_on_ID__c = contact.Name_As_it_Appears_On_ID__c;
             vm.lead.Full_Name_in_Chinese__c = contact.Full_Name_in_Chinese__c;
@@ -239,7 +268,7 @@ public class ExamRegistrationFormHelper {
         }
 
         List<OpportunityLineItem> stagedOpportunityLineItems = form.stageOpportunityLineItems(registrationRequest);
-        system.debug(stagedOpportunityLineItems);
+        system.debug('stageOpportunityLineItems:' + stagedOpportunityLineItems);
         form.savepoint = Database.setSavepoint();
 
         Utilities.updateFormSession(registrationRequest.token, registrationRequest.lead.Email);
@@ -351,7 +380,13 @@ public class ExamRegistrationFormHelper {
         if(leadConvertResult.isSuccess()){
 
             Lead convertedLead = [
-                SELECT Id, Name, ConvertedAccountId, ConvertedContactId, ConvertedContact.GARP_ID_New__c, ID_Number__c, Exam_Prep_Provider_Outreach__c, ConvertedDate, ConvertedOpportunityId, Billing_Company__c, Billing_Address_1__c, Billing_Address_2__c, Billing_Address_3__c, Billing_City__c, Billing_State__c, Billing_Postal_Code__c, Billing_Country__c, Billing_Country_ISO_Code__c, Billing_Phone_Number__c, Shipping_Company__c, Shipping_Address_1__c, Shipping_Address_2__c, Shipping_Address_3__c, Shipping_City__c, Shipping_State__c, Shipping_Postal_Code__c, Shipping_Country__c, Shipping_Country_ISO_Code__c, Shipping_Phone_Number__c, Date_of_Birth__c, ID_Expiration_Date__c, Company__c, Phone, FirstName, LastName, Email, Payment_Type__c
+                SELECT Id, Name, ConvertedAccountId, ConvertedContactId, ConvertedContact.GARP_ID_New__c, ID_Number__c, OSTA_ID_Location__c, 
+                Exam_Prep_Provider_Outreach__c, ConvertedDate, ConvertedOpportunityId, Billing_Company__c, Billing_Address_1__c, 
+                Billing_Address_2__c, Billing_Address_3__c, Billing_City__c, Billing_State__c, Billing_Postal_Code__c, 
+                Billing_Country__c, Billing_Country_ISO_Code__c, Billing_Phone_Number__c, Shipping_Company__c, 
+                Shipping_Address_1__c, Shipping_Address_2__c, Shipping_Address_3__c, Shipping_City__c, Shipping_State__c, 
+                Shipping_Postal_Code__c, Shipping_Country__c, Shipping_Country_ISO_Code__c, Shipping_Phone_Number__c, Date_of_Birth__c, 
+                ID_Expiration_Date__c, Company__c, Phone, FirstName, LastName, Email, Payment_Type__c
                 FROM Lead 
                 WHERE Id = :registrationRequest.lead.Id
             ];
@@ -366,8 +401,12 @@ public class ExamRegistrationFormHelper {
             // Manually set the Exam Prep Provider Opt In
             // AG 12/14/2021 -- Update OSTA ID info
             if(form.validatedUser.isAuthenticated){  
-                if(convertedLead.ID_Number__c != NULL && convertedLead.ID_Number__c.length() > 5) {
-                    UPDATE new Contact(OSTA_Full_ID__c = convertedLead.ID_Number__c,ID_Number__c = convertedLead.ID_Number__c.Right(5), Id = contactId, Exam_Prep_Provider_Outreach__c = convertedLead.Exam_Prep_Provider_Outreach__c);                    
+                if(convertedLead.ID_Number__c != NULL && convertedLead.OSTA_ID_Location__c != NULL) {
+                    UPDATE new Contact(OSTA_Full_ID__c = convertedLead.ID_Number__c,
+                                       OSTA_ID_Location__c = convertedLead.OSTA_ID_Location__c,
+                                       ID_Number__c = convertedLead.ID_Number__c.Right(5), 
+                                       Id = contactId, 
+                                       Exam_Prep_Provider_Outreach__c = convertedLead.Exam_Prep_Provider_Outreach__c);   
                 } else {
                     UPDATE new Contact(Id = contactId, Exam_Prep_Provider_Outreach__c = convertedLead.Exam_Prep_Provider_Outreach__c);    
                 }
@@ -382,7 +421,7 @@ public class ExamRegistrationFormHelper {
             
             INSERT stagedOpportunityLineItems;
             
-            System.debug(stagedOpportunityLineItems);
+            System.debug('stagedOpportunityLineItems:' + stagedOpportunityLineItems);
             
             List<OpportunityLineItem> opportunityLineItems = [
                 SELECT Id, Name, OpportunityId, PricebookEntryId, Product2Id, Product2.Family, Product2.Weight__c, Product2.Taxable__c, UnitPrice, Quantity, Is_Registration_Fee__c, ProductCode 
@@ -428,14 +467,15 @@ public class ExamRegistrationFormHelper {
                     opportunity.Has_Books__c = true;    
                 }
             }
-
-            if(vm.teamRegistration != NULL) {
-                opportunity.StageName = 'Closed';
-            }
             
             System.debug('SOQL queries: ' + Limits.getQueries() + '/' + Limits.getLimitQueries());
 
-            UPDATE opportunity;
+            if(vm.teamRegistration != NULL) {
+                opportunity.Eligible_for_Membership_Extension__c = True;
+                UPDATE opportunity;
+            } else {
+            	UPDATE opportunity;    
+            }
 
             System.debug('SOQL queries: ' + Limits.getQueries() + '/' + Limits.getLimitQueries());
 
@@ -538,6 +578,10 @@ public class ExamRegistrationFormHelper {
 
         System.debug('Start payExamRegistrationOrder SOQL queries: ' + Limits.getQueries() + '/' + Limits.getLimitQueries());
 
+        if(chargeRequest.teamRegistrationInfo != NULL && chargeRequest.teamRegistrationInfo.teamRegistrationId != NULL) {
+            form.teamRegistration = form.getTeamRegistration(ID.ValueOf(chargeRequest.teamRegistrationInfo.teamRegistrationId));
+        }
+        
         form.savepoint = (form.disableCreditCardProcessing) ? Database.setSavepoint() : null ;
         
         Utilities.runCaptcha(chargeRequest.token);
@@ -639,7 +683,17 @@ public class ExamRegistrationFormHelper {
         
         ExamRegistrationForm.ChargeResponse chargeResponse = new ExamRegistrationForm.ChargeResponse();
 
-        if(chargeRequest.lead.Payment_Type__c == 'Credit Card' && !form.disableCreditCardProcessing){
+        System.debug('chargeRequest.teamRegistrationInfo: ' + chargeRequest.teamRegistrationInfo);   
+        System.debug('form.teamRegistration: ' + form.teamRegistration);   
+        Boolean isTeamFree = False;
+        if(chargeRequest.teamRegistrationInfo != NULL && chargeRequest.teamRegistrationInfo.teamRegistrationId != NULL && form.teamRegistration != NULL &&
+           ((form.teamRegistration.Is_Scholarship__c == False && form.teamRegistration.Discounted_Price__c	== NULL) ||
+            (form.teamRegistration.Is_Scholarship__c == True && form.opportunity.Amount == 0) )) {
+            isTeamFree = True;
+        }
+        System.debug('isTeamFree: ' + isTeamFree);   
+        
+        if(chargeRequest.lead.Payment_Type__c == 'Credit Card' && !form.disableCreditCardProcessing && isTeamFree == False) {
 
             Payment payment = new Payment(
                 chargeRequest.card.cardNumber, 
@@ -661,7 +715,7 @@ public class ExamRegistrationFormHelper {
             form.savepoint = Database.setSavepoint();
         }
 
-        if(chargeRequest.lead.Payment_Type__c != 'Credit Card'){
+        if(chargeRequest.lead.Payment_Type__c != 'Credit Card' && isTeamFree == False){
 
             Contract membershipContract = null;
 
@@ -740,9 +794,6 @@ public class ExamRegistrationFormHelper {
         form.contact.DO_NOT_FIRE__c = false;
         form.contact.RecordTypeId = RecordTypeHelper.GetRecordTypeIdFromSchema('Contact', 'Member');
 
-        //Set Recursion Flag to FALSE to allow member creation 
-        CommunityUtils.bIsRecusrsive = false;
-
         System.debug('form.contact: ' + form.contact);
         UPDATE form.contact;
         //system.assert(false, 'BOOM!'+ form.contact);
@@ -754,6 +805,10 @@ public class ExamRegistrationFormHelper {
         chargeResponse.contact = form.contact;
         chargeResponse.opportunity = form.opportunity;
 
+        if(isTeamFree) {
+            addFreeTransaction(form.opportunity.Id);
+        }
+        
         res.data = chargeResponse;
         res.status = 200;
 
@@ -962,6 +1017,20 @@ public class ExamRegistrationFormHelper {
         return res;
 
     }*/
+    
+    public static void addFreeTransaction(String oppId) {
+		ChargentSFA__Transaction__c trans = new ChargentSFA__Transaction__c();        
+        trans.ChargentSFA__Opportunity__c = oppId;
+        trans.ChargentSFA__Amount__c = 0.00;
+        trans.ChargentSFA__Response_Message__c = 'Approved';
+        trans.ChargentSFA__Response_Status__c = 'Approved';
+        trans.ChargentSFA__Type__c = 'Charge';
+        trans.ChargentSFA__Gateway_Date__c =system.now();
+        
+        System.debug('free trans:' + trans);
+        
+        insert trans;        
+    }
     
     public static Response.Detail updateExamRegistrationInfoData(ExamRegistrationForm erf, Contact contact){
 

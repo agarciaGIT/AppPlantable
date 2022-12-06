@@ -11,39 +11,39 @@ public class ExamSelectionOptions {
     private transient Map<Id, ExamPricebookEntry> examPriceBookEntriesMap { get; set; }
 
     public class Site{
-        public String id									{ get; set; }
-        public String label									{ get; set; }
-        public Site__c site 								{ get; set; }
+        public String id                                    { get; set; }
+        public String label                                 { get; set; }
+        public Site__c site                                 { get; set; }
         public Exam_Sites__c examSite                       { get; set; }
     }
 
     public class ExamPart {
-        public String id									{ get; set; }
-        public String labelNoPrice							{ get; set; }
-        public String labelPrice							{ get; set; }
-        public String label									{ get; set; }
-        public String windowType							{ get; set; }
-        public Exam_Part__c examPart       	                { get; set; }                   
+        public String id                                    { get; set; }
+        public String labelNoPrice                          { get; set; }
+        public String labelPrice                            { get; set; }
+        public String label                                 { get; set; }
+        public String windowType                            { get; set; }
+        public Exam_Part__c examPart                        { get; set; }                   
         public ExamPricebookEntry examPricebookEntry        { get; set; }
         public List<Site> sites                             { get; set; } 
     }
 
     public class ExamPricebookEntry{
-        public String id									        { get; set; }
-        public Exam__c exam 								        { get; set; }
-        public String examAdminID							        { get; set; }
-        public PricebookEntry pricebookEntry 				        { get; set; }
-        public String rateType				 				        { get; set; }
-        public String windowType			 				        { get; set; }
-        public List<ExamPricebookEntry> otherRates					{ get; set; }
+        public String id                                            { get; set; }
+        public Exam__c exam                                         { get; set; }
+        public String examAdminID                                   { get; set; }
+        public PricebookEntry pricebookEntry                        { get; set; }
+        public String rateType                                      { get; set; }
+        public String windowType                                    { get; set; }
+        public List<ExamPricebookEntry> otherRates                  { get; set; }
     }
 
     public class Exam{
-        public String id									    { get; set; }
-        public String label									    { get; set; }  
-        //public String labelNoPrice							    { get; set; }  
+        public String id                                        { get; set; }
+        public String label                                     { get; set; }  
+        //public String labelNoPrice                                { get; set; }  
         public Integer numberOfCombinedExamParts                { get; set; }
-        public Exam__c exam 								    { get; set; }
+        public Exam__c exam                                     { get; set; }
         public ExamPricebookEntry examPricebookEntry            { get; set; }
         public List<ExamPart> examParts                         { get; set; }
     }
@@ -147,11 +147,20 @@ public class ExamSelectionOptions {
 
         if(!this.examMap.isEmpty() && !this.examPriceBookEntriesMap.isEmpty()){
 
+            System.Debug('this.examMap:' + this.examMap);
+            System.Debug('this.examPriceBookEntriesMap:' + this.examPriceBookEntriesMap);
+            System.Debug('this.examSiteByExamPartByExamMap:' + this.examSiteByExamPartByExamMap);
+            System.Debug('this.examPartsMap:' + this.examPartsMap);
+
             // Creates options array
             for(Id key: examMap.keySet()){
                 
+                System.debug('key:' + key);
+                
                 Exam exam = new Exam();
                 Exam__c examObject = examMap.get(key);
+                
+                System.debug('examObject:' + examObject);
                     
                 exam.id     = examObject.Id;
                 exam.label  = examObject.Name;
@@ -160,18 +169,26 @@ public class ExamSelectionOptions {
                 exam.examParts = new List<ExamPart>();              
 
                 Map<Id, Map<Id, Exam_Sites__c>> examSiteByExamPartMap = this.examSiteByExamPartByExamMap.get(examObject.Id);
+                System.debug('examSiteByExamPartMap:' + examSiteByExamPartMap);
+                
                 if(examSiteByExamPartMap != NULL) {
                     
+                    System.debug('examSiteByExamPartMap:' + examSiteByExamPartMap);
+                    
                     for(Id examPartId: examSiteByExamPartMap.keySet()){
+                    
+                        System.debug('examPartId:' + examPartId);
     
                         ExamPart examPart = new ExamPart();
                         examPart.id = examPartId;
                     
                         Exam_Part__c ep = this.examPartsMap.get(examPartId);
+                        System.debug('ep:' + ep);
                         
                         // Lookup Price
                         examPart.examPricebookEntry = this.examPriceBookEntriesMap.get(examPartId);
-    
+                        System.debug('examPart.examPricebookEntry:' + examPart.examPricebookEntry);    
+                        
                         if(ep.Exam_Date__c != null){
                             Date d = ep.Exam_Date__c;
                             Time t = Time.newInstance(0, 0, 0, 0);
@@ -185,7 +202,7 @@ public class ExamSelectionOptions {
                             Time t = Time.newInstance(0, 0, 0, 0);
                             DateTime startDateTime = DateTime.newInstance(startDate, t);
                             DateTime endDateTime = DateTime.newInstance(endDate, t);
-                            examPart.label = startDateTime.format('MMMM dd, yyyy');
+                            examPart.label = startDateTime.format('MMMM d') + ' - ' + endDateTime.format('d, yyyy');
                             examPart.labelPrice = 'USD ' + examPart.examPricebookEntry.pricebookEntry.UnitPrice;
                             examPart.windowType = examPart.examPricebookEntry.windowType;
                         }else{
@@ -199,17 +216,17 @@ public class ExamSelectionOptions {
                         for(Exam_Sites__c examSite: examSiteMap.values()){
                             Site site = new Site();
                             site.id = examSite.Id;
-                            site.label = examSite.Name;
+                            site.label = examSite.Country__c;
                             site.site = examSite.Site__r;
                             site.examSite = examSite;
                             examPart.sites.add(site);
                         }
-    					
+                        
                         exam.examParts.add(examPart);
     
                     }
                     
-                	this.options.add(exam);
+                    this.options.add(exam);
                 }
                                 
             }

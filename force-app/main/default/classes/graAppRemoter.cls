@@ -775,7 +775,7 @@ global without sharing class graAppRemoter {
                         if(newStudyAccountInfo  != NULL) {
                             newStudyAccountInfo.Payment_Agreed_Date__c = datetime.now();
                             newStudyAccountInfo.Invoice_Email__c = invoiceEmail;
-                            newStudyAccountInfo.Payment_Agreed_Amount__c = paymentFeeAmount;
+                            newStudyAccountInfo.Payment_Agreed_Amount__c = (paymentFeeAmount != 0 && paymentFeeAmount != 0.00) ? paymentFeeAmount : null;
                         
                             update newStudyAccountInfo;
                         } else {

@@ -285,6 +285,9 @@ public class on24API {
             System.debug(TransactionType);
             trans.Contact__c = relevantContact.Id;  
             System.debug(relevantContact.Id);
+            if(callURL.length() > 255) {
+                callURL = callURL.substring(1, 255);
+            }
             trans.Request__c = callURL;
             System.debug(callURL);
             if(registrationType == 'chaptermeeting') {

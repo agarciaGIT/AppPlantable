@@ -85,6 +85,11 @@ global class processRegModifications_Batch implements Database.Batchable<sObject
                 opp.Late_EA_Id__c = erm.Part_I_Exam_Registration__c;
                 opp.Pending_Bulk_Deferral_Move__c = true;
                 opp.Deferral_SubType__c = erm.Deferral_SubType__c;
+                if(erm.Deferral_SubType__c == 'Deferral Postponement'){
+                	opp.ia_crm__Intacct_Transaction__c = 'Salesforce - Postponed';
+                }else{
+                    opp.ia_crm__Intacct_Transaction__c = 'Salesforce - Deferral';
+                }
                 OppsToUpdate.add(opp);
             }else if(erm.Part_II_Exam_Registration__c != null && registrationToOpptyMap.containskey(erm.Part_II_Exam_Registration__c)){
                 Opportunity opp = registrationToOpptyMap.get(erm.Part_II_Exam_Registration__c);
@@ -92,6 +97,11 @@ global class processRegModifications_Batch implements Database.Batchable<sObject
                 opp.Late_EA_Id__c = erm.Part_II_Exam_Registration__c;
                 opp.Pending_Bulk_Deferral_Move__c = true;
                 opp.Deferral_SubType__c = erm.Deferral_SubType__c;
+                if(erm.Deferral_SubType__c == 'Deferral Postponement'){
+                	opp.ia_crm__Intacct_Transaction__c = 'Salesforce - Postponed';
+                }else{
+                    opp.ia_crm__Intacct_Transaction__c = 'Salesforce - Deferral';
+                }
                 OppsToUpdate.add(opp);
             }else{
                 Opportunity objOpp = new Opportunity();
@@ -117,7 +127,7 @@ global class processRegModifications_Batch implements Database.Batchable<sObject
                 objOpp.Shipping_Postal_Code__c = con.MailingPostalCode;
                 objOpp.Shipping_Country__c = con.MailingCountry;
                 objOpp.Exam_Registration_Modification__c = erm.id;
-                objOpp.StageName = 'Closed';
+                objOpp.StageName = 'New Lead';
                 objOpp.CloseDate = system.today();
                 objOpp.Name = 'Late Exam Deferral';
                 objOpp.RecordTypeId = oppRecordTypeId;
@@ -126,6 +136,11 @@ global class processRegModifications_Batch implements Database.Batchable<sObject
                 objOpp.Late_EA_Id__c = erm.Part_I_Exam_Registration__c != null ? erm.Part_I_Exam_Registration__c : erm.Part_II_Exam_Registration__c;
                 objOpp.Free_Deferral__c = true;
                 objOpp.Deferral_SubType__c = erm.Deferral_SubType__c;
+                if(erm.Deferral_SubType__c == 'Deferral Postponement'){
+                	objOpp.ia_crm__Intacct_Transaction__c = 'Salesforce - Postponed';
+                }else{
+                    objOpp.ia_crm__Intacct_Transaction__c = 'Salesforce - Deferral';
+                }
                 newOppsList.add(objOpp);
                 examModificationIds.add(erm.id);
             }
@@ -211,6 +226,7 @@ global class processRegModifications_Batch implements Database.Batchable<sObject
             trans.ChargentSFA__Response_Message__c = 'Approved';
             trans.ChargentSFA__Response_Status__c = 'Approved';
             trans.ChargentSFA__Type__c = 'Charge';
+            trans.ChargentSFA__Payment_Method__c ='Free';
             trans.ChargentSFA__Gateway_Date__c =system.now();
             newChrgntTransList.add(trans);
         }

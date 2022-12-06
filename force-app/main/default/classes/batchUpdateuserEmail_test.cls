@@ -20,7 +20,7 @@ public class batchUpdateuserEmail_test{
         insert hist;
         
         
-        ChargentBase__Gateway__c chrgGtway = new ChargentBase__Gateway__c(Name = 'Test',ChargentBase__Merchant_ID__c = 'dasghjtru548709-4',ChargentBase__Active__c = true );
+        ChargentBase__Gateway__c chrgGtway = new ChargentBase__Gateway__c(Name = 'Test',ChargentBase__Active__c = true );
         insert chrgGtway;
         
         insert new UpdateIds__c(Name = 'GARP', Record_Id__c = chrgGtway.id);
@@ -57,8 +57,9 @@ public class batchUpdateuserEmail_test{
     static testMethod void unitTest_1(){
     
        
-        test.startTest();
+        
         testData();
+        test.startTest();
         batchUpdateuserEmail contracts = new batchUpdateuserEmail();
         Database.executebatch(contracts);
         test.stopTest();

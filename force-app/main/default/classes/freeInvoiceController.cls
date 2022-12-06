@@ -15,11 +15,34 @@ public class freeInvoiceController {
                            ChargentSFA__Charge_Amount__c ,Program__c ,Institutional_Sale_Stage__c ,Membership_Fee__c ,FRM_1_Registration_Fee__c ,
                            FRM_2_Registration_Fee__c ,ERP_Registration_Fee__c ,ERP_1_Registration_Fee__c ,ERP_2_Registration_Fee__c ,FRM_Enrollment_Fee__c ,ERP_Enrollment_Fee__c ,
                            Probability ,Company__c ,ChargentSFA__Currency__c , Current_Member_Type__c ,Exam_Registration_Modification__c ,Sub_Program__c ,Alternate_Method_of_Payment__c,
+                           Exam_Registration_Modification__r.Part_I_Exam_Registration__c,Exam_Registration_Modification__r.Part_II_Exam_Registration__c,
                            (select OpportunityId,Product2Id ,Description ,Product_company__c ,Exam_Site__c,UnitPrice,Quantity,Product_ID__c,PriceBookEntryid from OpportunityLineItems
                            where ProductCode IN: ProductCodes and product2.GL_Code__c =: GLcode)
                            from Opportunity where ChargentSFA__Invoice_Number__c =: InvoiceNumber];
+        
+        Set<Id> regIds = new Set<Id>();
+        List<Exam_Attempt__c> regToUpdate = new List<Exam_Attempt__c>();
+        if(opp.Exam_Registration_Modification__c != null){
+            if(opp.Exam_Registration_Modification__r.Part_I_Exam_Registration__c != null){
+                regIds.add(opp.Exam_Registration_Modification__r.Part_I_Exam_Registration__c);
+            }
+            if(opp.Exam_Registration_Modification__r.Part_II_Exam_Registration__c != null){
+                regIds.add(opp.Exam_Registration_Modification__r.Part_II_Exam_Registration__c);
+            }
+        }
+        
+        if(!regIds.isEmpty()){
+            List<Exam_Attempt__c> regList = [Select Id,Deferral_SubType__c from Exam_Attempt__c where Id IN: regIds];
+            
+            for(Exam_Attempt__c ea : regList){
+                ea.Deferral_SubType__c = 'Deferral Free';
+                regToUpdate.add(ea);
+            }
+        }
+        
         Opportunity newOpp = opp.clone(false,true);
         newOpp.CloseDate  = system.Today();
+        newopp.Deferral_SubType__c = 'Deferral Free';
         system.debug('newOpp.CloseDate =====>'+newOpp.CloseDate );
         Insert newOpp;
         system.debug('Id======>'+newOpp.id);
@@ -43,6 +66,10 @@ public class freeInvoiceController {
         trns.ChargentSFA__Response_Message__c  = 'Approved';
         trns.ChargentSFA__Response_Status__c = 'Approved';
         insert trns;
+        
+        if(!regToUpdate.isEmpty()){
+            update regToUpdate;
+        }
         
     }
 }

@@ -1,0 +1,6 @@
+<apex:page standardcontroller="Team_Registration__c" extensions="sendAttachments">
+<apex:form >
+<apex:commandButton value="Send Email!" action="{!sendEmailWithAttachements}"/>
+*** {!con}    
+</apex:form>
+</apex:page>

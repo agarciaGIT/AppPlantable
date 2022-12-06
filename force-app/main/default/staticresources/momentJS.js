@@ -11,8 +11,6 @@
 }(this, (function () { 'use strict';
 
     var hookCallback;
-	
-	debugger;
 
     function hooks() {
         return hookCallback.apply(null, arguments);

@@ -256,8 +256,8 @@ public class PearsonVueRTIDataHelper {
         returnmessage.put('candidateID',''); 
         returnmessage.put('clientCandidateID','');
         returnmessage.put('authorizationID','');
-        try{
-            
+        //try{
+            system.debug('Check this reponse:'+XMLString);
             String jsonsres = PearsonXmlParser.xmlToJson(XMLString); 
             
             JSONParser parser = JSON.createParser(jsonsres);
@@ -292,10 +292,10 @@ public class PearsonVueRTIDataHelper {
                     } 
                 }
             }  
-        }catch(Exception ex){
+        /*}catch(Exception ex){
             system.debug(ex.getMessage()); 
             returnmessage.put('isError',ex.getMessage());
-        }
+        }*/
         return returnmessage;
     }
     

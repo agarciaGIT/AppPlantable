@@ -217,6 +217,8 @@ public abstract class ExamRegistrationForm {
         public String registrationType                      { get; set; }
         public Card card                                    { get; set; }
         public List<Selection> selections                   { get; set; }
+        public Shipping_Charge__c shippingInfo                              { get; set; }
+        public RegistrationRequestTeamInfo teamRegistrationInfo             { get; set; }
     }
 
     public class ChargeResponse{
@@ -282,6 +284,7 @@ public abstract class ExamRegistrationForm {
             SELECT 
                 Id, 
                 Name,
+                Country__c,
                 Exam_Part__c,
                 Exam_Part__r.Exam_Administration__c, 
                 Exam_Part__r.Exam__r.Exam__c,
@@ -304,9 +307,10 @@ public abstract class ExamRegistrationForm {
                 Exam_Part__r.Exam__r.Exam__c IN :examPartNames AND
                 Site__r.Active__c = TRUE AND 
                 Site__r.Non_Selectable__c = FALSE AND 
-            	Exam_Part__r.Exam_Administration__r.Registration_Start_Date__c <= TODAY AND 
-            	Exam_Part__r.Exam_Administration__r.Registration_End_Date__c >= TODAY
-                AND Exam_Part__r.Exam_Administration__r.Exam_Type__c in ('FRM','SCR')            
+                Exam_Part__r.Exam_Administration__r.Registration_Start_Date__c <= TODAY AND 
+                Exam_Part__r.Exam_Administration__r.Registration_End_Date__c >= TODAY AND
+                Exam_Part__r.Exam_Administration__r.Contingency_Administration__c = False AND
+                Exam_Part__r.Exam_Administration__r.Exam_Type__c in ('FRM','SCR')            
             ORDER BY Exam_Part__r.Exam_Part_Number__c, Site__r.Name ASC 
         ]);        
         return siteMap;
@@ -436,17 +440,25 @@ public abstract class ExamRegistrationForm {
     }
 
     public Team_Registration__c getTeamRegistration(ID teamRegistrationId) {
-        return [select Id, Name, Account__c, Account__r.Name from Team_Registration__c where Id = :teamRegistrationId];
+        return [
+            select id, Name, Account__c, Account__r.Name, Is_Scholarship__c,
+            Free_Membership__c, Access_Code__c, Attestation_Required__c, Attestation_Copy__c,
+            Discounted_Price__c
+            from Team_Registration__c where Id = :teamRegistrationId];
     }
     
     public Team_Registration__c getTeamRegistration(string teamRegistrationCode) {
         
         Date tdy = Date.today();
         String examType = registrationType.name();
-        List<Team_Registration__c> teamRegs = [select Id, Name, Account__c, Account__r.Name, Attestation_Required__c
-                                               from Team_Registration__c 
-                                               where Access_Code__c = :teamRegistrationCode AND Payment_Status__c = 'Paid' AND
-                                               Start_Date__c <= :tdy AND End_Date__c >= :tdy AND Exam_Type__c = :examType AND Seats_Balance__c > 0];
+        List<Team_Registration__c> teamRegs = [
+            select id, Name, Exam_Type__c, Account__c, Account__r.Name, Is_Scholarship__c,
+            Free_Membership__c, Access_Code__c, Attestation_Required__c, Attestation_Copy__c,
+            Discounted_Price__c,
+            (SELECT Id, AccountId, StageName FROM Opportunities__r)
+            from Team_Registration__c 
+            where Access_Code__c = :teamRegistrationCode AND Payment_Status__c = 'Paid' AND
+            Start_Date__c <= :tdy AND End_Date__c >= :tdy AND Exam_Type__c = :examType AND Seats_Balance__c > 0];
         
         if(!teamRegs.isEmpty()) {
             return teamRegs[0];
@@ -454,6 +466,24 @@ public abstract class ExamRegistrationForm {
             return null;    
         }
         
+    }
+    
+    public OpportunityLineItem getTeamRegMembershipLineItem() {
+        OpportunityLineItem oli;
+        
+        List<PriceBookEntry> lstPrice = [SELECT Pricebook2.IsActive, UnitPrice, ProductCode, Product2Id, Product2.Name, Product2.Image__c, Product_ID__c
+                                         FROM PriceBookEntry
+                                         WHERE IsActive = TRUE AND ProductCode IN ('MEMF') AND Pricebook2.IsActive = TRUE];
+        if(!lstPrice.isEmpty()) {
+            oli = new OpportunityLineItem(
+                PricebookEntryId = lstPrice[0].Id,
+                Product2Id = lstPrice[0].Product2Id,
+                UnitPrice = 0,
+                Quantity = 1
+            );
+            
+        }
+        return oli;
     }
     
     public Map<Id, ExamSelectionOptions.ExamPricebookEntry> getExamPricebookEntries(Set<Id> examIds) {
@@ -503,7 +533,8 @@ public abstract class ExamRegistrationForm {
                 Exam__c IN :examIds AND
                 Exam_Administration__r.Exam_Type__c in ('FRM','SCR') AND
                 Exam_Registration_Window__r.Exam_Registration_Window_Open__c <= TODAY AND
-                Exam_Registration_Window__r.Exam_Registration_Window_Close__c >= TODAY 
+                Exam_Registration_Window__r.Exam_Registration_Window_Close__c >= TODAY AND
+                Exam_Part__c != NULL
             ORDER BY Product__r.ProductCode ASC
         ];
         //AND (Rate_Type__c = NULL OR (Rate_Type__c = :userRateType))
@@ -583,6 +614,26 @@ public abstract class ExamRegistrationForm {
             }
             System.debug('examRates final:' + examRates);
             
+            // Team Reg Discounts
+            Map<String, Team_Registration_Products__c> mapTeamProds = new Map<String, Team_Registration_Products__c>();
+            String teamCode = this.teamRegistration.Access_Code__c;
+            Team_Registration__c teamReg = this.teamRegistration;
+            System.debug('teamReg:' + teamReg);
+            
+            if(teamReg != null) {                
+                
+                // Team Registration Custom Settings
+                Map<String, Team_Registration_Products__c> mapCustTeamProds = Team_Registration_Products__c.getAll();
+                if(teamRegistration != NULL && mapCustTeamProds != NULL) {
+                    for(Team_Registration_Products__c trp :mapCustTeamProds.values()) {
+                        mapTeamProds.put(trp.Product_Code__c, trp);
+                    }
+                }
+                System.debug('mapCustTeamProds:' + mapCustTeamProds);
+                System.debug('mapTeamProds:' + mapTeamProds);                
+            }
+            
+            // Get Prices
             for(Exam_Rate__c er: examRates){
                 product2Ids.add(er.Product__c);
             }
@@ -609,7 +660,21 @@ public abstract class ExamRegistrationForm {
                 examPricebookEntry.exam                     = er.Exam__r;
                 examPricebookEntry.priceBookEntry           = pricebookEntryByProduct2Id.get(er.Product__c);
                 examPricebookEntry.rateType                 = mapRateTypes.get(er.Product__c);
-                examPricebookEntry.windowType				= mapWindowTypes.get(er.Product__c);
+                examPricebookEntry.windowType               = mapWindowTypes.get(er.Product__c);
+                
+                // Override Price with Team Reg
+                if(teamReg != NULL) {
+                    Team_Registration_Products__c fndTrp = mapTeamProds.get(er.Product__r.ProductCode);
+                    if(fndTrp != NULL) {
+                        if(teamReg.Discounted_Price__c != NULL) {
+                            examPricebookEntry.priceBookEntry.UnitPrice = teamReg.Discounted_Price__c;
+                            System.debug('TeamReg Override:' + examPricebookEntry.priceBookEntry); 
+                        } else if(teamReg.Is_Scholarship__c) {
+                            examPricebookEntry.priceBookEntry.UnitPrice = 0;
+                            System.debug('TeamReg Override:' + examPricebookEntry.priceBookEntry);                             
+                        }
+                    }
+                }
                 
                 Set<Exam_Rate__c> otherProducts = otherRatesProdMap.get(er.Exam__r.Exam__c);
                 System.debug('otherProducts:' + otherProducts);
@@ -815,6 +880,8 @@ public abstract class ExamRegistrationForm {
         FINAL Id contactId = this.validatedUser.user.ContactId;
         FINAL Id examGroupId = this.examGroup.Id;
 
+        System.debug('>>>exams:' + exams);
+        
         List<Scholarship_Application__c> scholarshipApplications = [
             SELECT Id, Status__c, Exam_Type__c, Applicant__c, Exam_Group__c, Exam_Group__r.Next_Exam_Group__c
             FROM Scholarship_Application__c
@@ -826,11 +893,13 @@ public abstract class ExamRegistrationForm {
                 Exam_Group__r.Next_Exam_Group__c = :examGroupId
             )
         ];
+        System.debug('scholarshipApplications:' + scholarshipApplications);
         
         if(!scholarshipApplications.isEmpty()){
             
             FINAL Scholarship_Application__c scholarshipApplication = scholarshipApplications[0];
-
+			System.debug('scholarshipApplication:' + scholarshipApplication);
+            
             Set<String> scholarshipDiscountProductCodes = new Set<String>{'SAFRM1','SAFRM2','SAERP1','SAERP2','SASCR'};
 
             Map<String, PricebookEntry> scholarshipDiscountByProductCodeMap = new Map<String, PricebookEntry>();
@@ -840,31 +909,33 @@ public abstract class ExamRegistrationForm {
                     scholarshipDiscountByProductCodeMap.put(productCode, pbe);
                 }
             }
+            System.debug('scholarshipDiscountByProductCodeMap:' + scholarshipDiscountByProductCodeMap);
             
             PricebookEntry scholarshipPricebookEntry = null;
 
             for(ExamSelectionOptions.Exam e: exams){
 
-                ExamSelectionOptions.ExamPricebookEntry epb = e.examPricebookEntry;                  
-                Exam__c exam = epb.exam;
-                PricebookEntry examPricebookEntry = epb.pricebookEntry;
+                System.debug('e:' + e);
+                System.debug('examPricebookEntry:' + e.examParts[0].examPricebookEntry.pricebookEntry);
+                
+                PricebookEntry examPricebookEntry = e.examParts[0].examPricebookEntry.pricebookEntry;
                 
                 if(scholarshipApplication.Exam_Type__c == 'FRM'){
-                    switch on exam.Exam__c{
+                    switch on e.exam.Exam__c{
                         when 'FRM Part 1'{
                             scholarshipPricebookEntry = scholarshipDiscountByProductCodeMap.get('SAFRM1');
                             scholarshipPricebookEntry.UnitPrice = examPricebookEntry.UnitPrice * -1;
                         }
                     }
                 }else if(scholarshipApplication.Exam_Type__c == 'ERP'){
-                    switch on exam.Exam__c{
+                    switch on e.exam.Exam__c{
                         when 'ERP Exam Part I'{
                             scholarshipPricebookEntry = scholarshipDiscountByProductCodeMap.get('SAERP1');
                             scholarshipPricebookEntry.UnitPrice = examPricebookEntry.UnitPrice * -1;
                         }
                     }
                 }else if(scholarshipApplication.Exam_Type__c == 'SCR'){
-                    switch on exam.Exam__c{
+                    switch on e.exam.Exam__c{
                         when 'SCR'{
                             scholarshipPricebookEntry = scholarshipDiscountByProductCodeMap.get('SASCR');
                             scholarshipPricebookEntry.UnitPrice = examPricebookEntry.UnitPrice * -1;
@@ -927,12 +998,15 @@ public abstract class ExamRegistrationForm {
         
     }
     
-    public List<OpportunityLineItem> addTaxAndDuty(List<OpportunityLineItem> taxableProducts, Lead lead){
-                
+    public List<OpportunityLineItem> addTaxAndDuty(List<OpportunityLineItem> taxableProducts, Lead lead, Decimal shippingFee){
+                 
         decimal tax = 0;
         decimal weight = 0;
         
         FINAL decimal TAX_RATE = 0.06625;
+        
+        // Tax Shipping
+        tax = shippingFee * TAX_RATE;
         
         Set<Id> taxableProductIds = new Set<Id>();
         for(OpportunityLineItem oli: taxableProducts){
@@ -959,6 +1033,8 @@ public abstract class ExamRegistrationForm {
                 }
             }
         }
+        
+        tax = tax.setScale(2);
         
         List<OpportunityLineItem> opportunityLineItems = new List<OpportunityLineItem>();
         
@@ -1327,7 +1403,10 @@ public abstract class ExamRegistrationForm {
             
             //Fetch exam sites for the current Exam Group for the selected Site.
             examSites = [
-                SELECT Id, Name, Site__c, Site__r.Name, Site__r.AM_Exam_Capacity_Available__c, Site__r.PM_Exam_Capacity_Available__c, Exam__c, Exam__r.Name, Exam__r.Exam__c, Exam__r.Exam_Group__c, Exam__r.Administration_Time_of_Day__c, Exam_Part__c, Exam_Part__r.Exam_Administration__c, Exam_Part__r.Exam_Date__c, Exam_Part__r.Exam_Start_Date__c
+                SELECT Id, Name, Site__c, Site__r.Name, Site__r.AM_Exam_Capacity_Available__c, Site__r.PM_Exam_Capacity_Available__c,
+                Site__r.Is_OSTA_Information_Required__c, 
+                Exam__c, Exam__r.Name, Exam__r.Exam__c, Exam__r.Exam_Group__c, Exam__r.Administration_Time_of_Day__c, 
+                Exam_Part__c, Exam_Part__r.Exam_Administration__c, Exam_Part__r.Exam_Date__c, Exam_Part__r.Exam_Start_Date__c
                 FROM Exam_Sites__c
                 WHERE Id IN :examSiteIds
             ];
@@ -1435,8 +1514,18 @@ public abstract class ExamRegistrationForm {
                     examAttempt.ATA_Cert_id__c = contact.ID_Number__c;
                 }
                 
-                examAttempt.OSTA_Consent__c = contact.OSTA_Consent__c;
+                if(examSite.Site__r.Is_OSTA_Information_Required__c && contact.OSTA_Consent__c == NULL) {
+                    examAttempt.OSTA_Consent__c = DateTime.now(); 
+                } else {
+                    examAttempt.OSTA_Consent__c = contact.OSTA_Consent__c;                    
+                }
             }
+            
+            // AG 11-7-2022 Update Privaye Policy Consent
+            if(RegistrationRequest.lead.Privacy_Policy_Attestation__c == TRUE) {
+                examAttempt.Privacy_Policy_Attestation__c = DateTime.now();    
+            }
+            
             
             
             String candidateRequirementExamName = null;

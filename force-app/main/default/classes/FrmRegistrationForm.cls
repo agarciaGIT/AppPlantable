@@ -159,7 +159,7 @@ public class FrmRegistrationForm extends ExamRegistrationForm {
         Boolean isInProgram = False;
         Boolean isRegistrationOpen = False; 
         Boolean isPaymentBlocked = False; 
-                
+        
         Exam_Attempt__c part1ERP;
         Exam_Attempt__c part2ERP;
         
@@ -183,7 +183,7 @@ public class FrmRegistrationForm extends ExamRegistrationForm {
         
         List<Exam_Administration__c> lstAdmins = [select Id, Name, Registration_Start_Date__c, Registration_End_Date__c 
                                                   from Exam_Administration__c
-                                                  where Exam_Type__c = 'FRM' AND Registration_Start_Date__c >= TODAY AND Registration_End_Date__c <= TODAY];
+                                                  where Exam_Type__c = 'FRM' AND Registration_Start_Date__c <= TODAY AND Registration_End_Date__c >= TODAY];
         
         // Exam Admins where reg is open
         Map<String,Exam_Administration__c> mapActiveExamAdmins = new Map<String,Exam_Administration__c>();
@@ -683,9 +683,6 @@ public class FrmRegistrationForm extends ExamRegistrationForm {
 
         System.debug('***examPricebookEntries:' + examPricebookEntries);
         
-        
-system.assert(false, 'BOOM!'+ examPricebookEntries);
-        
         ExamSelectionOptions eso = new ExamSelectionOptions(examSitesMap, examPricebookEntries);
         
         System.debug('***eso:' + eso);
@@ -952,6 +949,7 @@ system.assert(false, 'BOOM!'+ examPricebookEntries);
 
         FINAL Id contactId = super.validatedUser.user.ContactId;
         FINAL Id examGroupId = super.examGroup.Id;
+        Decimal shippingFee=0;
         
         List<OpportunityLineItem> opportunityLineItems = new List<OpportunityLineItem>();
         system.debug(opportunityLineItems);
@@ -981,6 +979,7 @@ system.assert(false, 'BOOM!'+ examPricebookEntries);
                     for(Object col :validatedShippingResponse.data) {
                         OpportunityLineItem shippingOli = (OpportunityLineItem)col;
                         opportunityLineItems.add(shippingOli);
+                        shippingFee+=shippingOli.UnitPrice;
                     }
                     system.debug('opportunityLineItems:' + opportunityLineItems);
                 }
@@ -997,6 +996,7 @@ system.assert(false, 'BOOM!'+ examPricebookEntries);
                     for(Object col :validatedShippingResponse.data) {
                         OpportunityLineItem shippingOli = (OpportunityLineItem)col;
                         opportunityLineItems.add(shippingOli);
+                        shippingFee+=shippingOli.UnitPrice;
                     }
                     system.debug('opportunityLineItems:' + opportunityLineItems);
                 }
@@ -1023,7 +1023,8 @@ system.assert(false, 'BOOM!'+ examPricebookEntries);
             opportunityLineItems.addAll(studyMaterials);
         }
         system.debug(opportunityLineItems);
-        List<OpportunityLineItem> taxesAndDuty = super.addTaxAndDuty(opportunityLineItems, registrationRequest.lead);
+        
+        List<OpportunityLineItem> taxesAndDuty = super.addTaxAndDuty(opportunityLineItems, registrationRequest.lead, shippingFee);
         if(taxesAndDuty != null && !taxesAndDuty.isEmpty()){
             opportunityLineItems.addAll(taxesAndDuty);
         }  
@@ -1093,6 +1094,7 @@ system.assert(false, 'BOOM!'+ examPricebookEntries);
         }
         System.debug('mapExamRates:' + mapExamRates);
         
+        // Team Registration Custom Settings
         Map<String, Team_Registration_Products__c> mapCustTeamProds = Team_Registration_Products__c.getAll();
         Map<String, Team_Registration_Products__c> mapTeamProds = new Map<String, Team_Registration_Products__c>();
         if(teamRegistration != NULL && mapCustTeamProds != NULL) {
@@ -1100,6 +1102,7 @@ system.assert(false, 'BOOM!'+ examPricebookEntries);
                 mapTeamProds.put(trp.Product_Code__c + '~' + trp.GL_Code__c, trp);
             }
         }
+        System.debug('mapCustTeamProds:' + mapCustTeamProds);
         System.debug('mapTeamProds:' + mapTeamProds);
         
         for(Selection selection: registrationRequest.selections){
@@ -1121,14 +1124,42 @@ system.assert(false, 'BOOM!'+ examPricebookEntries);
                     
                     // AG 3/18/2022 - Replace team reg products
                     Team_Registration_Products__c fndTeamProd = mapTeamProds.get(pbe.ProductCode + '~' + pbe.Product2.GL_Code__c);
-                    if(fndTeamProd != NULL) {
+                    if(fndTeamProd != NULL && teamRegistration.Discounted_Price__c == NULL && teamRegistration.Is_Scholarship__c == False) {
+                        
                         oli.Product2Id = fndTeamProd.Replacement_Product_Id__c;
-                        oli.PricebookEntryId = fndTeamProd.Replacement_Product_Price_Id__c;
+                        oli.PricebookEntryId = fndTeamProd.Replacement_Product_Price_Id__c;                            
+                        
+                        System.debug('team reg replace:' + oli);
+
                     }
-                    
-                    opportunityLineItems.add(oli); 
-                }        
-                System.debug('opportunityLineItems:' + opportunityLineItems);   
+                        opportunityLineItems.add(oli); 
+    
+                    // AG 5/27/2022 - Add team discount
+                    if(fndTeamProd != NULL && (teamRegistration.Discounted_Price__c != NULL || teamRegistration.Is_Scholarship__c)) {
+                        
+                        if(teamRegistration.Discounted_Price__c != NULL) {
+                            // Add Discount Product
+                            OpportunityLineItem oppLineItemRate = new OpportunityLineItem();
+                            oppLineItemRate.Product2Id = fndTeamProd.Discount_Product_Id__c;
+                            oppLineItemRate.PricebookEntryId = fndTeamProd.Discount_Product_Price_Id__c;
+                            oppLineItemRate.Quantity = 1; 
+                            oppLineItemRate.UnitPrice = (pbe.UnitPrice - teamRegistration.Discounted_Price__c) * -1;
+                            opportunityLineItems.add(oppLineItemRate);
+                            System.debug('team reg add disc:' + oppLineItemRate);
+                            
+                        } else {
+                            // Add Scholarship Product
+                            OpportunityLineItem oppLineItemRate = new OpportunityLineItem();
+                            oppLineItemRate.Product2Id = fndTeamProd.Scholarship_Product_Id__c;
+                            oppLineItemRate.PricebookEntryId = fndTeamProd.Scholarship_Product_Price_Id__c;   
+                            oppLineItemRate.Quantity = 1; 
+                            oppLineItemRate.UnitPrice = pbe.UnitPrice * -1;
+                            opportunityLineItems.add(oppLineItemRate);
+                            System.debug('team reg add scholarship discount:' + oppLineItemRate);                        
+                        }
+                    }        
+                    System.debug('opportunityLineItems:' + opportunityLineItems);   
+                }
             }
 
         }

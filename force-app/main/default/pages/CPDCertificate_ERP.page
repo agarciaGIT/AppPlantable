@@ -11,7 +11,8 @@
   applyBodyTag="false"
   renderAs="pdf"
 >
- 
+  <apex:stylesheet value="https://cloud.typography.com/7208894/718528/css/fonts.css"
+  />
   <apex:variable var="envPath" value="{!URLFOR($Resource.sfdcApp)}" />
 
   <html>

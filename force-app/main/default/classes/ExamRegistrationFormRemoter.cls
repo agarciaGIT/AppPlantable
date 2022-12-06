@@ -26,17 +26,15 @@ public class ExamRegistrationFormRemoter {
                 }
             }
        
-        /*
-        }catch(Response.ResponseException e){
+        //}catch(Response.ResponseException e){
 
-            return new Response.Detail(e.getMessage(), e.status, e.errors);
+         //   return new Response.Detail(e.getMessage(), e.status, e.errors);
 
-        }catch(Exception e){
+        //}catch(Exception e){
 
-            return new Response.Detail(null, 400, new List<Object>{e.getMessage(),e.getLineNumber(),e.getStackTraceString()});
+            //return new Response.Detail(null, 400, new List<Object>{e.getMessage(),e.getLineNumber(),e.getStackTraceString()});
 
-        } 
-        */
+        //} 
     }
     
     @RemoteAction

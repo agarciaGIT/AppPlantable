@@ -1,8 +1,6 @@
 import { LightningElement, api, track, wire } from 'lwc';
 import getMemberProfileForEdit from '@salesforce/apex/GARP_MC_MemberProfile.getMemberProfileForEdit';
 import setMemberProfile from '@salesforce/apex/GARP_MC_MemberProfile.setMemberProfile';
-import getStudies from '@salesforce/apex/GBI_MC_Studies.getStudies';
-
 import { fireEvent } from 'c/pubsub';
 import { util_isDefined, util_validateForm, util_mapSFFields, util_mapSFPickListToOptions, 
         util_createYearsOptions, util_closeModal, util_console, util_navigate, util_subscribeToMessages,
@@ -139,10 +137,6 @@ export default class MemberProfileSurvey extends LightningElement {
         util_subscribeToMessages(this,'event-reg-submit',this.handleMessage);
 
         debugger;
-
-        getStudies().then(result =>{
-            util_console('result',result);
-        });
 
         getMemberProfileForEdit({contactId: this.contactId})
         .then(result =>{

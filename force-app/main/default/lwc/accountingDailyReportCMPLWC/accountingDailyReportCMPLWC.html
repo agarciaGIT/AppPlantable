@@ -1,0 +1,96 @@
+<template>
+    <lightning-card>
+        <div class="slds-is-relative">
+            <div if:true={isLoaded}>
+                <lightning-spinner alternative-text="Loading..." size="large" variant="brand">
+                </lightning-spinner>
+            </div>
+            <div class="slds-col modal-header slds-modal__header">
+                <h1 class="slds-page-header__title">Accounting Daily</h1>
+            </div>
+            <div class="slds-box slds-theme_shade">
+                <div class="slds-grid">
+                    <div class="slds-col slds-size_3-of-12">
+                        <div class="slds-box slds-theme_shade" if:true={intacctTransactionoptions}>
+                            <lightning-input data-id="intacctId" name="Intacct Transaction" type="toggle" unchecked
+                                onchange={changeToggle} label="Select" message-toggle-active="Deselect All"
+                                message-toggle-inactive="Selecct All"></lightning-input>
+                            <lightning-checkbox-group name="Intacct Transaction" label="Intacct Transaction"
+                                options={intacctTransactionoptions} value={selectedintacctTransaction}
+                                onchange={handleintacctTransaction}></lightning-checkbox-group>
+
+                        </div>
+                    </div>
+                    <div class="slds-col slds-size_3-of-12">
+                        <div class="slds-box slds-theme_shade" if:true={paymentMethodoptions}>
+                            <lightning-input data-id="paymentId" name="Payment Method" type="toggle" unchecked
+                                onchange={changeToggle} label="Select" message-toggle-active="Deselect All"
+                                message-toggle-inactive="Selecct All"></lightning-input>
+                            <lightning-checkbox-group name="Payment Method" label="Payment Method"
+                                options={paymentMethodoptions} value={selectedpaymentMethod}
+                                onchange={handlepaymentMethod}></lightning-checkbox-group>
+
+                        </div>
+                    </div>
+                    <div class="slds-col slds-size_2-of-12" style="margin-left:10px">
+                        <lightning-input label="Start Date" type="date" name="StartDate" value={startDate}
+                            onchange={handleinputchange} date-style="long"></lightning-input>
+                    </div>
+                    <div class="slds-col slds-size_2-of-12">
+                        <lightning-input label="End Date" type="date" name="EndDate" value={endDate}
+                            onchange={handleinputchange} date-style="long"></lightning-input>
+                    </div>
+                    <div class="slds-col slds-size_2-of-12" style="margin-top: 24px;margin-left:10px">
+                        <lightning-button variant="brand" class="slds-button slds-button_neutral" label="Refresh"
+                            style="border: none; width: 30%;" onclick={handlerefresh}></lightning-button>
+                        <lightning-button if:true={dailyAccountReportTableList} variant="brand"
+                            class="slds-button slds-button_neutral" label="Download"
+                            style="border: none; width: 45%;background: none;" onclick={handledownload}>
+                        </lightning-button>
+                    </div>
+
+                </div>
+            </div>
+            <div class="slds-box slds-theme_shade" if:true={dailyAccountReportTableList}>
+                <div class="slds-grid">
+                    <div class="slds-col slds-size_3-of-12"> 
+                        <h1>Selected Rows: {selectedRowsCount}</h1>
+                        <lightning-button variant="brand" class="slds-button" label="Approved Selected"
+                            onclick={approveSelectedItems}></lightning-button> 
+                    </div>
+                </div>
+            </div>
+            <div class="slds-box" if:true={dailyAccountReportTableList} data-id="overview">
+                <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_striped" border="1">
+                    <thead>
+                        <tr class="slds-line-height_reset">
+                            <th><lightning-input type="checkbox" onchange={handleAllChange} ></lightning-input></th>
+                            <template for:each={tableheaderListData} for:item="hd">
+                                <th key={hd.value} class={hd.class} scope="col">
+                                    {hd.label}
+                                </th>
+                            </template>
+                        </tr>
+                    </thead>
+                    <template for:each={dailyAccountReportTableList} for:item="hd" for:index="index">
+                        <tbody key={hd}>
+                            <template for:each={hd.rowdata} for:item="row" >
+                                <tr key={row} class="slds-line-height_reset">
+                                    <td scope="col"> 
+                                        <lightning-input type="checkbox" checked={hd.isrowchecked} onchange={handleCheckBoxChange} data-key={hd.oppid}
+                                            data-index={index}></lightning-input>
+                                    </td>
+                                    <template for:each={row} for:item="hdw">
+                                        <td key={hdw.value} class={hdw.class} scope="col">
+                                            {hdw.value}
+                                        </td>
+                                    </template>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </template>
+                </table>
+            </div>
+        </div>
+    </lightning-card>
+</template>

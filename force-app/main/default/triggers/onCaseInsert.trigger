@@ -51,7 +51,7 @@ trigger onCaseInsert on Case (before insert, before update) {
                         if(m.find() && m.group(3) != null) {
                             String gi = m.group(3);
                             if(gi.length() > 4)
-                            	caseByContactGarpIdMap.put(m.group(3), c); 
+                                caseByContactGarpIdMap.put(m.group(3), c); 
                             break;
                         }
                

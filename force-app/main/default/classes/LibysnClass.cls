@@ -1,16 +1,60 @@
 global class LibysnClass {
     
     public static String xml{get; set;}
-    public static List<Dom.XMLNode> recentPosts {get; set;}
+    
     global LibysnClass() {
-        //LibysnClass = new List<Dom.XMLNode>();
+        
     }
     
-    //global void execute(SchedulableContext c) {
-    //    getLibsynRSSFeed();
-    //}
-    
+    @future(callout = true)
     static global void getLibsynRSSFeed(string URL) {
+        xml = getRSSFeed(URL);   
+        system.debug('xml:'+xml.Left(25));
+        
+        List<Content__c> blogEntries = getXMLPosts(xml);   
+        system.debug('blogEntries:' + blogEntries);
+        
+        Set<String> SKU = new Set<String>();
+        List<Content__c> entriesToAdd = new List<Content__c>();        
+        // Collect unique identifiers in a list
+        for(Content__c bp : blogEntries) {
+            SKU.add(bp.SKU__c);
+        }
+        system.debug('SKU:'+SKU);
+        
+        // Get all the records from content object in salesforce to check the duplicates
+        Map<String, Content__c> blogs = new Map<String, Content__c>(); 
+        for(Content__c objCS : [SELECT Id, Content_Name__c,SKU__c, Author__c,Description__c,Third_Party_URL__c,Published_Date__c  from Content__c WHERE SKU__c IN :SKU]){
+            blogs.put(objCS.SKU__c, objCS);
+        }
+        system.debug('blogs:'+blogs);
+
+        for(Content__c blogEntry : blogEntries) {
+            
+            system.debug('blogEntry:'+blogEntry);
+            
+            Boolean added = false;
+            if(blogs.containsKey(blogEntry.SKU__c)){
+                added = true;
+            }
+            if(!added){
+                entriesToAdd.add(blogEntry); 
+            }
+        }
+        system.debug('entriesToAdd=======>'+entriesToAdd);
+        insert entriesToAdd;
+    }
+    
+    // Checking the RSSfeed endpoint
+    static global String getRSSFeed(string URL) {
+        Http h = new Http();
+        HttpRequest req = new HttpRequest();
+        
+        // url that returns the XML in the response body  
+        req.setEndpoint(url);
+        req.setMethod('GET');
+        
+        String xml;
         if(test.isRunningTest()){ 
             xml = '<?xml version="1.0" encoding="UTF-8"?>'+
                 '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:cc="http://web.resource.org/cc/" '+
@@ -32,184 +76,185 @@ global class LibysnClass {
                 '</item>'+
                 '</channel>'+
                 '</rss>';
-            recentPosts = documentXml(xml);
-            
         } else {     
-            recentPosts = LibysnClass.getRSSFeed(URL);        
+        	HttpResponse res = h.send(req);
+            xml = res.getBody();
         }
-        system.debug('recentPosts==========>'+recentPosts);
-        List<Content__c> blogEntries = new List<Content__c>();
-        Set<String> SKU = new Set<String>();
-        List<Content__c> entriesToAdd = new List<Content__c>();
-        List<Content_Folders__c > entriesToAddContentFolder = new List<Content_Folders__c >();
-        
-        Content_Folders__c BlogContentFolderEntries ;
-        
-        // To collect all the posts from the RSSFeed
-        for(Dom.XMLNode post : recentPosts) {
-            //system.debug('post==========>'+post);
-            
-            Content__c newPost = LibysnClass.convertFeedToBlogPost(post);
-            system.debug('newPost==========>'+newPost);
-            
-            blogEntries.add(newPost);
-        }    
-        
-        system.debug('blogEntries======>'+blogEntries);
-        // Collect unique identifiers in a list
-        for(Content__c bp : blogEntries) {
-            SKU.add(bp.SKU__c);
-        }
-        system.debug('SKU======>'+SKU);
-        
-        // Get all the records from content object in salesforce to check the duplicates
-       Map<String, Content__c> blogs = new Map<String, Content__c>(); 
-        for(Content__c objCS : [SELECT Id, Content_Name__c,SKU__c, Author__c,Description__c,Third_Party_URL__c,Published_Date__c  from Content__c WHERE SKU__c IN :SKU]){
-            blogs.put(objCS.SKU__c, objCS);
-        }
-       // List<Content__c> blogs = [SELECT Id, Content_Name__c,SKU__c, Author__c,Description__c,Third_Party_URL__c,Published_Date__c  from Content__c WHERE SKU__c IN :SKU];
-        for(Content__c blogEntry : blogEntries) {
-            
-            system.debug('blogEntry======>'+blogEntry);
-            
-            Boolean added = false;
-         /*   for(Content__c blog : blogs) {
-                if(blog.SKU__c == blogEntry.SKU__c) {
-                    added = true;
-                    break;
-                }
-            }*/
-            if(blogs.containsKey(blogEntry.SKU__c)){
-                added = true;
-            }
-            if(!added){
-                entriesToAdd.add(blogEntry); 
-            }
-        }
-        system.debug('entriesToAdd=======>'+entriesToAdd);
-        insert entriesToAdd;        
-        
-        // Add the podcast items to podcast library folder in related content folder
-        //if(entriesToAdd.size()>0){
-        //    for(Content__c RelatedContentFolder :entriesToAdd){
-        //        BlogContentFolderEntries = new Content_Folders__c();
-        //        BlogContentFolderEntries.name = RelatedContentFolder.Name ;
-        //        BlogContentFolderEntries.Folder__c = System.Label.PodcastFolder;
-        //        BlogContentFolderEntries.Content__c = RelatedContentFolder.id;
-        //        entriesToAddContentFolder.add(BlogContentFolderEntries);
-        //    }
-        //    insert entriesToAddContentFolder;
-        //}
+        return xml;
     }
     
-    // Checking the RSSfeed endpoint
-    static global List<Dom.XMLNode> getRSSFeed(string URL) {
-        Http h = new Http();
-        HttpRequest req = new HttpRequest();
+    static global List<Content__c> getXMLPosts(string xml) {
+        //system.debug('reader:' + xml);
         
-        // url that returns the XML in the response body  
-        req.setEndpoint(url);
-        req.setMethod('GET');
-        HttpResponse res = h.send(req);
-        String xml =res.getBody().replaceAll( '<!\\[CDATA\\[', 'XML_CDATA_START' ).replaceAll( ']]>', 'XML_CDATA_END' );
+        xml = xml.replaceAll('itunes:', 'itunes-');
+        xml = xml.replaceAll('libsyn:', 'libsyn-');
+
+        XmlStreamReader reader = new XmlStreamReader(xml);
         
-        // replace CDATA sections with parseable tokens
-        // xml = xml.replaceAll( '<!\\[CDATA\\[', 'XML_CDATA_START' ).replaceAll( ']]>', 'XML_CDATA_END' );
+        boolean isSafeToGetNextXmlElement = true;
+        Boolean isStart = false;
+        List<Content__c> podCasts = new List<Content__c>();
+        Content__c bp = new Content__c ();
         
-        // we will build up a map of original text and replacement text
-        Map<String, String> replacementMap = new Map<String, String>();
+        while(isSafeToGetNextXmlElement) {
+            if (reader.getEventType() == XmlTag.START_ELEMENT) {
+                String tag = reader.getLocalName();
+                //system.debug('Tag:' + tag);
+                if(tag == 'item' && !isStart) {
+                    isStart = True;
+                    system.debug('isStart:' + isStart);
+                }
+                if(isStart) {
+                    if(tag == 'description') {
+                        String val = getTagContent(reader);
+                        bp.Story__c = val;
+                    } else if(tag == 'title') {
+                        if(bp.Content_Name__c != NULL) {
+                            bp.Name = bp.Content_Name__c.Left(80);
+                            bp.Media_Type__c = 'Audio';
+                            bp.RecordTypeId = Schema.SObjectType.Content__c.getRecordTypeInfosByName().get('Podcast').getRecordTypeId();
+                            bp.Status__c = 'Active';
+                            
+                            system.debug('Add Podcast:' + bp);
+                            
+                            podCasts.add(bp);
+                            bp = new Content__c ();
+                        }
+                        bp.Content_Name__c = getTagContent(reader);
+                    } else if(tag == 'pubDate') {
+                        String val = getTagContent(reader);
+                        String year = val.substring(12, 16);
+                        String day = val.substring(5, 7);
+                        String month = val.substring(8, 11);
+                        if(month.equals('Jan')) { month = '01'; }
+                        if(month.equals('Feb')) { month = '02'; }
+                        if(month.equals('Mar')) { month = '03'; }
+                        if(month.equals('Apr')) { month = '04'; }
+                        if(month.equals('May')) { month = '05'; }
+                        if(month.equals('Jun')) { month = '06'; }
+                        if(month.equals('Jul')) { month = '07'; }
+                        if(month.equals('Aug')) { month = '08'; }
+                        if(month.equals('Sep')) { month = '09'; }
+                        if(month.equals('Oct')) { month = '10'; }
+                        if(month.equals('Nov')) { month = '11'; }
+                        if(month.equals('Dec')){ month = '12'; }
+                        String finalDate = month + '/' +day + '/' +year ;
+                        bp.Published_Date__c = date.parse(finalDate);
+                    } else if(tag == 'link') {
+                        bp.Third_Party_URL__c = getTagContent(reader);
+                    
+                    } else if(tag == 'itunes-image') {
+                        String val = getTagContent(reader);
+                        bp.Image__c = val;
+                    
+                    } else if(tag == 'itunes-summary') {
+                        bp.Description__c = getTagContent(reader);
+                        
+					} else if(tag == 'libsyn-itemId') {
+                        bp.SKU__c = getTagContent(reader);
+                    }
+                }
+            }
+            if (reader.hasNext()) {
+                reader.next();
+            } else {
+                isSafeToGetNextXmlElement = false;
+                
+                if(bp.Content_Name__c != NULL) {
+                    bp.Name = bp.Content_Name__c.Left(80);
+                    bp.Media_Type__c = 'Audio';
+                    bp.RecordTypeId = Schema.SObjectType.Content__c.getRecordTypeInfosByName().get('Podcast').getRecordTypeId();
+                    bp.Status__c = 'Active';
+                    
+                    system.debug('Add Podcast:' + bp);
+                    
+                    podCasts.add(bp);
+                    bp = new Content__c ();
+                }                
+                
+                break;
+            }
+        }
+        system.debug('podCasts:' + podCasts);
+        return podCasts;
+    }
+
+    static global String getTagContent(XmlStreamReader reader) {
+        boolean isSafeToGetNextXmlElement = True;
+        String val;
         
-        // regular expression to match sections we want to replace
-        // Pattern myPattern = Pattern.compile( '(XML_CDATA_START)(.*?)(XML_CDATA_END)' );
-        Matcher myMatcher = Pattern.compile( '(XML_CDATA_START)(.*?)(XML_CDATA_END)' ).matcher( xml );
-        while ( myMatcher.find() ) {
+        while(isSafeToGetNextXmlElement) {
+            //system.debug('Event:'+ reader.getEventType());
             
-            // the regex was too complicated for Matcher.replaceFirst(..)
-            // so have to do it manually so just put in this map the
-            // original text and the replacement text, we do replacing later
-            replacementMap.put( myMatcher.group(), myMatcher.group(2).escapeXML() );
+            if (reader.getEventType() == XmlTag.END_ELEMENT) {
+                break;
+            } else if (reader.getEventType() == XmlTag.CHARACTERS) {
+                //system.debug('Text:' + reader.getText());
+                val = reader.getText();
+            }
+            if (reader.hasNext()) {
+                reader.next();
+            } else {
+                isSafeToGetNextXmlElement = false;
+                break;
+            }
         }
+        return val;
+    }
         
-        // replace in the xml each CDATA section with the escaped XML of its inner content
-        for ( String key : replacementMap.keySet() ) {
-         xml = xml.replace( key, replacementMap.get( key ) );
-        }
-        List<Dom.XMLNode> rssList = new List<Dom.XMLNode>();
-        rssList = documentXml(xml);
-        return rssList;
+    static global void updateAllFeeds() {
+        // GARP Risk
+        LibysnClass.getLibsynRSSFeed('https://feeds.libsyn.com/96199/rss/?include-libsyn-metadata=true');
         
+        // Climate Risk
+        LibysnClass.getLibsynRSSFeed('https://feeds.libsyn.com/284498/rss/?include-libsyn-metadata=true');
+        
+        // New Age
+        LibysnClass.getLibsynRSSFeed('https://feeds.libsyn.com/176627/rss/?include-libsyn-metadata=true');
+                                      
     }
     
-    static global List<Dom.XMLNode> documentXml(String xml){
-        Dom.Document doc = new Dom.Document();
-        doc.load(xml);
-        Dom.XMLNode rss = doc.getRootElement();        
-        List<Dom.XMLNode> rssList = new List<Dom.XMLNode>();
-        for(Dom.XMLNode child : rss.getChildren()) {
-            for(Dom.XMLNode channel : child.getChildren()) {
-                if(channel.getName() == 'item') {
-                    rssList.add(channel);
-                }
+    @InvocableMethod(label='LibysnClass' description='Call LibysnClass Methods')
+    public static void LibysnClassInvocable(List<List<String>> inputParams) {  
+        
+        System.debug('inputParams:' + inputParams);
+        
+        String method;
+        String param1;
+        String param2;
+        String param3;
+        String param4;
+        String param5;
+        List<String> ids = inputParams[0];
+        
+        if(!ids.isEmpty()){
+            Integer cnt=0;
+            for(String idVal :ids) {
+                if(cnt==0)
+                    method = idVal;
+                else if(cnt==1)
+                    param1 = idVal;
+                else if(cnt==2)
+                    param2 = idVal;
+                else if(cnt==3)
+                    param3 = idVal;
+                else if(cnt==4)
+                    param4 = idVal;
+                else if(cnt==5)
+                    param5 = idVal;
+                cnt++;
+            }
+            System.debug('method:' + method);
+            System.debug('param1:' + param1);
+            System.debug('param2:' + param2);
+            System.debug('param3:' + param3);
+            System.debug('param4:' + param4);
+            System.debug('param5:' + param5);
+            
+            if(method == 'updateAllFeeds') {
+                updateAllFeeds();
             }
         }
-        return rssList;
     }
     
-    // Storing each post as a record in content
-    static global Content__c  convertFeedToBlogPost(Dom.XMLNode post) {
-        Content__c  bp = new Content__c ();
-        Integer tagIndex = 0;
-        DateTime dt;
-        for(Dom.XMLNode child : post.getChildren()) {
-        //system.debug('child.getName()======>'+child.getName());
-            if(child.getName() == 'title') {
-                String newName = child.getText();
-                bp.Content_Name__c = newName;
-                if(newName.length() > 80) {
-                    bp.Name = newName.left(80);
-                } else {
-                  bp.Name =  newName; 
-                }
-                bp.SKU__c  = bp.Name; 
-            } 
-            if(child.getName() == 'pubDate') { 
-                String year = child.getText().substring(12, 16);
-                String day = child.getText().substring(5, 7);
-                String month = child.getText().substring(8, 11);
-                if(month.equals('Jan')) { month = '01'; }
-                if(month.equals('Feb')) { month = '02'; }
-                if(month.equals('Mar')) { month = '03'; }
-                if(month.equals('Apr')) { month = '04'; }
-                if(month.equals('May')) { month = '05'; }
-                if(month.equals('Jun')) { month = '06'; }
-                if(month.equals('Jul')) { month = '07'; }
-                if(month.equals('Aug')) { month = '08'; }
-                if(month.equals('Sep')) { month = '09'; }
-                if(month.equals('Oct')) { month = '10'; }
-                if(month.equals('Nov')) { month = '11'; }
-                if(month.equals('Dec')){ month = '12'; }
-                String finalDate = month + '/' +day + '/' +year ;
-                bp.Published_Date__c = date.parse(finalDate);
-            }
-            if(child.getName() == 'link') { 
-                bp.Third_Party_URL__c = child.getText(); 
-            }
-            if(child.getName() == 'image') { 
-                bp.Image__c = child.getAttributeValue('href', ''); 
-            }
-            if(child.getName() == 'description') { 
-                bp.Story__c = child.getText(); 
-            }
-            if(child.getName() == 'summary') { 
-                bp.Description__c = child.getText(); 
-            }
-            if(child.getName() == 'itemId') {
-                bp.SKU__c  = child.getText(); 
-            }
-            bp.Media_Type__c = 'Audio';
-            bp.RecordTypeId = Schema.SObjectType.Content__c.getRecordTypeInfosByName().get('Podcast').getRecordTypeId();
-            bp.Status__c = 'Active';
-        }
-        return bp;      
-    }
 }

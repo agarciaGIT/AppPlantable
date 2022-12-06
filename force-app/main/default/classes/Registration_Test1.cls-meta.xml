@@ -6,10 +6,5 @@
         <minorNumber>88</minorNumber>
         <namespace>ChargentBase</namespace>
     </packageVersions>
-    <packageVersions>
-        <majorNumber>5</majorNumber>
-        <minorNumber>88</minorNumber>
-        <namespace>ChargentSFA</namespace>
-    </packageVersions>
     <status>Active</status>
 </ApexClass>

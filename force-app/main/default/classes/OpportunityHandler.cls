@@ -37,11 +37,15 @@ public without sharing class OpportunityHandler implements TriggerAbstract {
     public static boolean stopRecurssion = false;
     public static boolean closedOppsRecurssion = false;
     static List<Opportunity> closedRecOppsList = new List<Opportunity>();
+    static boolean shipEdgeCall = false;
+    static boolean sageReallocationCall = false;
+    static List<Sage_Updates__e> sageEvents = new List<Sage_Updates__e>();
     
     public class oppLineWrapper {
         public string Product_Codes;
         public Decimal Product_Weight; 
         public string Product_Names;
+        public string Product_SKU;
         public string Customs_Cost;
     }
     // Constructor
@@ -90,10 +94,11 @@ public without sharing class OpportunityHandler implements TriggerAbstract {
                 List<OpportunityLineItem> productList = new List<OpportunityLineItem>();
                 
                 if(trigger.newMap != null){
-                    productList = [SELECT Id, Name, ProductCode,Exam_Registration__r.Member__c, Product2Id,Opportunity.OSTA_Exam_Site_Code__c,TotalPrice,
+                    productList = [SELECT Id, Name, ProductCode,Exam_Registration__r.Member__c, Product2Id,Opportunity.OSTA_Exam_Site_Code__c,TotalPrice,Product_SKU__c,
                                    Opportunity.OSTA_Opportunity_Refund__c, Opportunity.Exam_Registration_Modification__c, Product2.Family, 
                                    Event__c, Exam_Site__r.Id, Exam_Registration__c, OpportunityId, UnitPrice, Quantity, Opportunity.AccountId,
-                                   Opportunity.GARP_Member_ID__c, Scholarship_Application__c,Exam_Registration__r.Exam_Date__c,Description,
+                                   Product2.Department__c, Product2.ia_crm__Intacct_Entity__c, Product2.Class__c, Sage_Reporting_Country__c,
+                                   Opportunity.GARP_Member_ID__c, Scholarship_Application__c,Exam_Registration__r.Exam_Date__c,Description,For_Sage_Sync_Only__c,
                                    Product2.Is_Shippable__c, Product2.Weight__c, Product2.Product_ID__c,Product2.Bookstore__c,Product2.Name, Product2.Customs_Cost__c,
                                    Product2.GL_Code__c,Opportunity.StageName,Opportunity.ChargentSFA__Billing_Email__c,Product2.Company__c,Product2.ProductCode
                                    FROM OpportunityLineItem 
@@ -147,9 +152,11 @@ public without sharing class OpportunityHandler implements TriggerAbstract {
         
         if(!stopRecurssion){
             UpdateFieldsInsertUpdate(newOpp,oldOpp);
+            procShpCnclAndRsnd(newOpp,oldOpp);
         }
         if(!closedRecOppsList.isEmpty() && closedOppsRecurssion){
             processBeforeUpdateAndGetMaps(newOpp,oldOpp);
+            sageUpdate(newOpp,oldOpp);
         }
     }
     
@@ -161,6 +168,11 @@ public without sharing class OpportunityHandler implements TriggerAbstract {
     }
     
     public void afterUpdate(SObject oldSo, SObject so){
+        Opportunity newOpp = (Opportunity)so;
+        Opportunity oldOpp = (Opportunity)oldSo;
+        if(!stopRecurssion){
+            sageProcessReallocation(newOpp,OldOpp);
+        }
     }
     
     public void afterDelete(SObject so){
@@ -186,7 +198,7 @@ public without sharing class OpportunityHandler implements TriggerAbstract {
                                        from Contact
                                        where AccountId IN: closedOppsAccIdSet OR AccountId IN: acctIdSetForContractAutoRenew]; 
                     }
-                    if(!closedOppsMap.isEmpty())
+                    if(!closedOppsMap.isEmpty() || shipEdgeCall == true || sageReallocationCall == true)
                         processOpportunityProductMethods(closedOppsMap);
                     if(!setExamRegMods.isEmpty()){
                         dmlList = ExamManagementController.processExamRegModsBulk(setExamRegMods,false,false);
@@ -200,6 +212,9 @@ public without sharing class OpportunityHandler implements TriggerAbstract {
                         OpportunityTriggerHelper_New.updateEventRegistrations(eventRegUpdateToRecordIdMap);
                     if(productCodes.size() > 0) {
                         OpportunityTriggerHelper_New.closeRateOffers(productCodes, glCodes, contactList, productKeys);
+                    }
+                    if(!sageEvents.isEmpty()){
+                        EventBus.publish(sageEvents);
                     }
                     stopRecurssion = true;
                     if(closedOppsRecurssion)
@@ -215,7 +230,7 @@ public without sharing class OpportunityHandler implements TriggerAbstract {
             List<String> strAddress  = new List<String>();
             if(String.isNotBlank(newOpp.Shipping_Street__c) ){
                 strAddress = newOpp.Shipping_Street__c.split('\n');
-                if (strAddress != null && (String.isBlank(newOpp.Shipping_Address1__c) || newOpp.Shipping_Street__c != oldOpp.Shipping_Street__c)) {
+                if (strAddress != null && (String.isBlank(newOpp.Shipping_Address1__c) || (oldOpp != null && newOpp.Shipping_Street__c != oldOpp.Shipping_Street__c))) {
                     newOpp.Shipping_Address1__c = (strAddress.size() > 0) ? strAddress[0] : null;
                     newOpp.Shipping_Address2__c = (strAddress.size() > 1) ? strAddress[1] : null;
                     newOpp.Shipping_Address3__c = (strAddress.size() > 2) ? strAddress[2] : null;
@@ -256,8 +271,53 @@ public without sharing class OpportunityHandler implements TriggerAbstract {
             newOpp.Date_Sent_to_GT__c = system.today();
         }
         
+        if(oldOpp != null && newOpp.ia_crm__Intacct_Sync_Status_1__c == 'OK' && newOpp.ia_crm__Intacct_Sync_Status_1__c != oldOpp.ia_crm__Intacct_Sync_Status_1__c && newOpp.Sage_Sync_Date__c == null){
+            newOpp.Sage_Sync_Date__c = system.today();
+        }
+        
+        if(newOpp.ia_crm__Intacct_Sync_Status_1__c != null && newOpp.ia_crm__Intacct_Sync_Status_1__c != 'OK' && newOpp.ia_crm__Intacct_Sync_Status_1__c != 'In Process' && newOpp.Sage_Sync_Date__c == null){
+            newOpp.Sage_Order_Approved__c = false;
+        }
+        
         if(newOpp.Auto_Renew__c){
             newOpp.ChargentSFA__Manual_Charge__c = True;
+        }
+    }
+    
+    public void sageUpdate(Opportunity newOpp,Opportunity oldOpp){
+        String paymentType;
+        
+        newOpp.Sage_Paid_Date__c = newOpp.CloseDate;
+        newOpp.ia_crm__Term__c = Sage_Default_Records_Ref__mdt.getInstance('Intacct_Term_Record_Id').value__c;
+        
+        if(newOpp.ChargentSFA__Payment_Method__c == 'Credit Card'){
+            if(newOpp.ChargentSFA__Card_Type__c == 'AMEX' ){
+                paymentType = 'AE';
+            }else{
+                paymentType = 'FD';
+            }
+        }else if(newOpp.ChargentSFA__Payment_Method__c == 'Wire Transfer'){
+            paymentType = 'WI';
+        }else if(newOpp.ChargentSFA__Payment_Method__c == 'Check'){
+            paymentType = 'CK';
+        }else if(newOpp.ChargentSFA__Payment_Method__c == 'ACH'){
+            paymentType = 'AH';
+        }else if(newOpp.ChargentSFA__Payment_Method__c == 'Free'){
+            paymentType = 'FE';
+        }
+        
+        DateTime dt = DateTime.now();
+        String dateTimeStr = dt.format('MMddyy');
+        System.debug(dt+'    >>>>        ' + dateTimeStr);
+        
+        newOpp.Sage_Document_Number__c = paymentType+dateTimeStr;
+        
+        if(newOpp.ia_crm__Intacct_Transaction__c == null){
+            if(newOpp.Exam_Registration_Modification__c != null){
+                newOpp.ia_crm__Intacct_Transaction__c = 'Salesforce - Deferral';
+            }else{
+                newOpp.ia_crm__Intacct_Transaction__c = 'Salesforce - Sales Invoice';
+            }
         }
     }
     
@@ -298,9 +358,22 @@ public without sharing class OpportunityHandler implements TriggerAbstract {
                 renewOpps.put(newOpp.AccountId, newOpp);
             }
             
+            if(newOpp.Ups_Stage__c == 'New Order' && newOpp.Has_Books__c == true && newOpp.Cancel_Books__c == false){
+                 if(methodToOppsMap.containsKey('ShipEdgeAdd')){
+                     Set<Id> oppSet = methodToOppsMap.get('ShipEdgeAdd');
+                     oppSet.add(newOpp.Id);
+                     methodToOppsMap.put('ShipEdgeAdd',oppSet);
+                 }else{
+                     methodToOppsMap.put('ShipEdgeAdd',new Set<Id>{newOpp.Id});
+                 }
+            }
             
+            Sage_Updates__e evt = new Sage_Updates__e();
+            evt.Opportunity_Id__c = newOpp.Id;
+            sageEvents.add(evt);
             
         }
+        
         if(newOpp.stagename == 'Recurring Intent' && newOpp.StageName != oldOpp.stageName && newOpp.Auto_Renew__c){
             if(newOpp.Auto_Renew__c){
                 newOpp.ChargentSFA__Payment_Status__c = 'Recurring';
@@ -327,89 +400,143 @@ public without sharing class OpportunityHandler implements TriggerAbstract {
         }
     }
     
+    public void procShpCnclAndRsnd(Opportunity newOpp,Opportunity oldOpp){
+        //ShipEdge integration
+        if((newOpp.Resend_Order_To_ShipEdge__c == true && newOpp.Resend_Order_To_ShipEdge__c != oldOpp.Resend_Order_To_ShipEdge__c) || 
+           (newOpp.Cancel_Books__c == true && newOpp.Cancel_Books__c != oldOpp.Cancel_Books__c)){
+            //Method to call ShipEdge integration for books shipping
+            system.debug('Check Ship Edge');
+            if((newOpp.Ups_Stage__c == 'New Order' || newOpp.Ups_Stage__c == 'Order Error') && newOpp.Has_Books__c == true && newOpp.Cancel_Books__c == false && newOpp.Resend_Order_To_ShipEdge__c == true){
+                system.debug('Check Ship Edge Add');
+                shipEdgeCall = true;
+                if(methodToOppsMap.containsKey('ShipEdgeAdd')){
+                    Set<Id> oppSet = methodToOppsMap.get('ShipEdgeAdd');
+                    oppSet.add(newOpp.Id);
+                    methodToOppsMap.put('ShipEdgeAdd',oppSet);
+                }else{
+                    methodToOppsMap.put('ShipEdgeAdd',new Set<Id>{newOpp.Id});
+                }
+            }else if(newOpp.Cancel_Books__c == true && newOpp.Has_Books__c == true){
+                system.debug('Check Ship Edge Cancel');
+                if(String.isNotBlank(newOpp.Tracking_Number__c)){
+                    newOpp.adderror('Ship Order cannot be canceled after Tracking Number is generated.');
+                }else if(methodToOppsMap.containsKey('ShipEdgeCancel')){
+                    shipEdgeCall = true;
+                     Set<Id> oppSet = methodToOppsMap.get('ShipEdgeCancel');
+                     oppSet.add(newOpp.Id);
+                     methodToOppsMap.put('ShipEdgeCancel',oppSet);
+                 }else{
+                     shipEdgeCall = true;
+                     methodToOppsMap.put('ShipEdgeCancel',new Set<Id>{newOpp.Id});
+                 }
+            }
+        }
+    }
+    
+    public void sageProcessReallocation(Opportunity newOpp,Opportunity oldOpp){
+        if(newOpp.ia_crm__Intacct_Transaction__c == 'Salesforce - Refund' 
+           && newOpp.ia_crm__Intacct_Sync_Status_1__c == 'OK' && newOpp.ia_crm__Intacct_Sync_Status_1__c != oldOpp.ia_crm__Intacct_Sync_Status_1__c){
+               sageReallocationCall = true;
+               if(methodToOppsMap.containsKey('SAGEREALLOCATION')){
+                   Set<Id> oppSet = methodToOppsMap.get('SAGEREALLOCATION');
+                   oppSet.add(newOpp.Id);
+                   methodToOppsMap.put('SAGEREALLOCATION',oppSet);
+               }else{
+                   methodToOppsMap.put('SAGEREALLOCATION',new Set<Id>{newOpp.Id});
+               }
+        }
+    }
+    
     public void processOpportunityProductsForClosedOpps(Opportunity opp){
         boolean updateOppShippingDetails = false;
         oppLineWrapper oWrapper = new oppLineWrapper();
         if(oppToProductsMap.containsKey(opp.Id)){
             for(OpportunityLineItem oli : oppToProductsMap.get(opp.Id)){
-                system.debug(' in   processOpportunityProductsForClosedOpps::>>   '+oli.ProductCode);
-                //For Product rate offer method
-                if(oli.Opportunity.ChargentSFA__Billing_Email__c != NULL) {
-                    productCodes.add(oli.ProductCode);
-                    glCodes.add(oli.Product2.GL_Code__c);
-                    productKeys.add(oli.ProductCode + ':' + oli.Product2.GL_Code__c + ':' + oli.Opportunity.ChargentSFA__Billing_Email__c.tolowercase());
-                }
-                if(oppProductToMethodMap.containskey(oli.ProductCode) || (oli.Product2.family != null && oppProductToMethodMap.containskey(oli.Product2.family))){
-                    string methodName = oppProductToMethodMap.containskey(oli.ProductCode) ? oppProductToMethodMap.get(oli.ProductCode).Map_Key__c : (oppProductToMethodMap.containskey(oli.Product2.family) ? oppProductToMethodMap.get(oli.Product2.family).Map_Key__c : null);
-                        system.debug(' in2   processOpportunityProductsForClosedOpps::>>   '+methodName);
-                    boolean priceCheck = oppProductToMethodMap.containskey(oli.ProductCode) ? oppProductToMethodMap.get(oli.ProductCode).Price_Check__c : false;
-                    if(methodName != null && methodToOppsMap.containsKey(methodName)){
-                        Set<Id> oppSet = methodToOppsMap.get(methodName);
-                        if(methodName == 'ScholarshipApplication'){
-                            oppSet.add(oli.Scholarship_Application__c);
-                        }else{
-                            oppSet.add(oli.OpportunityId);
-                        }
-                        methodToOppsMap.put(methodName,oppSet);
-                    }else if (methodName != null){
-                        if(methodName == 'UpdateContracts'){
-                            if(priceCheck == true && oli.UnitPrice == 250){
-                                updateOppsForContractUpdateMap('UpdateFRRor2009',oli.Opportunity.AccountId);
-                            }else if(priceCheck == false){
-                                updateOppsForContractUpdateMap('UpdateFRRor2009',oli.Opportunity.AccountId);
+                if(oli.For_Sage_Sync_Only__c == false){
+                    system.debug(' in   processOpportunityProductsForClosedOpps::>>   '+oli.ProductCode);
+                    //For Product rate offer method
+                    if(oli.Opportunity.ChargentSFA__Billing_Email__c != NULL) {
+                        productCodes.add(oli.ProductCode);
+                        glCodes.add(oli.Product2.GL_Code__c);
+                        productKeys.add(oli.ProductCode + ':' + oli.Product2.GL_Code__c + ':' + oli.Opportunity.ChargentSFA__Billing_Email__c.tolowercase());
+                    }
+                    if(oppProductToMethodMap.containskey(oli.ProductCode) || (oli.Product2.family != null && oppProductToMethodMap.containskey(oli.Product2.family))){
+                        string methodName = oppProductToMethodMap.containskey(oli.ProductCode) ? oppProductToMethodMap.get(oli.ProductCode).Map_Key__c : (oppProductToMethodMap.containskey(oli.Product2.family) ? oppProductToMethodMap.get(oli.Product2.family).Map_Key__c : null);
+                            system.debug(' in2   processOpportunityProductsForClosedOpps::>>   '+methodName);
+                        boolean priceCheck = oppProductToMethodMap.containskey(oli.ProductCode) ? oppProductToMethodMap.get(oli.ProductCode).Price_Check__c : false;
+                        if(methodName != null && methodToOppsMap.containsKey(methodName)){
+                            Set<Id> oppSet = methodToOppsMap.get(methodName);
+                            if(methodName == 'ScholarshipApplication'){
+                                oppSet.add(oli.Scholarship_Application__c);
+                            }else{
+                                oppSet.add(oli.OpportunityId);
                             }
-                        }else if(methodName == 'OSTAProgram' && oli.Opportunity.Exam_Registration_Modification__c == null){
-                            updateOppsForContractUpdateMap('OSTAProgram',oli.OpportunityId);
-                            lineItemByOpportunityId.put(oli.OpportunityId, oli);
-                        }else if(methodName == 'ScholarshipApplication'){
-                            methodToOppsMap.put(methodName,new Set<Id>{oli.Scholarship_Application__c});
-                        }else if(methodName == 'ATAPSIIntegration'){
-                            updateIdsForRecordIdMap('ATAPSIIntegration',oli.OpportunityId);
-                        }else if(methodName == 'ExtendRiskDotNet'){
-                            updateOppsForContractUpdateMap('ExtendRiskDotNet',oli.OpportunityId);
-                            lineItemByOpportunityId.put(oli.OpportunityId, oli);
-                        }else if(methodName == 'IndividualMember'){
-                            updateOppsForContractUpdateMap('IndividualMember',oli.Opportunity.AccountId);
-                        }else if(methodName == 'AffiliateMember'){
-                            updateOppsForContractUpdateMap('AffiliateMember',oli.Opportunity.AccountId);
-                        }else if(methodName == 'RetabulationRequest'){
-                            updateIdsForRecordIdMap('RetabulationRequest',oli.Exam_Registration__c);
-                            if(oli.Exam_Registration__r.Exam_Date__c != null){
-                                Datetime dt = Datetime.newInstance(oli.Exam_Registration__r.Exam_Date__c, Time.newInstance(0, 0, 0, 0));
-                                oli.Description = dt.format('MMM YYYY');
-                                oliToUpdate.add(oli);
+                            methodToOppsMap.put(methodName,oppSet);
+                        }else if (methodName != null){
+                            if(methodName == 'UpdateContracts'){
+                                if(priceCheck == true && oli.UnitPrice == 250){
+                                    updateOppsForContractUpdateMap('UpdateFRRor2009',oli.Opportunity.AccountId);
+                                }else if(priceCheck == false){
+                                    updateOppsForContractUpdateMap('UpdateFRRor2009',oli.Opportunity.AccountId);
+                                }
+                            }else if(methodName == 'OSTAProgram' && oli.Opportunity.Exam_Registration_Modification__c == null){
+                                updateOppsForContractUpdateMap('OSTAProgram',oli.OpportunityId);
+                                lineItemByOpportunityId.put(oli.OpportunityId, oli);
+                            }else if(methodName == 'ScholarshipApplication'){
+                                methodToOppsMap.put(methodName,new Set<Id>{oli.Scholarship_Application__c});
+                            }else if(methodName == 'ATAPSIIntegration'){
+                                updateIdsForRecordIdMap('ATAPSIIntegration',oli.OpportunityId);
+                            }else if(methodName == 'ExtendRiskDotNet'){
+                                updateOppsForContractUpdateMap('ExtendRiskDotNet',oli.OpportunityId);
+                                lineItemByOpportunityId.put(oli.OpportunityId, oli);
+                            }else if(methodName == 'IndividualMember'){
+                                updateOppsForContractUpdateMap('IndividualMember',oli.Opportunity.AccountId);
+                            }else if(methodName == 'AffiliateMember'){
+                                updateOppsForContractUpdateMap('AffiliateMember',oli.Opportunity.AccountId);
+                            }else if(methodName == 'RetabulationRequest'){
+                                updateIdsForRecordIdMap('RetabulationRequest',oli.Exam_Registration__c);
+                                if(oli.Exam_Registration__r.Exam_Date__c != null){
+                                    Datetime dt = Datetime.newInstance(oli.Exam_Registration__r.Exam_Date__c, Time.newInstance(0, 0, 0, 0));
+                                    oli.Description = dt.format('MMM YYYY');
+                                    oliToUpdate.add(oli);
+                                }
+                            }else{
+                                methodToOppsMap.put(methodName,new Set<Id>{oli.OpportunityId});
                             }
-                        }else{
-                            methodToOppsMap.put(methodName,new Set<Id>{oli.OpportunityId});
                         }
                     }
-                }
-                if(oli.ProductCode == 'Ship'){
-                    opp.Shipping_Serive_Selected__c = oli.Description;
-                    opp.UPS_Service_Code_For_Xml__c = opportunityTriggerUtils_New.getUPSCode(oli.Description);
-                }
-                if(oli.Product2.Is_Shippable__c == true){
-                    updateOppShippingDetails = true;
-                    if(oWrapper.Product_Codes == null)
-                        oWrapper.Product_Codes =   oli.Product2.Product_ID__c;
-                    else
-                        oWrapper.Product_Codes =   oWrapper.Product_Codes + ',' +oli.Product2.Product_ID__c;
-                    
-                    if(oWrapper.Product_Names == null)
-                        oWrapper.Product_Names =   oli.Product2.Name;
-                    else
-                        oWrapper.Product_Names =   oWrapper.Product_Names + ',' +oli.Product2.Name;
-                    
-                    if(oWrapper.Customs_Cost == null)
-                        oWrapper.Customs_Cost =   string.valueof(oli.quantity * integer.valueof(oli.Product2.Customs_Cost__c));
-                    else
-                        oWrapper.Customs_Cost =   oWrapper.Customs_Cost + ',' +string.valueof(oli.quantity * integer.valueof(oli.Product2.Customs_Cost__c));
-                    
-                    
-                    if(oWrapper.Product_Weight == null)
-                        oWrapper.Product_Weight =   oli.quantity *oli.Product2.Weight__c;
-                    else
-                        oWrapper.Product_Weight =   oWrapper.Product_Weight + (oli.quantity *oli.Product2.Weight__c);
+                    if(oli.ProductCode == 'Ship'){
+                        opp.Shipping_Serive_Selected__c = oli.Description;
+                        opp.UPS_Service_Code_For_Xml__c = opportunityTriggerUtils_New.getUPSCode(oli.Description);
+                    }
+                    if(oli.Product2.Is_Shippable__c == true){
+                        updateOppShippingDetails = true;
+                        if(oWrapper.Product_Codes == null)
+                            oWrapper.Product_Codes =   oli.Product2.Product_ID__c;
+                        else
+                            oWrapper.Product_Codes =   oWrapper.Product_Codes + ',' +oli.Product2.Product_ID__c;
+                        
+                        if(oWrapper.Product_Names == null)
+                            oWrapper.Product_Names =   oli.Product2.Name;
+                        else
+                            oWrapper.Product_Names =   oWrapper.Product_Names + ',' +oli.Product2.Name;
+                        
+                        if(oWrapper.Customs_Cost == null)
+                            oWrapper.Customs_Cost =   string.valueof(oli.quantity * integer.valueof(oli.Product2.Customs_Cost__c));
+                        else
+                            oWrapper.Customs_Cost =   oWrapper.Customs_Cost + ',' +string.valueof(oli.quantity * integer.valueof(oli.Product2.Customs_Cost__c));
+                        
+                        
+                        if(oWrapper.Product_Weight == null)
+                            oWrapper.Product_Weight =   oli.quantity *oli.Product2.Weight__c;
+                        else
+                            oWrapper.Product_Weight =   oWrapper.Product_Weight + (oli.quantity *oli.Product2.Weight__c);
+                        
+                        if(oWrapper.Product_SKU == null)
+                            oWrapper.Product_SKU =   oli.Product_SKU__c;
+                        else
+                            oWrapper.Product_SKU =   oWrapper.Product_SKU + ',' +oli.Product_SKU__c;
+                    }
                 }
             }
         }
@@ -419,6 +546,7 @@ public without sharing class OpportunityHandler implements TriggerAbstract {
             opp.Product_Ids__c = oWrapper.Product_Codes;
             opp.Product_Names__c = oWrapper.Product_Names;
             opp.Customs_Cost__c = oWrapper.Customs_Cost;
+            opp.Products_SKU__c = oWrapper.Product_SKU;
         }      
 	}
     
@@ -426,7 +554,9 @@ public without sharing class OpportunityHandler implements TriggerAbstract {
         List<Integration_Stream_Event__e> eventList = new List<Integration_Stream_Event__e>();
         for(string method : methodToOppsMap.keyset()){
             if(method == 'ERP2EBook' || method == 'FFREBook' || method == 'FRM1EBook' || method == 'FRM2EBook' || 
-               method == 'FRREBook' || method == 'SCREBook' || method == 'ChapterMeeting' || method == 'FRREBookANDYardStick' || method == 'provisionEvents'){
+               method == 'FRREBook' || method == 'SCREBook' || method == 'ChapterMeeting' || method == 'FRREBookANDYardStick' || 
+               method == 'provisionEvents' || method == 'ShipEdgeAdd' || method == 'ShipEdgeCancel' || method == 'SAGEREALLOCATION' || 
+               method == 'SCRBenchPrep'){
                    List<Integration_Stream_Event__e> evtList = TriggerUtilities.getIntgEvents(methodToOppsMap.get(method),'Opportunity',method);
                    eventList.addAll(evtList);
                }else if(method == 'CreateDuplicateShippingFRM'){

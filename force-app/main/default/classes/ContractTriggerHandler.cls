@@ -13,13 +13,11 @@ public without sharing class ContractTriggerHandler implements TriggerAbstract {
     
     static MAP<id,id> currentContractAndAccountIds = new MAP<id,id>();
     static Map<Id,Contract> mapContractDetails = new Map<Id,contract>();
-    static Map<Id,Contact> ContactMap = new Map<Id,contact>();
     static Map<String,set<Id>> mapUpdateEmail = new Map<String,set<Id>>();
     static List<Contract> PearsonVueNewContracts =new List<Contract>();
     static List<Opportunity> lstOpportunitiesUpdate = new List<Opportunity>();
     static Map<Id,Contract> PearsonVueOldMapContracts = new Map<Id,Contract>();
-    static List<Id> lstOpp = new List<Id>(); 
-    static List<Id> ContactId = new List<Id>(); 
+    static List<Id> lstOpp = new List<Id>();  
     static set<Id> riskDotNetContractIds = new set<Id>();
     static Set<Id> setOpps1 = new Set<Id>();
     static Set<String> accountIds = new Set<String>();
@@ -49,16 +47,7 @@ public without sharing class ContractTriggerHandler implements TriggerAbstract {
 * any data required into maps prior execution of the trigger.
 */
     public void bulkBefore() {
-        //if(stopRecurssion){
-            if(trigger.isUpdate){
-                for(Contract newContract : (List<Contract>)trigger.New){
-                    ContactId.add(newContract.CustomerSignedId);
-                }
-                for(Contact con : [SELECT Id,Email FROM Contact WHERE Id IN: ContactId]){
-                    ContactMap.put(con.Id,con);
-                }
-            }
-        //}
+        
     }
     
     public void bulkAfter(){
@@ -71,25 +60,21 @@ public without sharing class ContractTriggerHandler implements TriggerAbstract {
         system.debug('**********In ContractTriggerHandler beforeUpdate*******  ');
         Contract newContract = (Contract)so;
         Contract oldContract = (Contract)oldSo;
-        //if(stopRecurssion){
-            if(ContactMap.size() > 0){
-                Contact ContactRecord = ContactMap.containskey(newContract.CustomerSignedId) ? ContactMap.get(newContract.CustomerSignedId): null;
-                if(newContract.RecordTypeId == MembershipContractRTId && newContract.Status != 'Draft' && ContactRecord != null && newContract.Member_Email__c != ContactRecord.Email){
-                        newContract.Member_Email__c = ContactRecord.Email;
-                }
-                if(newContract.Status == 'Completed' && (newContract.Status != oldContract.Status)) {
-                    newContract.Member_Email__c = ContactRecord.Email;
-                }
-            }
-            
-            if(newContract.ContractTerm != oldContract.ContractTerm && newContract.Status.indexOf('Activ') > -1 ){
-                newContract.Days_Left__c = newContract.StartDate.daysBetween(newContract.EndDate);
-            }
-            
-            if (newContract.All_Requirements_Completed__c != oldContract.All_Requirements_Completed__c && newContract.All_Requirements_Completed__c == true ) {
-                newContract.All_Requirements_Completed_Date__c = system.today(); 
-            }
-        //}
+        
+        if(newContract.RecordTypeId == MembershipContractRTId && newContract.Status != 'Draft' && newContract.Member_Email_Formula__c != null){
+            newContract.Member_Email__c = newContract.Member_Email_Formula__c;
+        }
+        if(newContract.Status == 'Completed' && (newContract.Status != oldContract.Status)) {
+            newContract.Member_Email__c = newContract.Member_Email_Formula__c;
+        }
+        
+        if(newContract.ContractTerm != oldContract.ContractTerm && newContract.Status.indexOf('Activ') > -1 ){
+            newContract.Days_Left__c = newContract.StartDate.daysBetween(newContract.EndDate);
+        }
+        
+        if (newContract.All_Requirements_Completed__c != oldContract.All_Requirements_Completed__c && newContract.All_Requirements_Completed__c == true ) {
+            newContract.All_Requirements_Completed_Date__c = system.today(); 
+        }
     }
     
     

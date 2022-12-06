@@ -278,4 +278,13 @@ public class updateExamRegModificationBatch_Test {
         Id batchInstanceId = Database.executeBatch(new updateExamRegModification_Batch(deferral1.id,deferral1.id),1);
         test.stopTest();
     }
+    
+    static testMethod void testnewBatch(){
+        testData();
+        test.startTest();
+        opp.StageName = 'Closed';
+        update opp;
+        Id batchInstanceId = Database.executeBatch(new batchBulkModsForSelectedSites(exmSite.id,deferralParent.id),1);
+        test.stopTest();
+    }
 }

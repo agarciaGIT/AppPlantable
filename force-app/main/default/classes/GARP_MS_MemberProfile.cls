@@ -129,6 +129,47 @@ public class GARP_MS_MemberProfile {
         }
         if(contactId != NULL) {
             mpe.contact = GARP_BC_MemberProfile.getMemberProfile(contactId);
+            
+            System.debug('mpe.contact.MailingCountry:' + mpe.contact.MailingCountry);
+            
+            if(mpe.contact.MailingCountry != NULL && mpe.contact.MailingState != NULL) {
+                GARP_BC_MemberProfile.retStateMaps retMaps = GARP_BC_MemberProfile.getStateMaps();
+                System.debug('retMaps:' + retMaps);
+                
+                MAP<String,String> countrySateCodeToName = retMaps.countrySateCodeToName.get(mpe.contact.MailingCountry);
+                System.debug('countrySateCodeToName:' + countrySateCodeToName);
+                
+                if(countrySateCodeToName != NULL) {
+                    String stateName = countrySateCodeToName.get(mpe.contact.MailingState);
+                    System.debug('stateName:' + stateName);
+                    if(stateName != NULL) {
+                        mpe.contact.MailingState = stateName;
+                    }
+                }
+                System.debug('mpe.contact.MailingState:' + mpe.contact.MailingState);
+            }
+
+
+            System.debug('mpe.contact.MailingCountry:' + mpe.contact.MailingCountry);
+            
+            if(mpe.contact.Account.BillingCountry != NULL && mpe.contact.Account.BillingState != NULL) {
+                GARP_BC_MemberProfile.retStateMaps retMaps = GARP_BC_MemberProfile.getStateMaps();
+                System.debug('retMaps:' + retMaps);
+                
+                MAP<String,String> countrySateCodeToName = retMaps.countrySateCodeToName.get(mpe.contact.Account.BillingCountry);
+                System.debug('countrySateCodeToName:' + countrySateCodeToName);
+                
+                if(countrySateCodeToName != NULL) {
+                    String stateName = countrySateCodeToName.get(mpe.contact.Account.BillingState);
+                    System.debug('stateName:' + stateName);
+                    if(stateName != NULL) {
+                        mpe.contact.Account.BillingState = stateName;
+                    }
+                }
+                System.debug('mpe.contactAccount.BillingState:' + mpe.contact.Account.BillingState);
+            }
+
+            
         }
         mpe.countries = GARP_BC_MemberProfile.getCountries();
         //mpe.institutions = GARP_BC_MemberProfile.getInstitutions();
@@ -162,6 +203,10 @@ public class GARP_MS_MemberProfile {
     
     public static Boolean setMemberProfile(memberProfileUpdate profileUpdate){        
 		return GARP_BC_MemberProfile.setMemberProfile(profileUpdate);
+    }
+
+    public static Boolean setMemberEmail(memberProfileUpdate profileUpdate){        
+		return GARP_BC_MemberProfile.setMemberEmail(profileUpdate);
     }
     
     public static List<InstitutionSearchResult> searchInstitutions(String searchTerm, String institutionType) {

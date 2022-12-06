@@ -2,5 +2,5 @@
 <StaticResource xmlns="http://soap.sforce.com/2006/04/metadata">
     <cacheControl>Public</cacheControl>
     <contentType>application/octet-stream</contentType>
-    <description>CV Sub Patch</description>
+    <description>US-56760: Allow Shipping to All Member countries</description>
 </StaticResource>

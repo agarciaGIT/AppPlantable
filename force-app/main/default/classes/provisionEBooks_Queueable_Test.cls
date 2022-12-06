@@ -2,7 +2,6 @@
 public class provisionEBooks_Queueable_Test {
 	@TestSetup
     static void createTestData() {
-        TestClassUtil.isForNewTrigger();
         Integer totalCount = 1;
         Integer totalCountOpp = 1;
         
@@ -91,7 +90,7 @@ public class provisionEBooks_Queueable_Test {
         key.Type__c = 'FFR'; 
         insert key;
         test.startTest();
-        provisionEBooks_Queueable queueable = new provisionEBooks_Queueable('FFR',new set<Id>{opp.id},true,2560);
+        provisionEBooks_Queueable queueable = new provisionEBooks_Queueable('FFR',new set<Id>{opp.id},false,2560);
         system.enqueueJob(queueable);
         test.stopTest();
     }

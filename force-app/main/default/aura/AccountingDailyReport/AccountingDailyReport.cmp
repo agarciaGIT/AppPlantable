@@ -1,0 +1,166 @@
+<aura:component controller="AccountingDailyReportLightningController"  access="global">
+
+    <ltng:require scripts="{!join(',',
+                           $Resource.UnderscoreJS,
+                           $Resource.momentJS
+                           )}"
+                  afterScriptsLoaded="{!c.afterScriptsLoaded}" />
+        
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    <aura:attribute name="objClassController" type="AccountingDailyReportLightningController"/>    
+    <aura:attribute name="pageSize" type="Integer" default="2"/>
+    <aura:attribute name="isLastPage" type="Boolean" default="false"/>
+    
+    <aura:attribute name="dataSize" type="Integer" default="0"/>
+    <aura:attribute name="totalSize" type="Integer" default="0"/>
+    <aura:attribute name="totalPages" type="Boolean" default="false"/>
+    
+    <aura:attribute name="selectedRowsCount" type="Integer" default="0"/>
+    
+    
+	<aura:attribute name="ReportList" type="Object"/>
+    <aura:attribute name="Reportcolumns" type="List"/>    
+        
+    <div class="slds-card"> 
+        <div class="slds-col modal-header slds-modal__header">
+            <h1 class="slds-page-header__title">Accounting Daily</h1>
+        </div>   
+        <span class="slds-align_absolute-center" style="color:red;">{!v.ErrorMessage}</span>
+        <aura:if isTrue="{!v.spinner}">
+            <div aura:id="spinnerId" class="slds-spinner_container">
+                <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="alert">
+                    <span class="slds-assistive-text">Loading...</span>
+                    <div class="slds-spinner__dot-a"></div>
+                    <div class="slds-spinner__dot-b"></div>
+                </div>
+            </div>
+        </aura:if>
+        
+        <div class="slds-box slds-theme_shade">
+            <div class="slds-grid"> 
+                <div class="slds-col slds-size_2-of-12" style="margin-left:10px">                      
+                    <lightning:input label="Start Date" type="date" name="StartDate" value="{!v.objClassController.startDate}" required="true" />
+                </div>
+                <div class="slds-col slds-size_2-of-12">
+                    <lightning:input label="End Date" type="date" name="EndDate" value="{!v.objClassController.endDate}" required="true" /> 
+                </div>
+                <div class="slds-col slds-size_2-of-12" style="margin-top: 24px;margin-left:10px">
+                    <lightning:button  variant="brand" class="slds-button slds-button_neutral" label="Refresh"  onclick="{!c.refresh}"/> <lightning:button  variant="brand" class="slds-button slds-button_neutral" label="Download"  onclick="{!c.download}"/>
+                </div>
+                <div class="slds-col slds-size_6-of-12" style="margin-top: 24px;margin-left:10px">
+                    
+                    
+                    <div class="slds-box slds-theme_shade">
+                        <div class="slds-grid"> 
+                            <div class="slds-col slds-size_2-of-12">                      
+                                <lightning:input type="checkbox" label="GARP" checked="{!v.objClassController.filter_garp}"/>
+                            </div>
+                            <div class="slds-col slds-size_2-of-12">
+                                <lightning:input type="checkbox" label="GRA" checked="{!v.objClassController.filter_gra}"/>
+                            </div>
+                        </div> 
+                    </div>
+                    <div class="slds-box slds-theme_shade">
+                        <div class="slds-grid"> 
+                            <div class="slds-col slds-size_1-of-12">                      
+                                <lightning:input type="checkbox" label="NJ" checked="{!v.objClassController.filter_nj}"/>
+                            </div>
+                        </div> 
+                    </div>
+                    
+                </div>
+            </div> 
+        </div>
+        <div class="slds-box slds-theme_shade">
+            <div class="slds-grid"> 
+                <div class="slds-col slds-size_1-of-12">                      
+                    <lightning:input type="checkbox" label="Charge" checked="{!v.objClassController.filter_charge}"/>
+                </div>
+                <div class="slds-col slds-size_1-of-12">
+                    <lightning:input type="checkbox" label="Refund" checked="{!v.objClassController.filter_refund}"/>
+                </div>
+                <div class="slds-col slds-size_1-of-12">
+                    <lightning:input type="checkbox" label="Debit" checked="{!v.objClassController.filter_debit}"/>
+                </div>
+                <div class="slds-col slds-size_1-of-12">
+                    <lightning:input type="checkbox" label="Credit" checked="{!v.objClassController.filter_credit}"/>
+                </div>
+                <div class="slds-col slds-size_2-of-12">
+                    <lightning:input type="checkbox" label="Charge Back Accepted" checked="{!v.objClassController.filter_cba}"/>
+                </div>
+                <div class="slds-col slds-size_2-of-12">
+                    <lightning:input type="checkbox" label="Charge Back Loss" checked="{!v.objClassController.filter_cbl}"/>
+                </div>
+            </div> 
+        </div>
+        <div class="slds-box slds-theme_shade">
+            <div class="slds-grid"> 
+                <div class="slds-col slds-size_1-of-12">                      
+                    <lightning:input type="checkbox" label="Credit Card" checked="{!v.objClassController.filter_cc}"/>
+                </div>
+                <div class="slds-col slds-size_2-of-12">
+                    <lightning:input type="checkbox" label="Credit Card by Fax" checked="{!v.objClassController.filter_ccfax}"/>
+                </div>
+                <div class="slds-col slds-size_1-of-12">
+                    <lightning:input type="checkbox" label="Wire" checked="{!v.objClassController.filter_wire}"/>
+                </div>
+                <div class="slds-col slds-size_1-of-12">
+                    <lightning:input type="checkbox" label="Check" checked="{!v.objClassController.filter_check}"/>
+                </div>
+                <div class="slds-col slds-size_1-of-12">
+                    <lightning:input type="checkbox" label="ACH" checked="{!v.objClassController.filter_ach}"/>
+                </div>
+                <div class="slds-col slds-size_1-of-12">
+                    <lightning:input type="checkbox" label="Free" checked="{!v.objClassController.filter_free}"/>
+                </div>
+            </div> 
+        </div>
+        <div class="slds-box slds-theme_shade" style="width:7000px;">
+            <div class="slds-grid"> 
+                <div class="slds-col slds-size_1-of-12">  
+                    Data:
+                </div>
+            </div>
+        </div>
+        <div class="scrollable" style="height:300px;width:7000px;">
+           
+            <aura:if isTrue="{!not(empty(v.ReportList))}">
+                <lightning:datatable
+                                     aura:id="transTable"
+                                     keyField="id"
+                                     data="{! v.ReportList }"
+                                     columns="{! v.Reportcolumns }"
+                                     maxRowSelection="{! v.pageSize }"
+                                     onrowselection="{! c.updateSelectedText }"
+                                     hideCheckboxColumn="false" wrapTextMaxLines="4"/>
+                					 
+                <aura:set attribute="else">
+                   <span class="slds-align_absolute-center" style="color:red;">{!v.ErrorMessage}</span>
+                </aura:set>
+            </aura:if>
+        </div>
+        <aura:if isTrue="{!v.totalSize > 0}">
+            <div class="slds-clearfix">
+                <div class="slds-page-header" role="banner">
+                    <div class="slds-float_right">            
+                        <lightning:button label="Prev" iconName="utility:chevronleft" iconPosition="left"
+                                          onclick="{!c.handlePrev}" disabled="{! v.objClassController.pageNumber == 1}"/>
+                        <lightning:button label="Next" iconName="utility:chevronright" iconPosition="right"
+                                          disabled="{! v.isLastPage}" onclick="{!c.handleNext}"/>
+                    </div>
+                    <p class="slds-page-header__title">Page {!v.objClassController.pageNumber} | Showing records from {! ((v.objClassController.pageNumber-1)*(v.pageSize)+1)+' to '+((v.objClassController.pageNumber-1)*v.pageSize+v.dataSize)} of {!v.totalSize}</p>
+                </div>
+            </div>        
+        </aura:if>
+        <div class="slds-box slds-theme_shade">
+            <div class="slds-grid"> 
+                <div class="slds-col slds-size_3-of-12">
+                    <h1>Selected Rows: {! v.selectedRowsCount }</h1>
+                   <lightning:button  variant="brand" class="slds-button slds-button_neutral" label="Approved Selected"  onclick="{!c.approveSelectedItems}"/> <lightning:button  variant="brand" class="slds-button slds-button_neutral" label="Approved All"  onclick="{!c.approveAllItems}"/> 
+                </div>
+            </div> 
+        </div>
+    </div>
+    
+</aura:component>

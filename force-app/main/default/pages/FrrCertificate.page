@@ -14,6 +14,7 @@
 
   {!errorMessage}
 
+  <apex:stylesheet value="https://cloud.typography.com/7208894/718528/css/fonts.css"/>
   <apex:variable var="envPath" value="{!URLFOR($Resource.sfdcApp)}"/>
 
   <html>
@@ -69,19 +70,19 @@
           <apex:image url="{!$Resource.frrlogo}" width="250px"
             alt="GARP FRR logo"
             style="height: 60px; margin-top: 65px;"/>
-          <br/>
+		  <br/>
             <br/>
           <h5 style="margin: 24px;">Global Association of Risk Professionals
           </h5>
-          <br/>
+		  <br/>
           <h6 style="margin-bottom: 0px;">certifies that</h6>
-          <br/>
+		  <br/>
           <h1 style="font-weight: 100"
             >{!firstName} {!lastname}
           </h1>
-          <br/>
+		  <br/>
           <h6 style="margin-top:5px">has earned a certificate in</h6>
-          <br/>
+		  <br/>
           <h2 style="margin-bottom: 24px;" class="saffron">FINANCIAL RISK AND REGULATION (FRR<sup>&reg;</sup>)</h2>
             <br/>
           <h6>
@@ -93,7 +94,7 @@
           </h6>
           <br/>
         </div>
-        <br/>
+		<br/>
         <div class="cert-footer">
           <div>
             <div style="display:block; margin: 0 auto; margin-top: none; margin-left: 60px;">
@@ -112,7 +113,7 @@
           </div>
           <div>
             <div style="display:block; margin: 0 auto; margin-right: 60px;">
-            <apex:image url="{!$Resource.WilliamMay}"
+           	<apex:image url="{!$Resource.WilliamMay}"
                 alt="William May"
                 height="60px"/>
               <p class="bold signed">William May</p>

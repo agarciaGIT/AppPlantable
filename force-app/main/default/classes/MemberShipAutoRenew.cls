@@ -92,8 +92,8 @@ public without sharing class MemberShipAutoRenew {
               oppLineItem.OpportunityId = opp.Id;
               objPricebook = [select id,unitprice from PriceBookEntry where Pricebook2.IsActive = true and productcode =: 'MEMR'];
               oppLineItem.PricebookEntryId = objPricebook.Id;
-              oppLineItem.TotalPrice = 100.00;
-              oppLineItem.Quantity = 12;
+              oppLineItem.UnitPrice = 100.00;
+              oppLineItem.Quantity = 1;
               INSERT oppLineItem;                   
             }
             

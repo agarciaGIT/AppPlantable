@@ -64,25 +64,19 @@
         <ul>
           <li>Your agreement with the terms of the Disclosure Protocol.</li>
           <li>
-            Your agreement to pay GARP a study fee in the amount of
-            <strong>USD {!dpSubmissionWrapper.paymentAgreedAmount}
-              </strong> on behalf of {!dpSubmissionWrapper.studyAccountName} in accordance with the
-            Payment Terms and Conditions.
-            I agree, on behalf of the {!dpSubmissionWrapper.studyAccountName}, that if {!dpSubmissionWrapper.studyAccountName} is not a party to a GBI Subscription Agreement duly executed on or before December 31, 2022, it will pay the Study Fee in the amount of USD <strong>USD {!dpSubmissionWrapper.paymentAgreedAmount}
-            </strong> to GARP in accordance with the <apex:outputLink value="{!$Page.GBIStudyTermsAndConditions}">Payment Terms and Conditions (link)</apex:outputLink> to participate in this Study.
+            Your agreement, on behalf of {!dpSubmissionWrapper.studyAccountName}, that if {!dpSubmissionWrapper.studyAccountName} is not a party to a GBI Subscription Agreement duly executed on or before December 31, 2022, it will pay the Study Fee in the amount of <strong>USD {!dpSubmissionWrapper.paymentAgreedAmount}</strong> to GARP in accordance with the Payment Terms and Conditions to participate in this Study. 
           </li>
         </ul>
       </div>
       <div class="main-pdf">
-        <p>Agreed to on by {!dpSubmissionWrapper.studyAccountName}</p>
-        <br />
+        <p>Agreed to on behalf of {!dpSubmissionWrapper.studyAccountName} by</p>
         <div>
-          <p><u>Name:</u> {!dpSubmissionWrapper.signee}</p>
-          <p><u>Date/Time:</u> 
+          <p>Name: <u>{!dpSubmissionWrapper.signee}</u></p>
+          <p>Date/Time: <u>
             <apex:outputText value=" {0,date,MM/dd/yyyy 'at' HH:mm:ss z}">
               <apex:param value="{!dpSubmissionWrapper.signDateTime}"
-            /></apex:outputText></p>
-          <p><u>Invoice Email:</u> {!dpSubmissionWrapper.email}</p>
+            /></apex:outputText></u></p>
+          <p>Invoice Email: <u>{!dpSubmissionWrapper.email}</u></p>
         </div>
       </div>
     </apex:outputPanel>

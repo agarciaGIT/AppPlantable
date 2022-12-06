@@ -1,20 +1,20 @@
 public without sharing class MemberServicesTool_Controller {
-    @AuraEnabled
+	@AuraEnabled
     Public Static List<Exam_Attempt__c> getRegistrations(String garpId){
         List<Exam_Attempt__c> regList = new List<Exam_Attempt__c>();
         Set<String> examParts = new Set<String>{'FRM Part 1','FRM Part 2','SCR'};
         if(String.isNotBlank(garpId)){
-            regList = [Select Id,Name,Section__c,Exam_Date__c,Exam_Site__c,Exam_Administration__c,Candidate_Commitment__c,
-                                Exam_Administration__r.Name,Exam_Site__r.Name,Exam_Part__c,Result__c,
-                                Exam_Administration__r.Exam_Group__c,Exam_Administration__r.Exam_Group__r.Next_Exam_Group__c,
-                                Exam_Administration__r.Exam_Group__r.Active__c,Exam_Administration__r.Exam_Group__r.SCR_Active__c
-                                from Exam_Attempt__c 
-                                where Garp_Id__c =: garpId
-                                AND Section__c IN: examParts
-                                AND Cancelled__c = False
-                                AND Opportunity_StageName__c ='closed'
-                                AND (Result__c =null OR Result__c ='No-Show')
-                                AND Defered__c != 'Pending'];        
+        	regList = [Select Id,Name,Section__c,Exam_Date__c,Exam_Site__c,Exam_Administration__c,Candidate_Commitment__c,
+                       			Exam_Administration__r.Name,Exam_Site__r.Name,Exam_Part__c,Result__c,
+                       		    Exam_Administration__r.Exam_Group__c,Exam_Administration__r.Exam_Group__r.Next_Exam_Group__c,
+                       			Exam_Administration__r.Exam_Group__r.Active__c,Exam_Administration__r.Exam_Group__r.SCR_Active__c
+                       			from Exam_Attempt__c 
+                       			where Garp_Id__c =: garpId
+                       			AND Section__c IN: examParts
+                       			AND Cancelled__c = False
+                       			AND Opportunity_StageName__c ='closed'
+                       			AND (Result__c =null OR Result__c ='No-Show')
+                      			AND Defered__c != 'Pending'];        
         }
         return regList;
     }
@@ -38,9 +38,9 @@ public without sharing class MemberServicesTool_Controller {
             }
         }
         for(Exam_Group__c eg: exmGrpList){
-            if(eg.Exam_Date__c >= activeGrpDate)
+        	if(eg.Exam_Date__c >= activeGrpDate)
                 if(isFRM && eg.RecordType.DeveloperName == 'FRM_ERP'){
-                    grpList.add(eg);
+                	grpList.add(eg);
                 }else if(isSCR && eg.RecordType.DeveloperName == 'SCR'){
                     grpList.add(eg);
                 }
@@ -149,28 +149,28 @@ public without sharing class MemberServicesTool_Controller {
                 }
                 if(!movingToActiveGroup ){
                     if(request.part1ExamSite != null && !request.part1ExamSite.startsWithIgnoreCase('a1e'))
-                        request.part1ExamSite = null;
+                    	request.part1ExamSite = null;
                     if(request.part2ExamSite != null && !request.part2ExamSite.startsWithIgnoreCase('a1e'))
-                        request.part2ExamSite = null;
+                    	request.part2ExamSite = null;
                 }
                 //Get all registrations for the candidate
                 List<Exam_Attempt__c> candidatesRegistrations = [SELECT Id, Exam_Site__c, Defered__c, Member_Email__c, Deferral_Status__c, Deferred_Exam_Administration__c,Exam_Administration__c,
-                                                                        RPT_Exam_Part__c, Active_Integration_Data__c, Integration_Data_Exam_Scheduled_Date__c, Free_Deferral__c,
-                                                                        Exam_Part__c, Exam_Part__r.Exam_Administration__c,Exam_Part__r.Exam__r.Exam__c,Exam_Part__r.Exam_Part_Number__c,
-                                                                        Exam_Part__r.Delivery_Method__c,Exam_Site__r.Name,Exam_Site__r.Country__c,Exam_Site__r.Exam_Part__c,
-                                                                        Exam_Site__r.Exam_Part__r.Exam_Administration__c, Exam_Site__r.Exam_Part__r.Exam__r.Exam__c,
-                                                                        Exam_Site__r.Exam_Part__r.Exam_Part_Number__c,Exam_Site__r.Exam_Part__r.Delivery_Method__c,
-                                                                        Exam_Site__r.Exam_Provider__r.Name,Exam_Site__r.Exam__c,Exam_Site__r.Exam__r.Exam__c, 
-                                                                        Exam_Site__r.Exam__r.Exam_Group__c,Exam_Site__r.Site__c, Exam_Site__r.Site__r.Name,Section__c, 
-                                                                        Exam_Site__r.Site__r.Is_OSTA_Information_Required__c, Exam_Site__r.Site__r.Is_Gender_Required__c, 
-                                                                        Exam_Site__r.Site__r.AM_Exam_Capacity_Available__c, Exam_Site__r.Site__r.PM_Exam_Capacity_Available__c,
-                                                                        Candidate_Commitment__c,Result__c
+                                                                    	RPT_Exam_Part__c, Active_Integration_Data__c, Integration_Data_Exam_Scheduled_Date__c, Free_Deferral__c,
+                                                                    	Exam_Part__c, Exam_Part__r.Exam_Administration__c,Exam_Part__r.Exam__r.Exam__c,Exam_Part__r.Exam_Part_Number__c,
+                                                                    	Exam_Part__r.Delivery_Method__c,Exam_Site__r.Name,Exam_Site__r.Country__c,Exam_Site__r.Exam_Part__c,
+                                                                    	Exam_Site__r.Exam_Part__r.Exam_Administration__c, Exam_Site__r.Exam_Part__r.Exam__r.Exam__c,
+                                                                    	Exam_Site__r.Exam_Part__r.Exam_Part_Number__c,Exam_Site__r.Exam_Part__r.Delivery_Method__c,
+                                                                    	Exam_Site__r.Exam_Provider__r.Name,Exam_Site__r.Exam__c,Exam_Site__r.Exam__r.Exam__c, 
+                                                                    	Exam_Site__r.Exam__r.Exam_Group__c,Exam_Site__r.Site__c, Exam_Site__r.Site__r.Name,Section__c, 
+                                                                    	Exam_Site__r.Site__r.Is_OSTA_Information_Required__c, Exam_Site__r.Site__r.Is_Gender_Required__c, 
+                                                                    	Exam_Site__r.Site__r.AM_Exam_Capacity_Available__c, Exam_Site__r.Site__r.PM_Exam_Capacity_Available__c,
+                                                                 		Candidate_Commitment__c,Result__c
                                                                     FROM Exam_Attempt__c 
                                                                     WHERE Cancelled__c != TRUE 
-                                                                    AND Opportunity__r.StageName = 'Closed' 
-                                                                    AND Exam_Site__r.Exam__r.Exam__c in :examParts
-                                                                    AND Member__c = :con.Id 
-                                                                    AND Exam_Site__r.Exam__r.Exam_Group__c = :examGroupId];
+                                                                 	AND	Opportunity__r.StageName = 'Closed' 
+                                                                 	AND Exam_Site__r.Exam__r.Exam__c in :examParts
+                                                                 	AND	Member__c = :con.Id 
+                                                                 	AND Exam_Site__r.Exam__r.Exam_Group__c = :examGroupId];
                 
                 //Update 2nd registration details if only 1 part is selected
                 for(Exam_Attempt__c ea: candidatesRegistrations){
@@ -193,8 +193,8 @@ public without sharing class MemberServicesTool_Controller {
                 doNotCountOneTimeDefrl = request.oneTimeDeferral == 'Yes'?true:false;
                 system.debug('freeDeferral:'+freeDeferral);
                 system.debug('doNotCountOneTimeDefrl:'+doNotCountOneTimeDefrl);
-                ExamManagementController.examRescheduleData erd = ExamManagementController.getExamRescheduleFeesInternal(examGroupId,program,request.part1Administration,request.part2Administration,request.part1ExamSite,request.part2ExamSite,u.Id,freeDeferral);
-                system.debug(erd);
+                ExamManagementController.examRescheduleData erd = ExamManagementController.getExamRescheduleFeesInternal(selectedRegistrations[0].Id,request.part1Administration,request.part2Administration,request.part1ExamSite,request.part2ExamSite,u.Id,freeDeferral);
+                //system.debug(erd);
                 if((erd.errMsg != null || String.isNotBlank(erd.errMsg)) && erd.errorCode != 501 && erd.errorCode != 503 && erd.errorCode != 507 && erd.errorCode != 510){
                     return erd.errMsg;
                 }else{
@@ -204,7 +204,7 @@ public without sharing class MemberServicesTool_Controller {
                     }
                     
                     if(doNotProcessMods){
-                        ExamManagementController.examRescheduleData data = ExamManagementController.createExamRescheduleFeesOrderInternal(examGroupId,program,request.part1Administration,request.part2Administration,request.part1ExamSite,request.part2ExamSite,u.Id,freeDeferral,request.subType);
+                        ExamManagementController.examRescheduleData data = ExamManagementController.createExamRescheduleFeesOrderInternal(selectedRegistrations[0].Id,request.part1Administration,request.part2Administration,request.part1ExamSite,request.part2ExamSite,u.Id,freeDeferral,true,request.subType);
                         if(movingToActiveGroup){
                             Exam_Registration_Modification__c mod = data.ExamRegMod;
                             mod.Status__c = 'Opportunity Created';
@@ -212,7 +212,7 @@ public without sharing class MemberServicesTool_Controller {
                             update mod;
                         }
                     }else{
-                        ExamManagementController.examRescheduleData data = ExamManagementController.createExamRescheduleFeesOrderInternal(examGroupId,program,request.part1Administration,request.part2Administration,request.part1ExamSite,request.part2ExamSite,u.Id,freeDeferral,request.subType);
+                        ExamManagementController.examRescheduleData data = ExamManagementController.createExamRescheduleFeesOrderInternal(selectedRegistrations[0].Id,request.part1Administration,request.part2Administration,request.part1ExamSite,request.part2ExamSite,u.Id,freeDeferral,true,request.subType);
                         system.debug(data);
                         if(movingToActiveGroup){
                             processRegistrations(new Set<Id>{data.ExamRegMod.Id},doNotCountOneTimeDefrl,freeDeferral);
@@ -253,15 +253,15 @@ public without sharing class MemberServicesTool_Controller {
         Set<Id> programIds = new Set<Id>();
         List<Exam_Registration_Modification__c> lstExamRegMods = [
                                             SELECT Id, Customer_Email__c, Part_I_Exam_Admin_From__c,Part_I_Exam_Admin_To__c,
-                                                    Part_I_Exam_Group_From__c,Part_I_Exam_Group_To__c,Deferral_Subtype__c,
-                                                    Part_II_Exam_Group_From__c,Part_II_Exam_Group_To__c,
+            										Part_I_Exam_Group_From__c,Part_I_Exam_Group_To__c,Deferral_Subtype__c,
+            										Part_II_Exam_Group_From__c,Part_II_Exam_Group_To__c,
                                                     Part_I_Exam_Registration__c,Part_I_Exam_Site_From__c,
                                                     Part_I_Exam_Site_To__c,Part_II_Exam_Admin_From__c,Part_II_Exam_Admin_To__c,
                                                     Part_II_Exam_Registration__c,
                                                     Part_II_Exam_Site_From__c,
                                                     Part_II_Exam_Site_To__c,Status__c,User__c,
-                                                    Part_I_Exam_Part_To__c,Part_I_Exam_Part_From__c,
-                                                    Part_II_Exam_Part_To__c,Part_II_Exam_Part_From__c,
+            										Part_I_Exam_Part_To__c,Part_I_Exam_Part_From__c,
+            										Part_II_Exam_Part_To__c,Part_II_Exam_Part_From__c,
                                                     Part_I_Exam_Registration__r.Candidate_Commitment__r.AccountId,
                                                     Part_II_Exam_Registration__r.Candidate_Commitment__r.AccountId
                                             FROM Exam_Registration_Modification__c 
@@ -269,11 +269,11 @@ public without sharing class MemberServicesTool_Controller {
         for (Exam_Registration_Modification__c erm :lstExamRegMods) {
             if(erm.Part_I_Exam_Registration__c != null){
                 if(erm.Part_I_Exam_Group_From__c != null && erm.Part_I_Exam_Group_To__c != null && erm.Part_I_Exam_Group_From__c != erm.Part_I_Exam_Group_To__c)
-                    examAttemptToDeferralMap.put(erm.Part_I_Exam_Registration__c,erm);
+                	examAttemptToDeferralMap.put(erm.Part_I_Exam_Registration__c,erm);
             }
             if(erm.Part_II_Exam_Registration__c != null){
                 if(erm.Part_II_Exam_Group_From__c != null && erm.Part_II_Exam_Group_To__c != null && erm.Part_II_Exam_Group_From__c != erm.Part_II_Exam_Group_To__c)
-                    examAttemptToDeferralMap.put(erm.Part_II_Exam_Registration__c,erm);
+                	examAttemptToDeferralMap.put(erm.Part_II_Exam_Registration__c,erm);
             }
             erm.Status__c = 'Completed';
             erm.Used_To_Move_to_New_Exam_Group__c = true;
@@ -309,7 +309,7 @@ public without sharing class MemberServicesTool_Controller {
                     clonedRec.Exam_Site__c = examAttemptToDeferralMap.get(ea.id).Part_I_Exam_Site_To__c;
                 if(examAttemptToDeferralMap.get(ea.id).Part_I_Exam_Admin_To__c != null){
                     clonedRec.Exam_Administration__c = examAttemptToDeferralMap.get(ea.id).Part_I_Exam_Admin_To__c;
-                    //clonedRec.Original_Exam_Administration__c = examAttemptToDeferralMap.get(ea.id).Part_I_Exam_Admin_To__c;
+                	//clonedRec.Original_Exam_Administration__c = examAttemptToDeferralMap.get(ea.id).Part_I_Exam_Admin_To__c;
                 }
                 if(examAttemptToDeferralMap.get(ea.id).Part_I_Exam_Part_To__c != null)
                     clonedRec.Exam_Part__c = examAttemptToDeferralMap.get(ea.id).Part_I_Exam_Part_To__c;
@@ -318,7 +318,7 @@ public without sharing class MemberServicesTool_Controller {
                     clonedRec.Exam_Site__c = examAttemptToDeferralMap.get(ea.id).Part_II_Exam_Site_To__c;
                 if(examAttemptToDeferralMap.get(ea.id).Part_II_Exam_Admin_To__c != null){
                     clonedRec.Exam_Administration__c = examAttemptToDeferralMap.get(ea.id).Part_II_Exam_Admin_To__c;
-                    //clonedRec.Original_Exam_Administration__c = examAttemptToDeferralMap.get(ea.id).Part_II_Exam_Admin_To__c;
+                	//clonedRec.Original_Exam_Administration__c = examAttemptToDeferralMap.get(ea.id).Part_II_Exam_Admin_To__c;
                 }
                 if(examAttemptToDeferralMap.get(ea.id).Part_II_Exam_Part_To__c != null)
                     clonedRec.Exam_Part__c = examAttemptToDeferralMap.get(ea.id).Part_II_Exam_Part_To__c;
@@ -382,7 +382,7 @@ public without sharing class MemberServicesTool_Controller {
             ea.Deferral_Status__c ='Deferred Out';
             ea.Deferral_SubType__c = erm.Deferral_Subtype__c;
             if(freeDeferral)
-                ea.Future_Free_Deferral__c = true;
+            	ea.Future_Free_Deferral__c = true;
                    
            oldAttemptsListToUpdate.add(ea);
            newAttemptsList.add(clonedRec);

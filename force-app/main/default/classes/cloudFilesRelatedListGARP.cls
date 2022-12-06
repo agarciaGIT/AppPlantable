@@ -8,9 +8,6 @@ public class cloudFilesRelatedListGARP {
     public String recId {get; set;}
     public String classType {get; set;}
     
-    public String awskey {get; set;}
-    public String awssec {get; set;}
-    
     public class cloudFile
     {
         public Id cfId {get; set;}
@@ -37,12 +34,6 @@ public class cloudFilesRelatedListGARP {
     
     public cloudFilesRelatedListGARP(ApexPages.StandardController controller)
     {
-        List<cdrive__AWS_Account__c> lstAWSAcct = [select Id, cdrive__Access_Key_ID__c, cdrive__Secret_Access_Key__c from cdrive__AWS_Account__c where Name = 'GARP Prod'];
-        if(!lstAWSAcct.isEmpty()) {
-            awskey = lstAWSAcct[0].cdrive__Access_Key_ID__c;
-            awssec = lstAWSAcct[0].cdrive__Secret_Access_Key__c;
-        }
-
         recId = controller.getRecord().Id; 
         //recId = Record.Id;
         loadData();

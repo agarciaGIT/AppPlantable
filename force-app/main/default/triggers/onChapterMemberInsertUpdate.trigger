@@ -1,14 +1,14 @@
 trigger onChapterMemberInsertUpdate on Chapter_Member__c(after insert, after update, after delete) {
 
-	List < Chapter_Member__c > ChapMem = new List < Chapter_Member__c > ();
-	List < Id > conIds = new List < Id > ();
-	List < Id > cn = new List < Id > ();
-	Map < Id, string > PriChpMap = new Map < Id, string > (); //map primary chapter names
-	Map < Id, string > SecChpMap = new Map < Id, string > (); //map secondary chapter names
-	Map < Id, Boolean > PriMap = new Map < Id, Boolean > (); //map for primary chapter checbox
-	Map < Id, Boolean > SecMap = new Map < Id, Boolean > (); //map for secondary chapter checkbox
-	Map < Id, Boolean > dirMap = new Map < Id, Boolean > (); //chapter director checkbox
-	Map < Id, Boolean > compMemMap = new Map < Id, Boolean > (); //complimentary membership checkbox
+    List < Chapter_Member__c > ChapMem = new List < Chapter_Member__c > ();
+    List < Id > conIds = new List < Id > ();
+    List < Id > cn = new List < Id > ();
+    Map < Id, string > PriChpMap = new Map < Id, string > (); //map primary chapter names
+    Map < Id, string > SecChpMap = new Map < Id, string > (); //map secondary chapter names
+    Map < Id, Boolean > PriMap = new Map < Id, Boolean > (); //map for primary chapter checbox
+    Map < Id, Boolean > SecMap = new Map < Id, Boolean > (); //map for secondary chapter checkbox
+    Map < Id, Boolean > dirMap = new Map < Id, Boolean > (); //chapter director checkbox
+    Map < Id, Boolean > compMemMap = new Map < Id, Boolean > (); //complimentary membership checkbox
 
     
     Map < Id,Chapter_Member__c > ChapMap = new Map < Id, Chapter_Member__c > (); //map primary chapter names
@@ -25,13 +25,13 @@ trigger onChapterMemberInsertUpdate on Chapter_Member__c(after insert, after upd
         
     }
     
-	list < Chapter_Member__c > cm = [select id, Contact__c, IsPrimary__c, IsSecondary__c, Director__c, Chapter__r.Name 
+    list < Chapter_Member__c > cm = [select id, Contact__c, IsPrimary__c, IsSecondary__c, Director__c, Chapter__r.Name 
                                      from Chapter_Member__c where Contact__c in : cn];
     
     for (Chapter_Member__c c : cm) {
-		
+        
         if(c.Director__c)
-        	dirMap.put(c.Contact__c, c.Director__c);
+            dirMap.put(c.Contact__c, c.Director__c);
         
         if(c.IsPrimary__c) {
             PriMap.put(c.Contact__c, c.IsPrimary__c);           
@@ -42,8 +42,8 @@ trigger onChapterMemberInsertUpdate on Chapter_Member__c(after insert, after upd
         }
     }
     
-	List < Contact > cs = [SELECT Id, KPI_Chapter_Director__c, KPI_Primary_Chapter_Name__c, KPI_Secondary_Chapter_Name__c, KPI_Complementary_Membership__c,
-							KPI_Chapter_Primary__c, KPI_Chapter_Secondary__c FROM Contact WHERE Id in : cn order by Id];
+    List < Contact > cs = [SELECT Id, KPI_Chapter_Director__c, KPI_Primary_Chapter_Name__c, KPI_Secondary_Chapter_Name__c, KPI_Complementary_Membership__c,
+                            KPI_Chapter_Primary__c, KPI_Chapter_Secondary__c FROM Contact WHERE Id in : cn order by Id];
     
     for(Contact c : cs) {
         
@@ -71,7 +71,7 @@ trigger onChapterMemberInsertUpdate on Chapter_Member__c(after insert, after upd
 
         Boolean dir = dirMap.get(c.Id);
         if(dir != null)
-        	c.KPI_Chapter_Director__c = true;
+            c.KPI_Chapter_Director__c = true;
         
     }
     update cs;

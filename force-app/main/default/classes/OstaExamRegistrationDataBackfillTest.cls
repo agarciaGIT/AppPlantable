@@ -3,7 +3,6 @@ private class OstaExamRegistrationDataBackfillTest {
 
     @testSetup
     public static void testSetup(){
-        //TestClassUtil.isForOldTrigger();
         
        	INSERT new Exam_Date__c(Name = 'Exam Date', Date_String__c = String.valueOf(System.today().addDays(60)));
         

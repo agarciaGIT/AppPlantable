@@ -273,7 +273,7 @@ public class FBRICBRUtils_test {
         mapRates.put(prod1.ProductCode+':'+prod1.GL_Code__c,pro);
         Map<String,Product_Rate_Offering__c> mapDiscounts = new Map<String,Product_Rate_Offering__c>();
         mapDiscounts.put(prod2.ProductCode+':'+prod2.GL_Code__c,pro);
-        FBRICBRUtils.createOppLineItems(opp.Id, mapProdDetails,mapRates,mapDiscounts,contact.id);
+        FBRICBRUtils.createOppLineItems(opp.Id, mapProdDetails,mapRates,mapDiscounts,contact.id,tempAccount);
         test.stopTest();
     }
     

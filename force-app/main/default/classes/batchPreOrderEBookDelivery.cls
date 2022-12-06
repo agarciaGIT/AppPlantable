@@ -21,7 +21,6 @@ global class batchPreOrderEBookDelivery implements Database.Batchable<sObject>,D
     global void execute(Database.BatchableContext BC, List<Opportunity> scope){
         Map < Id, Opportunity > eBookFRM1ProvisionOpps = new Map < Id, Opportunity > ();    
         Map < Id, Opportunity > eBookFRM2ProvisionOpps = new Map < Id, Opportunity > ();    
-        Map < Id, Opportunity > eBookERP1ProvisionOpps = new Map < Id, Opportunity > ();    
         Map < Id, Opportunity > eBookERP2ProvisionOpps = new Map < Id, Opportunity > ();    
         
         system.Debug('Scope:' + scope.size());
@@ -51,9 +50,6 @@ global class batchPreOrderEBookDelivery implements Database.Batchable<sObject>,D
                 } else if (oppLine.ProductCode == 'FRM2X' && refund == null) {
                     eBookFRM2ProvisionOpps.put(opp.Id, opp);
                     foundFRM=true;
-                } else if (oppLine.ProductCode == 'ENC1X' && refund == null) {
-                    eBookERP1ProvisionOpps.put(opp.Id, opp);
-                    foundERP=true;
                 } else if (oppLine.ProductCode == 'ENC2X' && refund == null) {
                     eBookERP2ProvisionOpps.put(opp.Id, opp);
                     foundERP=true;
@@ -64,27 +60,28 @@ global class batchPreOrderEBookDelivery implements Database.Batchable<sObject>,D
         }
         update scope;
         
+        List<Integration_Stream_Event__e> eventList = new List<Integration_Stream_Event__e>();
+        
         if(this.mode == 'FRM') {
             system.debug('eBookFRM1ProvisionOpps:' + eBookFRM1ProvisionOpps);
             if (eBookFRM1ProvisionOpps.size() > 0) {
-                opportunityTriggerUtils.provisionEBookWithKeys(eBookFRM1ProvisionOpps,'FRM Exam Part I');
+                List<Integration_Stream_Event__e> evtList = TriggerUtilities.getIntgEvents(eBookFRM1ProvisionOpps.keyset(),'Opportunity','FRM1EBook');
+                eventList.addAll(evtList);
             }
     
             system.debug('eBookFRM2ProvisionOpps:' + eBookFRM2ProvisionOpps);
             if (eBookFRM2ProvisionOpps.size() > 0) {
-                opportunityTriggerUtils.provisionEBookWithKeys(eBookFRM2ProvisionOpps,'FRM Exam Part II');
+                List<Integration_Stream_Event__e> evtList = TriggerUtilities.getIntgEvents(eBookFRM2ProvisionOpps.keyset(),'Opportunity','FRM2EBook');
+                eventList.addAll(evtList);
             }
         }
         
         if(this.mode == 'ERP') {
-            system.debug('eBookERP1ProvisionOpps:' + eBookERP1ProvisionOpps);
-            if (eBookERP1ProvisionOpps.size() > 0) {
-                opportunityTriggerUtils.provisionEBookWithKeys(eBookERP1ProvisionOpps,'ERP Exam Part I');
-            }
             
             system.debug('eBookERP2ProvisionOpps:' + eBookERP2ProvisionOpps);
             if (eBookERP2ProvisionOpps.size() > 0) {
-                opportunityTriggerUtils.provisionEBookWithKeys(eBookERP2ProvisionOpps,'ERP Exam Part II');
+                List<Integration_Stream_Event__e> evtList = TriggerUtilities.getIntgEvents(eBookERP2ProvisionOpps.keyset(),'Opportunity','ERP2EBook');
+                eventList.addAll(evtList);
             }
         }
         

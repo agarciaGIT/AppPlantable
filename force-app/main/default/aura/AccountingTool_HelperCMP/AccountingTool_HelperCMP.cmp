@@ -1,0 +1,92 @@
+<aura:component controller="AccountingToolClass">
+    
+    <aura:attribute name="typeSelected" type ="String"/>
+    <aura:attribute name="amountEntered" type ="String"/>
+    <aura:attribute name="invNum" type ="String"/>
+    <aura:attribute name="errorMsg" type ="String"/>
+    <aura:attribute name="ErrorMessage" type ="String"/>
+    <aura:attribute name="ErrorMessageText" type ="String"/>
+    <aura:attribute name="showError" type ="Boolean"/>
+    <aura:attribute name="navigateNext" type ="Boolean"/>
+    <aura:attribute name="showList" type ="Boolean"/>
+    <aura:attribute name="saveCompleted" type ="Boolean"/>
+    <aura:attribute name="value" type="String" default=""/>
+    <aura:attribute name="selectedOLI" type="List"/>
+    <aura:attribute name="OLIList" type="OpportunityLineItem[]"/>
+    <aura:attribute name="columns" type="List"/>
+    <aura:attribute name="spinner" type="Boolean" default="false" />
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:attribute name="optionSelected" type="String" />
+    <aura:attribute name="maxDiscount" type="Decimal" />
+    
+    <div class="slds-card">
+        <div class="slds-page-header">
+            <div class="slds-align_absolute-center">
+                <div class="slds-text-heading_large">
+                    <div class="slds-m-top_xx-large">
+                        Product Information
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slds-box slds-theme_default">
+            <div class="backgroundInverse">
+                <aura:if isTrue="{! v.spinner }">
+                    <lightning:spinner alternativeText="Loading"/>
+                </aura:if>
+            </div>
+            <div class="slds-align_absolute-center">
+                <aura:if isTrue="{!v.showError}">
+                    <p style="color:#FF0000;">{!v.errorMsg}</p>
+                </aura:if>
+            </div>
+            <aura:if isTrue="{!and(v.showList,!v.saveCompleted)}">
+                <div class="slds-grid">
+                    <div class="slds-col slds-size_2-of-12"> 
+                    </div>
+                    <div class="slds-col slds-size_8-of-12">
+                        <div class="slds-box">
+                            <lightning:datatable columns="{! v.columns }" data="{!v.OLIList}"
+                                                 keyField="Id" onrowselection="{!c.handleSelect}"/>
+                            <br></br>
+                            <div class="slds-size_4-of-12">
+                                <span class="slds-text-body–regular" style="color:red;">{!v.ErrorMessage}</span>
+                                <lightning:select value="{!v.optionSelected}" aura:id="ActionSelect"
+                                                  name="ActionSelect" label="Discount Type" required="true">
+                                    <option value="">Select one...</option>
+                                    <option value="DISCFRMAP">FRM Academic Provider Discount</option>
+                                    <option value="DISCFRMEPP">FRM Exam Prep Provider Discount</option>
+                                    <option value="DISCSCRAP">SCR Academic Provider Discount</option>
+                                    <option value="DISCSCREPP">SCR Exam Prep Provider Discount</option>
+                                </lightning:select>
+                            </div>
+                            <br></br>
+                            <!--div class="slds-col slds-size_12-of-12">
+                                <span class="slds-text-body–regular" style="color:red;">{!v.ErrorMessageText}</span>
+                            </div>   
+                            <div class="slds-col slds-size_2-of-12">
+                                <lightning:input type="number" name="text"  required="true" formatter="currency"
+                                                  step="0.01" value="{!v.amountEntered}" label="Enter Amount"/>
+                            </div-->
+                        </div>
+                        <div class="slds-p-top_small" style="float:right">
+                            <lightning:button variant="brand" class="slds-button slds-button_brand" 
+                                              label="Back" onclick="{!c.BackToMain}"/>    
+                            <lightning:button variant="brand" label="Save" class="slds-button slds-button_brand" 
+                                              onclick="{!c.OnclickSaveButton}"/>
+                        </div>
+                    </div>
+                </div>
+            </aura:if>
+            <aura:if isTrue="{!v.saveCompleted}">
+                <div class="slds-grid">
+                    <div class="slds-col slds-size_3-of-12"> 
+                    </div>
+                    <div class="slds-col slds-size_6-of-12 slds-align_absolute-center">
+                        <p>Data saved successfully</p>
+                    </div>
+                </div>
+            </aura:if>
+        </div>
+    </div>
+</aura:component>

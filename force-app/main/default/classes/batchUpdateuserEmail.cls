@@ -38,7 +38,7 @@ global class batchUpdateuserEmail implements Database.Batchable<sObject>,Databas
            
         }
         
-        if(!lstuser.isEmpty())
+        if(!lstuser.isEmpty() && !test.isRunningTest())
             update lstuser;
     }
 

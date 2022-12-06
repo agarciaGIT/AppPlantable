@@ -1,7 +1,7 @@
 trigger onChapterMeetingUpdate on Chapter_Meeting__c (before insert, before update) {
     
-	List<Chapter_Meeting__c> cms = Trigger.new;
-	List<Id> ids = new List<Id>();
+    List<Chapter_Meeting__c> cms = Trigger.new;
+    List<Id> ids = new List<Id>();
     for (Chapter_Meeting__c c:cms){
         if(c.Time_Zone__c==null) {
             ids.add(c.Chapter__c);
@@ -19,9 +19,9 @@ trigger onChapterMeetingUpdate on Chapter_Meeting__c (before insert, before upda
     system.debug('* * * chapTimeZoneMap ...'+ chapTimeZoneMap);
 
     for (Chapter_Meeting__c c:cms){
-		Id timeZoneId = chapTimeZoneMap.get(c.Chapter__c);   
+        Id timeZoneId = chapTimeZoneMap.get(c.Chapter__c);   
         if(timeZoneId != null) {
-        	c.Time_Zone__c = timeZoneId;
+            c.Time_Zone__c = timeZoneId;
         }
     }
 }

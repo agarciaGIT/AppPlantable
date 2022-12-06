@@ -5,7 +5,7 @@ global class CreateOppRecurringsBatch implements Database.Batchable<SObject>
         String strStatus = 'Approved';
         Boolean bRecurring = true; 
         boolean createopp = false;
-     return Database.getQueryLocator([select id, Created_New_Opportunity__c ,ChargentSFA__Opportunity__c,ChargentSFA__Response_Status__c,ChargentSFA__Type__c,ChargentSFA__Recurring__c,ChargentSFA__Gateway_Date__c from ChargentSFA__Transaction__c where ChargentSFA__Type__c =: strType and ChargentSFA__Response_Status__c =: strStatus and ChargentSFA__Recurring__c =: bRecurring and ChargentSFA__Gateway_Date__c != null and ChargentSFA__Gateway_Date__c = TODAY and ChargentSFA__Opportunity__c != null and Created_New_Opportunity__c=:createopp]);
+     return Database.getQueryLocator([select id, Created_New_Opportunity__c ,ChargentSFA__Opportunity__c,ChargentSFA__Response_Status__c,ChargentSFA__Type__c,ChargentSFA__Recurring__c,ChargentSFA__Gateway_Date__c from ChargentSFA__Transaction__c where ChargentSFA__Type__c =: strType and ChargentSFA__Response_Status__c =: strStatus and ChargentSFA__Recurring__c =: bRecurring and ChargentSFA__Gateway_Date__c != null and (ChargentSFA__Gateway_Date__c = TODAY OR Retry_Opp_Creation__c = true) and ChargentSFA__Opportunity__c != null and Created_New_Opportunity__c=:createopp]);
     
      }
     

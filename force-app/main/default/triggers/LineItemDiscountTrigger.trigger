@@ -1,5 +1,5 @@
 trigger LineItemDiscountTrigger on Line_Item_Discount__c (before insert, before update, before delete, after insert, after update, after delete) {
-	
+    
     if(trigger.isBefore) {
         if(trigger.isInsert) {
             LineItemDiscountTriggerHelper.processBeforeInsert(trigger.new);

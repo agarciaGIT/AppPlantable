@@ -15,6 +15,7 @@ global without sharing class InvoiceAsPDFController{
     @TestVisible private static final String DEC_EXAM_REG_GL = '4012';
     @TestVisible private static final String APR_EXAM_REG_GL = '4004';
     @TestVisible private static final String AUG_EXAM_REG_GL = '4008';
+    @TestVisible private static final String OCT_EXAM_REG_GL = '4011';
         
     @TestVisible private static final String FBR_GL = '4000';
     @TestVisible private static final String PAY_DEFERRED_GL = '6110';
@@ -69,6 +70,7 @@ global without sharing class InvoiceAsPDFController{
    
     global String examRegistrationType{get;set;}
     global String examAdminType {get;set;}
+    global String invoiceType {get;set;}
     global Boolean showSpecialNotes {get;set;}
  
    global InvoiceAsPDFController() {
@@ -114,7 +116,8 @@ global without sharing class InvoiceAsPDFController{
                 Shipping_Phone_No__c, Shipping_Company_Name__c, Shipping_Country__c, Display_Invoice_Number__c,Product_Name__c, Shipping_City__c,
                 Institutional_Sale__c, Inst_Sale_Opp__c, Inst_Sale_Opp__r.StageName, Inst_Sale_Opp__r.ChargentSFA__Billing_Company__c, Inst_Sale_Opp__r.CloseDate, Inst_Sale_Opp__r.Display_Invoice_Number__c, Inst_Sale_Opp__r.Inst_Sale_Display_Invoice_Number__c, 
                 Shipping_Street__c, Shipping_E_mail__c, ChargentSFA__Charge_Amount__c, Amount, GARP_Member_ID__c, CreatedDate, LEGACY_Purchase_Date__c, Program_Name__c, Program_Abbrev__c,
-                Team_Registration__c, Team_Registration__r.Manual_Invoice_Number__c, Team_Registration__r.Manual_Invoice_Payment_Date__c, Team_Registration__r.Account__r.Name
+                Team_Registration__c, Team_Registration__r.Manual_Invoice_Number__c, Team_Registration__r.Manual_Invoice_Payment_Date__c, Team_Registration__r.Account__r.Name,
+                Team_Registration__r.Is_Scholarship__c,  Team_Registration__r.Discounted_Price__c,ia_crm__Intacct_Transaction__c
 				FROM Opportunity
                 WHERE id= :oppId and StageName != 'Recurring Intent'];
        
@@ -128,6 +131,14 @@ global without sharing class InvoiceAsPDFController{
                 
        oppty = new OpportunityWrapper(rawOpp);
        //system.debug('Exam?:' + oppty.examAttemptId);
+       
+       if(oppty.sageTransactionType == 'Salesforce - Switch'){
+           invoiceType = 'Debit/ Credit Note:';
+       }else if(oppty.sageTransactionType == 'Salesforce - Refund'){
+           invoiceType = 'Credit Note:';
+       }else{
+           invoiceType = 'Invoice #:';
+       }
        
        system.debug('Event Oppty:' + oppty);
        
@@ -239,7 +250,11 @@ global without sharing class InvoiceAsPDFController{
                    
                    system.debug('pay:' + payment.ChargentSFA__Amount__c);
                    
-                   OrderNet+=payment.ChargentSFA__Amount__c;
+                   if(oppty.sageTransactionType == 'Salesforce - Refund'){
+                       OrderNet+=payment.ChargentSFA__Amount__c * -1;
+                   }else{
+                       OrderNet+=payment.ChargentSFA__Amount__c;
+                   }
                    if(payment.Fee__c != null) {
                        OrderNet+=(payment.Fee__c * -1);
                    }
@@ -313,7 +328,7 @@ global without sharing class InvoiceAsPDFController{
                       
        //Get line item data                 
        lineItems = new List<LineItemWrapper>();
-       for(OpportunityLineItem oProd : [Select Product2.Name, Exam_Date__c, Product2.ProductCode, Product2.GL_Code__c, Product2.Weight__c, Product2.Electronic_Delivery__c, UnitPrice, OpportunityId, Description, TotalPrice, Quantity from OpportunityLineItem where OpportunityId=:oppID order by TotalPrice DESC ,Product2.Display_Sort_Order__c DESC] ) {
+       for(OpportunityLineItem oProd : [Select Product2.Name, Exam_Date__c, Product2.ProductCode, Product2.GL_Code__c, Product2.Weight__c, Product2.Electronic_Delivery__c, UnitPrice, OpportunityId, Description, TotalPrice, Quantity from OpportunityLineItem where OpportunityId=:oppID AND Do_Not_SHow_On_Invoice__c = false order by TotalPrice DESC ,Product2.Display_Sort_Order__c DESC] ) {
            lineItems.add(new LineItemWrapper(oProd, oppty));
 
              if(oProd.Product2.Electronic_Delivery__c)
@@ -338,7 +353,7 @@ global without sharing class InvoiceAsPDFController{
                    if (GLCode == IND_GL) {
                    Membership = true;
                } 
-               if (GLCODE == AUG_EXAM_REG_GL || GLCode == NOV_EXAM_REG_GL || GLCode == MAY_EXAM_REG_GL || GLCode == JUL_EXAM_REG_GL || GLCode == DEC_EXAM_REG_GL || GLCode == APR_EXAM_REG_GL) {
+               if (GLCODE == AUG_EXAM_REG_GL || GLCode == NOV_EXAM_REG_GL || GLCode == MAY_EXAM_REG_GL || GLCode == JUL_EXAM_REG_GL || GLCode == DEC_EXAM_REG_GL || GLCode == APR_EXAM_REG_GL || GLCode == OCT_EXAM_REG_GL) {
                    if (prodCode.containsIgnoreCase('frm')) {
                        FRM=true; 
                    }
@@ -368,6 +383,8 @@ global without sharing class InvoiceAsPDFController{
                        examAdminType = 'APR';
                    } else if(GLCode == AUG_EXAM_REG_GL) {
                        examAdminType = 'AUG';
+                   }else if(GLCode == OCT_EXAM_REG_GL) {
+                       examAdminType = 'OCT';
                    }
                }
                
@@ -474,6 +491,7 @@ global without sharing class InvoiceAsPDFController{
          global String teamRegInvoiceNumber {get; set;}
          global String teamRegPaidDate {get; set;}
          global String teamRegCloseDate {get; set;}
+         global String sageTransactionType {get; set;}
              
          global OpportunityWrapper(Opportunity opp) {
              id = opp.id;
@@ -508,6 +526,7 @@ global without sharing class InvoiceAsPDFController{
              productName = opp.Product_Name__c;           
              chargentSFAChargeAmount = opp.ChargentSFA__Charge_Amount__c;
              amount = opp.Amount;
+             sageTransactionType = opp.ia_crm__Intacct_Transaction__c;
 
              additionalInfo = opp.Additional_Invoice_Information__c;
             
@@ -525,11 +544,11 @@ global without sharing class InvoiceAsPDFController{
              }
                         
              isTeamRegistration = False;
-             if(opp.Team_Registration__c != NULL) {
+             if(opp.Team_Registration__c != NULL && opp.Team_Registration__r.Is_Scholarship__c == False && opp.Team_Registration__r.Discounted_Price__c == Null) {
                  isTeamRegistration = True;
                  teamRegCompany = opp.Team_Registration__r.Account__r.Name;
                  teamRegInvoiceNumber = opp.Team_Registration__r.Manual_Invoice_Number__c;
-				 teamRegPaidDate = datetime.newInstance(opp.Team_Registration__r.Manual_Invoice_Payment_Date__c.year(), opp.Team_Registration__r.Manual_Invoice_Payment_Date__c.month(), opp.Team_Registration__r.Manual_Invoice_Payment_Date__c.day()).format('MM/dd/yyyy');
+				 teamRegPaidDate = datetime.newInstance(opp.Team_Registration__r.Manual_Invoice_Payment_Date__c.year(), opp.Team_Registration__r.Manual_Invoice_Payment_Date__c.month(), opp.Team_Registration__r.Manual_Invoice_Payment_Date__c.day()).format('MMMM dd, yyyy');
                  teamRegCloseDate = datetime.newInstance(opp.CloseDate.year(), opp.CloseDate.month(), opp.CloseDate.day()).format('MM/dd/yyyy');
              }
              createdDate = opp.CreatedDate;
@@ -679,6 +698,10 @@ global without sharing class InvoiceAsPDFController{
              if((oli.Product2.ProductCode == 'FRM1X' || oli.Product2.ProductCode == 'SCRX' || oli.Product2.ProductCode == 'FRMC1' || oli.Product2.ProductCode == 'FRMC2' || 
                  oli.Product2.ProductCode == 'ENCC1' || oli.Product2.ProductCode == 'ENCC2' || oli.Product2.ProductCode == 'SCRCN') && oli.UnitPrice == 0){
                  productName = oli.Product2.Name + ' (Complimentary)';
+             }
+             
+             if(oppty.sageTransactionType == 'Salesforce - Postponed'){
+                 productName = oli.Product2.Name.replace('Deferral','Postponement');
              }
              
              system.debug('oppty:' + oppty);

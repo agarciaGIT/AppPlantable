@@ -15,7 +15,8 @@ Global class sendAttachments {
         List<EmailTemplate> listEmailTemplates = [SELECT Id, Body, Subject, HtmlValue  from EmailTemplate where DeveloperName = :'Team_Reg_Payment_Received_Email'];
         
         //Set recipients
-        String[] ToAddress= new string[] {Treg[0].BD_Rep_Email__c,Treg[0].Contact__r.Email};
+       // String[] ToAddress= new string[] {Treg[0].BD_Rep_Email__c,Treg[0].Contact__r.Email};
+              String[] ToAddress= new string[] {Treg[0].Contact__r.Email};
             //String []ToAddress = new string[] {'divya.lankapothu@garp.com'};
             
             //Send notification

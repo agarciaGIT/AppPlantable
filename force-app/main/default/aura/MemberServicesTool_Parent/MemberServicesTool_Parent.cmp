@@ -7,6 +7,7 @@
     <aura:attribute name="selectedValue" type="String" /> 
     <aura:attribute name="selectedComponent" type="String" default=""/>
     <aura:attribute name="ErrorMessage" type="String" /> 
+    <aura:attribute name="oppInvoiceNumber" type="String" /> 
     <div class="slds-card">
         <aura:if isTrue="{! !v.navigateNext}">
             <div class="slds-page-header">
@@ -33,6 +34,8 @@
                             <option value="">Select one...</option>
                             <option value="Defer/Undefer">Defer/Undefer</option>
                             <option value="Free Invoice">Free Invoice</option>
+                            <option value="Membership Switch">Membership Switch</option>
+                            <option value="EBookDiscount">E Book Discount</option>
                             <option value="ExamSiteChange">ExamSiteChange</option>
                             <option value="Technical Glitch">Technical Glitch</option>
                             <option value="Pearson Merge Request">Pearson Merge Request</option>
@@ -45,6 +48,38 @@
                         </lightning:select>
                     </div>
                 </div>
+                <aura:if isTrue="{!v.optionSelected == 'Membership Switch'}">
+                    <div class="slds-grid">
+                        <div class="slds-col slds-size_3-of-12"> 
+                        </div>
+                        <div class="slds-col slds-size_6-of-12">                         
+                            <!--<span class="slds-text-body–regular" style="color:red;">{!v.ErrorMessage}</span>--> 
+                            <lightning:input type="text" name="text" value="{!v.oppInvoiceNumber}" 
+                                             label="Invoice Number" aura:id="invoice" />
+                            
+                            <div class="slds-p-top_large" style="float:right">
+                                <lightning:button variant="brand" label="Next" class="slds-button slds-button_brand" 
+                                                  onclick="{!c.OnclickMembershipSwitchNextButton}"/>
+                            </div>
+                        </div>
+                    </div>
+                </aura:if>
+                
+                <aura:if isTrue="{!v.optionSelected == 'EBookDiscount'}">
+                    <div class="slds-grid">
+                        <div class="slds-col slds-size_3-of-12"> 
+                        </div>
+                        <div class="slds-col slds-size_6-of-12">                         
+                            <lightning:input type="text" name="text" value="{!v.oppInvoiceNumber}" label="Invoice Number" 
+                                             aura:id="oppInvoice"  required="true"/>
+                            
+                            <div class="slds-p-top_large" style="float:right">
+                                <lightning:button variant="brand" label="Next" class="slds-button slds-button_brand" 
+                                                  onclick="{!c.OnclickOfNextButton}"/>
+                            </div>
+                        </div>
+                    </div>
+                </aura:if>
                 <aura:if isTrue="{!v.optionSelected == 'Free Invoice'}">
                     <div class="slds-grid">
                         <div class="slds-col slds-size_3-of-12"> 
@@ -79,30 +114,35 @@
                         </div>
                     </div>
                 </aura:if>
-                <aura:if isTrue="{!and(v.selectedComponent != 'NavigateUrl',v.optionSelected != 'Free Invoice')}">
-                    <div class="slds-grid">
-                        <div class="slds-col slds-size_3-of-12"> 
-                        </div>
-                        <div class="slds-col slds-size_6-of-12">                         
-                            <lightning:input type="text" 
-                                             aura:id="garpID" 
-                                             name="garpID" 
-                                             value="{!v.GARPId}" 
-                                             label="GARP Member ID" 
-                                             required="true"/>
-                            <div class="slds-p-top_large" style="float:right">
-                                <lightning:button variant="brand" 
-                                                  label="Next" 
-                                                  class="slds-button slds-button_brand" 
-                                                  onclick="{!c.OnclickNextButton}"/>
+                <aura:if isTrue="{!and(v.selectedComponent != 'Membership Switch',v.optionSelected != 'EBookDiscount')}">
+                    <aura:if isTrue="{!and(v.selectedComponent != 'NavigateUrl',v.optionSelected != 'Free Invoice')}">
+                        <div class="slds-grid">
+                            <div class="slds-col slds-size_3-of-12"> 
+                            </div>
+                            <div class="slds-col slds-size_6-of-12">                         
+                                <lightning:input type="text" 
+                                                 aura:id="garpID" 
+                                                 name="garpID" 
+                                                 value="{!v.GARPId}" 
+                                                 label="GARP Member ID" 
+                                                 required="true"/>
+                                <div class="slds-p-top_large" style="float:right">
+                                    <lightning:button variant="brand" 
+                                                      label="Next" 
+                                                      class="slds-button slds-button_brand" 
+                                                      onclick="{!c.OnclickNextButton}"/>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </aura:if>
                 </aura:if>
             </div>
         </aura:if>
         
         
+        <aura:if isTrue="{!and(v.optionSelected == 'EBookDiscount',v.navigateNext)}">
+            <c:AccountingTool_HelperCMP invNum="{!v.InvoiceNumber}" navigateNext="{!v.navigateNext}"/>
+        </aura:if>
         <aura:if isTrue="{!and(v.optionSelected == 'Defer/Undefer',v.navigateNext)}">
             <c:MemberServicesTool_Changes garpId="{!v.GARPId}" typeSelected="Defer" navigateNext="{!v.navigateNext}"/>
         </aura:if>
@@ -117,6 +157,9 @@
         </aura:if>
         <aura:if isTrue="{!and(v.optionSelected == 'Free Invoice',v.navigateNext)}">
             <c:FreeInvoiceLntgCmp InvoiceNumber="{!v.InvoiceNumber}" navigateNext="{!v.navigateNext}"/>
+        </aura:if>
+        <aura:if isTrue="{!and(v.optionSelected == 'Membership Switch',v.navigateNext)}">
+            <c:MembershipSwitchCMP InvoiceNumber="{!v.InvoiceNumber}" navigateNext="{!v.navigateNext}"/>
         </aura:if>
     </div>
 </aura:component>

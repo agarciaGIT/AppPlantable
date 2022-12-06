@@ -80,6 +80,7 @@ private class AccountingExportCtrlTest {
         List<Product2> prods = TestingHelper.createFRMProds();
         
         Opportunity oppty = TestingHelper.createOppty('Apex Test Oppty', true);
+        Opportunity oppty1 = TestingHelper.createOppty('Apex Test Oppty1', true);
         
         List<OpportunityLineItem> lineItems = new List<OpportunityLineItem>();
         for(Product2 prod : prods) {
@@ -93,22 +94,23 @@ private class AccountingExportCtrlTest {
         
         ChargentBase__Gateway__c gateway = new ChargentBase__Gateway__c(Name = 'paypal garp');
         insert gateway;
-        
+        List<ChargentSFA__Transaction__c> tranList = new List<ChargentSFA__Transaction__c>();
         ChargentSFA__Transaction__c trans = new ChargentSFA__Transaction__c(
             ChargentSFA__Opportunity__c = oppty.Id, ChargentSFA__Type__c = 'Charge', ChargentSFA__Response_Status__c = 'Approved', ChargentSFA__Gateway_Date__c = System.now(), ChargentSFA__Payment_Method__c = 'Credit Card', ChargentSFA__Credit_Card_Type__c = 'Amex', ChargentSFA__Gateway__c = gateway.Id);
-        insert trans;
+        tranList.add(trans);
         
         ChargentSFA__Transaction__c trans2 = new ChargentSFA__Transaction__c(
-            ChargentSFA__Opportunity__c = oppty.Id, ChargentSFA__Type__c = 'Refund', ChargentSFA__Response_Status__c = 'Approved', ChargentSFA__Gateway_Date__c = System.now().addDays(1), ChargentSFA__Payment_Method__c = 'Credit Card', ChargentSFA__Credit_Card_Type__c = 'Amex', ChargentSFA__Gateway__c = gateway.Id);
-        insert trans2;
+            ChargentSFA__Opportunity__c = oppty1.Id, ChargentSFA__Type__c = 'Refund', ChargentSFA__Response_Status__c = 'Approved', ChargentSFA__Gateway_Date__c = System.now().addDays(1), ChargentSFA__Payment_Method__c = 'Credit Card', ChargentSFA__Credit_Card_Type__c = 'Amex', ChargentSFA__Gateway__c = gateway.Id);
+        tranList.add(trans2);
+        insert tranList;
         
-        Product_Refunds__c refund = new Product_Refunds__c(Opportunity__c = oppty.Id, Product__c = prods[3].Id, Refund_amount__c = 5, Payment_Transaction__c =trans2.Id);
+        Product_Refunds__c refund = new Product_Refunds__c(Opportunity__c = oppty1.Id, Product__c = prods[3].Id, Refund_amount__c = 5, Payment_Transaction__c =trans2.Id);
         insert refund;
         
-        Product_Refunds__c refund2 = new Product_Refunds__c(Opportunity__c = oppty.Id, Product__c = prods[2].Id, Refund_amount__c = 2, Payment_Transaction__c =trans2.Id);
+        Product_Refunds__c refund2 = new Product_Refunds__c(Opportunity__c = oppty1.Id, Product__c = prods[2].Id, Refund_amount__c = 2, Payment_Transaction__c =trans2.Id);
         insert refund2;
         
-        Product_Refunds__c refund3 = new Product_Refunds__c(Opportunity__c = oppty.Id, Product__c = prods[4].Id, Refund_amount__c = 2, Payment_Transaction__c =trans2.Id);
+        Product_Refunds__c refund3 = new Product_Refunds__c(Opportunity__c = oppty1.Id, Product__c = prods[4].Id, Refund_amount__c = 2, Payment_Transaction__c =trans2.Id);
         insert refund3;
         
         Test.startTest();
@@ -197,6 +199,7 @@ private class AccountingExportCtrlTest {
         List<Product2> prods = TestingHelper.createFRMProds();
         
         Opportunity oppty = TestingHelper.createOppty('Apex Test Oppty', true);
+        Opportunity oppty1 = TestingHelper.createOppty('Apex Test Oppty1', true);
         
         List<OpportunityLineItem> lineItems = new List<OpportunityLineItem>();
         for(Product2 prod : prods) {
@@ -211,21 +214,23 @@ private class AccountingExportCtrlTest {
         ChargentBase__Gateway__c gateway = new ChargentBase__Gateway__c(Name = 'paypal garp');
         insert gateway;
         
+        List<ChargentSFA__Transaction__c> tranList = new List<ChargentSFA__Transaction__c>();
         ChargentSFA__Transaction__c trans = new ChargentSFA__Transaction__c(
             ChargentSFA__Opportunity__c = oppty.Id, ChargentSFA__Type__c = 'Charge', ChargentSFA__Response_Status__c = 'Approved', ChargentSFA__Gateway_Date__c = System.now(), ChargentSFA__Payment_Method__c = 'Credit Card', ChargentSFA__Credit_Card_Type__c = 'Amex', ChargentSFA__Gateway__c = gateway.Id);
-        insert trans;
+        tranList.add(trans);
         
         ChargentSFA__Transaction__c trans2 = new ChargentSFA__Transaction__c(
-            ChargentSFA__Opportunity__c = oppty.Id, ChargentSFA__Type__c = 'Refund', ChargentSFA__Response_Status__c = 'Approved', ChargentSFA__Gateway_Date__c = System.now().addDays(1), ChargentSFA__Payment_Method__c = 'Credit Card', ChargentSFA__Credit_Card_Type__c = 'Amex', ChargentSFA__Gateway__c = gateway.Id);
-        insert trans2;
+            ChargentSFA__Opportunity__c = oppty1.Id, ChargentSFA__Type__c = 'Refund', ChargentSFA__Response_Status__c = 'Approved', ChargentSFA__Gateway_Date__c = System.now().addDays(1), ChargentSFA__Payment_Method__c = 'Credit Card', ChargentSFA__Credit_Card_Type__c = 'Amex', ChargentSFA__Gateway__c = gateway.Id);
+        tranList.add(trans2);
+        insert tranList;
         
-        Product_Refunds__c refund = new Product_Refunds__c(Opportunity__c = oppty.Id, Product__c = prods[3].Id, Refund_amount__c = 5, Payment_Transaction__c =trans2.Id);
+        Product_Refunds__c refund = new Product_Refunds__c(Opportunity__c = oppty1.Id, Product__c = prods[3].Id, Refund_amount__c = 5, Payment_Transaction__c =trans2.Id);
         insert refund;
         
-        Product_Refunds__c refund2 = new Product_Refunds__c(Opportunity__c = oppty.Id, Product__c = prods[2].Id, Refund_amount__c = 2, Payment_Transaction__c =trans2.Id);
+        Product_Refunds__c refund2 = new Product_Refunds__c(Opportunity__c = oppty1.Id, Product__c = prods[2].Id, Refund_amount__c = 2, Payment_Transaction__c =trans2.Id);
         insert refund2;
         
-        Product_Refunds__c refund3 = new Product_Refunds__c(Opportunity__c = oppty.Id, Product__c = prods[4].Id, Refund_amount__c = 2, Payment_Transaction__c =trans2.Id);
+        Product_Refunds__c refund3 = new Product_Refunds__c(Opportunity__c = oppty1.Id, Product__c = prods[4].Id, Refund_amount__c = 2, Payment_Transaction__c =trans2.Id);
         insert refund3;
         
         Test.startTest();

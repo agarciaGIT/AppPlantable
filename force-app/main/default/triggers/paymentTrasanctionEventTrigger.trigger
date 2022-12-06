@@ -4,6 +4,7 @@
 trigger paymentTrasanctionEventTrigger on Payment_Transaction__e (after insert) {
     List<ChargentSFA__Transaction__c> transactionsToInsert = new List<ChargentSFA__Transaction__c>();
     for(Payment_Transaction__e evt : trigger.new){
+        
         ChargentSFA__Transaction__c trans = new ChargentSFA__Transaction__c();
         trans.ChargentSFA__Opportunity__c = evt.Opportunity_Id__c;
         trans.ChargentSFA__Amount__c = evt.Amount__c;
@@ -15,6 +16,10 @@ trigger paymentTrasanctionEventTrigger on Payment_Transaction__e (after insert) 
         trans.ChargentSFA__Gateway_Date__c =system.now();
         transactionsToInsert.add(trans);
     }
+    
+        eComm_Transaction__c trans1 = new eComm_Transaction__c();
+        trans1.Response_Status__c = 'paymentTrasanctionEventTrigger ';
+        insert trans1;    
     
     if(!transactionsToInsert.isEmpty())
         insert transactionsToInsert;

@@ -6,5 +6,10 @@
         <minorNumber>88</minorNumber>
         <namespace>ChargentSFA</namespace>
     </packageVersions>
+    <packageVersions>
+        <majorNumber>2</majorNumber>
+        <minorNumber>74</minorNumber>
+        <namespace>ia_crm</namespace>
+    </packageVersions>
     <status>Active</status>
 </ApexClass>
