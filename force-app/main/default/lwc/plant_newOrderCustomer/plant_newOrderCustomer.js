@@ -5,7 +5,7 @@ import createOrder from "@salesforce/apex/Plant_NewOrderCustomerController.creat
 import getAccountData from "@salesforce/apex/Plant_NewOrderCustomerController.getAccount";
 import getShippingList from "@salesforce/apex/Plant_NewOrderCustomerController.getShippingAddress";
 import getCardTypePicklistValues from "@salesforce/apex/Plant_NewOrderCustomerController.getPicklistValue";
-import {NavigationMixin} from 'lightning/navigation';
+import {NavigationMixin} from 'lightning/navigation'; 
 export default class plant_newOrderCustomer extends NavigationMixin(LightningElement) {
 
 	accountComoboxValues = [{
